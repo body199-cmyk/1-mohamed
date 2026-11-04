@@ -1,0 +1,22 @@
+{
+  "name": "@ledger/contractor-statements",
+  "version": "1.0.0",
+  "private": true,
+  "description": "REPORT-01 — محرك كشف فرق الشغل بين أحمد ومقاول آخر خلال فترة",
+  "type": "module",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "check": "npm run typecheck && npm run test"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "22.13.4",
+    "typescript": "5.4.5",
+    "vitest": "5.1.0"
+  }
+}

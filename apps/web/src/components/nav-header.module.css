@@ -1,0 +1,96 @@
+.header {
+  background-color: var(--surface-card);
+  border-bottom: 1px solid var(--border-color);
+  box-shadow: var(--shadow-card);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+}
+
+.brand {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.navLink {
+  min-height: 44px;
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  transition: all 0.15s ease;
+}
+
+.navLink:hover {
+  background-color: var(--surface-hover);
+  color: var(--text-main);
+}
+
+.active {
+  background-color: var(--color-primary-bg);
+  color: var(--color-primary);
+}
+
+.themeBtn {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  background-color: var(--surface-card);
+  color: var(--text-main);
+  font-size: 0.9rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+
+.themeBtn:hover {
+  background-color: var(--surface-hover);
+}
+
+@media (max-width: 640px) {
+  .inner {
+    height: auto;
+    padding-block: 8px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  .brand {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .nav {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .navLink {
+    padding: 6px 10px;
+    font-size: 0.88rem;
+  }
+}
