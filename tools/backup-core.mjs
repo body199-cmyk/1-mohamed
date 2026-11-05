@@ -183,6 +183,8 @@ export function verifyBusinessDataset(data) {
     requireValid(vehicles.has(a.vehicle_id) && contractors.has(a.contractor_id),
       "حساب نقد عربية يشير إلى مقاول أو عربية مفقودة.");
   }
+  const activeCashOpenings = new Set();
+  const activeContractorOpenings = new Set();
   for (const o of data.opening_balances) {
     requireValid(string(o,"id") && contractors.has(o.contractor_id) &&
       date(o.start_date) && int64(o,"signed_piastres") &&
@@ -193,6 +195,14 @@ export function verifyBusinessDataset(data) {
       o.balance_type === "VEHICLE_CASH" && vehicles.has(o.vehicle_id) &&
         accounts.has(o.vehicle_id + "|" + o.contractor_id),
       "نوع الافتتاحي أو علاقة الحساب غير صحيحة.");
+    if (!o.is_cancelled) {
+      const cash = o.balance_type === "VEHICLE_CASH";
+      const key = cash ? o.vehicle_id + "|" + o.contractor_id : o.contractor_id;
+      const registry = cash ? activeCashOpenings : activeContractorOpenings;
+      requireValid(!registry.has(key),
+        "أكثر من رصيد افتتاحي نشط لنفس حساب الشغل أو النقد.");
+      registry.add(key);
+    }
   }
   for (const t of data.trips) {
     requireValid(string(t,"id") && vehicles.has(t.vehicle_id) &&

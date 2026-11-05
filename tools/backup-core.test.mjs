@@ -97,6 +97,24 @@ test("B04 valid contractor work opening may have null vehicle without bogus cash
   assert.equal(verified.data.opening_balances[1].vehicle_id,null);
 });
 
+test("B04 rejects duplicate active cash/work opening that would violate PostgreSQL unique index",()=>{
+  const data=fixture();
+  data.opening_balances.push({...data.opening_balances[0],id:"OB_2"});
+  assertInvalid(()=>createBusinessBackup(data),/افتتاحي نشط/);
+  const separate=fixture();
+  const active={
+    id:"OB_WORK_A",balance_type:"CONTRACTOR_WORK",contractor_id:"K_2",
+    vehicle_id:null,start_date:"2026-11-01",signed_piastres:"0",
+    is_cancelled:false,version:1,cancel_reason:null,cancelled_at:null,
+  };
+  separate.opening_balances.push(active,{...active,id:"OB_WORK_B"});
+  assertInvalid(()=>createBusinessBackup(separate),/افتتاحي نشط/);
+  separate.opening_balances[2].is_cancelled=true;
+  separate.opening_balances[2].cancel_reason="استبدال";
+  separate.opening_balances[2].cancelled_at="2026-11-05T18:00:00Z";
+  assert.doesNotThrow(()=>createBusinessBackup(separate));
+});
+
 test("B04 rejects mismatched totals, fractional piastres, prototype pollution and duplicates",()=>{
   const badTotal=fixture();badTotal.trips[0].vehicle_total_piastres="10001";
   assertInvalid(()=>createBusinessBackup(badTotal),/إجمالي/);
