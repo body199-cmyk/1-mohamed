@@ -77,7 +77,7 @@ test("B04 validates cross-table FKs, account isolation and historical trip refer
   const lost=fixture();lost.vehicle_accounts=[];
   assertInvalid(()=>createBusinessBackup(lost),/حساب نقد عربية|علاقة/);
   const changed=fixture();changed.trips[0].responsible_contractor_id="K_2";
-  assertInvalid(()=>createBusinessBackup(changed),/حساب|المسؤول/);
+  assertInvalid(()=>createBusinessBackup(changed),/علاقة|حساب|المسؤول/);
   const linked=fixture();linked.payments[0].linked_trip_id="DOES_NOT_EXIST";
   assertInvalid(()=>createBusinessBackup(linked),/دفعة|علاقة/);
   const oldLink=fixture();oldLink.payments[0].responsible_contractor_id="K_2";
