@@ -33,7 +33,10 @@ export function proxy(request: NextRequest) {
 
   // Next.js code chunks/fonts/icons are public assets. They carry no business
   // data and must keep working on the independent in-memory demo.
-  if (isPublicAsset(pathname)) {
+  if (
+    (request.method === "GET" || request.method === "HEAD") &&
+    isPublicAsset(pathname)
+  ) {
     return NextResponse.next();
   }
 
