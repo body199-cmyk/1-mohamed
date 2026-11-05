@@ -27,6 +27,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 .navLink {
@@ -92,5 +93,7 @@
   .navLink {
     padding: 6px 10px;
     font-size: 0.88rem;
+    text-align: center;
+    flex: 1 1 130px;
   }
 }

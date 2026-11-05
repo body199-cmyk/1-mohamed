@@ -176,3 +176,13 @@
 - H041 SDK + lockfile وأدوات Browser/Server/owner/session **موجودة على main** بعد [PR #4](https://github.com/body199-cmyk/1-mohamed/pull/4)، merge `8e7efc16`، CI `42014035425`. **لم يتم تفعيلها في التطبيق**، ولا تغيير في `src/proxy.ts` المغلق.
 - المرحلة التالية `UI-BASE-01`: افحص أولًا `apps/web/src/demo/demo-context.tsx` ومكونات النقلات والمقاولين والحزم الصافية؛ إضافة واجهة بيانات أساسية بذاكرة مؤقتة فقط، مع اختبارات UI، دون مشروع Supabase.
 - لا تتعامل مع صفوف «مخطط» القديمة هنا كدليل أن الوظيفة أصبحت موجودة أو غير موجودة؛ افحص الكود والتغييرات الفعلية قبل التنفيذ. وضع الاختبارات الوهمية ليس بديلًا عن التكامل السحابي النهائي.
+
+## H043 — فهرس البيانات الأساسية في المعاينة
+
+- `apps/web/src/app/demo/master-data/page.tsx`: مسار المعاينة `/demo/master-data` (**مؤقت بالذاكرة**).
+- `apps/web/src/features/master-data/master-data-view.tsx` + `master-data.module.css`: البحث وقوائم المقاولين والعربيات وعرض افتتاحي فرق شغل المقاول وإضافة البيانات عبر نفس `QuickAddModal`.
+- `apps/web/src/features/trips/quick-add-modal.tsx` + `trip-entry-panel.tsx`: تحقق موحد لمنع تكرار الاسم واللوحة في نقاط الإضافة، مع تطبيع الأرقام العربية/الفارسية ومسافات النص.
+- `apps/web/src/components/nav-header.tsx` + CSS: رابط القائمة وتجربة الموبايل.
+- `e2e/master-data.spec.ts` + `playwright.ui.config.ts`: اختبار Chromium E2E للسلوك، وليس GoTrue أو HTTP auth.
+- `tools/auth-boundary-smoke.mjs`: فحص route الجديد وظهور fixture من SSR دون كشف مسارات الحفظ الحقيقي؛ `.github/workflows/verify.yml` لتشغيلهما في PR.
+- [PR #6](https://github.com/body199-cmyk/1-mohamed/pull/6) هو مرجع حالة هذا التغيير حتى اعتماده؛ [STATUS](STATUS.md) آخر حالة. **فتح الصفحة لا يعني وجود تعديل/أرشفة أو تسجيل دائم.**

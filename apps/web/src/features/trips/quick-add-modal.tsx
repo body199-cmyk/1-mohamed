@@ -5,12 +5,22 @@ import { normalizeArabicNumbers } from "./arabic-number-normalizer";
 import { useModalFocus } from "../../components/use-modal-focus";
 import styles from "./trips.module.css";
 
+/** Compare plates/names without whitespace or Arabic-digit formatting bypasses. */
+function normalizeUniqueName(value: string): string {
+  return normalizeArabicNumbers(value)
+    .trim()
+    .replace(/\s+/g, " ")
+    .toLocaleLowerCase("ar");
+}
+
 interface QuickAddModalProps {
   type: "vehicle" | "contractor";
   isOpen: boolean;
   onClose: () => void;
   onAddVehicle: (plate: string, driver: string) => void;
   onAddContractor: (name: string, openingDate: string, openingBalancePiastres: string) => void;
+  existingContractorNames?: readonly string[];
+  existingVehiclePlates?: readonly string[];
 }
 
 export function QuickAddModal({
@@ -19,6 +29,8 @@ export function QuickAddModal({
   onClose,
   onAddVehicle,
   onAddContractor,
+  existingContractorNames = [],
+  existingVehiclePlates = [],
 }: QuickAddModalProps) {
   // Vehicle fields
   const [plate, setPlate] = useState("");
@@ -41,12 +53,24 @@ export function QuickAddModal({
 
     if (type === "vehicle") {
       if (!plate.trim()) return;
+      if (existingVehiclePlates.some((value) =>
+        normalizeUniqueName(value) === normalizeUniqueName(plate)
+      )) {
+        setError("رقم اللوحة موجود بالفعل. اختر العربية من القائمة بدل إضافتها مرتين.");
+        return;
+      }
       onAddVehicle(plate.trim(), driver.trim());
       setPlate("");
       setDriver("");
       onClose();
     } else {
       if (!contractorName.trim()) return;
+      if (existingContractorNames.some((value) =>
+        normalizeUniqueName(value) === normalizeUniqueName(contractorName)
+      )) {
+        setError("اسم المقاول موجود بالفعل. اختر المقاول من القائمة بدل إضافته مرتين.");
+        return;
+      }
 
       const amount = calculateTripAmounts({ weightTonnes: "0", contractorRateEgp: "0", vehicleRateEgp: "0", expenseEgp: balanceDirection === "ZERO" ? "0" : normalizeArabicNumbers(openingBalanceEgp) });
       if (!amount.ok) { setError("أدخل مبلغًا صحيحًا بالجنيه، بحد أقصى رقمين للقروش ومن غير فواصل آلاف."); return; }

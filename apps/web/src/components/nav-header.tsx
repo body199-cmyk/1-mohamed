@@ -12,6 +12,7 @@ export function NavHeader() {
 
   const isTrips = pathname.startsWith("/demo/trips");
   const isContractors = pathname.startsWith("/demo/contractors");
+  const isMasterData = pathname.startsWith("/demo/master-data");
 
   return (
     <header className={styles.header}>
@@ -37,6 +38,14 @@ export function NavHeader() {
             aria-current={isContractors ? "page" : undefined}
           >
             كشف حساب المقاول
+          </Link>
+
+          <Link
+            href="/demo/master-data"
+            className={`${styles.navLink} ${isMasterData ? styles.active : ""}`}
+            aria-current={isMasterData ? "page" : undefined}
+          >
+            بيانات المقاولين والعربيات
           </Link>
 
           <button
