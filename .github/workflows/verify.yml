@@ -8,7 +8,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: verify-${{ github.workflow }}-${{ github.ref }}
+  group: verify-v2-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -35,6 +35,8 @@ jobs:
           npm run db:verify:negative
           npm run db:verify:negative-b
           npm run db:verify:negative-c
+      - name: Check exact cash-opening validation (unit tests)
+        run: npx vitest run apps/web/e2e/master-data-validation.test.ts
       - name: Build preview web app
         run: npm run build
       - name: Verify new Supabase SDK remains inactive before real Auth E2E
@@ -46,7 +48,7 @@ jobs:
           trap 'kill "$server_pid" 2>/dev/null || true' EXIT
           node tools/auth-boundary-smoke.mjs http://127.0.0.1:39123
       - name: Install isolated Chromium browser for UI regression
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install chromium
       - name: Test master-data demo interactions in real browser
         run: npx playwright test --config=playwright.ui.config.ts e2e/master-data.spec.ts
 

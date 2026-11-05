@@ -5,19 +5,22 @@ export const INITIAL_CONTRACTORS: readonly DemoContractor[] = [
     id: "K1",
     name: "المقاول أحمد علام",
     openingDate: "2026-11-01",
-    openingBalancePiastres: "-40000", // رصيد افتتاحي لصالح المقاول 400.00 ج.م
+    openingBalancePiastres: "-40000",
+    isArchived: false, // رصيد افتتاحي لصالح المقاول 400.00 ج.م
   },
   {
     id: "K2",
     name: "شركة النيل للمقاولات",
     openingDate: "2026-11-01",
     openingBalancePiastres: "0",
+    isArchived: false,
   },
   {
     id: "K3",
     name: "مقاولات الصعيد",
     openingDate: "2026-11-01",
-    openingBalancePiastres: "25000", // رصيد افتتاحي لصالح أحمد 250.00 ج.م
+    openingBalancePiastres: "25000",
+    isArchived: false, // رصيد افتتاحي لصالح أحمد 250.00 ج.م
   },
 ];
 
@@ -26,16 +29,19 @@ export const INITIAL_VEHICLES: readonly DemoVehicle[] = [
     id: "V1",
     plateNumber: "أ ب ج 1234",
     driverName: "محمد إبراهيم",
+    isArchived: false,
   },
   {
     id: "V2",
     plateNumber: "د هـ و 5678",
     driverName: "محمود حسن",
+    isArchived: false,
   },
   {
     id: "V3",
     plateNumber: "س ص ع 9012",
     driverName: "علي عبد الله",
+    isArchived: false,
   },
 ];
 

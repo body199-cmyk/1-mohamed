@@ -11,12 +11,16 @@ import type {
   DemoVehicle,
   DemoTripRecord,
   DemoStoreContextType,
+  DemoVehicleCashOpening,
+  DemoMasterAudit,
 } from "./demo-types";
 import {
   INITIAL_CONTRACTORS,
   INITIAL_VEHICLES,
   INITIAL_TRIPS,
 } from "./demo-data";
+
+import { normalizeMasterKey, validOpeningDate, validOpeningPiastres } from "../features/master-data/master-data-validation";
 
 const DemoStoreContext = createContext<DemoStoreContextType | null>(null);
 
@@ -34,6 +38,19 @@ export function DemoStoreProvider({ children }: { children: React.ReactNode }) {
   const [trips, setTrips] = useState<DemoTripRecord[]>(() => [
     ...INITIAL_TRIPS,
   ]);
+  const [cashOpenings, setCashOpenings] = useState<DemoVehicleCashOpening[]>([]);
+  const [masterAudit, setMasterAudit] = useState<DemoMasterAudit[]>([]);
+  const writeAudit = useCallback((
+    target: DemoMasterAudit["target"], key: string, action: DemoMasterAudit["action"],
+    reason: string, before: unknown, after: unknown
+  ) => {
+    setMasterAudit(prev => [{
+      target, key, action, reason: reason.trim(),
+      before: JSON.stringify(before), after: JSON.stringify(after),
+      at: new Date().toISOString()
+    }, ...prev]);
+  }, []);
+
 
   const addContractor = useCallback(
     (name: string, openingDate: string, openingBalancePiastres: string): DemoContractor => {
@@ -42,6 +59,7 @@ export function DemoStoreProvider({ children }: { children: React.ReactNode }) {
         name: name.trim(),
         openingDate,
         openingBalancePiastres,
+        isArchived: false,
       };
       setContractors((prev) => [...prev, newContractor]);
       return newContractor;
@@ -55,12 +73,69 @@ export function DemoStoreProvider({ children }: { children: React.ReactNode }) {
         id: `V${vehicleSequence++}`,
         plateNumber: plateNumber.trim(),
         driverName: driverName.trim(),
+        isArchived: false,
       };
       setVehicles((prev) => [...prev, newVehicle]);
       return newVehicle;
     },
     []
   );
+
+
+  const editContractor = useCallback((id: string, name: string, reason: string): boolean => {
+    const current = contractors.find(c => c.id === id);
+    const clean = name.trim();
+    if (!current || current.isArchived || !clean || !reason.trim() ||
+      contractors.some(c => c.id !== id && normalizeMasterKey(c.name) === normalizeMasterKey(clean))) return false;
+    if (current.name === clean) return false;
+    const next = { ...current, name: clean };
+    setContractors(prev => prev.map(c => c.id === id ? next : c));
+    writeAudit("contractor", id, "edit", reason, current, next);
+    return true;
+  }, [contractors, writeAudit]);
+
+  const editVehicle = useCallback((id: string, plate: string, driver: string, reason: string): boolean => {
+    const current = vehicles.find(v => v.id === id);
+    const clean = plate.trim(), cleanedDriver = driver.trim();
+    if (!current || current.isArchived || !clean || !reason.trim() ||
+      vehicles.some(v => v.id !== id && normalizeMasterKey(v.plateNumber) === normalizeMasterKey(clean))) return false;
+    if (current.plateNumber === clean && current.driverName === cleanedDriver) return false;
+    const next = { ...current, plateNumber: clean, driverName: cleanedDriver };
+    setVehicles(prev => prev.map(v => v.id === id ? next : v));
+    writeAudit("vehicle", id, "edit", reason, current, next);
+    return true;
+  }, [vehicles, writeAudit]);
+
+  const archiveContractor = useCallback((id: string, archived: boolean, reason: string): boolean => {
+    const current = contractors.find(c => c.id === id);
+    if (!current || current.isArchived === archived || !reason.trim()) return false;
+    const next = { ...current, isArchived: archived };
+    setContractors(prev => prev.map(c => c.id === id ? next : c));
+    writeAudit("contractor", id, archived ? "archive" : "reactivate", reason, current, next);
+    return true;
+  }, [contractors, writeAudit]);
+
+  const archiveVehicle = useCallback((id: string, archived: boolean, reason: string): boolean => {
+    const current = vehicles.find(v => v.id === id);
+    if (!current || current.isArchived === archived || !reason.trim()) return false;
+    const next = { ...current, isArchived: archived };
+    setVehicles(prev => prev.map(v => v.id === id ? next : v));
+    writeAudit("vehicle", id, archived ? "archive" : "reactivate", reason, current, next);
+    return true;
+  }, [vehicles, writeAudit]);
+
+  const saveCashOpening = useCallback((opening: DemoVehicleCashOpening, reason: string): boolean => {
+    const contractor = contractors.find(c => c.id === opening.contractorId);
+    const vehicle = vehicles.find(v => v.id === opening.vehicleId);
+    if (!contractor || contractor.isArchived || !vehicle || vehicle.isArchived ||
+      !reason.trim() || !validOpeningDate(opening.startDate) ||
+      !validOpeningPiastres(opening.signedPiastres)) return false;
+    const existing = cashOpenings.find(c => c.vehicleId === opening.vehicleId && c.contractorId === opening.contractorId);
+    if (existing && existing.startDate === opening.startDate && existing.signedPiastres === opening.signedPiastres) return false;
+    setCashOpenings(prev => [...prev.filter(c => c.vehicleId !== opening.vehicleId || c.contractorId !== opening.contractorId), opening]);
+    writeAudit("vehicle-cash", opening.contractorId + "|" + opening.vehicleId, "cash-opening", reason, existing ?? null, opening);
+    return true;
+  }, [contractors, vehicles, cashOpenings, writeAudit]);
 
   const addTrip = useCallback(
     (tripData: Omit<DemoTripRecord, "id" | "createdAt">): DemoTripRecord => {
@@ -128,6 +203,13 @@ export function DemoStoreProvider({ children }: { children: React.ReactNode }) {
       contractors,
       vehicles,
       trips,
+      cashOpenings,
+      masterAudit,
+      editContractor,
+      editVehicle,
+      archiveContractor,
+      archiveVehicle,
+      saveCashOpening,
       addContractor,
       addVehicle,
       addTrip,
@@ -139,6 +221,13 @@ export function DemoStoreProvider({ children }: { children: React.ReactNode }) {
       contractors,
       vehicles,
       trips,
+      cashOpenings,
+      masterAudit,
+      editContractor,
+      editVehicle,
+      archiveContractor,
+      archiveVehicle,
+      saveCashOpening,
       addContractor,
       addVehicle,
       addTrip,

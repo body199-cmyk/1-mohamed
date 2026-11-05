@@ -121,8 +121,8 @@ export function TripEntryPanel() {
     if (!/[1-9]/.test(tripDraft.weightTonnes)) {
       setValidationError("الوزن يجب أن يكون أكبر من صفر."); return;
     }
-    if (!selectedContractor || !selectedVehicle) {
-      setValidationError("اختر عربية ومقاولًا من السجلات الموجودة."); return;
+    if (!selectedContractor || !selectedVehicle || selectedContractor.isArchived || selectedVehicle.isArchived) {
+      setValidationError("اختر عربية ومقاولًا نشطين؛ لا يمكن تسجيل نقلة جديدة على سجل مؤرشف."); return;
     }
     const dateCheck = buildContractorStatement({
       counterpartyId: selectedContractor.id,
@@ -170,7 +170,7 @@ export function TripEntryPanel() {
       <SharedDataPanel
         state={state}
         dispatch={dispatch}
-        contractors={contractors}
+        contractors={contractors.filter(c => !c.isArchived)}
         onOpenNewSession={() => setShowNewSessionModal(true)}
         onOpenQuickAddContractor={() => { setQuickAddTarget("shared"); setQuickAddType("contractor"); }}
       />
