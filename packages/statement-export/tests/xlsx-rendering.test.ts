@@ -82,7 +82,7 @@ describe("T09.3 exact text-only Office Open XML workbook",()=>{
     const altered={...doc,rows:[{...doc.rows[0]!,reference:"=SUM(1,1)",
       directionText:"<note>& \" tricky </note>"}]};
     const detail=file(createStatementXlsxParts(altered),"xl/worksheets/sheet2.xml");
-    expect(detail).toContain("> =SUM(1,1)".replace("> "," >").trim().replace(/^>/,">")); // literal inlineStr is not a formula
+    expect(detail).toContain(">=SUM(1,1)</t>"); // literal inlineStr is not a formula
     expect(detail).toContain("&lt;note&gt;&amp;");
     expect(detail).not.toContain("<f>");
     expect(detail).not.toContain("<note>");

@@ -35,7 +35,7 @@ test.describe("T09.3 download actual XLSX with exact Arabic source strings",()=>
     const files=entries(zip);
     expect(files.size).toBe(7);
     expect(files.get("xl/workbook.xml")).toContain('sheet name="ملخص الكشف"');
-    expect(files.get("xl/worksheets/sheet1.xml")).toContain("شركة");
+    expect(files.get("xl/worksheets/sheet1.xml")).toContain("المقاول أحمد علام");
     expect(files.get("xl/worksheets/sheet2.xml")).toContain("TRIP-HIST-001");
     expect(files.get("xl/worksheets/sheet2.xml")).toContain('t="inlineStr"');
   });
