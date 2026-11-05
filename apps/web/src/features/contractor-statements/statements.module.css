@@ -253,3 +253,20 @@
     align-items: flex-start;
   }
 }
+
+/* H058 — themed report outcomes and true export-button affordances. */
+.badgeAhmed {background:var(--color-success-bg);color:var(--color-success);border-color:var(--color-success-border);}
+.badgeCounterparty {background:var(--color-warning-bg);color:var(--color-warning);border-color:var(--color-warning-border);}
+.badgeBalanced {background:var(--surface-hover);color:var(--text-main);border-color:var(--border-color);}
+.errorState {background:var(--color-danger-bg);border-color:var(--color-danger-border);color:var(--color-danger);}
+.filtersCard,.summaryCard,.tableCard {min-width:0;}
+.filtersGrid {min-width:0;}
+.exportPanel {display:grid;gap:10px;margin-block:16px;background:var(--surface-card);padding:16px;border:1px solid var(--border-color);border-radius:var(--radius-lg);box-shadow:var(--shadow-card);min-width:0;}
+.exportActions {display:flex;flex-wrap:wrap;gap:10px;}
+.exportButton {display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 16px;border:1px solid var(--border-strong);border-radius:var(--radius-md);color:var(--text-main);background:var(--surface-card-subtle);font:inherit;font-size:.9rem;font-weight:700;white-space:normal;text-align:center;flex:1 1 175px;}
+.exportButton:hover:not(:disabled) {background:var(--surface-hover);border-color:var(--border-focus);}
+.exportButtonPrimary {background:var(--color-primary);color:var(--color-primary-text);border-color:var(--color-primary);}
+.exportButtonPrimary:hover:not(:disabled) {background:var(--color-primary-hover);color:#ffffff;}
+.exportButton:disabled {opacity:.55;cursor:not-allowed;}
+.exportDescription {font-size:.85rem;color:var(--text-muted);line-height:1.85;}
+@media(max-width:640px){.exportPanel{padding:12px}.exportButton{flex:1 1 100%;}}

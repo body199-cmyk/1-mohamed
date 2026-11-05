@@ -22,3 +22,11 @@
 .empty { padding:24px; border:1px dashed var(--border-strong); background:var(--surface-card); border-radius:var(--radius-lg); text-align:center; color:var(--text-muted); }
 .error { padding:16px; background:var(--color-danger-bg); border:1px solid var(--color-danger-border); border-radius:var(--radius-md); color:var(--color-danger); }
 @media(max-width:600px){.filters{padding:12px}.card{padding:14px}}
+
+/* H058 — same report card surfaces and navigation controls as other screens. */
+.filters {box-shadow:var(--shadow-card);border-top:3px solid var(--metric-edge);}
+.filters input:hover:not(:disabled),.filters select:hover:not(:disabled){border-color:var(--border-strong);}
+.filters input:focus-visible,.filters select:focus-visible{outline:2px solid var(--border-focus);outline-offset:1px;}
+.reset:hover:not(:disabled){background:var(--surface-hover);border-color:var(--border-focus);}
+.tableScroll{box-shadow:var(--shadow-card);}
+.table tbody tr:hover td{background:var(--surface-hover);}
