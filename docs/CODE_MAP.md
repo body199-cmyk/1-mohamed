@@ -100,7 +100,8 @@
 | M02.C3 | `supabase/migrations/20261104200022_phase_c_trip_operations.sql` | RPC للإنشاء/التعديل/الإلغاء/القراءة | موجود على main؛ يحتاج مراجعة اختبار |
 | M02.CT | `supabase/tests/03_phase_c_trips_verification.sql` | اختبارات المرحلة C الأصلية | موجود على main؛ التنفيذ الحالي غير مثبت |
 | M02.C4 | `supabase/migrations/20261104200023_phase_c_trip_details.sql` | إضافة خط السير والإيصال دون تغيير migrations قديمة؛ تحديث ٣ دوال وبيانات التدقيق | فرع H038 / PR #1، غير مدموج، ينتظر CI |
-| M02.CT2 | `supabase/tests/04_phase_c_trip_details_verification.sql` | اختبارات الإدخال والتعديل والإعادة والقراءة للحقل الوصفي | فرع H038 / PR #1، ينتظر CI |
+| M02.CT2 | `supabase/tests/04_phase_c_trip_details_verification.sql` | اختبارات الإدخال والتعديل والإعادة والقراءة للحقل الوصفي | فرع H038 / PR #1، اجتاز CI المعزول |
+| M02.CT3 | `supabase/tests/05_phase_c_adversarial_review.sql` | مراجعة نقدية منفصلة لصلاحيات دوال RPC بعد استبدالها، ومنع إعادة الطلب بإيصال مختلف وحفظ الوصف بعد الإلغاء | فرع H038 / PR #1، ينتظر CI الجديد |
 | M03 | `supabase/migrations/*_payments.sql` [مخطط] | جدول الدفعات `payments`، القيود والفهارس، وإجراء تسجيل/تعديل/إلغاء الدفعة مع فحص D13-B وقفل الحساب | DB-04-PAYMENTS |
 | M04 | `supabase/migrations/*_statements.sql` [مخطط] | وظائف واستعلامات لقطة القراءة المتسقة للكشوف وتجميع الأرصدة السابقة | DB-05-STATEMENTS |
 | M05 | `supabase/migrations/*_backups.sql` [مخطط] | تخزين النسخ وصلاحياتها ووظائف اللقطة والاستعادة والجدولة | T10.1–T10.4 |
