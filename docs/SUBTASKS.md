@@ -363,3 +363,5 @@
 - **لا تفعل:** لا تبدل `apps/web/src/proxy.ts` المؤقتة؛ لا تضف نموذج password يعمل قبل المشروع الاختباري؛ لا تعتمد جلسة من Cookie دون `getClaims()` أو تكتفِ بـ`getClaims()` دون `app_is_owner()`؛ لا مفاتيح إدارية أو نشر.
 - **مطلوب في المرحلة التالية:** تفعيل SDK في مشروع **اختبار** (GoTrue/PostgREST) مع اختبار owner/anon/non-owner، session refresh + set-cookie + cache headers، Redirect/CSRF، وشرح setup مبسط لغير المبرمج. نتائج PGlite لا تعني نجاح Auth حقيقي.
 - **الحالة:** على [Draft PR #4](https://github.com/body199-cmyk/1-mohamed/pull/4)، اختبارات نهائية ومراجعة قيد التحقق. [تقرير مستقل](AUTH_01_H041_REVIEW.md).
+
+**نتيجة المراجعة النقدية الأولى H041:** تصحيح نقل `Set-Cookie` و`cache-control` إلى الاستجابة، ومنع إخفاء الاستجابة داخل عميل Server، مع فحص static regression. يتبع ذلك فحص CI على آخر SHA؛ لم يُختبر refresh فعلي بسبب غياب GoTrue.
