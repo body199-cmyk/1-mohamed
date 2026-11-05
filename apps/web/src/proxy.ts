@@ -1,24 +1,53 @@
 /**
- * AUTH-01 / H039 — temporary deny-all boundary, NOT real authentication.
+ * AUTH-01 / H039 — temporary FAIL-CLOSED boundary, not real authentication.
  *
- * A protected route must never fall through while Supabase Auth has not been
- * installed and verified. Replace this guard only together with a real,
- * server-verified getClaims() + owner check, and with integration tests.
+ * Critical second-pass review: a named list of protected routes can silently
+ * miss a new page. We therefore deny unknown application paths by default.
+ * Only documented demo pages and their static assets are public.
  *
- * The demo (/demo/*), login information page, and static assets are excluded.
- * Server actions and RPCs must always authorize independently of this Proxy.
+ * Replace this deny-all guard only together with real Supabase getClaims(),
+ * owner authorization, and production-equivalent integration tests.
+ * Proxy is not an authorization substitute for Server Actions, APIs or RPCs.
  */
 import { NextResponse, type NextRequest } from "next/server";
 
+function isPublicAsset(pathname: string): boolean {
+  return (
+    pathname.startsWith("/_next/") ||
+    pathname.startsWith("/fonts/") ||
+    pathname === "/favicon.svg"
+  );
+}
+
+function isPublicPage(pathname: string): boolean {
+  return (
+    pathname === "/" ||
+    pathname === "/login" ||
+    pathname === "/demo" ||
+    pathname.startsWith("/demo/")
+  );
+}
+
 export function proxy(request: NextRequest) {
-  // A POST should never be redirected to a form/page that did not expect it.
-  // Returning 503 also prevents a future Route Handler from accidentally
-  // accepting mutations before the real Auth guard exists.
+  const pathname = request.nextUrl.pathname;
+
+  // Next.js code chunks/fonts/icons are public assets. They carry no business
+  // data and must keep working on the independent in-memory demo.
+  if (isPublicAsset(pathname)) {
+    return NextResponse.next();
+  }
+
+  // This includes POST to demo pages and unknown future API routes. A POST
+  // must never redirect its request body to a login or unrelated route.
   if (request.method !== "GET" && request.method !== "HEAD") {
     return NextResponse.json(
       { error: "الحفظ الدائم وتسجيل الدخول غير متاحين حتى اكتمال المصادقة." },
       { status: 503, headers: { "cache-control": "no-store" } }
     );
+  }
+
+  if (isPublicPage(pathname)) {
+    return NextResponse.next();
   }
 
   const login = new URL("/login", request.url);
@@ -32,18 +61,8 @@ export function proxy(request: NextRequest) {
   return response;
 }
 
-// Explicit, statically analyzable Next.js 16 matcher. No demo routes.
-// Including /api prevents accidental unprotected business API exposure
-// before per-handler authentication has been implemented.
+// Run on ALL paths, not just known future business routes. Otherwise a new
+// /dashboard page could accidentally bypass this temporary deny-all boundary.
 export const config = {
-  matcher: [
-    "/trips/:path*",
-    "/contractors/:path*",
-    "/vehicles/:path*",
-    "/payments/:path*",
-    "/reports/:path*",
-    "/settings/:path*",
-    "/backups/:path*",
-    "/api/:path*",
-  ],
+  matcher: ["/:path*"],
 };
