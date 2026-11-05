@@ -87,3 +87,9 @@
 حُسمت مرحلة الحماية **المؤقتة فقط**: PR #2 مدموج على `main` (`df6f54c7`)، CI `41944665834` نجح بما فيه HTTP smoke (١٢ GET محميًا/٦ POST مرفوضة، وdemo/login/assets سليمة). صفحة `/login` **ليست تسجيل دخول**، وProxy تمنع أي مسار غير عام حتى عند ضبط متغيرات الاتصال.
 
 **التكامل المطلوب التالي:** `@supabase/ssr` + `@supabase/supabase-js` مع نسخ مقفلة وlockfile صحيح، ثم إنشاء عملاء Browser/Server، تحديث Proxy لإدارة الكوكي، والتحقق من الهوية عبر `getClaims()` والمالك بكل endpoint. لا اختبار Auth ناجح بدون GoTrue/PostgREST في مشروع اختبار منفصل؛ لا تُقبل محاكاة PGlite بدل اختبار الدخول. لا ترسل أسرار للمحادثة أو الريبو.
+
+## H041 — تركيب SDK الرسمي فقط (٥ نوفمبر ٢٠٢٦)
+
+على [PR #4](https://github.com/body199-cmyk/1-mohamed/pull/4) يوجد عميل Browser وعميل Server، ومساعد Proxy candidate لتحديث الكوكي، وفاحص مالك يبدأ بـ`getClaims()` ثم `app_is_owner()`. الإصدارات المثبتة: `@supabase/ssr@0.12.7` و`@supabase/supabase-js@2.119.0` مع npm lockfile بنسخة 3.
+
+**لم يُفعّل أي استيراد منهم على مسارات التطبيق:** `/login` صفحة تنبيه فقط، و`/demo/*` مستقلة، وProxy القديمة deny-by-default. هذا يحل عائق تثبيت الحزم ولكنه **لا يحل عائق عدم وجود مشروع Supabase اختبار ولا يثبت تسجيل دخول**. عند الانتقال للتكامل الحي يلزم ربط رؤوس `Cache-Control` و`Set-Cookie` في استجابات HTTP، والـcallback/logout/recovery، واختبار صلاحيات المالك وغير المالك على GoTrue/PostgREST.

@@ -92,3 +92,12 @@
 **T05/AUTH-01/PREP (H039):** اجتاز مراجعة نقدية ثانية، أصلحت قائمة المسارات المحدودة إلى **deny by default** ومنعت POST حتى إلى الأصول العامة؛ اختبار HTTP على Next الحقيقي شمل ١٢ مسار GET مرفوضًا و٦ POST مرفوضة مع بقاء المعاينة/الأصول العامة سليمة. CI `41944665834` ناجح، **دُمج في main** عبر PR #2 (`df6f54c7`). **T05 ما زالت جزئية؛ Auth الحقيقي لم يبدأ بعد**.
 
 **الخطوة القادمة الوحيدة:** `AUTH-01/REAL-INTEGRATION` على فرع جديد بعد توفر مشروع Supabase اختباري معزول وتثبيت الاعتماديات بنسخ مقفلة؛ اختبار `getClaims()`/owner gating على HTTP والجلسات وعمليات RPC. لا فتح حفظ مالي دون اختبار متكامل، ولا بدء DB-04 قبل D15/D16. الحالة الموجزة الوحيدة: [STATUS](STATUS.md).
+
+## H041 — AUTH-01 / تجهيز SDK الرسمي (٥ نوفمبر ٢٠٢٦)
+
+- **T05 / AUTH-01:** جزء مستقل بدأ على فرع `feat/auth01-ssr-sdk-h041`، [PR #4](https://github.com/body199-cmyk/1-mohamed/pull/4) (Draft). الاعتماديات `@supabase/ssr@0.12.7` و`supabase-js@2.119.0` مثبتتان نصيًا ومعهما `package-lock.json` مولد عبر GitHub Actions بدون تشغيل package scripts؛ عميل browser، عميل server، فحص `getClaims()` + `app_is_owner()`، ومساعد proxy لتحديث كوكي الجلسات **غير مستخدمين حاليًا**.
+- **معيار القبول الحالي:** نجاح `npm ci`، ١٦٧ وحدة، ١٦ SQL، ثلاثة negative controls، Build، HTTP smoke، والفحص الإضافي `tools/auth-sdk-boundary-check.mjs` + مرور نقدي منفصل. لا دخول حقيقي.
+- **ما تبقى فعلًا في T05:** مشروع Supabase اختبار/GoTrue، ربط الصفحات والـServer Actions والـProxy عبر HTTP، التحقق من JWT/المالك والجلسات والإلغاء والاسترجاع وتوجيه callback، واختبارات حقيقية. لا يُعلَّم T05 كمكتمل ولا يفتح الحفظ الدائم بسبب نجاح CI المعزول.
+- **المرجع:** [H041 review](AUTH_01_H041_REVIEW.md) · [STATUS](STATUS.md). لا تغير D15/D16.
+
+**H041 / Review-pass correction:** client الـServer أصبح `createRouteHandlerSupabaseClient(request,response)` بدل نسخة تتجاهل رؤوس cache؛ `verifyOwnerForRoute` يأخذ عميلًا مرتبطًا بالطلب، مع assertions في CI. لا يغيّر ذلك حالة T05 (جزئي حتى اختبار Auth الحقيقي).

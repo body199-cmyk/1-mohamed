@@ -980,3 +980,15 @@
 - **نقطة الاستئناف التالية:** `AUTH-01/REAL-INTEGRATION`، **لم تبدأ**. تحتاج اعتماديات SSR/Supabase بنسخ مقفلة ومشروع Supabase اختباري؛ دخول وخروج/استرجاع، `getClaims()` على الخادم + بوابة المالك، واختبارات HTTP حقيقية. Proxy الحالية ترفض الجميع؛ **لا تحوّلها إلى سماح افتراضي**، ولا تعلن حفظ بيانات مالية. D15/D16 للدفعات ما زالا مفتوحين.
 - **اختبارات H040 نفسه:** تغييرات توثيق فقط؛ تُراجع روابط الملفات والحالات والـSHA ثم يشغّل GitHub Actions الأوامر القائمة دون تعديلها، ولا يُنسب نجاح سابق إلى commit جديد.
 - **نظام التسليم الإلزامي:** كل تغيير لاحق على فرع، ثم مراجعة نقدية منفصلة للأخطاء والقرارات والأمان والحدود، ثم CI على آخر SHA، وتوثيق الأدلة وMerge مشروط؛ لا دمج تلقائي بلا مراجعة. راجع [AGENTS](../AGENTS.md).
+
+## H041 — ٥ نوفمبر ٢٠٢٦ — AUTH-01/SDK-FOUNDATION
+
+- **المهمة:** جزء آمن من التكامل الحقيقي بعد H040. فرع `feat/auth01-ssr-sdk-h041` و[PR #4](https://github.com/body199-cmyk/1-mohamed/pull/4)، مسودة غير مدموجة عند إنشاء السجل.
+- **التنفيذ:** تثبيت `@supabase/ssr@0.12.7` و`supabase-js@2.119.0` في `apps/web/package.json`، وتوليد `package-lock.json` عبر GitHub Actions مؤقتًا ثم حذف Workflow التوليد. إضافة `client.ts` / `server.ts` / `owner.ts` / `proxy-session.ts`، و`tools/auth-sdk-boundary-check.mjs` في CI.
+- **ما لم يتغير:** `apps/web/src/proxy.ts` تمنع المسارات المالية افتراضيًا، و`/login` صفحة معلوماتية فقط، و`/demo/*` بالذاكرة. لا تشغيل GoTrue أو تهيئة مالك، ولا إرسال أو تخزين أسرار، ولا نشر أو DB حية.
+- **المراجعة النقدية:** مطلوبة بعد التنفيذ على الـdiff الكامل. تحقَّق من تكرار الإصدارات داخل lockfile ووجود حراس server-only، وفحص `getClaims()`+RPC للمالك، وسلامة cookie/header في Proxy المستقبلية. **نتائج CI على أحدث SHA تُسجل لاحقًا**، لا تُنسب من مراجعة سابقة.
+- **نقطة الاستئناف:** `STATUS` ← [تقرير H041](AUTH_01_H041_REVIEW.md) ← PR #4 وCI على أحدث SHA. التكامل الحي ما زال يحتاج Supabase اختبار ومراجعة HTTP/E2E.
+
+**H041 — مرور نقدي مستقل (التصحيح الأول):** اكتُشف أن `server.ts` الأول كان يتجاهل cache headers عند `setAll`؛ تم تحويله إلى `createRouteHandlerSupabaseClient(request,response)` لإجبار الكتابة على Response (Cookies وHeaders)، وأصبح فحص المالك يأخذ العميل request-scoped بدل إنشائه خفيًا. أُضيفت assertions ضمن `tools/auth-sdk-boundary-check.mjs`. يلزم CI على آخر SHA وE2E حقيقي لاحقًا على GoTrue.
+
+**H041 — دليل تشغيل أول بعد مرور المراجعة:** GitHub Actions run `42013608596` / job `127198904207` / SHA `878c68c49bfdc6a7bbc9f68457c0507f4da0af82` completed/success. `npm ci`، TypeScript و١٦٧ وحدة، ١٦ SQL و٣ أدوات تحكم سلبي، Next build، فحص SDK غير المُفعّل، وHTTP smoke كلها PASS. **لا يمكن نسبة نجاح Auth حقيقي أو إطلاق إنتاج إلى هذا الدليل**؛ بعد إضافة التوثيق يُتحقق من أحدث commit ثم يُدمج جزء SDK المحدود فقط.
