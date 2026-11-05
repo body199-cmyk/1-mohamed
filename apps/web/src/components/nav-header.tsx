@@ -8,6 +8,7 @@ import styles from "./nav-header.module.css";
 
 export function NavHeader() {
   const pathname = usePathname();
+  const isDashboard = pathname.startsWith("/demo/dashboard");
   const { theme, toggleTheme } = useTheme();
 
   const isTrips = pathname.startsWith("/demo/trips");
@@ -28,6 +29,10 @@ export function NavHeader() {
         </div>
 
         <nav className={styles.nav} aria-label="التنقل الرئيسي">
+          <Link href="/demo/dashboard" className={`${styles.navLink} ${isDashboard ? styles.active : ""}`}
+            aria-current={isDashboard ? "page" : undefined}>
+            الرئيسية
+          </Link>
           <Link
             href="/demo/trips"
             className={`${styles.navLink} ${isTrips ? styles.active : ""}`}
