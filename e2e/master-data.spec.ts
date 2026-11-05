@@ -136,8 +136,8 @@ test.describe("UI-BASE-01B — safe demo mutations", () => {
     await expect(page.getByText("افتتاحي النقد: 120.25 ج.م")).toBeVisible();
 
     await form.getByRole("combobox", { name: "المقاول المسؤول" }).selectOption("K2");
-    await form.getByRole("textbox", { name: "مبلغ افتتاحي النقد" }).fill("20.00");
     await form.getByRole("combobox", { name: "اتجاه الافتتاحي النقدي" }).selectOption("CONTRACTOR");
+    await form.getByRole("textbox", { name: "مبلغ افتتاحي النقد" }).fill("20.00");
     await form.getByRole("textbox", { name: "سبب تعديل افتتاحي النقد" }).fill("حساب مقاول مختلف");
     await form.getByRole("button", { name: "حفظ افتتاحي النقد التجريبي" }).click();
     await expect(page.getByText("الافتتاحيات النقدية التجريبية (2)")).toBeVisible();

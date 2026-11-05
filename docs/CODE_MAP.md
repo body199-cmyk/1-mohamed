@@ -186,3 +186,10 @@
 - `e2e/master-data.spec.ts` + `playwright.ui.config.ts`: اختبار Chromium E2E للسلوك، وليس GoTrue أو HTTP auth.
 - `tools/auth-boundary-smoke.mjs`: فحص route الجديد وظهور fixture من SSR دون كشف مسارات الحفظ الحقيقي؛ `.github/workflows/verify.yml` لتشغيلهما في PR.
 - [PR #6](https://github.com/body199-cmyk/1-mohamed/pull/6) هو مرجع حالة هذا التغيير حتى اعتماده؛ [STATUS](STATUS.md) آخر حالة. **فتح الصفحة لا يعني وجود تعديل/أرشفة أو تسجيل دائم.**
+
+## H044 — UI-BASE-01B (Demo-only)
+- `apps/web/src/demo/demo-{types,context,data}.ts*`: `isArchived` على المقاولين والعربيات؛ عمليات تعديل/أرشفة/إعادة تفعيل مع سبب وسجل مراجعة in-memory؛ `cashOpenings` لكل (`contractorId`, `vehicleId`) بدون مضاعفة محرك حساب.
+- `apps/web/src/features/master-data/master-record-editor.tsx`: نموذج تعديل أو أرشفة/تفعيل بسبب إلزامي. `cash-openings-panel.tsx`: عرض/تسجيل افتتاحي نقد تجريبي منفصل. `master-data-validation.ts`: تطبيع الاسم واللوحة، تاريخ حقيقي، وتحويل جنيه/قروش بـ`BigInt` دون float.
+- `apps/web/src/features/master-data/master-data-view.tsx`: ثلاث تبويبات وسجل مراجعة. CSS ذاتها.
+- `apps/web/src/features/trips/{trip-form-fields,trip-entry-panel}.tsx`: إخفاء المؤرشف من الاختيارات الجديدة ورفض إرسال مسودة تشير إلى مؤرشف.
+- `apps/web/e2e/master-data-validation.test.ts` (Vitest خاص)، و`e2e/master-data.spec.ts` (Playwright)، وخطوة CI تشغيل الاختبارات.
