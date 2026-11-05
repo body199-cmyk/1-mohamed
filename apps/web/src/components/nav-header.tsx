@@ -22,9 +22,10 @@ export function NavHeader() {
     <header className={styles.header}>
       <div className={`container ${styles.inner}`}>
         <div className={styles.brand}>
-          <span>أحمد أبو علي — حسابات النقل</span>
-          <span style={{ fontSize: "0.8rem", color: "var(--text-muted)", fontWeight: "normal" }}>
-            (معاينة تفاعلية)
+          <span className={styles.brandMark} aria-hidden="true">ن</span>
+          <span className={styles.brandText}>
+            <span className={styles.brandName}>أحمد أبو علي — حسابات النقل</span>
+            <span className={styles.brandTag}>معاينة تفاعلية · نظام حسابات النقل</span>
           </span>
         </div>
 

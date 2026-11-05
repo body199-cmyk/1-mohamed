@@ -451,3 +451,8 @@
 - إضافة Skip-to-main link في بداية body + #main-content، رابط يفترض أن يختفي بصريًا إلا عند Keyboard Focus، وحفظ ترتيب tab الطبيعي. توسيع focus-visible إلى الروابط وtextarea.
 - إصلاح Contrast warning Light من 3.07:1 إلى 6.84:1 واختبار foreground/background computed في الوضعين. جمع Navigation/Resource baseline على Chromium فقط بلا ميزانية رقمية قبل قياس جهاز وشبكة فعلية.
 - CI كاملاً ومرور نقدي منفصل؛ P01/P02/P03/P04 وS01–S03 تستمر بوابات إجمالية عند Supabase/Vercel وAndroid الفعلي، ولا ادعاء اكتمال الفحص الواقعي.
+
+### H056 UI-POLISH-01 / قبل Supabase
+- تغيير بصري محدود في nav-header وdashboard CSS/JSX دون تعديل buildDashboardSummary أو API: hero RTL، بطاقات ملخص ودفعات نقد مستقلة، علامة عربية زخرفية aria-hidden، ألوان من Theme Tokens.
+- اختبار 3 Playwright ومعاينات light/dark قابلة للمراجعة بصور من CI، محفوظة كartifact لفترة قصيرة. CI الكامل/مراجعة diff/merge على آخر commit.
+- لا تثبت هذه الدفعة إتمام التصميم أو اختبار Android حقيقي؛ H057/H058/H059 لاحقة لاعتماد المستخدم.

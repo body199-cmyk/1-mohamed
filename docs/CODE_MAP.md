@@ -250,3 +250,9 @@
 - `apps/web/src/components/nav-header.module.css`: header/nav reflow عند <=1100 مع scroll-internal RTL بدون صفوف متعددة في الهاتف والتابلت.
 - `apps/web/src/app/layout.tsx`: Skip link وmain#main-content مع tabIndex -1؛ `apps/web/src/styles/globals.css`: focus-visible link/textarea وskip UI؛ `variables.css`: تحذير فاتح عالي التباين.
 - `e2e/quality-h055.spec.ts`: خمس اختبارات Chromium بسبع واجهات ومقاسي 360/768، tablet 1024، وصول keyboard، ألوان حالتي light/dark وقياس baseline أجهزة CI فقط؛ `.github/workflows/verify.yml` يضمها.
+
+### H056 / تصميم قبل السحابة
+- apps/web/src/features/reports/dashboard-view.tsx وdashboard.module.css: hero وملخص ومؤشرات شغل ونقد منفصل ووصول سريع؛ محرك الحساب الأصلي لم يتغير.
+- apps/web/src/components/nav-header.tsx وnav-header.module.css: علامة عربية وهوية نصية، دون تغيير الروابط أو H055 mobile scroll.
+- apps/web/src/styles/variables.css: متغيرات hero/shadow في light/dark.
+- e2e/design-h056.spec.ts و.github/workflows/verify.yml: 3 اختبارات responsive/dark/keyboard و5 screenshots ضمن GitHub artifact لمدة أسبوع.

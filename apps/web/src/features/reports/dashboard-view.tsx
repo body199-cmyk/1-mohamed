@@ -31,7 +31,8 @@ export function DashboardView() {
 
   return <div className={styles.page}>
     <header className={styles.head}>
-      <div>
+      <div className={styles.heroCopy}>
+        <span className={styles.eyebrow}>لوحة التشغيل اليومية</span>
         <h1>الرئيسية — ملخص اليوم</h1>
         <p className={styles.muted}>تاريخ العمل: {today} بتوقيت القاهرة. المؤشرات للشغل المسجل بهذا التاريخ في المعاينة التجريبية، وليست إجمالي أرصدة المقاولين أو النقد.</p>
       </div>
@@ -59,12 +60,18 @@ export function DashboardView() {
       </>
     }
 
-    <nav className={styles.shortcuts} aria-label="اختصارات الرئيسية">
+    <section className={styles.quickSection} aria-label="الوصول السريع">
+      <div className={styles.sectionHeading}>
+        <h2>الوصول السريع</h2>
+        <p className={styles.muted}>الشاشات المستخدمة في متابعة الشغل والحسابات</p>
+      </div>
+      <nav className={styles.shortcuts} aria-label="اختصارات الرئيسية">
       <Link href="/demo/reports/daily">تقرير الشغل اليومي</Link>
       <Link href="/demo/reports/vehicle-cash">كشف حساب نقد العربية</Link>
       <Link href="/demo/contractors">كشف فرق شغل المقاول</Link>
       <Link href="/demo/master-data">المقاولون والعربيات</Link>
-    </nav>
+      </nav>
+    </section>
 
     <div className={styles.columns}>
       <section className={styles.panel} aria-label="آخر النقلات">
