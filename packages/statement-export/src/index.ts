@@ -7,3 +7,6 @@ export type {
 export { escapeHtmlText } from "./html-escape";
 export { renderContractorStatementCsv } from "./render-statement-csv";
 export { renderContractorStatementHtml } from "./render-statement-html";
+
+export { createStatementImageLayout, renderContractorStatementPng } from "./render-statement-image";
+export type { StatementImageLayout } from "./render-statement-image";
