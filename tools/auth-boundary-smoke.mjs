@@ -31,10 +31,14 @@ for (let attempt = 0; attempt < 45; attempt += 1) {
 }
 assert.ok(serverReady, "Next.js demo did not become available in time");
 
-for (const path of ["/demo/trips", "/demo/contractors", "/login"]) {
+for (const path of ["/demo/trips", "/demo/contractors", "/login", "/favicon.svg", "/fonts/cairo.css"]) {
   const res = await request(path);
   assert.equal(res.status, 200, `Expected 200 for public ${path}`);
 }
+const root = await request("/");
+assert.equal(root.status, 307, "Public root should retain its existing demo redirect");
+assert.equal(new URL(root.headers.get("location"), base).pathname, "/demo/trips");
+
 const loginHtml = await (await request("/login")).text();
 assert.match(loginHtml, /تسجيل الدخول غير متاح حاليًا/);
 assert.doesNotMatch(loginHtml, /type=["']password["']/i);
@@ -48,6 +52,10 @@ for (const path of [
   "/settings",
   "/backups",
   "/api/finance",
+  "/future-confidential",
+  "/dashboard",
+  "/demonstration",
+  "/auth/callback?code=not-a-real-token",
 ]) {
   const res = await request(path);
   assert.equal(res.status, 307, `Expected deny-all redirect for ${path}`);
@@ -63,11 +71,11 @@ for (const path of [
   assert.equal(res.headers.get("cache-control"), "no-store");
 }
 
-for (const path of ["/trips", "/payments", "/api/finance"]) {
+for (const path of ["/trips", "/payments", "/api/finance", "/demo/trips"]) {
   const res = await request(path, { method: "POST", body: "test" });
   assert.equal(res.status, 503, `Expected denied POST for ${path}`);
   assert.equal(res.headers.get("location"), null);
   assert.equal(res.headers.get("cache-control"), "no-store");
 }
 
-console.log("AUTH-01/H039 PASS: public demo/login, 8 protected GETs and 3 denied POSTs.");
+console.log("AUTH-01/H039 PASS: public demo/login/assets, root redirect, 12 denied GETs and 4 denied POSTs.");
