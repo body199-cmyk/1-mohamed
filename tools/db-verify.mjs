@@ -8,6 +8,8 @@
 //   02_phase_b_operations_verification.sql (اختبارات المرحلة B)
 //   migrations C: 07..09      (جدول النقلات + حسابها + عملياتها)
 //   03_phase_c_trips_verification.sql     (اختبارات المرحلة C)
+//   migration 10: trip details additive fix (H038)
+//   04_phase_c_trip_details_verification.sql (metadata regression tests)
 //
 // القاعدة في الذاكرة ولا تُكتب على القرص، ولا تتصل بأي خدمة سحابية.
 // الخروج برمز 1 عند أي فشل؛ لا يُطبع «نجاح» إلا بعد وصول كل خطوة لنهايتها.
@@ -66,6 +68,8 @@ const steps = [
   ['migration 08', 'supabase/migrations/20261104200021_phase_c_trip_math.sql', 'C: حساب النقلة والتحقق الدقيق'],
   ['migration 09', 'supabase/migrations/20261104200022_phase_c_trip_operations.sql', 'C: عمليات النقلات المحمية'],
   ['tests C', 'supabase/tests/03_phase_c_trips_verification.sql', 'C: اختبارات النقلات والحفظ الذري'],
+  ['migration 10', 'supabase/migrations/20261104200023_phase_c_trip_details.sql', 'C: حفظ خط السير ورقم الإيصال وإرجاع الملاحظات'],
+  ['tests C details', 'supabase/tests/04_phase_c_trip_details_verification.sql', 'C: اختبارات بيانات النقلة والتدقيق وإعادة الطلب'],
 ];
 
 function describe(error) {
