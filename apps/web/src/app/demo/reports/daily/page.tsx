@@ -1,4 +1,4 @@
-import { DailyWorkView } from "../../../features/reports/daily-work-view";
+import { DailyWorkView } from "../../../../features/reports/daily-work-view";
 
 export const metadata = {
   title: "تقرير الشغل اليومي — أحمد أبو علي",
