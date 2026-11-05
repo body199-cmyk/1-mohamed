@@ -8,6 +8,8 @@
 //   02_phase_b_operations_verification.sql (اختبارات المرحلة B)
 //   migrations C: 07..09      (جدول النقلات + حسابها + عملياتها)
 //   03_phase_c_trips_verification.sql     (اختبارات المرحلة C)
+//   migration 10: trip details additive fix (H038)
+//   04_phase_c_trip_details_verification.sql (metadata regression tests)
 //
 // القاعدة في الذاكرة ولا تُكتب على القرص، ولا تتصل بأي خدمة سحابية.
 // الخروج برمز 1 عند أي فشل؛ لا يُطبع «نجاح» إلا بعد وصول كل خطوة لنهايتها.
@@ -66,6 +68,9 @@ const steps = [
   ['migration 08', 'supabase/migrations/20261104200021_phase_c_trip_math.sql', 'C: حساب النقلة والتحقق الدقيق'],
   ['migration 09', 'supabase/migrations/20261104200022_phase_c_trip_operations.sql', 'C: عمليات النقلات المحمية'],
   ['tests C', 'supabase/tests/03_phase_c_trips_verification.sql', 'C: اختبارات النقلات والحفظ الذري'],
+  ['migration 10', 'supabase/migrations/20261104200023_phase_c_trip_details.sql', 'C: حفظ خط السير ورقم الإيصال وإرجاع الملاحظات'],
+  ['tests C details', 'supabase/tests/04_phase_c_trip_details_verification.sql', 'C: اختبارات بيانات النقلة والتدقيق وإعادة الطلب'],
+  ['tests C security review', 'supabase/tests/05_phase_c_adversarial_review.sql', 'C: مراجعة مستقلة للصلاحيات والإلغاء وإعادة الطلب'],
 ];
 
 function describe(error) {
@@ -167,7 +172,7 @@ try {
       (select count(*) from pg_tables where schemaname = 'public') as tables
   `);
   console.log('\nfinal state:', JSON.stringify(counts.rows[0]));
-  console.log('\nALL STEPS PASSED — A + B + C migrations applied and the three suites executed on an isolated PostgreSQL instance.');
+  console.log('\nALL STEPS PASSED — A + B + C migrations applied and five SQL suites (A/B/C/details/adversarial) executed on isolated PostgreSQL.');
   console.log('NOTE: this is PostgreSQL, NOT Supabase Auth/GoTrue/PostgREST.');
   console.log('NOTE: PGlite is a single in-memory connection; true concurrent requests and login flows still require a real Supabase instance.');
 } catch (error) {

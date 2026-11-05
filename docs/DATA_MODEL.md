@@ -1,6 +1,6 @@
 # وثيقة تصميم نموذج البيانات وقاعدة البيانات — محدثة لمهمة DB-02-SCHEMA
 
-**الحالة:** وثيقة تصميم وعقود تشغيلية مصححة ومحدثة لمهمة `DB-02-SCHEMA` (تحتاج مراجعة المساعد). تشمل تصحيح ملاحظات مراجعة DB-01-PREP، وتحديد المخطط الأساسي المنفذ محليًا، وتصحيح عقود الأمان والتدقيق والدقة والتعديل.
+**الحالة (٥ نوفمبر ٢٠٢٦ / H038):** توثيق عقود A/B التاريخية وDB-03/C الموجودة فعليًا على main، مع إصلاح وصفي إضافي H038 في PR #1 (نجح في الاختبار المعزول، غير مدموج). لا Supabase Auth أو حفظ دائم بعد؛ انظر STATUS.
 **المرجع المحاسبي الوحيد:** [ACCOUNTING_RULES](ACCOUNTING_RULES.md).
 **القرارات الحاكمة:** [DECISIONS](DECISIONS.md) (خاصة A01–A06, A12, D01–D05, D09, D13, D13-B, D14, A13-R1، مع بقاء D15 وD16 معلقين دون حسم مسبق).
 
@@ -63,8 +63,8 @@ erDiagram
     vehicles ||--o{ vehicle_accounts : "العربية"
     vehicle_accounts ||--o{ opening_balances : "افتتاحي نقدي مركب"
     contractors ||--o{ opening_balances : "افتتاحي فرق شغل"
-    contractors ||--o{ trips : "طرف الشغل (مؤجل DB-03)"
-    vehicles ||--o{ trips : "العربية المنفذة (مؤجل DB-03)"
+    contractors ||--o{ trips : "طرف الشغل (موجود DB-03)"
+    vehicles ||--o{ trips : "العربية المنفذة (موجود DB-03)"
     vehicle_accounts ||--o{ payments : "دفعات الحساب (مؤجل DB-04)"
     audit_log ||--o{ app_owner : "توثيق العمليات"
     idempotency_keys ||--o{ app_owner : "منع تكرار الطلبات"
@@ -191,7 +191,7 @@ erDiagram
   * `key` (`text`, Primary Key).
   * `user_id` (`uuid`, Not Null): مرجع منطقي دون مفتاح خارجي فعلي نحو `auth.users` (تصحيح BUILD-01/A، انظر ملاحظة `app_owner`).
   * `operation` (`text`, Not Null): نوع العملية (مثل `ADD_CONTRACTOR`, `ADD_VEHICLE`, `CREATE_TRIP`).
-  * `payload_hash` (`text`, Not Null): بصمة مشفرة (SHA-256) للمدخلات المطبّعة.
+  * `payload_hash` (`text`, Not Null): البصمة **الفعلية في Phase B** هي `md5(operation || '|' || payload::text)` على JSONB القياسي؛ هذا معرّف تطابق/منع تكرار **وليس توقيعًا أمنيًا أو SHA-256**.
   * `status` (`text`, Not Null, Check in `('PROCESSING', 'COMPLETED', 'FAILED')`).
   * `response_status` (`integer`, Nullable): كود الرد المحفوظ (مثل 200, 400).
   * `response_body` (`jsonb`, Nullable): الرد المخزن لإعادته للعميل عند تكرار نفس الطلب السليم.
@@ -214,14 +214,24 @@ erDiagram
 
 ---
 
+### ٩. كيان النقلات (`trips`) — الحالة الفعلية DB-03 / H038
+
+- **المصدر الفعلي:** migrations `20261104200020` و`21` و`22` على main؛ `20261104200023_phase_c_trip_details.sql` تصحيح إضافي على [PR #1](https://github.com/body199-cmyk/1-mohamed/pull/1) لم يُدمج.
+- **الهوية والربط:** `id` نص مفتاح أساسي، `vehicle_id`، `counterparty_contractor_id`، `responsible_contractor_id` مع مفاتيح خارجية تقيد الحذف؛ الاتجاه `AHMED_SUPPLIES` أو `OTHER_SUPPLIES`، والمقاول المسؤول يُشتق على الخادم.
+- **حقول الشغل:** `trip_date`، `weight_milli_tonnes bigint` موجب، `contractor_rate_piastres bigint`، `vehicle_rate_piastres bigint`، `same_rate boolean`، `expense_piastres bigint`، `contractor_total_piastres bigint`، `vehicle_total_piastres bigint`. **المنطق الحسابي في ACCOUNTING_RULES**؛ لا تنسخ معادلة مستقلة هنا.
+- **الوصف:** `notes text` في migration 20؛ و`origin text` و`destination text` و`receipt_number text` أعمدة اختيارية في migration 23 (H038)، تحافظ على بيانات قديمة `NULL` ورقم إيصال يبدأ بأصفار. إنشاء/تعديل/قراءة RPC تُحدّثها، وقراءة `notes` تعود في H038.
+- **الحالة والتدقيق:** `is_cancelled` و`cancel_reason` و`cancelled_at`، `version` للتعارض، `created_at/updated_at`، وربط `audit_log` بمعرف النقلة. الرفض والعودة الذرية في دوال RPC المحمية.
+- **العمليات:** `app_op_trip_create(text,jsonb)`، `app_op_trip_update(text,jsonb)`، `app_op_trip_cancel(text,jsonb)`، `app_op_trips_read(jsonb)`. القيم النقدية تعود نصوصًا للمتصفح. القراءة محدودة ومقسمة حسب `(trip_date,id)`.
+- **التحقق:** GitHub Actions H038 run `41941247401` نجح على PostgreSQL معزول، يشمل `03_phase_c_trips_verification.sql` و`04_phase_c_trip_details_verification.sql`. **لا مصادقة Supabase حيّة ولا ربط تطبيق دائم حتى الآن**.
+
 ## ٣. دقة الحسابات وحدود النطاقات بين PostgreSQL وTypeScript
 
 ### ١. مصفوفة النطاقات والتحويل الصارم
 | المفهوم المالي | النوع في PostgreSQL | النوع في TypeScript / الحزم | النطاق والحد الأقصى | معالجة الفقد والتحويل |
 |---|---|---|---|---|
 | **الأموال والمبالغ بالقرش** | `bigint` | `string` محولة داخليًا إلى `bigint` | $-2^{63}$ إلى $+2^{63}-1$ (نحو $\pm 9.22 \times 10^{18}$ قرش = $\pm 92$ كوادريليون جنيه) | في JSON تُنقل دائمًا كـ `string`؛ يُحظر تحويلها إلى `Number` في JS لتجنب الفقد عند تجاوز `Number.MAX_SAFE_INTEGER` ($9 \times 10^{15}$). |
-| **أسعار الطن والمصاريف بالجنيه** | `numeric(10,2)` | `string` ذات منزلتين عشريتين | 0.00 إلى 99,999,999.99 | التحقق الصارم بالـ Regex قبل الإدخال؛ نوع `numeric(10,2)` في SQL يقرب الكسر الزائد صامتًا إذا لم يُفحص المدخل، لذا يُرفض أي مدخل يحتوي أكثر من منزلتين. |
-| **أوزان النقلات بالطن** | `numeric(10,3)` | `string` حتى ٣ منازل | 0.001 إلى 9,999,999.999 | يُرفض أي وزن يحتوي ٤ منازل أو أكثر أو يساوي صفرًا قبل التحويل. |
+| **أسعار الطن والمصاريف** | `bigint` بالقروش في جدول `trips` | `string` عشرية بالجنيه حتى منزلتين ← تحوّل للخادم | حدود تخزين `bigint` بعد التحويل، لا `numeric(10,2)` | دالة SQL تتحقق من النص والمنازل قبل تحويله؛ لا تقريب صامت؛ نتيجة الضرب تُفحص ضد `bigint`. |
+| **أوزان النقلات بالطن** | `bigint` كملي-طن (`weight_milli_tonnes`) | `string` حتى ٣ منازل | وزن موجب ضمن مجال `bigint` بعد التكبير | رفض ٤ منازل أو أكثر والصفر قبل التحويل؛ لا عمود `numeric(10,3)` في migration الفعلية. |
 | **إجماليات التقارير والكشوف** | `bigint` بالقرش عبر `SUM()` | `string` في نتائج API | تجميع أعداد صحيحة بدقة مطلقة | لا تقريب وسيط؛ الحساب يطابق [ACCOUNTING_RULES](ACCOUNTING_RULES.md#a01). |
 
 ### ٢. حدود التخزين والرفض الصريح
@@ -298,7 +308,7 @@ erDiagram
    - فحص `auth.role() = 'authenticated'` وحده مرفوض؛ لأنه يمنح أي مستخدم سجل دخوله حق الوصول.
    - يتم التحقق صراحة من أن `auth.uid() = public.app_get_owner_id()`.
 2. **منع الكتابة المباشرة من العميل:**
-   - جداول البيانات (`contractors`, `vehicles`, `vehicle_accounts`, `opening_balances`, `audit_log`, `idempotency_keys`, `business_settings`) تتيح فقط `SELECT` للمالك المعتمد عبر RLS.
+   - جداول البيانات (`contractors`, `vehicles`, `vehicle_accounts`, `opening_balances`, `audit_log`, `idempotency_keys`, `business_settings`, `trips`) تتيح فقط `SELECT` للمالك المعتمد عبر RLS.
    - عمليات `INSERT`, `UPDATE`, `DELETE` محظورة ومقفلة بسياسات `USING (false)` و`WITH CHECK (false)`.
    - التعديلات المستقبلية تتم حصريًا عبر دوال `SECURITY DEFINER` محددة ومفحوصة الصلاحيات.
 3. **أمان دوال `SECURITY DEFINER`:**

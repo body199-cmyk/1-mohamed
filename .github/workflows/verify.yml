@@ -1,0 +1,39 @@
+name: Verify pull request
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Typecheck, packages, PostgreSQL and build
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Typecheck and unit tests
+        run: npm run check
+      - name: Verify isolated PostgreSQL migrations and suites
+        run: npm run db:verify
+      - name: Verify negative controls actually catch regressions
+        run: |
+          npm run db:verify:negative
+          npm run db:verify:negative-b
+          npm run db:verify:negative-c
+      - name: Build preview web app
+        run: npm run build
