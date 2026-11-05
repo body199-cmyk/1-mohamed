@@ -241,3 +241,7 @@
 - packages/statement-export/src/render-statement-xlsx.ts: workbook XML عربي بصفحتين وZIP STORE CRC32 من نفس ContractorStatementDocument، أرقام أموال ومراجع نصوص حرفية، بدون إعادة الحساب.
 - packages/statement-export/tests/xlsx-rendering.test.ts: 5 Unit لبنية الأجزاء والقيم والعزل من الصيغ وحماية XML/الحد. e2e/statement-xlsx.spec.ts: 2 Chromium تنزيل ZIP workbook فعلي وفترة خالية، مع فحص بنية ZIP.
 - statement-export-actions.tsx: زر XLSX بجانب CSV وPNG وPDF والطباعة؛ verify.yml يتحقق منه.
+
+### H054 / T10.1 + isolated T10.4
+- `tools/backup-core.mjs`: createBusinessBackup / verifyBusinessBackup / verifyBusinessDataset / serializeBusinessBackup، ثمانية جداول أعمال بنطاق صارم، SHA256، مفاتيح وعلاقات وأرقام قروش؛ `IsolatedRestoreStore` swap ذرّي **في الذاكرة فقط**، safety copy وepoch protection؛ لا تخزين/تشفير/مالك حقيقي/SQL transaction.
+- `tools/backup-core.test.mjs`: node:test بلا تبعيات، حالات تلف ونسخ كاملة وFK وأثر وتداخل وتراجع وعزل/إعادة محاولة قديمة. `.github/workflows/verify.yml` يشغّلها مع CI القائم.
