@@ -61,6 +61,12 @@ export interface DemoStoreContextType {
   readonly trips: readonly DemoTripRecord[];
   readonly cashOpenings: readonly DemoVehicleCashOpening[];
   readonly masterAudit: readonly DemoMasterAudit[];
+  readonly payments: readonly DemoPayment[];
+  readonly paymentAudit: readonly DemoPaymentAudit[];
+  readonly addPayment: (draft: import("../features/payments/cash-ledger").PaymentDraft) => DemoPaymentResult;
+  readonly editPayment: (id: string, expectedVersion: number, reason: string,
+    draft: import("../features/payments/cash-ledger").PaymentDraft) => DemoPaymentResult;
+  readonly cancelPayment: (id: string, expectedVersion: number, reason: string) => DemoPaymentResult;
   readonly addContractor: (name: string, openingDate: string, openingBalancePiastres: string) => DemoContractor;
   readonly addVehicle: (plateNumber: string, driverName: string) => DemoVehicle;
   readonly editContractor: (id: string, name: string, reason: string) => boolean;
@@ -77,3 +83,29 @@ export interface DemoStoreContextType {
   readonly getContractorById: (id: string) => DemoContractor | undefined;
   readonly getVehicleById: (id: string) => DemoVehicle | undefined;
 }
+
+export interface DemoPayment {
+  readonly id: string;
+  readonly vehicleId: string;
+  readonly responsibleContractorId: string;
+  readonly paymentDate: string;
+  readonly amountPiastres: string;
+  readonly linkedTripId: string;
+  readonly receiptNumber: string;
+  readonly notes: string;
+  readonly createdAt: string;
+  readonly version: number;
+  readonly isCancelled: boolean;
+  readonly cancelReason: string;
+}
+export interface DemoPaymentAudit {
+  readonly id: string;
+  readonly action: "create" | "update" | "cancel";
+  readonly reason: string;
+  readonly before: string;
+  readonly after: string;
+  readonly at: string;
+}
+export type DemoPaymentResult =
+  | { readonly ok: true; readonly payment: DemoPayment }
+  | { readonly ok: false; readonly error: string };
