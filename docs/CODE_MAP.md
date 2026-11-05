@@ -162,7 +162,7 @@
 |---|---|---|
 | `apps/web/package.json` و`package-lock.json` | تثبيت نسخ @supabase/ssr وsupabase-js رسميًا | الفرع H041؛ CI مطلوب |
 | `apps/web/src/lib/supabase/client.ts` | عميل متصفح بمفتاح publishable فقط | غير مستورد بواجهات الـdemo |
-| `apps/web/src/lib/supabase/server.ts` | عميل Server Action / Route Handler يكتب cookies دون إخفاء فشل | غير مستعمل؛ تكامل cache headers ينتظر HTTP الحقيقي |
+| `apps/web/src/lib/supabase/server.ts` | عميل Route Handler يستقبل request/response ويلزم نقل cookies/headers للاستجابة | غير مستعمل؛ اختبار Supabase الحقيقي مطلوب قبل التفعيل |
 | `apps/web/src/lib/supabase/owner.ts` | getClaims ثم app_is_owner؛ يرفض كل فشل | غير مستعمل؛ لا يسمح بدخول بناءً على Cookie فقط |
 | `apps/web/src/lib/supabase/proxy-session.ts` | إعداد مبدئي لتجديد الجلسة بنقل Cookies والـcache headers | غير مربوط بحارس `apps/web/src/proxy.ts` القديم |
 | `tools/auth-sdk-boundary-check.mjs` | فحص ثبات الإصدارات وعدم دخول SDK للتطبيق قبل اختباره | قيد CI، ليس اختبار هوية حقيقية |
