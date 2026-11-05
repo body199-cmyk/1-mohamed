@@ -81,3 +81,9 @@
 بدأنا `AUTH-01/PREP` بعد دمج H038. موجود على فرع `feat/auth01-safe-boundary-h039` ملف `apps/web/src/proxy.ts` في Next16، **يمنع** مسارات العمل الدائم ولا يسمح بتسجيل دخول أي شخص حتى يُربط `@supabase/ssr` و`supabase-js` وتُختبر هوية المالك الحقيقية. صفحة `/login` تنبيه فقط بدون كلمات مرور. الاختبار `tools/auth-boundary-smoke.mjs` يفحص HTTP عبر Next مع غياب الأسرار والسحابة. **إضافة الحراسة ليست دليلًا على جلسة سليمة ولا تُعد إتمام AUTH-01**.
 
 المرجع الحالي: [Supabase creating a client](https://supabase.com/docs/guides/auth/server-side/creating-a-client?framework=nextjs&package-manager=npm) و[Next.js 16 Proxy](https://nextjs.org/docs/app/api-reference/file-conventions/proxy). المرحلة التالية بعد اعتماد هذا الجزء هي حزم Supabase الرسمية و`client.ts`/`server.ts`/تحديث جلسة Proxy بـ`getClaims()`، مع تحقق المالك داخل الخادم وبيئة Auth منفصلة. لا تُفتح مسارات Server Action/HTTP أو تفوّض كتابة لعميل فقط لأنه يحمل cookie.
+
+## H040 — استئناف التكامل الحقيقي بعد دمج الحراسة التمهيدية
+
+حُسمت مرحلة الحماية **المؤقتة فقط**: PR #2 مدموج على `main` (`df6f54c7`)، CI `41944665834` نجح بما فيه HTTP smoke (١٢ GET محميًا/٦ POST مرفوضة، وdemo/login/assets سليمة). صفحة `/login` **ليست تسجيل دخول**، وProxy تمنع أي مسار غير عام حتى عند ضبط متغيرات الاتصال.
+
+**التكامل المطلوب التالي:** `@supabase/ssr` + `@supabase/supabase-js` مع نسخ مقفلة وlockfile صحيح، ثم إنشاء عملاء Browser/Server، تحديث Proxy لإدارة الكوكي، والتحقق من الهوية عبر `getClaims()` والمالك بكل endpoint. لا اختبار Auth ناجح بدون GoTrue/PostgREST في مشروع اختبار منفصل؛ لا تُقبل محاكاة PGlite بدل اختبار الدخول. لا ترسل أسرار للمحادثة أو الريبو.
