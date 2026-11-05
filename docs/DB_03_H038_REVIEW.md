@@ -57,7 +57,7 @@
 - `.github/workflows/verify.yml`
 
 **المتابعة**
-- `AGENTS.md`، `docs/STATUS.md`، `docs/TASKS.md`، `docs/SUBTASKS.md`، `docs/PROMPTS.md`، `docs/CODE_MAP.md`، `docs/ISSUES.md`، `docs/HANDOFF_LOG.md`، هذا التقرير.
+- `AGENTS.md`، `docs/STATUS.md`، `docs/TASKS.md`، `docs/SUBTASKS.md`، `docs/PROMPTS.md`، `docs/CODE_MAP.md`، `docs/ISSUES.md`، `docs/DATA_MODEL.md` (مطابقة العقود الفعلية)، `docs/HANDOFF_LOG.md`، هذا التقرير.
 
 **المتبقي على H038 تحديدًا:** ظهور CI + مراجعة نتائج اختبارات SQL، تأكيد أن الحقول متوافقة مع الواجهة والبيئة قبل الدمج. لا إعادة لمناقشة D01/D05/D09/D13/D14.
 
