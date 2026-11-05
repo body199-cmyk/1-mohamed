@@ -23,7 +23,7 @@ for (const [name, expected] of Object.entries({
 
 const proxy = read("apps/web/src/proxy.ts");
 assert.match(proxy, /matcher:\s*\[["']\/:path\*["']\]/);
-assert.doesNotMatch(proxy, /@supabase|refreshSupabaseSession|verifyOwnerForAction/);
+assert.doesNotMatch(proxy, /@supabase|refreshSupabaseSession|verifyOwnerForRoute/);
 assert.match(proxy, /NextResponse\.json/);
 assert.match(proxy, /status:\s*503/);
 assert.match(proxy, /NextResponse\.redirect/);
@@ -58,6 +58,9 @@ assert.match(browser, /^"use client";/);
 assert.match(browser, /createBrowserClient/);
 assert.match(server, /import "server-only"/);
 assert.match(server, /createServerClient/);
+assert.match(server, /response\.cookies\.set\(/);
+assert.match(server, /response\.headers\.set\(/);
+assert.match(server, /request\.cookies\.set\(/);
 assert.match(owner, /getClaims\(/);
 assert.match(owner, /rpc\("app_is_owner"\)/);
 assert.match(session, /getClaims\(/);
