@@ -21,9 +21,9 @@
 
 ## بدء جلسة جديدة
 
-### التكليف الجاري
+### التكليف الجاري (٥ نوفمبر ٢٠٢٦ — H039)
 
-راجع [STATUS](STATUS.md) أولًا، ثم مهمة **H038 / DB-03-TRIPS** في [SUBTASKS](SUBTASKS.md) و[تقريرها](DB_03_H038_REVIEW.md). فرع العمل الحالي `fix/db03-trip-details-h038` و[PR #1](https://github.com/body199-cmyk/1-mohamed/pull/1) مسودة تحتاج تشغيل اختبارات ومراجعة. لا تُعيد تنفيذ APP-01 أو BUILD-01 التاريخيتين، ولا تعتمد نجاح C بناءً على وجود الملف. تاريخ H037/H038 في HANDOFF_LOG.
+ابدأ بـ`AGENTS.md`، و`STATUS`، ثم [AUTH-01/PREP](AUTH_01_H039_REVIEW.md). DB-03/H038 دُمجت عبر PR #1 في commit `cf96b0c5`. الفرع النشط `feat/auth01-safe-boundary-h039`. المطلوب **حراسة مؤقتة لا توهم بالهوية** + HTTP smoke test، ثم مراجعة نقدية ثانية وتوثيق النتائج. لا تنفذ مصادقة Supabase الحقيقية أو تحوّل Proxy إلى allow-all دون مشروع اختبار ودليل فعلي.
 
 ### تكليف سابق مؤرشف: REPORT-01-INTEGRATE — دمج محرك كشف شغل المقاول والتحقق منه
 
