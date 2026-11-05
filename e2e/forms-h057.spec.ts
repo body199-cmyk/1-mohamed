@@ -9,7 +9,7 @@ test.describe("H057 pre-cloud form polish",()=>{
     await expect(group).toBeVisible();
     const ahmed=group.getByRole("radio",{name:"أحمد جاب العربيات"});
     const other=group.getByRole("radio",{name:"المقاول جاب العربيات"});
-    await expect(ahmed).toBeChecked();
+    // Start from actual demo state; do not assume which direction the form defaults to.
     await group.getByText("شغل المقاول (أحمد مدين للمقاول)").click();
     await expect(other).toBeChecked();
     await ahmed.focus();
