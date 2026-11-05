@@ -31,13 +31,18 @@ for (let attempt = 0; attempt < 45; attempt += 1) {
 }
 assert.ok(serverReady, "Next.js demo did not become available in time");
 
-for (const path of ["/demo/trips", "/demo/contractors", "/login", "/favicon.svg", "/fonts/cairo.css"]) {
+for (const path of ["/demo/trips", "/demo/contractors", "/demo/master-data", "/login", "/favicon.svg", "/fonts/cairo.css"]) {
   const res = await request(path);
   assert.equal(res.status, 200, `Expected 200 for public ${path}`);
 }
 const root = await request("/");
 assert.equal(root.status, 307, "Public root should retain its existing demo redirect");
 assert.equal(new URL(root.headers.get("location"), base).pathname, "/demo/trips");
+
+const masterHtml = await (await request("/demo/master-data")).text();
+assert.match(masterHtml, /بيانات المقاولين والعربيات/);
+assert.match(masterHtml, /المقاول أحمد علام/);
+assert.match(masterHtml, /شركة النيل للمقاولات/);
 
 const loginHtml = await (await request("/login")).text();
 assert.match(loginHtml, /تسجيل الدخول غير متاح حاليًا/);
