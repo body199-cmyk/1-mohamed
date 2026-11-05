@@ -37,6 +37,8 @@ jobs:
           npm run db:verify:negative-c
       - name: Build preview web app
         run: npm run build
+      - name: Verify new Supabase SDK remains inactive before real Auth E2E
+        run: node tools/auth-sdk-boundary-check.mjs
       - name: Verify fail-closed auth boundary over HTTP
         run: |
           npm run start --workspace=web -- --port 39123 > /tmp/next-auth-smoke.log 2>&1 &
