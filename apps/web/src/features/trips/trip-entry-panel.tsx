@@ -279,6 +279,8 @@ export function TripEntryPanel() {
         onClose={() => setQuickAddType(null)}
         onAddVehicle={handleAddQuickVehicle}
         onAddContractor={handleAddQuickContractor}
+        existingContractorNames={contractors.map((item) => item.name)}
+        existingVehiclePlates={vehicles.map((item) => item.plateNumber)}
       />
 
       <ReplaceConfirmModal
