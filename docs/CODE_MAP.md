@@ -256,3 +256,8 @@
 - apps/web/src/components/nav-header.tsx وnav-header.module.css: علامة عربية وهوية نصية، دون تغيير الروابط أو H055 mobile scroll.
 - apps/web/src/styles/variables.css: متغيرات hero/shadow في light/dark.
 - e2e/design-h056.spec.ts و.github/workflows/verify.yml: 3 اختبارات responsive/dark/keyboard و5 screenshots ضمن GitHub artifact لمدة أسبوع.
+
+### H057 / pre-cloud forms design
+- apps/web/src/features/trips/trip-form-fields.tsx: native radio cards مع role radiogroup لعزل تغيير الاتجاه بالنموذج نفسه.
+- apps/web/src/features/trips/trips.module.css وmaster-data/master-data.module.css وpayments/payments.module.css: توحيد تركيز الحقول والألوان والبطاقات وهدف الإغلاق، دون تعديل data.
+- e2e/forms-h057.spec.ts و.github/workflows/verify.yml: 3 Chromium tests و6 صور Light/Dark محفوظة مؤقتًا في Actions artifact.

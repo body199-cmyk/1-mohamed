@@ -1090,3 +1090,7 @@
 - أحدث طلب من المستخدم: إكمال التصميم والشاشات قبل Supabase وVercel، وليس الحاجة لـVercel أولًا. اعتمدنا دفعات UI صغيرة H056–H059 قبل التكامل حسب docs/DESIGN_BEFORE_CLOUD_H056.md.
 - بداية من main 0f68dd95c12bef81179ccce502ef38db630234c5 بعد دمج H055، CI 42111576188 PASS. H056 تحسين الهيدر والرئيسية فقط، مع صور CI للمراجعة؛ لا تغيير حسابي أو بيانات حقيقية.
 - قبل الدمج: green CI على آخر HEAD، تدقيق نقدي منفصل في PR، وتحقق من main بعد merge. لا ادعاء قبول مستخدم للتصميم قبل رؤية الصور.
+
+## H057 — Form polish — ٥ نوفمبر ٢٠٢٦
+- PR #19/H056 على main 6d9ff310773a213fdeb7d4dffc5708a370b78d2b، CI 42114716783 SUCCESS 31/31 Chromium وصور Design artifact 13456420098. بدأت H057 لتشطيب الثلاث شاشات الأساسية قبل Supabase/Vercel.
+- التركيز: accessible native radio card direction دون أي تغيير محرك المال، وألوان badges/alerts وضع داكن وCSS focus/44px/بطاقات موحدة. اختبارات Chromium إضافية و6 screenshots. بوابة merge بعد CI على آخر SHA ومراجعة نقدية.

@@ -456,3 +456,8 @@
 - تغيير بصري محدود في nav-header وdashboard CSS/JSX دون تعديل buildDashboardSummary أو API: hero RTL، بطاقات ملخص ودفعات نقد مستقلة، علامة عربية زخرفية aria-hidden، ألوان من Theme Tokens.
 - اختبار 3 Playwright ومعاينات light/dark قابلة للمراجعة بصور من CI، محفوظة كartifact لفترة قصيرة. CI الكامل/مراجعة diff/merge على آخر commit.
 - لا تثبت هذه الدفعة إتمام التصميم أو اختبار Android حقيقي؛ H057/H058/H059 لاحقة لاعتماد المستخدم.
+
+### H057 — Form UI polish (offline-first)
+- trips/trip-form-fields.tsx: استبدال اختيار الاتجاه من div onClick ببطاقة label+radio أصلية، مع radiogroup. لا تعديل reducer ولا payload.
+- trips/master-data/payments CSS Modules: حدود بطاقات وعناصر وfocus ألوان محمية في الوضعين، modalCloseBtn 44px، مع CSS var للنجاح والتحذير والخطأ. لا API.
+- e2e/forms-h057.spec.ts + 6 screenshots في artifact: keyboard/hover/space، 3 شاشات وثلاثة أحجام، Light/Dark. مراجعة diff وCI على أحدث SHA قبل دمج.
