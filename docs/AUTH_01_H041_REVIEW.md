@@ -46,3 +46,10 @@
 **الإصلاح الفعلي:** استُبدل بعميل `createRouteHandlerSupabaseClient(request, response)` الذي يُلزم المنشئ بتمرير كائن الاستجابة، ويطبّق كل تغييرات `request.cookies` و`response.cookies` و`response.headers`. صار فحص المالك `verifyOwnerForRoute(supabase)` يستقبل العميل المرتبط بالطلب ولا يُنشئ عميلًا عالميًا أو يتجاهل headers. أُضيفت assertions إلى فحص H041 لضمان وجود propagation وعدم تفعيل أي مسار.
 
 **القيد:** نجاح هذا الإصلاح في TypeScript/static smoke لا يثبت صحته أمام Supabase Auth الحقيقي؛ اختبار فعلي للجلسات والكوكي والمالك في بيئة منفصلة **ما زال شرطًا صريحًا** قبل تفعيل أي Route Handler أو دمج مرحلة auth الحية.
+
+## 6. نتائج أول تشغيل كامل بعد المراجعة النقدية (٥ نوفمبر)
+
+- **دليل فعلي:** GitHub Actions run `42013608596`، job `127198904207`، head `878c68c49bfdc6a7bbc9f68457c0507f4da0af82`: `completed/success`.
+- `npm ci` PASS؛ فحص TypeScript و١٦٧ اختبار وحدة PASS (٧٣+٦٤+١٢+١٨)؛ ١٦ خطوة SQL بمراحل A/B/C وH038 والجناح الأمني PASS على PGlite؛ ٣ negative controls PASS؛ Next build PASS.
+- **اختبار إضافي H041:** `tools/auth-sdk-boundary-check.mjs` PASS (النسخ في package-lock، code unimported on active routes، بوابة JWT+owner، cookies+headers، حراسة deny-by-default). HTTP smoke H039 PASS (١٢ GET/٦ POST مرفوضة وdemo/login/assets سليمة).
+- **مهم:** التنفيذ لم يستدعِ Supabase Auth الحقيقي ولا يختبر دخول المالك الحقيقي أو تجديد JWT عبر شبكة؛ لذلك قبول هذا PR يخص **SDK foundation غير المُفعّل**. بقيت فجوة إطلاق Auth فعلية كبيرة ومتوقفة عند خدمة اختبار مستقلة. بعد إضافة هذا التوثيق يُشترط CI جديد على آخر SHA قبل دمج PR.
