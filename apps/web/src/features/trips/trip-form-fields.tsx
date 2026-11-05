@@ -70,9 +70,9 @@ export function TripFormFields({
           className={styles.select}
         >
           <option value="">-- اختر المقاول --</option>
-          {contractors.filter(c => c.id === tripDraft.counterpartyId || c.name.includes(contractorSearch.trim())).map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name} ({c.id})
+          {contractors.filter(c => (c.id === tripDraft.counterpartyId || !c.isArchived) && (c.id === tripDraft.counterpartyId || c.name.includes(contractorSearch.trim()))).map((c) => (
+            <option key={c.id} value={c.id} disabled={c.isArchived}>
+              {c.name} ({c.id}){c.isArchived ? " — مؤرشف" : ""}
             </option>
           ))}
         </select>
@@ -175,9 +175,9 @@ export function TripFormFields({
           className={styles.select}
         >
           <option value="">-- اختر السيارة --</option>
-          {vehicles.filter(v => v.id === tripDraft.vehicleId || `${v.plateNumber} ${v.driverName}`.includes(vehicleSearch.trim())).map((v) => (
-            <option key={v.id} value={v.id}>
-              {v.plateNumber} ({v.driverName})
+          {vehicles.filter(v => (v.id === tripDraft.vehicleId || !v.isArchived) && (v.id === tripDraft.vehicleId || `${v.plateNumber} ${v.driverName}`.includes(vehicleSearch.trim()))).map((v) => (
+            <option key={v.id} value={v.id} disabled={v.isArchived}>
+              {v.plateNumber} ({v.driverName}){v.isArchived ? " — مؤرشفة" : ""}
             </option>
           ))}
         </select>

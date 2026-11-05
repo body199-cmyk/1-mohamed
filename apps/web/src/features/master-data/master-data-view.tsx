@@ -4,9 +4,12 @@ import React, { useMemo, useState } from "react";
 import { formatEgpFromPiastres } from "@ledger/accounting";
 import { useDemoStore } from "../../demo/demo-context";
 import { QuickAddModal } from "../trips/quick-add-modal";
+import { MasterRecordEditor, type MasterAction } from "./master-record-editor";
+import { CashOpeningsPanel } from "./cash-openings-panel";
 import styles from "./master-data.module.css";
 
-type DataTab = "contractor" | "vehicle";
+type DataTab = "contractor" | "vehicle" | "cash";
+type Selection = { kind: "contractor" | "vehicle"; id: string; action: MasterAction };
 
 const matchesSearch = (value: string, search: string) =>
   value.toLocaleLowerCase("ar").includes(search.toLocaleLowerCase("ar"));
@@ -17,11 +20,12 @@ const matchesSearch = (value: string, search: string) =>
  * no duplicate accounting implementation, remote API or persistent storage.
  */
 export function MasterDataView() {
-  const { contractors, vehicles, addContractor, addVehicle } = useDemoStore();
+  const { contractors, vehicles, addContractor, addVehicle, editContractor, editVehicle, archiveContractor, archiveVehicle, masterAudit } = useDemoStore();
   const [tab, setTab] = useState<DataTab>("contractor");
   const [search, setSearch] = useState("");
   const [quickAdd, setQuickAdd] = useState<DataTab | null>(null);
   const [notice, setNotice] = useState("");
+  const [selection, setSelection] = useState<Selection | null>(null);
 
   const visibleContractors = useMemo(
     () =>
@@ -47,25 +51,41 @@ export function MasterDataView() {
     setTab(value);
     setSearch("");
     setNotice("");
+    setSelection(null);
   };
 
+  const chooseAction = (kind: Selection["kind"], id: string, action: MasterAction) =>
+    setSelection(s => s?.kind === kind && s.id === id && s.action === action ? null : { kind, id, action });
+  const actionEditor = (kind: Selection["kind"], id: string, name: string, driver = "") => {
+    if (selection?.kind !== kind || selection.id !== id) return null;
+    return <MasterRecordEditor key={id + selection.action} kind={kind} action={selection.action}
+      name={name} driver={driver} onCancel={() => setSelection(null)}
+      onSave={(newName, newDriver, reason) => {
+        const result = selection.action === "edit"
+          ? kind === "contractor" ? editContractor(id, newName, reason) : editVehicle(id, newName, newDriver, reason)
+          : kind === "contractor" ? archiveContractor(id, selection.action === "archive", reason)
+            : archiveVehicle(id, selection.action === "archive", reason);
+        if (result) { setSelection(null); setNotice("تم التغيير وتسجيل السبب في المعاينة فقط."); }
+        return result;
+      }} />;
+  };
   return (
     <div className={styles.page}>
       <header className={styles.header}>
         <div>
           <h1>بيانات المقاولين والعربيات</h1>
           <p className={styles.muted}>
-            استعراض وبحث وإضافة للتجربة. كل التغييرات مؤقتة
+            بحث وإضافة وتعديل وأرشفة وافتتاحي نقد للتجربة. كل التغييرات مؤقتة
             وتختفي عند إعادة تحميل الصفحة.
           </p>
         </div>
-        <button
+        {tab !== "cash" && <button
           type="button"
           className={styles.primary}
           onClick={() => setQuickAdd(tab)}
         >
           + {tab === "contractor" ? "إضافة مقاول" : "إضافة عربية"}
-        </button>
+        </button>}
       </header>
 
       <div className={styles.tabBar} role="tablist" aria-label="نوع البيانات">
@@ -89,9 +109,10 @@ export function MasterDataView() {
         >
           العربيات ({vehicles.length})
         </button>
+        <button type="button" role="tab" aria-controls="master-data-results" aria-selected={tab === "cash"} className={tab === "cash" ? styles.activeTab : styles.tab} onClick={() => changeTab("cash")}>افتتاحيات نقد العربيات</button>
       </div>
 
-      <div className={styles.filters}>
+      {tab !== "cash" && <div className={styles.filters}>
         <label htmlFor="master-data-search">
           {tab === "contractor"
             ? "بحث باسم المقاول أو رقمه"
@@ -105,14 +126,14 @@ export function MasterDataView() {
           placeholder={tab === "contractor" ? "ابحث عن مقاول..." : "ابحث عن عربية..."}
           autoComplete="off"
         />
-      </div>
+      </div>}
 
       {notice && <p role="status" className={styles.notice}>{notice}</p>}
 
       <section
         id="master-data-results"
         role="tabpanel"
-        aria-label={tab === "contractor" ? "قائمة المقاولين" : "قائمة العربيات"}
+        aria-label={tab === "contractor" ? "قائمة المقاولين" : tab === "vehicle" ? "قائمة العربيات" : "افتتاحيات النقد"}
       >
         {tab === "contractor" && (
           <div className={styles.grid}>
@@ -132,6 +153,7 @@ export function MasterDataView() {
                     <h2>{contractor.name}</h2>
                     <span className={styles.id}>{contractor.id}</span>
                   </div>
+                  {contractor.isArchived && <strong className={styles.archived}>مؤرشف — محفوظ للتاريخ</strong>}
                   <dl>
                     <div><dt>بداية الحساب</dt><dd>{contractor.openingDate}</dd></div>
                     <div>
@@ -139,6 +161,11 @@ export function MasterDataView() {
                       <dd>{balance} ج.م — {beneficiary}</dd>
                     </div>
                   </dl>
+                  <div className={styles.actions}>
+                    {!contractor.isArchived && <button type="button" className={styles.secondary} onClick={() => chooseAction("contractor", contractor.id, "edit")}>تعديل المقاول</button>}
+                    <button type="button" className={styles.secondary} onClick={() => chooseAction("contractor", contractor.id, contractor.isArchived ? "reactivate" : "archive")}>{contractor.isArchived ? "إعادة تفعيل المقاول" : "أرشفة المقاول"}</button>
+                  </div>
+                  {actionEditor("contractor", contractor.id, contractor.name)}
                 </article>
               );
             })}
@@ -153,6 +180,7 @@ export function MasterDataView() {
                   <h2>{vehicle.plateNumber}</h2>
                   <span className={styles.id}>{vehicle.id}</span>
                 </div>
+                {vehicle.isArchived && <strong className={styles.archived}>مؤرشفة — محفوظة للتاريخ</strong>}
                 <dl>
                   <div><dt>السائق</dt><dd>{vehicle.driverName || "غير محدد"}</dd></div>
                 </dl>
@@ -160,17 +188,32 @@ export function MasterDataView() {
                   الافتتاحي النقدي للعربية يخص حسابها عند كل مقاول مسؤول،
                   وليس رصيد فرق شغل المقاول.
                 </p>
+                <div className={styles.actions}>
+                  {!vehicle.isArchived && <button type="button" className={styles.secondary} onClick={() => chooseAction("vehicle", vehicle.id, "edit")}>تعديل العربية</button>}
+                  <button type="button" className={styles.secondary} onClick={() => chooseAction("vehicle", vehicle.id, vehicle.isArchived ? "reactivate" : "archive")}>{vehicle.isArchived ? "إعادة تفعيل العربية" : "أرشفة العربية"}</button>
+                </div>
+                {actionEditor("vehicle", vehicle.id, vehicle.plateNumber, vehicle.driverName)}
               </article>
             ))}
           </div>
         )}
 
+        {tab === "cash" && <CashOpeningsPanel />}
         {((tab === "contractor" && visibleContractors.length === 0) ||
           (tab === "vehicle" && visibleVehicles.length === 0)) && (
           <p className={styles.empty} role="status">مفيش نتائج مطابقة للبحث.</p>
         )}
       </section>
 
+      <section className={styles.audit} aria-label="سجل مراجعة التغييرات التجريبية">
+        <h2>سجل التغييرات التجريبي ({masterAudit.length})</h2>
+        {masterAudit.length === 0 ? <p className={styles.muted}>لا توجد تغييرات بعد.</p> : <ol>
+          {masterAudit.map((entry, i) => <li key={entry.at + i}>
+            <strong>{entry.action} — {entry.target} / {entry.key}</strong> — {entry.reason}
+            <details><summary>قبل وبعد</summary><pre>{entry.before}{"\n"}{entry.after}</pre></details>
+          </li>)}
+        </ol>}
+      </section>
       <QuickAddModal
         key={`${quickAdd ?? "closed"}-${String(quickAdd !== null)}`}
         type={quickAdd ?? "contractor"}
