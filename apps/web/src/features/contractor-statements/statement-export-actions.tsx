@@ -10,7 +10,7 @@ export function StatementExportActions({ statement, name }: { statement: Contrac
   const lock = useRef(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function exportStatement(kind: "csv" | "print" | "png" | "pdf") {
+  async function exportStatement(kind: "csv" | "print" | "png" | "pdf" | "xlsx") {
     if (lock.current) return;
     lock.current = true;
     setBusy(true);
@@ -21,7 +21,20 @@ export function StatementExportActions({ statement, name }: { statement: Contrac
       if (kind === "print" && !preview) throw new Error("اسمح بفتح نافذة الطباعة في المتصفح ثم حاول مجددًا.");
       const document = toStatementDocument(statement, name);
       const renderer = await import("@ledger/statement-export");
-      if (kind === "pdf") {
+      if (kind === "xlsx") {
+        const blob = renderer.renderContractorStatementXlsx(document);
+        const url = URL.createObjectURL(blob);
+        const link = window.document.createElement("a");
+        try {
+          link.href = url;
+          link.download = "demo-statement-" + statement.period.from + "-" + statement.period.to + ".xlsx";
+          window.document.body.append(link);
+          link.click();
+        } finally {
+          link.remove();
+          window.setTimeout(() => URL.revokeObjectURL(url), 10000);
+        }
+      } else if (kind === "pdf") {
         const blob = await renderer.renderContractorStatementPdf(document);
         const url = URL.createObjectURL(blob);
         const link = window.document.createElement("a");
@@ -90,8 +103,9 @@ export function StatementExportActions({ statement, name }: { statement: Contrac
       <button className={styles.select} style={{ width: "auto" }} disabled={busy} onClick={() => exportStatement("pdf")}>تنزيل PDF مباشر</button>
       <button className={styles.select} style={{ width: "auto" }} disabled={busy} onClick={() => exportStatement("png")}>تنزيل صورة PNG</button>
       <button className={styles.select} style={{ width: "auto" }} disabled={busy} onClick={() => exportStatement("csv")}>تنزيل CSV</button>
+      <button className={styles.select} style={{ width: "auto" }} disabled={busy} onClick={() => exportStatement("xlsx")}>تنزيل Excel XLSX</button>
     </div>
-    <p>الملخص والتفاصيل لنفس المقاول والفترة المعروضين. صورة PNG للكشوف متوسطة الحجم. تنزيل PDF المباشر يصل إلى ٦٠ صفحة، بصور Cairo واضحة مرقّمة (نصه غير قابل للتحديد/البحث). لو عايز PDF بنص قابل للتحديد والبحث استخدم طباعة / حفظ PDF. لا تُحذف حركات بصمت.</p>
+    <p>الملخص والتفاصيل لنفس المقاول والفترة المعروضين. صورة PNG للكشوف متوسطة الحجم. تنزيل PDF المباشر يصل إلى ٦٠ صفحة، بصور Cairo واضحة مرقّمة (نصه غير قابل للتحديد/البحث). لو عايز PDF بنص قابل للتحديد والبحث استخدم طباعة / حفظ PDF. ملف Excel فيه ملخص وتفاصيل RTL؛ المبالغ والمراجع كنص للحفاظ على الدقة والأصفار البادئة. لا تُحذف حركات بصمت.</p>
     {error && <p role="alert">{error}</p>}
   </section>;
 }
