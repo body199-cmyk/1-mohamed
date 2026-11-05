@@ -936,3 +936,10 @@
 - **ما لم يتحقق:** `npm ci` / `npm run check` / `npm run db:verify` (بما فيها negative controls) / `npm run build` **لم تُشغّل في هذه الجلسة** بسبب عدم توافر نسخ المشروع/شبكة GitHub في بيئة التشغيل. لا تشغيل مصادقة Supabase أو HTTP أو تزامن حقيقي ولا اختبارات متصفح مستمرة.
 - **قيد الإغلاق:** تحقق من فحص PR، أصلح أي فشل في نفس الفرع، سجّل روابط النتائج ولا تدمج `main` أو تعتبر T07 كاملًا قبلها. لا تبدأ DB-04 أو AUTH-01 ضمن هذا التكليف.
 - **نقطة الاستئناف:** `docs/STATUS.md` → [`docs/DB_03_H038_REVIEW.md`](DB_03_H038_REVIEW.md) → [PR #1](https://github.com/body199-cmyk/1-mohamed/pull/1) → سجل CI ثم مراجعة واعتماد/إصلاح محدود. D15/D16 مفتوحان للدفعات فقط.
+
+### H038 — ملحق تحقق من GitHub Actions (٥ نوفمبر ٢٠٢٦)
+
+- **نجاح فعلي لا مجرد وجود اختبارات:** workflow `Verify pull request`، run id `41941247401`، job id `126962614946`، commit `000c93cc`؛ `completed/success`.
+- **الخطوات الناجحة:** `npm ci`، TypeScript واختبارات الوحدة `167/167` (٧٣ accounting، ٦٤ statements، ١٢ export، ١٨ trip-entry)، SQL verifier (١٥ خطوة PASS: A/B/C/metadata)، negative controls A/B/C جميعها PASS بالرفض المقصود، ثم Next.js build PASS.
+- **حدود الدليل:** Runner GitHub يستخدم PGlite المعزول؛ لا يفحص Supabase Auth/HTTP والتزامن الحقيقي والبيانات الإنتاجية ولا E2E متصفح. بعد تحديث التوثيق يُشغّل CI مجددًا على أحدث commit قبل الدمج.
+- **قرار المراجعة:** فحوص الكود سليمة وفق نطاق H038، لكن PR يظل Draft وغير مدموج لحين مراجعة أي تغير أخير وسياسة الدمج. لا بدء تلقائي لمرحلة جديدة.
