@@ -10,7 +10,7 @@ test.describe("UI-BASE-01A — demo master data (no persistent storage)", () => 
     await expect(page.getByRole("tabpanel")).toContainText("شركة النيل للمقاولات");
     await expect(page.getByRole("tabpanel")).not.toContainText("مقاولات الصعيد");
 
-    await page.getByRole("tab", { name: /العربيات/ }).click();
+    await page.getByRole("tab", { name: /^العربيات \(/ }).click();
     await expect(page.getByRole("tabpanel", { name: "قائمة العربيات" })).toContainText("أ ب ج 1234");
     await expect(page.getByRole("tabpanel")).toContainText("الافتتاحي النقدي للعربية");
     await page.getByRole("searchbox", { name: "بحث برقم اللوحة أو اسم السائق" }).fill("محمود");
@@ -47,7 +47,7 @@ test.describe("UI-BASE-01A — demo master data (no persistent storage)", () => 
   test("rejects equivalent Arabic-digit vehicle plates and remains usable on mobile", async ({ page }) => {
     await page.setViewportSize({ width: 360, height: 740 });
     await page.goto("/demo/master-data");
-    await page.getByRole("tab", { name: /العربيات/ }).click();
+    await page.getByRole("tab", { name: /^العربيات \(/ }).click();
     await page.getByRole("button", { name: /إضافة عربية/ }).click();
     const dialog = page.getByRole("dialog", { name: "إضافة سجل جديد" });
     await dialog.getByRole("textbox", { name: "رقم اللوحة" }).fill("ط س ر ١٢٣");
@@ -105,7 +105,7 @@ test.describe("UI-BASE-01B — safe demo mutations", () => {
 
   test("vehicle editing prevents duplicate plates and an archived vehicle cannot be selected for a new trip", async ({ page }) => {
     await page.goto("/demo/master-data");
-    await page.getByRole("tab", { name: /العربيات/ }).click();
+    await page.getByRole("tab", { name: /^العربيات \(/ }).click();
     const vehicle = page.locator("article").filter({ hasText: "د هـ و 5678" });
     await vehicle.getByRole("button", { name: "تعديل العربية" }).click();
     const edit = page.getByRole("form", { name: "تعديل العربية" });
