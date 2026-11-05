@@ -99,3 +99,5 @@
 - **معيار القبول الحالي:** نجاح `npm ci`، ١٦٧ وحدة، ١٦ SQL، ثلاثة negative controls، Build، HTTP smoke، والفحص الإضافي `tools/auth-sdk-boundary-check.mjs` + مرور نقدي منفصل. لا دخول حقيقي.
 - **ما تبقى فعلًا في T05:** مشروع Supabase اختبار/GoTrue، ربط الصفحات والـServer Actions والـProxy عبر HTTP، التحقق من JWT/المالك والجلسات والإلغاء والاسترجاع وتوجيه callback، واختبارات حقيقية. لا يُعلَّم T05 كمكتمل ولا يفتح الحفظ الدائم بسبب نجاح CI المعزول.
 - **المرجع:** [H041 review](AUTH_01_H041_REVIEW.md) · [STATUS](STATUS.md). لا تغير D15/D16.
+
+**H041 / Review-pass correction:** client الـServer أصبح `createRouteHandlerSupabaseClient(request,response)` بدل نسخة تتجاهل رؤوس cache؛ `verifyOwnerForRoute` يأخذ عميلًا مرتبطًا بالطلب، مع assertions في CI. لا يغيّر ذلك حالة T05 (جزئي حتى اختبار Auth الحقيقي).
