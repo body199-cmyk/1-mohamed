@@ -199,3 +199,8 @@
 - `apps/web/src/features/reports/daily-work-view.tsx` + `daily-work.module.css`: عرض تاريخ يوم واحد واتجاهين وجدول ونتيجة فلاتر في RTL.
 - `apps/web/src/app/demo/reports/daily/page.tsx`: مسار عام تجريبي فقط؛ `components/nav-header.tsx`: رابط تنقل.
 - `apps/web/e2e/daily-work-validation.test.ts`: Vitest مالي مضبوط. `e2e/daily-work.spec.ts`: Chromium regression، والموجود في `verify.yml` مع باقي اختبارات المشروع.
+
+### H046 — T09.1
+- `packages/statement-export/src/render-statement-image.ts`: تخطيط/طلاء الصورة بمتصفح Canvas من **نفس** `ContractorStatementDocument` الخاص بـHTML/CSV؛ خط Cairo محلي بعد `document.fonts.load`، وحد سعة صريح بلا إسقاط صامت.
+- `packages/statement-export/tests/image-rendering.test.ts`: مطابقة قيم الملخص والحركات ورفض السعة.
+- `apps/web/src/features/contractor-statements/statement-export-actions.tsx`: زر تنزيل PNG فقط (dynamic import)، بلا اتصالات أو APIs؛ `e2e/statement-image.spec.ts` متصفح Chromium يتحقق من bytes PNG الأصلية والفترة والتاريخ.

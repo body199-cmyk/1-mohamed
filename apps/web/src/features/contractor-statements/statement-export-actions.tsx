@@ -10,7 +10,7 @@ export function StatementExportActions({ statement, name }: { statement: Contrac
   const lock = useRef(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function exportStatement(kind: "csv" | "print") {
+  async function exportStatement(kind: "csv" | "print" | "png") {
     if (lock.current) return;
     lock.current = true;
     setBusy(true);
@@ -21,7 +21,20 @@ export function StatementExportActions({ statement, name }: { statement: Contrac
       if (kind === "print" && !preview) throw new Error("اسمح بفتح نافذة الطباعة في المتصفح ثم حاول مجددًا.");
       const document = toStatementDocument(statement, name);
       const renderer = await import("@ledger/statement-export");
-      if (kind === "csv") {
+      if (kind === "png") {
+        const blob = await renderer.renderContractorStatementPng(document);
+        const url = URL.createObjectURL(blob);
+        const link = window.document.createElement("a");
+        try {
+          link.href = url;
+          link.download = "demo-statement-" + statement.period.from + "-" + statement.period.to + ".png";
+          window.document.body.append(link);
+          link.click();
+        } finally {
+          link.remove();
+          window.setTimeout(() => URL.revokeObjectURL(url), 10000);
+        }
+      } else if (kind === "csv") {
         const blob = new Blob([renderer.renderContractorStatementCsv(document)], { type: "text/csv;charset=utf-8" });
         const url = URL.createObjectURL(blob);
         const link = window.document.createElement("a");
@@ -61,9 +74,10 @@ export function StatementExportActions({ statement, name }: { statement: Contrac
   return <section aria-label="تصدير كشف الحساب" style={{ marginBlock: 16 }}>
     <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
       <button className={styles.select} style={{ width: "auto" }} disabled={busy} onClick={() => exportStatement("print")}>طباعة / حفظ PDF</button>
+      <button className={styles.select} style={{ width: "auto" }} disabled={busy} onClick={() => exportStatement("png")}>تنزيل صورة PNG</button>
       <button className={styles.select} style={{ width: "auto" }} disabled={busy} onClick={() => exportStatement("csv")}>تنزيل CSV</button>
     </div>
-    <p>الملخص والتفاصيل لنفس المقاول والفترة المعروضين. حفظ PDF من نافذة الطباعة.</p>
+    <p>الملخص والتفاصيل لنفس المقاول والفترة المعروضين. صورة PNG للكشوف متوسطة الحجم؛ للكشوف الطويلة اختر فترة أصغر أو استخدم CSV/الطباعة. حفظ PDF من نافذة الطباعة.</p>
     {error && <p role="alert">{error}</p>}
   </section>;
 }
