@@ -15,7 +15,7 @@ test.describe("REPORTS-01 — isolated daily work report", () => {
     await expect(table).toContainText("REC-003");
     await expect(page.getByRole("region", { name: "شغل الطرف الآخر لأحمد" })).toContainText("600.00 ج.م");
     await page.getByLabel("تاريخ التقرير").fill("2026-11-04");
-    await expect(page.getByRole("status")).toContainText("لا توجد نقلات");
+    await expect(page.getByRole("main").getByRole("status")).toContainText("لا توجد نقلات");
     await expect(page.getByRole("table", { name: "نقلات اليوم" })).toHaveCount(0);
   });
 
@@ -23,10 +23,10 @@ test.describe("REPORTS-01 — isolated daily work report", () => {
     await page.goto("/demo/reports/daily");
     await page.getByLabel("تاريخ التقرير").fill("2026-11-05");
     await page.getByRole("combobox", { name: "فلتر المقاول" }).selectOption("K2");
-    await expect(page.getByRole("status")).toContainText("لا توجد نقلات");
+    await expect(page.getByRole("main").getByRole("status")).toContainText("لا توجد نقلات");
     await page.getByRole("combobox", { name: "فلتر المقاول" }).selectOption("K1");
     await page.getByRole("combobox", { name: "فلتر العربية" }).selectOption("V1");
-    await expect(page.getByRole("status")).toContainText("لا توجد نقلات");
+    await expect(page.getByRole("main").getByRole("status")).toContainText("لا توجد نقلات");
     await page.getByRole("combobox", { name: "فلتر العربية" }).selectOption("V2");
     await expect(page.getByRole("table", { name: "نقلات اليوم" })).toContainText("REC-002");
     await page.getByRole("button", { name: "عرض الجميع في اليوم" }).click();
