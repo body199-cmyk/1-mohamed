@@ -71,11 +71,11 @@ for (const path of [
   assert.equal(res.headers.get("cache-control"), "no-store");
 }
 
-for (const path of ["/trips", "/payments", "/api/finance", "/demo/trips"]) {
+for (const path of ["/trips", "/payments", "/api/finance", "/demo/trips", "/fonts/cairo.css", "/favicon.svg"]) {
   const res = await request(path, { method: "POST", body: "test" });
   assert.equal(res.status, 503, `Expected denied POST for ${path}`);
   assert.equal(res.headers.get("location"), null);
   assert.equal(res.headers.get("cache-control"), "no-store");
 }
 
-console.log("AUTH-01/H039 PASS: public demo/login/assets, root redirect, 12 denied GETs and 4 denied POSTs.");
+console.log("AUTH-01/H039 PASS: public demo/login/assets, root redirect, 12 denied GETs and 6 denied POSTs.");
