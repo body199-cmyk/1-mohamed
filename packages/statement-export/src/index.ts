@@ -13,3 +13,5 @@ export type { StatementImageLayout } from "./render-statement-image";
 
 export { paginateStatementForPdf, assemblePdfJpegPages, renderContractorStatementPdf } from "./render-statement-pdf";
 export type { PdfJpegPage } from "./render-statement-pdf";
+
+export { createStatementXlsxParts, makeStoredZip, renderContractorStatementXlsx } from "./render-statement-xlsx";
