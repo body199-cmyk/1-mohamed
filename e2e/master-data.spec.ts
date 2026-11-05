@@ -90,7 +90,7 @@ test.describe("UI-BASE-01B — safe demo mutations", () => {
     await expect(updated).toContainText("مؤرشف");
     await expect(page.getByRole("heading", { name: /سجل التغييرات التجريبي \(2\)/ })).toBeVisible();
     await page.getByRole("link", { name: "تسجيل النقلات" }).click();
-    await expect(page.locator('select[aria-label="المقاول الطرف الآخر"] option')).not.toContainText(["شركة النيل الجديدة"]);
+    await expect(page.locator('select[aria-label="المقاول الطرف الآخر"] option').filter({ hasText: "شركة النيل الجديدة" })).toHaveCount(0);
     await page.getByRole("link", { name: "بيانات المقاولين والعربيات" }).click();
     const archived = page.locator("article").filter({ hasText: "شركة النيل الجديدة" });
     await archived.getByRole("button", { name: "إعادة تفعيل المقاول" }).click();
@@ -119,7 +119,7 @@ test.describe("UI-BASE-01B — safe demo mutations", () => {
     await arch.getByRole("textbox", { name: "سبب التغيير" }).fill("خارج الخدمة");
     await arch.getByRole("button", { name: "تأكيد أرشفة" }).click();
     await page.getByRole("link", { name: "تسجيل النقلات" }).click();
-    await expect(page.locator('select[aria-label="السيارة المنفذة"] option')).not.toContainText(["د هـ و 5678"]);
+    await expect(page.locator('select[aria-label="السيارة المنفذة"] option').filter({ hasText: "د هـ و 5678" })).toHaveCount(0);
   });
 
   test("cash openings are keyed by contractor and vehicle, edit is audited, and refresh clears them", async ({ page }) => {

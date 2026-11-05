@@ -23,7 +23,7 @@ export function MasterDataView() {
   const { contractors, vehicles, addContractor, addVehicle, editContractor, editVehicle, archiveContractor, archiveVehicle, masterAudit } = useDemoStore();
   const [tab, setTab] = useState<DataTab>("contractor");
   const [search, setSearch] = useState("");
-  const [quickAdd, setQuickAdd] = useState<DataTab | null>(null);
+  const [quickAdd, setQuickAdd] = useState<"contractor" | "vehicle" | null>(null);
   const [notice, setNotice] = useState("");
   const [selection, setSelection] = useState<Selection | null>(null);
 
