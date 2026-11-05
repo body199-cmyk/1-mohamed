@@ -13,6 +13,8 @@ describe("UI-BASE-01B cash and identity validation", () => {
     expect(parseOpeningEgp("1.234","VEHICLE")).toBeNull();
     expect(parseOpeningEgp("-5","VEHICLE")).toBeNull();
     expect(parseOpeningEgp("1,000","VEHICLE")).toBeNull();
+    expect(parseOpeningEgp("9".repeat(100000),"VEHICLE")).toBeNull();
+    expect(validOpeningPiastres("9".repeat(100000))).toBe(false);
     expect(parseOpeningEgp("92233720368547758.08","VEHICLE")).toBeNull();
     expect(parseOpeningEgp("92233720368547758.07","VEHICLE")).toBe("9223372036854775807");
     expect(validOpeningPiastres("-9223372036854775807")).toBe(true);

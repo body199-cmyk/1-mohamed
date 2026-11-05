@@ -48,7 +48,7 @@ jobs:
           trap 'kill "$server_pid" 2>/dev/null || true' EXIT
           node tools/auth-boundary-smoke.mjs http://127.0.0.1:39123
       - name: Install isolated Chromium browser for UI regression
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install chromium
       - name: Test master-data demo interactions in real browser
         run: npx playwright test --config=playwright.ui.config.ts e2e/master-data.spec.ts
 
