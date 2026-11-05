@@ -355,3 +355,11 @@
 - **AUTH-01/PREP/H039:** Proxy بنهج منع افتراضي مؤقت، صفحة دخول بلا credentials، اختبار HTTP للـdemo والأصول و١٢ GET/٦ POST مرفوضة؛ CI نهائي `41944665834` ناجح؛ [PR #2](https://github.com/body199-cmyk/1-mohamed/pull/2) مدموج في `main` (`df6f54c7`). **لا تسجيل دخول حقيقي**.
 - **التالية غير المنفذة AUTH-01/REAL-INTEGRATION:** تثبيت حزم SSR/Supabase الرسمية بنسخ مثبتة، إنشاء عملاء browser/server والتعامل مع الكوكي، التحقق `getClaims()` على الخادم وبوابة المالك في كل RPC، login/logout/recovery، وتحقق E2E باستخدام Supabase **اختباري**. ممنوع تبديل الحراسة المؤقتة إلى سماح افتراضي أو الاعتماد على `getSession()` لتفويض العملية.
 - **نطاق المراجعة الواجبة:** فحص الصلاحيات للمالك وغير المالك/anon، انتهاء الجلسة، حظر POST غير المصرح، callback وعدم open redirect، رفض أي نجاح حفظ وهمي، عدم تسريب `service_role`، وبقاء `/demo/*` سليمة. لا تُعتبر المهمة مكتملة دون سجلات اختبار على خدمة حقيقية.
+
+## H041 — بطاقة AUTH-01/SDK-FOUNDATION (١/ن من التكامل الحقيقي)
+
+- **النطاق:** نسخ Supabase SSR الرسمية المثبتة وملف lock، وحدات Browser/Server + candidate Proxy refresh + `verifyOwnerForAction` باستخدام JWT verified claims و`app_is_owner`، فحص آلي يمنع تفعيلها بطريق الخطأ على صفحات التطبيق، وتحديث الوثائق.
+- **شرط القبول:** `npm ci` ثم `npm run check` (١٦٧ وحدة)، `npm run db:verify` (١٦ SQL)، ثلاثة negative controls، `npm run build` وHTTP smoke والحراسة الجديدة؛ قراءة الفروقات نقديًا + تسليم بالأدلة ثم الدمج.
+- **لا تفعل:** لا تبدل `apps/web/src/proxy.ts` المؤقتة؛ لا تضف نموذج password يعمل قبل المشروع الاختباري؛ لا تعتمد جلسة من Cookie دون `getClaims()` أو تكتفِ بـ`getClaims()` دون `app_is_owner()`؛ لا مفاتيح إدارية أو نشر.
+- **مطلوب في المرحلة التالية:** تفعيل SDK في مشروع **اختبار** (GoTrue/PostgREST) مع اختبار owner/anon/non-owner، session refresh + set-cookie + cache headers، Redirect/CSRF، وشرح setup مبسط لغير المبرمج. نتائج PGlite لا تعني نجاح Auth حقيقي.
+- **الحالة:** على [Draft PR #4](https://github.com/body199-cmyk/1-mohamed/pull/4)، اختبارات نهائية ومراجعة قيد التحقق. [تقرير مستقل](AUTH_01_H041_REVIEW.md).
