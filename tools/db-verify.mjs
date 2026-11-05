@@ -70,6 +70,7 @@ const steps = [
   ['tests C', 'supabase/tests/03_phase_c_trips_verification.sql', 'C: اختبارات النقلات والحفظ الذري'],
   ['migration 10', 'supabase/migrations/20261104200023_phase_c_trip_details.sql', 'C: حفظ خط السير ورقم الإيصال وإرجاع الملاحظات'],
   ['tests C details', 'supabase/tests/04_phase_c_trip_details_verification.sql', 'C: اختبارات بيانات النقلة والتدقيق وإعادة الطلب'],
+  ['tests C security review', 'supabase/tests/05_phase_c_adversarial_review.sql', 'C: مراجعة مستقلة للصلاحيات والإلغاء وإعادة الطلب'],
 ];
 
 function describe(error) {
@@ -171,7 +172,7 @@ try {
       (select count(*) from pg_tables where schemaname = 'public') as tables
   `);
   console.log('\nfinal state:', JSON.stringify(counts.rows[0]));
-  console.log('\nALL STEPS PASSED — A + B + C migrations applied and four SQL suites (A/B/C/details) executed on isolated PostgreSQL.');
+  console.log('\nALL STEPS PASSED — A + B + C migrations applied and five SQL suites (A/B/C/details/adversarial) executed on isolated PostgreSQL.');
   console.log('NOTE: this is PostgreSQL, NOT Supabase Auth/GoTrue/PostgREST.');
   console.log('NOTE: PGlite is a single in-memory connection; true concurrent requests and login flows still require a real Supabase instance.');
 } catch (error) {
