@@ -82,7 +82,7 @@ export function MasterDataView() {
         {tab !== "cash" && <button
           type="button"
           className={styles.primary}
-          onClick={() => setQuickAdd(tab)}
+          onClick={() => setQuickAdd(tab === "contractor" ? "contractor" : "vehicle")}
         >
           + {tab === "contractor" ? "إضافة مقاول" : "إضافة عربية"}
         </button>}

@@ -35,6 +35,8 @@ jobs:
           npm run db:verify:negative
           npm run db:verify:negative-b
           npm run db:verify:negative-c
+      - name: Check exact cash-opening validation (unit tests)
+        run: npx vitest run apps/web/e2e/master-data-validation.test.ts
       - name: Build preview web app
         run: npm run build
       - name: Verify new Supabase SDK remains inactive before real Auth E2E
