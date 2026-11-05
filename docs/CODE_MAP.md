@@ -236,3 +236,8 @@
 - packages/statement-export/src/render-statement-pdf.ts: تحويل الصفوف لصفحات PDF محدودة دون إسقاط، رسمها بواسطة paintStatementImage الموجود وترقيمها، تغليف JPEG داخل PDF 1.4 بإحداثيات xref حقيقية (بدون مكتبة خارجية).
 - packages/statement-export/tests/pdf-rendering.test.ts: تحقق تقسيم الصفوف وPDF object offsets ورفض ملفات JPEG زائفة؛ e2e/statement-pdf.spec.ts: تنزيل PDF حقيقي من Chromium واسم الملف والفترة الفارغة.
 - apps/web/src/features/contractor-statements/statement-export-actions.tsx: زر PDF مباشر؛ حفظ PDF من الطباعة القديمة يظل داعمًا للنص القابل للبحث. workflow verify يضم اختبارات PDF.
+
+### H053 / T09.3 XLSX
+- packages/statement-export/src/render-statement-xlsx.ts: workbook XML عربي بصفحتين وZIP STORE CRC32 من نفس ContractorStatementDocument، أرقام أموال ومراجع نصوص حرفية، بدون إعادة الحساب.
+- packages/statement-export/tests/xlsx-rendering.test.ts: 5 Unit لبنية الأجزاء والقيم والعزل من الصيغ وحماية XML/الحد. e2e/statement-xlsx.spec.ts: 2 Chromium تنزيل ZIP workbook فعلي وفترة خالية، مع فحص بنية ZIP.
+- statement-export-actions.tsx: زر XLSX بجانب CSV وPNG وPDF والطباعة؛ verify.yml يتحقق منه.
