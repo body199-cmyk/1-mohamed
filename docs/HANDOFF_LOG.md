@@ -1049,3 +1049,7 @@
 - main بعد H046 PR #9 عند `2621911a9a2f02d4ac702484ab782cabdeac1d12`. المستخدم وافق D15 (الشغل قبل الدفع في نفس اليوم) وأكد أن كل المعلومات الحالية تجريبية وأن الأمان المالي وقت إطلاق النظام أولى؛ لم يوافق صراحةً على أي بديل في D16.
 - نطاق العمل H047: تخزين دفعة مرتبط بمسؤول النقد عن عربية، مع تاريخ دفع ومبلغ قروش وملاحظات/إيصال وربط وصفي اختياري لنقلة، سياسات منع الكتابة المباشرة، تحقق حقيقي PostgreSQL معزول. لا حسم رصيد ولا تصرف مالي قبل T08.2 وD16. لا بيانات إنتاج أو Supabase/Vercel.
 - اختبار وقرار دمج PR سيكونان بحسب CI على آخر SHA ومراجعة patch نقديًا؛ توثيق النتائج في تعليق PR لتجنب سلسلة commits توثيقية جديدة.
+
+## H048 / T08.2 — ٥ نوفمبر ٢٠٢٦
+- بداية H048 من main `e5ce2decb730ebbec919e3f6550d142784d47b5e` بعد PR #10. D16=أ وافق عليه المستخدم صراحة؛ لا تحتاج إعادة سؤال.
+- PostgreSQL-only payment RPC work under T08.2: all-day historical minimum D16, D15 work first, idempotent locked create/update/cancel/read and auditable before/after. Tests run isolated after T08.1 schema suite; current demo not connected to DB yet. T08.3 separate PR once H048 passes CI and critical review.

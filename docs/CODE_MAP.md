@@ -209,3 +209,8 @@
 - `supabase/migrations/20261104200030_payments_schema.sql`: جدول payments، FK مركّب (vehicle_id, responsible_contractor_id) إلى vehicle_accounts، رابط وصفي اختياري `linked_trip_id` يحميه trigger عند الإدخال والتعديل؛ لا يخصم نقدًا ولا يغيّر الشغل. RLS مالك قراءة فقط ومنع كتابة مباشرة وTRUNCATE.
 - `supabase/tests/06_payments_schema_verification.sql`: Suite مستقل للربط/المبالغ/الإلغاء/RLS بدون خداع نتيجة رفض، باستخدام مساعدات suites A/B/C؛ `tools/db-verify.mjs` يشغل migration 11 وsuite بعد C.
 - D15 في `DECISIONS` و`ACCOUNTING_RULES` أصبح معتمدًا؛ D16 يظل مفتوحًا ولا توجد RPC دفعات في T08.1.
+
+### H048 / T08.2
+- `supabase/migrations/20261104200031_payment_operations.sql`: cash balance/minimum per business day D15/D16 مع حسابات رقمية دقيقة، owner-gated locked payment create/update/cancel/read RPC؛ no API route or cloud connection.
+- `supabase/tests/07_payment_operations_verification.sql`: temporal, edit old instance, replays, cancellation, auth and rollback SQL cases; `tools/db-verify.mjs` includes phase D after C/schema.
+- `docs/DECISIONS.md` + `ACCOUNTING_RULES.md`: تثبيت D16=أ صراحةً.
