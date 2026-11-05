@@ -24,7 +24,7 @@ set "request.jwt.claim.sub"='00000000-0000-0000-0000-000000000001';
 -- Direct client execution of helpers remains revoked, by design.
 reset role;
 
-do $
+do $payment_test$
 declare
   v_today date := (now() at time zone 'Africa/Cairo')::date;
   v_trip jsonb;
@@ -142,7 +142,7 @@ begin
     and (select count(*) from public.audit_log where entity_id='P_H48_SAME' and action='CANCEL')=1,
     'D16.14 cancellation is historical and auditable'
   );
-end $;
+end $payment_test$;
 
 set role authenticated;
 set "request.jwt.claim.role"='authenticated';
