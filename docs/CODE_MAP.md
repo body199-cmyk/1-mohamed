@@ -141,9 +141,9 @@
 
 | الملف | دوره الفعلي | الحالة |
 |---|---|---|
-| `apps/web/src/proxy.ts` | Next.js 16 حراسة مؤقتة: GET محمي يعاد لـlogin، وPOST يُرفض؛ لا تعتمد على أي cookie أو تخمن هوية مالك | فرع `feat/auth01-safe-boundary-h039`؛ يحتاج CI |
+| `apps/web/src/proxy.ts` | Next.js 16 حراسة مؤقتة بنهج المنع الافتراضي لأي مسار غير public؛ GET يعاد لـlogin وPOST يُرفض؛ لا تعتمد على أي cookie أو تخمن هوية مالك | فرع `feat/auth01-safe-boundary-h039`؛ يحتاج CI |
 | `apps/web/src/app/login/page.tsx` | صفحة تنبيه لا تجمع كلمات مرور ولا تدّعي نجاح تسجيل الدخول | فرع H039؛ يحتاج CI |
-| `tools/auth-boundary-smoke.mjs` | اختبار HTTP ضد `next start` للتأكد من المسارات العامة والحراسة وعدم إعادة توجيه POST | فرع H039؛ يحتاج CI |
+| `tools/auth-boundary-smoke.mjs` | اختبار HTTP ضد `next start`: ١٢ GET ممنوعًا، ٤ POST ممنوعة، والتحقق من demo/login وملفات static | فرع H039؛ يحتاج CI |
 | `.github/workflows/verify.yml` | التحقق السابق + HTTP smoke test بعد البناء | تعديل H039؛ يحتاج CI |
 | `docs/AUTH_01_H039_REVIEW.md` | شروط القبول وحدود الأمان والمرجع للاستكمال | موجود على فرع H039 |
 
