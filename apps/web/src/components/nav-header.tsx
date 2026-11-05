@@ -15,6 +15,7 @@ export function NavHeader() {
   const isMasterData = pathname.startsWith("/demo/master-data");
   const isDailyReport = pathname.startsWith("/demo/reports/daily");
   const isPayments = pathname.startsWith("/demo/payments");
+  const isVehicleCash = pathname.startsWith("/demo/reports/vehicle-cash");
 
   return (
     <header className={styles.header}>
@@ -53,6 +54,11 @@ export function NavHeader() {
           <Link href="/demo/reports/daily" className={`${styles.navLink} ${isDailyReport ? styles.active : ""}`}
             aria-current={isDailyReport ? "page" : undefined}>
             تقرير الشغل اليومي
+          </Link>
+          <Link href="/demo/reports/vehicle-cash"
+            className={`${styles.navLink} ${isVehicleCash ? styles.active : ""}`}
+            aria-current={isVehicleCash ? "page" : undefined}>
+            كشف حساب نقد العربية
           </Link>
           <Link href="/demo/payments" className={`${styles.navLink} ${isPayments ? styles.active : ""}`}
             aria-current={isPayments ? "page" : undefined}>
