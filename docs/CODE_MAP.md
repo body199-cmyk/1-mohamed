@@ -226,3 +226,8 @@
 - apps/web/src/features/reports/vehicle-cash-view.tsx وapp/demo/reports/vehicle-cash/page.tsx: شاشة واحدة تتنقل فيها بين العربيات والمقاولين المسؤولين والتواريخ، وتعرض الترتيب وخط السير والاتجاه.
 - apps/web/src/features/payments/cash-ledger.ts: استبعاد دفعة مستقبلية بالنسبة إلى نهاية التقرير التاريخي بدلاً من رفضه.
 - apps/web/e2e/vehicle-cash-report-validation.test.ts: 6 اختبارات مال؛ e2e/vehicle-cash.spec.ts: 3 متصفح. GitHub CI وHTTP guard يختبرانها.
+
+### H051 / T08.6 Dashboard
+- apps/web/src/features/reports/dashboard-summary.ts: مؤشرات عمل اليوم عبر buildDailyWorkReport، ومؤشر دفعات اليوم المستقل بالنقود النصية BigInt.
+- apps/web/src/features/reports/dashboard-view.tsx + dashboard.module.css وapp/demo/dashboard/page.tsx: لوحة الرئيسية والتوجيه من app/page.tsx، روابط لبقية الشاشات وعرض نشاط حديث.
+- apps/web/e2e/dashboard-validation.test.ts: 6 unit؛ e2e/dashboard.spec.ts: 2 Chromium E2E. tools/auth-boundary-smoke.mjs يثبت قبول المعاينة وتحويل الجذر.
