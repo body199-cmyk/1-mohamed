@@ -155,3 +155,17 @@
 - `apps/web/src/proxy.ts` **موجودة على main** عبر PR #2 (`df6f54c7`): حراسة **deny-by-default** مؤقتة لا تحتوي جلسة حقيقية، مع السماح للصفحات العامة والأصول في GET/HEAD فقط. `apps/web/src/app/login/page.tsx` معلوماتية، و`tools/auth-boundary-smoke.mjs` تحقق HTTP. الدليل CI `41944665834`.
 - التوابع المخططة `apps/web/src/lib/supabase/client.ts` و`server.ts` و`proxy.ts` (cookie refresh helper) **لم تُنفذ**؛ لا تخلطها مع حارس `apps/web/src/proxy.ts` المؤقت.
 - بعض الصفوف التاريخية في الخريطة تسجل حالة «مخطط» أو «ينتظر CI» وقت الكتابة؛ **هذا القسم وSTATUS أحدث مرجع للحالة ولا يلغيان التاريخ**.
+
+## H041 — SDK الرسمي للتحضير دون التفعيل (فرع PR #4)
+
+| المسار | الوظيفة | الحالة |
+|---|---|---|
+| `apps/web/package.json` و`package-lock.json` | تثبيت نسخ @supabase/ssr وsupabase-js رسميًا | الفرع H041؛ CI مطلوب |
+| `apps/web/src/lib/supabase/client.ts` | عميل متصفح بمفتاح publishable فقط | غير مستورد بواجهات الـdemo |
+| `apps/web/src/lib/supabase/server.ts` | عميل Server Action / Route Handler يكتب cookies دون إخفاء فشل | غير مستعمل؛ تكامل cache headers ينتظر HTTP الحقيقي |
+| `apps/web/src/lib/supabase/owner.ts` | getClaims ثم app_is_owner؛ يرفض كل فشل | غير مستعمل؛ لا يسمح بدخول بناءً على Cookie فقط |
+| `apps/web/src/lib/supabase/proxy-session.ts` | إعداد مبدئي لتجديد الجلسة بنقل Cookies والـcache headers | غير مربوط بحارس `apps/web/src/proxy.ts` القديم |
+| `tools/auth-sdk-boundary-check.mjs` | فحص ثبات الإصدارات وعدم دخول SDK للتطبيق قبل اختباره | قيد CI، ليس اختبار هوية حقيقية |
+| `docs/AUTH_01_H041_REVIEW.md` | حدود التنفيذ، قبول الاختبارات والقرار اللاحق | مرجع H041 |
+
+**القاعدة:** يبقى `apps/web/src/proxy.ts` من H039 مغلقًا للجميع، ويستمر `/login` كصفحة معلومات؛ لا يثبت CI المعزول سلامة Supabase الحقيقي. [STATUS](STATUS.md) يحدد أحدث الحالة.
