@@ -990,3 +990,5 @@
 - **نقطة الاستئناف:** `STATUS` ← [تقرير H041](AUTH_01_H041_REVIEW.md) ← PR #4 وCI على أحدث SHA. التكامل الحي ما زال يحتاج Supabase اختبار ومراجعة HTTP/E2E.
 
 **H041 — مرور نقدي مستقل (التصحيح الأول):** اكتُشف أن `server.ts` الأول كان يتجاهل cache headers عند `setAll`؛ تم تحويله إلى `createRouteHandlerSupabaseClient(request,response)` لإجبار الكتابة على Response (Cookies وHeaders)، وأصبح فحص المالك يأخذ العميل request-scoped بدل إنشائه خفيًا. أُضيفت assertions ضمن `tools/auth-sdk-boundary-check.mjs`. يلزم CI على آخر SHA وE2E حقيقي لاحقًا على GoTrue.
+
+**H041 — دليل تشغيل أول بعد مرور المراجعة:** GitHub Actions run `42013608596` / job `127198904207` / SHA `878c68c49bfdc6a7bbc9f68457c0507f4da0af82` completed/success. `npm ci`، TypeScript و١٦٧ وحدة، ١٦ SQL و٣ أدوات تحكم سلبي، Next build، فحص SDK غير المُفعّل، وHTTP smoke كلها PASS. **لا يمكن نسبة نجاح Auth حقيقي أو إطلاق إنتاج إلى هذا الدليل**؛ بعد إضافة التوثيق يُتحقق من أحدث commit ثم يُدمج جزء SDK المحدود فقط.
