@@ -193,3 +193,9 @@
 - `apps/web/src/features/master-data/master-data-view.tsx`: ثلاث تبويبات وسجل مراجعة. CSS ذاتها.
 - `apps/web/src/features/trips/{trip-form-fields,trip-entry-panel}.tsx`: إخفاء المؤرشف من الاختيارات الجديدة ورفض إرسال مسودة تشير إلى مؤرشف.
 - `apps/web/e2e/master-data-validation.test.ts` (Vitest خاص)، و`e2e/master-data.spec.ts` (Playwright)، وخطوة CI تشغيل الاختبارات.
+
+## H045 — REPORTS-01 (معاينة يومية لا تخزين دائم)
+- `apps/web/src/features/reports/daily-work-report.ts`: فلترة وقراءة لقطة النقلات من DemoStore وتحقق من حساب الصف والتجميع **باستخدام حزمة المحاسبة**؛ إرجاع خطأ عند اختلاف snapshot؛ لا نقد ولا أرصدة.
+- `apps/web/src/features/reports/daily-work-view.tsx` + `daily-work.module.css`: عرض تاريخ يوم واحد واتجاهين وجدول ونتيجة فلاتر في RTL.
+- `apps/web/src/app/demo/reports/daily/page.tsx`: مسار عام تجريبي فقط؛ `components/nav-header.tsx`: رابط تنقل.
+- `apps/web/e2e/daily-work-validation.test.ts`: Vitest مالي مضبوط. `e2e/daily-work.spec.ts`: Chromium regression، والموجود في `verify.yml` مع باقي اختبارات المشروع.

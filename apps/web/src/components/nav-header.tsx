@@ -13,6 +13,7 @@ export function NavHeader() {
   const isTrips = pathname.startsWith("/demo/trips");
   const isContractors = pathname.startsWith("/demo/contractors");
   const isMasterData = pathname.startsWith("/demo/master-data");
+  const isDailyReport = pathname.startsWith("/demo/reports/daily");
 
   return (
     <header className={styles.header}>
@@ -48,6 +49,10 @@ export function NavHeader() {
             بيانات المقاولين والعربيات
           </Link>
 
+          <Link href="/demo/reports/daily" className={`${styles.navLink} ${isDailyReport ? styles.active : ""}`}
+            aria-current={isDailyReport ? "page" : undefined}>
+            تقرير الشغل اليومي
+          </Link>
           <button
             type="button"
             onClick={toggleTheme}
