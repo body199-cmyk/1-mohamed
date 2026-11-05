@@ -1080,3 +1080,8 @@
 - PR #16/H053 XLSX اندمج على `main=4afca2220a556350039f4315f788080e43d660c7`، CI `42104264878` PASS (23/23 Chromium). بدأت H054 على فرع مستقل: عقد نسخة Node version 1 واختبارات تحقق/استرجاع في الذاكرة، دون أي endpoint أو تعديل Supabase/Next.
 - التحقق قبل الاستعادة يتطلب الجداول الثمانية وعلاقاتها، الحركات والدفعات وسجلات التدقيق ومفاتيح الطلبات، رصيد قديم من النوعين، مبالغ صحيحة بالقروش وhash checksum. تجربة isolated atomic swap بعد safety backup; production implementation later MUST use real DB transactional lock, verified durable safety and auth owner, plus D07 backup location/retention and B08 replay protocol.
 - CI والمراجعة النهائية في GitHub PR، ولا تغييرات توثيق بعد النجاح إلا لخلل مثبت.
+
+## H055 / T11 Quality first pass — ٥ نوفمبر ٢٠٢٦
+- بدأ بعد دمج PR #17/H054 `main=b5ca24cc375114f6195d400339be64523ff938a2` وCI `42106774834` ناجح، 12/12 backup و23 Chromium. نطاق جودة واجهة الهاتف/التابلت والكيبورد والتباين فقط، من غير صيانة قواعد مالية أو نشر.
+- عيوب H055 الجديدة في ISSUES: nav يلتف كصفوف كثيرة بداخل sticky header في 360px؛ لا Skip Link، وروابط بدون outline focus-visible؛ تباين نص warning الفاتح 3.07:1. إصلاحات CSS/Layout + Playwright quality. التقرير final PR review والـCI على آخر commit، ثم merge إن نجح.
+- لا Android حقيقي ولا انقطاع شبكة حقيقي ولا Supabase، وبالتالي T11 وS01–S03/P01–P04 ليست «مكتملة إنتاجيًا». نفس مسار TASKS/H042، H055 PR واحد.

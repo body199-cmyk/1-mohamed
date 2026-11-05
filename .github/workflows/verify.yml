@@ -64,5 +64,5 @@ jobs:
       - name: Install isolated Chromium browser for UI regression
         run: npx playwright install chromium
       - name: Test master-data demo interactions in real browser
-        run: npx playwright test --config=playwright.ui.config.ts e2e/master-data.spec.ts e2e/daily-work.spec.ts e2e/statement-image.spec.ts e2e/payments.spec.ts e2e/vehicle-cash.spec.ts e2e/dashboard.spec.ts e2e/statement-pdf.spec.ts e2e/statement-xlsx.spec.ts
+        run: npx playwright test --config=playwright.ui.config.ts e2e/master-data.spec.ts e2e/daily-work.spec.ts e2e/statement-image.spec.ts e2e/payments.spec.ts e2e/vehicle-cash.spec.ts e2e/dashboard.spec.ts e2e/statement-pdf.spec.ts e2e/statement-xlsx.spec.ts e2e/quality-h055.spec.ts
 

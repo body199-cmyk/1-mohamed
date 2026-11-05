@@ -23,11 +23,12 @@ export default function RootLayout({
       <head><link rel="stylesheet" href="/fonts/cairo.css" /></head>
 
       <body>
+        <a href="#main-content" className="skipLink">تخطي التنقل إلى المحتوى الرئيسي</a>
         <ThemeProvider>
           <DemoStoreProvider><EntrySessionProvider>
             <DemoBanner />
             <NavHeader />
-            <main className="container" style={{ paddingBlock: "24px" }}>
+            <main id="main-content" tabIndex={-1} className="container" style={{ paddingBlock: "24px" }}>
               {children}
             </main>
           </EntrySessionProvider></DemoStoreProvider>

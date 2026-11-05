@@ -245,3 +245,8 @@
 ### H054 / T10.1 + isolated T10.4
 - `tools/backup-core.mjs`: createBusinessBackup / verifyBusinessBackup / verifyBusinessDataset / serializeBusinessBackup، ثمانية جداول أعمال بنطاق صارم، SHA256، مفاتيح وعلاقات وأرقام قروش؛ `IsolatedRestoreStore` swap ذرّي **في الذاكرة فقط**، safety copy وepoch protection؛ لا تخزين/تشفير/مالك حقيقي/SQL transaction.
 - `tools/backup-core.test.mjs`: node:test بلا تبعيات، حالات تلف ونسخ كاملة وFK وأثر وتداخل وتراجع وعزل/إعادة محاولة قديمة. `.github/workflows/verify.yml` يشغّلها مع CI القائم.
+
+### H055 / T11 desktop-Chromium quality pass
+- `apps/web/src/components/nav-header.module.css`: header/nav reflow عند <=1100 مع scroll-internal RTL بدون صفوف متعددة في الهاتف والتابلت.
+- `apps/web/src/app/layout.tsx`: Skip link وmain#main-content مع tabIndex -1؛ `apps/web/src/styles/globals.css`: focus-visible link/textarea وskip UI؛ `variables.css`: تحذير فاتح عالي التباين.
+- `e2e/quality-h055.spec.ts`: خمس اختبارات Chromium بسبع واجهات ومقاسي 360/768، tablet 1024، وصول keyboard، ألوان حالتي light/dark وقياس baseline أجهزة CI فقط؛ `.github/workflows/verify.yml` يضمها.
