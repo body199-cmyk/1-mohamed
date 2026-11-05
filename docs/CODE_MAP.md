@@ -214,3 +214,9 @@
 - `supabase/migrations/20261104200031_payment_operations.sql`: cash balance/minimum per business day D15/D16 مع حسابات رقمية دقيقة، owner-gated locked payment create/update/cancel/read RPC؛ no API route or cloud connection.
 - `supabase/tests/07_payment_operations_verification.sql`: temporal, edit old instance, replays, cancellation, auth and rollback SQL cases; `tools/db-verify.mjs` includes phase D after C/schema.
 - `docs/DECISIONS.md` + `ACCOUNTING_RULES.md`: تثبيت D16=أ صراحةً.
+
+### H049 / T08.3
+- `apps/web/src/features/payments/cash-ledger.ts`: محرك عرض/تحقق D15/D16 التجريبي بالقروش، فصل مسؤول النقد، كشف مخارج نقلة من `calculateTripAmounts` الأصلي، لا نسخ محرك DB.
+- `apps/web/src/demo/demo-types.ts` و`demo-context.tsx`: دفعات في الذاكرة مع create/edit/cancel، أثر وتواريخ وإصدار. `PRIMARY_AHMED` معرف افتراضي داخل Demo فقط.
+- `apps/web/src/features/payments/payments-view.tsx` + `payments.module.css`، مسار `/demo/payments` وشريط التنقل؛ `cash-openings-panel.tsx` يدعم افتتاحي المسؤول الأساسي.
+- `apps/web/e2e/payments-validation.test.ts` Vitest مالي، `e2e/payments.spec.ts` Chromium إجرائي؛ workflow يضيف الاختبارين. `auth-boundary-smoke.mjs` يؤكد المسار التجريبي فقط، بينما مسار `/payments` الحقيقي يظل محميًا.

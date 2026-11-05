@@ -1053,3 +1053,8 @@
 ## H048 / T08.2 — ٥ نوفمبر ٢٠٢٦
 - بداية H048 من main `e5ce2decb730ebbec919e3f6550d142784d47b5e` بعد PR #10. D16=أ وافق عليه المستخدم صراحة؛ لا تحتاج إعادة سؤال.
 - PostgreSQL-only payment RPC work under T08.2: all-day historical minimum D16, D15 work first, idempotent locked create/update/cancel/read and auditable before/after. Tests run isolated after T08.1 schema suite; current demo not connected to DB yet. T08.3 separate PR once H048 passes CI and critical review.
+
+## H049 / T08.3 — بدء ٥ نوفمبر ٢٠٢٦
+- PR #11/H048 دمج على `main=3928bc1a954f1e5ec7bf2c86f80aecebfabf2359` وCI `42096035120` pass، شامل D16 أيام وسيطة وD15 نفس اليوم.
+- مهمّة T08.3: واجهة demo لدفعات العربيات مرتبطة بنقلات نفس الذاكرة، الفصل بين حساب أحمد الأساسي وحسابات المقاولين الآخرين، CashOpenings، تعديل/إلغاء، Audit وD15/D16 BigInt. لا تمس قاعدة PostgreSQL المحمية ولا تطلق Supabase/Vercel.
+- اختبارات واجهة وحساب داخل CI؛ راجع patch نقديًا ثم ادمج على نجاح آخر SHA فقط. تجنب سلسلة commits توثيقية بعد نجاح الاختبارات.
