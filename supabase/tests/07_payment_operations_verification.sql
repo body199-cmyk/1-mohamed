@@ -15,7 +15,7 @@ insert into public.vehicle_accounts(vehicle_id,contractor_id) values
  ('V_H48_B','K_MOHAMED');
 insert into public.opening_balances(id,balance_type,contractor_id,vehicle_id,start_date,signed_piastres)
 values ('OB_H48_A','VEHICLE_CASH','K_AHMED','V_H48_A',
-  ((now() at time zone 'Africa/Cairo')::date-20),100000);
+  '2026-11-01'::date,100000);
 set role authenticated;
 set "request.jwt.claim.role"='authenticated';
 set "request.jwt.claim.sub"='00000000-0000-0000-0000-000000000001';
@@ -27,6 +27,7 @@ reset role;
 do $payment_test$
 declare
   v_today date := (now() at time zone 'Africa/Cairo')::date;
+  v_anchor date := '2026-11-01'::date;
   v_trip jsonb;
   v_paid jsonb;
   v_again jsonb;
@@ -40,13 +41,13 @@ begin
     'D16.01 RPCs are gated; financial helper is private'
   );
   perform public.app_test_assert(
-    public.app_payment_cash_balance('V_H48_A','K_AHMED',v_today-19)=100000,
+    public.app_payment_cash_balance('V_H48_A','K_AHMED',v_anchor)=100000,
     'D16.02 exact opening balance on vehicle account'
   );
   v_trip:=public.app_op_trip_create('H48-TR-B',
     jsonb_build_object('id','TR_H48_B','vehicle_id','V_H48_B',
        'counterparty_contractor_id','K_MOHAMED','direction','AHMED_SUPPLIES',
-       'trip_date',to_char(v_today-10,'YYYY-MM-DD'),
+       'trip_date',to_char(v_anchor+2,'YYYY-MM-DD'),
        'weight_tonnes','10','contractor_rate_egp','100',
        'vehicle_rate_egp','100','expense_egp','0'));
   perform public.app_test_assert(
@@ -55,7 +56,7 @@ begin
   );
   v_paid:=public.app_op_payment_create('H48-P-A',
     jsonb_build_object('id','P_H48_A','vehicle_id','V_H48_A',
-      'responsible_contractor_id','K_AHMED','payment_date',to_char(v_today-12,'YYYY-MM-DD'),
+      'responsible_contractor_id','K_AHMED','payment_date',to_char(v_anchor+2,'YYYY-MM-DD'),
       'amount_egp','800.00','receipt_number','00042'));
   perform public.app_test_assert(
     v_paid->>'status'='OK' and v_paid->>'amount_piastres'='80000'
@@ -67,7 +68,7 @@ begin
   -- and current balances would each have been sufficient without it.
   -- this must fail D16, not merely D13-B endpoint checks.
   perform public.app_test_assert(
-    public.app_payment_cash_balance('V_H48_A','K_AHMED',v_today-15)=100000
+    public.app_payment_cash_balance('V_H48_A','K_AHMED',v_anchor+1)=100000
     and public.app_payment_cash_balance('V_H48_A','K_AHMED',v_today)=20000,
     'D16.05 historical and current account balances reflect real movements'
   );
@@ -75,7 +76,7 @@ begin
   v_trip:=public.app_op_trip_create('H48-TR-A',
     jsonb_build_object('id','TR_H48_A','vehicle_id','V_H48_A',
        'counterparty_contractor_id','K_MOHAMED','direction','AHMED_SUPPLIES',
-       'trip_date',to_char(v_today-5,'YYYY-MM-DD'),
+       'trip_date',to_char(v_anchor+3,'YYYY-MM-DD'),
        'weight_tonnes','10','contractor_rate_egp','100',
        'vehicle_rate_egp','100','expense_egp','0'));
   perform public.app_test_assert(
@@ -83,13 +84,13 @@ begin
     'D16.06 later due increases current amount but cannot erase intermediate debt'
   );
   perform public.app_test_assert(
-    public.app_payment_min_available('V_H48_A','K_AHMED',v_today-15,v_today)=20000,
+    public.app_payment_min_available('V_H48_A','K_AHMED',v_anchor+1,v_today)=20000,
     'D16.07 event-day minimum is not simply the current balance'
   );
 
   v_paid:=public.app_op_payment_create('H48-P-SAME',
     jsonb_build_object('id','P_H48_SAME','vehicle_id','V_H48_B',
-      'responsible_contractor_id','K_AHMED','payment_date',to_char(v_today-10,'YYYY-MM-DD'),
+      'responsible_contractor_id','K_AHMED','payment_date',to_char(v_anchor+2,'YYYY-MM-DD'),
       'amount_egp','1000.00','linked_trip_id','TR_H48_B'));
   perform public.app_test_assert(
     v_paid->>'status'='OK' and v_paid->>'remaining_piastres'='0',
@@ -97,7 +98,7 @@ begin
   );
   v_again:=public.app_op_payment_create('H48-P-SAME',
     jsonb_build_object('id','P_H48_SAME','vehicle_id','V_H48_B',
-      'responsible_contractor_id','K_AHMED','payment_date',to_char(v_today-10,'YYYY-MM-DD'),
+      'responsible_contractor_id','K_AHMED','payment_date',to_char(v_anchor+2,'YYYY-MM-DD'),
       'amount_egp','1000.00','linked_trip_id','TR_H48_B'));
   perform public.app_test_assert(v_paid=v_again
     and (select count(*) from public.payments where id='P_H48_SAME')=1
@@ -114,7 +115,7 @@ begin
   v_edit:=public.app_op_payment_update('H48-P-SAME-EDIT',
     jsonb_build_object('id','P_H48_SAME','expected_version',1,
       'reason','reduce payment','vehicle_id','V_H48_B',
-      'responsible_contractor_id','K_AHMED','payment_date',to_char(v_today-10,'YYYY-MM-DD'),
+      'responsible_contractor_id','K_AHMED','payment_date',to_char(v_anchor+2,'YYYY-MM-DD'),
       'amount_egp','900.00','linked_trip_id','TR_H48_B'));
   perform public.app_test_assert(
     v_edit->>'version'='2' and v_edit->>'remaining_piastres'='10000'
@@ -124,7 +125,7 @@ begin
   v_again:=public.app_op_payment_update('H48-P-SAME-EDIT',
     jsonb_build_object('id','P_H48_SAME','expected_version',1,
       'reason','reduce payment','vehicle_id','V_H48_B',
-      'responsible_contractor_id','K_AHMED','payment_date',to_char(v_today-10,'YYYY-MM-DD'),
+      'responsible_contractor_id','K_AHMED','payment_date',to_char(v_anchor+2,'YYYY-MM-DD'),
       'amount_egp','900.00','linked_trip_id','TR_H48_B'));
   perform public.app_test_assert(v_edit=v_again
     and (select count(*) from public.audit_log where entity_id='P_H48_SAME' and action='UPDATE')=1,
@@ -153,7 +154,7 @@ select public.app_test_expect_error(
   $q$select public.app_op_payment_create('H48-P-OLD',
     jsonb_build_object('id','P_H48_OLD','vehicle_id','V_H48_A',
     'responsible_contractor_id','K_AHMED',
-    'payment_date',to_char((now() at time zone 'Africa/Cairo')::date-15,'YYYY-MM-DD'),
+    'payment_date',to_char('2026-11-02'::date,'YYYY-MM-DD'),
     'amount_egp','500.00'))$q$,
   'D16.15 backdated payment rejected for negative intermediate day even when now sufficient',
   array['P2016']
@@ -162,7 +163,7 @@ select public.app_test_expect_error(
   $q$select public.app_op_payment_create('H48-P-OVER',
     jsonb_build_object('id','P_H48_OVER','vehicle_id','V_H48_A',
     'responsible_contractor_id','K_AHMED',
-    'payment_date',to_char((now() at time zone 'Africa/Cairo')::date-4,'YYYY-MM-DD'),
+    'payment_date',to_char('2026-11-04'::date,'YYYY-MM-DD'),
     'amount_egp','1200.01'))$q$,
   'D16.16 overpayment by one piastre rejected',
   array['P2016']
@@ -171,7 +172,7 @@ select public.app_test_expect_error(
   $q$select public.app_op_payment_create('H48-P-NUM',
     jsonb_build_object('id','P_H48_NUM','vehicle_id','V_H48_A',
     'responsible_contractor_id','K_AHMED',
-    'payment_date',to_char((now() at time zone 'Africa/Cairo')::date-4,'YYYY-MM-DD'),
+    'payment_date',to_char('2026-11-04'::date,'YYYY-MM-DD'),
     'amount_egp',10.0))$q$,
   'D16.17 JSON number rejected to preserve piastre precision',
   array['22023']
@@ -180,7 +181,7 @@ select public.app_test_expect_error(
   $q$select public.app_op_payment_create('H48-P-FRAC',
     jsonb_build_object('id','P_H48_FRAC','vehicle_id','V_H48_A',
     'responsible_contractor_id','K_AHMED',
-    'payment_date',to_char((now() at time zone 'Africa/Cairo')::date-4,'YYYY-MM-DD'),
+    'payment_date',to_char('2026-11-04'::date,'YYYY-MM-DD'),
     'amount_egp','10.001'))$q$,
   'D16.18 unsupported fraction rejected before rounding',
   array['22023']
@@ -189,7 +190,7 @@ select public.app_test_expect_error(
   $q$select public.app_op_payment_create('H48-P-ZERO',
     jsonb_build_object('id','P_H48_ZERO','vehicle_id','V_H48_A',
     'responsible_contractor_id','K_AHMED',
-    'payment_date',to_char((now() at time zone 'Africa/Cairo')::date-4,'YYYY-MM-DD'),
+    'payment_date',to_char('2026-11-04'::date,'YYYY-MM-DD'),
     'amount_egp','0.00'))$q$,
   'D16.19 zero-payment denied',
   array['22023']
@@ -198,7 +199,7 @@ select public.app_test_expect_error(
   $q$select public.app_op_payment_create('H48-P-CROSS',
     jsonb_build_object('id','P_H48_CROSS','vehicle_id','V_H48_B',
     'responsible_contractor_id','K_MOHAMED',
-    'payment_date',to_char((now() at time zone 'Africa/Cairo')::date-10,'YYYY-MM-DD'),
+    'payment_date',to_char('2026-11-03'::date,'YYYY-MM-DD'),
     'amount_egp','1.00','linked_trip_id','TR_H48_B'))$q$,
   'D16.20 wrong accountable contractor cannot use another account trip',
   array['P2016','23514']
@@ -208,7 +209,7 @@ select public.app_test_expect_error(
     jsonb_build_object('id','P_H48_SAME','expected_version',3,
     'reason','editing canceled','vehicle_id','V_H48_B',
     'responsible_contractor_id','K_AHMED',
-    'payment_date',to_char((now() at time zone 'Africa/Cairo')::date-10,'YYYY-MM-DD'),
+    'payment_date',to_char('2026-11-03'::date,'YYYY-MM-DD'),
     'amount_egp','200.00'))$q$,
   'D16.21 canceled payment is immutable',
   array['22023']
