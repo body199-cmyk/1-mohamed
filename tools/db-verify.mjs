@@ -73,6 +73,8 @@ const steps = [
   ['tests C security review', 'supabase/tests/05_phase_c_adversarial_review.sql', 'C: مراجعة مستقلة للصلاحيات والإلغاء وإعادة الطلب'],
   ['migration 11', 'supabase/migrations/20261104200030_payments_schema.sql', 'T08.1: جدول الدفعات وعلاقاته دون عمليات الصرف'],
   ['tests payments schema', 'supabase/tests/06_payments_schema_verification.sql', 'T08.1: تحقق العلاقات والدقة والصلاحيات والحركات المحفوظة'],
+  ['migration 12', 'supabase/migrations/20261104200031_payment_operations.sql', 'T08.2: عمليات الدفعات مع D15/D16 والحماية المالية'],
+  ['tests payment operations', 'supabase/tests/07_payment_operations_verification.sql', 'T08.2: قواعد الحساب التاريخي والعمليات المحمية'],
 ];
 
 function describe(error) {
