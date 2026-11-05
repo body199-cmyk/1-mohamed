@@ -1,32 +1,31 @@
 import "server-only";
 
-import { createWritableServerSupabaseClient } from "./server";
+import type { createRouteHandlerSupabaseClient } from "./server";
 
 /**
- * H041: a prospective server authorization primitive, NOT yet wired to routes.
+ * H041 — prospective owner guard for a *specific Route Handler client*.
+ * Caller supplies the already-configured client tied to that request and its
+ * response; no global singleton, session-cookie trust or service-role bypass.
  *
- * Real access requires BOTH a verified JWT and the database owner gate.
- * Never authorize from an email, query param, session cookie, or user_metadata.
- * app_is_owner() is granted to authenticated only and fails closed when
- * the owner has not been initialized.
+ * This remains dormant until an isolated Supabase test project verifies it.
  */
-export async function verifyOwnerForAction() {
-  const supabase = await createWritableServerSupabaseClient();
-
+export async function verifyOwnerForRoute(
+  supabase: ReturnType<typeof createRouteHandlerSupabaseClient>
+) {
   const { data: claimsData, error: claimsError } =
     await supabase.auth.getClaims();
-  const sub = claimsData?.claims?.sub;
+  const subject = claimsData?.claims?.sub;
 
-  if (claimsError || typeof sub !== "string" || !sub) {
-    return { authorized: false as const, supabase };
+  if (claimsError || typeof subject !== "string" || subject.length === 0) {
+    return { authorized: false as const };
   }
 
   const { data: isOwner, error: ownerError } =
     await supabase.rpc("app_is_owner");
 
   if (ownerError || isOwner !== true) {
-    return { authorized: false as const, supabase };
+    return { authorized: false as const };
   }
 
-  return { authorized: true as const, userId: sub, supabase };
+  return { authorized: true as const, userId: subject };
 }
