@@ -1075,3 +1075,8 @@
 ## H053 / T09.3 — بدأ ٥ نوفمبر ٢٠٢٦
 - بعد دمج PR #15/H052، main=01fdb7ac1f01b7e9a37815fa48ffa5ce4efa9076، CI 42103111485 pass، 21 Chromium. نطاق H053 تصدير XLSX بملخص وتفاصيل بنفس الوثيقة والقروش والمراجع دون تحويل للأرقام العائمة.
 - ليس Excel ماليًا بصيغ جمع مستقلة، ولا جلسة بيانات حقيقية؛ لا Supabase/Vercel. اختبارات حقيقية بنية ZIP وExcel وUI على نفس التغيير قبل الدمج. التالي H054 Backup Core مع D07 قبل الاعتماد الحقيقي.
+
+## H054 / T10.1+T10.4 isolated — ٥ نوفمبر ٢٠٢٦
+- PR #16/H053 XLSX اندمج على `main=4afca2220a556350039f4315f788080e43d660c7`، CI `42104264878` PASS (23/23 Chromium). بدأت H054 على فرع مستقل: عقد نسخة Node version 1 واختبارات تحقق/استرجاع في الذاكرة، دون أي endpoint أو تعديل Supabase/Next.
+- التحقق قبل الاستعادة يتطلب الجداول الثمانية وعلاقاتها، الحركات والدفعات وسجلات التدقيق ومفاتيح الطلبات، رصيد قديم من النوعين، مبالغ صحيحة بالقروش وhash checksum. تجربة isolated atomic swap بعد safety backup; production implementation later MUST use real DB transactional lock, verified durable safety and auth owner, plus D07 backup location/retention and B08 replay protocol.
+- CI والمراجعة النهائية في GitHub PR، ولا تغييرات توثيق بعد النجاح إلا لخلل مثبت.

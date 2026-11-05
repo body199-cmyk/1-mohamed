@@ -49,6 +49,8 @@ jobs:
         run: npx vitest run packages/statement-export/tests/pdf-rendering.test.ts
       - name: Validate XLSX files preserve exact Arabic text and ZIP structure
         run: npx vitest run packages/statement-export/tests/xlsx-rendering.test.ts
+      - name: Test versioned backup, tampering, isolated atomic restore and stale replay
+        run: node --test tools/backup-core.test.mjs
       - name: Build preview web app
         run: npm run build
       - name: Verify new Supabase SDK remains inactive before real Auth E2E
