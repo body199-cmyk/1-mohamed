@@ -39,6 +39,8 @@ jobs:
         run: npx vitest run apps/web/e2e/master-data-validation.test.ts
       - name: Check daily work report against original accounting engine
         run: npx vitest run apps/web/e2e/daily-work-validation.test.ts
+      - name: Check D16 demo payment ledger and isolated accounts
+        run: npx vitest run apps/web/e2e/payments-validation.test.ts
       - name: Build preview web app
         run: npm run build
       - name: Verify new Supabase SDK remains inactive before real Auth E2E
@@ -52,5 +54,5 @@ jobs:
       - name: Install isolated Chromium browser for UI regression
         run: npx playwright install chromium
       - name: Test master-data demo interactions in real browser
-        run: npx playwright test --config=playwright.ui.config.ts e2e/master-data.spec.ts e2e/daily-work.spec.ts e2e/statement-image.spec.ts
+        run: npx playwright test --config=playwright.ui.config.ts e2e/master-data.spec.ts e2e/daily-work.spec.ts e2e/statement-image.spec.ts e2e/payments.spec.ts
 
