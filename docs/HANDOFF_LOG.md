@@ -988,3 +988,5 @@
 - **ما لم يتغير:** `apps/web/src/proxy.ts` تمنع المسارات المالية افتراضيًا، و`/login` صفحة معلوماتية فقط، و`/demo/*` بالذاكرة. لا تشغيل GoTrue أو تهيئة مالك، ولا إرسال أو تخزين أسرار، ولا نشر أو DB حية.
 - **المراجعة النقدية:** مطلوبة بعد التنفيذ على الـdiff الكامل. تحقَّق من تكرار الإصدارات داخل lockfile ووجود حراس server-only، وفحص `getClaims()`+RPC للمالك، وسلامة cookie/header في Proxy المستقبلية. **نتائج CI على أحدث SHA تُسجل لاحقًا**، لا تُنسب من مراجعة سابقة.
 - **نقطة الاستئناف:** `STATUS` ← [تقرير H041](AUTH_01_H041_REVIEW.md) ← PR #4 وCI على أحدث SHA. التكامل الحي ما زال يحتاج Supabase اختبار ومراجعة HTTP/E2E.
+
+**H041 — مرور نقدي مستقل (التصحيح الأول):** اكتُشف أن `server.ts` الأول كان يتجاهل cache headers عند `setAll`؛ تم تحويله إلى `createRouteHandlerSupabaseClient(request,response)` لإجبار الكتابة على Response (Cookies وHeaders)، وأصبح فحص المالك يأخذ العميل request-scoped بدل إنشائه خفيًا. أُضيفت assertions ضمن `tools/auth-sdk-boundary-check.mjs`. يلزم CI على آخر SHA وE2E حقيقي لاحقًا على GoTrue.
