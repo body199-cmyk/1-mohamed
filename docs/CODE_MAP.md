@@ -220,3 +220,9 @@
 - `apps/web/src/demo/demo-types.ts` و`demo-context.tsx`: دفعات في الذاكرة مع create/edit/cancel، أثر وتواريخ وإصدار. `PRIMARY_AHMED` معرف افتراضي داخل Demo فقط.
 - `apps/web/src/features/payments/payments-view.tsx` + `payments.module.css`، مسار `/demo/payments` وشريط التنقل؛ `cash-openings-panel.tsx` يدعم افتتاحي المسؤول الأساسي.
 - `apps/web/e2e/payments-validation.test.ts` Vitest مالي، `e2e/payments.spec.ts` Chromium إجرائي؛ workflow يضيف الاختبارين. `auth-boundary-smoke.mjs` يؤكد المسار التجريبي فقط، بينما مسار `/payments` الحقيقي يظل محميًا.
+
+### H050 / REPORTS Vehicle Cash
+- apps/web/src/features/reports/vehicle-cash-report.ts: إسقاط الفترة والسابق والمدفوع والمستحق والختامي من buildCashLedger، لا نسخ حساب آخر.
+- apps/web/src/features/reports/vehicle-cash-view.tsx وapp/demo/reports/vehicle-cash/page.tsx: شاشة واحدة تتنقل فيها بين العربيات والمقاولين المسؤولين والتواريخ، وتعرض الترتيب وخط السير والاتجاه.
+- apps/web/src/features/payments/cash-ledger.ts: استبعاد دفعة مستقبلية بالنسبة إلى نهاية التقرير التاريخي بدلاً من رفضه.
+- apps/web/e2e/vehicle-cash-report-validation.test.ts: 6 اختبارات مال؛ e2e/vehicle-cash.spec.ts: 3 متصفح. GitHub CI وHTTP guard يختبرانها.
