@@ -37,3 +37,9 @@ jobs:
           npm run db:verify:negative-c
       - name: Build preview web app
         run: npm run build
+      - name: Verify fail-closed auth boundary over HTTP
+        run: |
+          npm run start --workspace=web -- --port 39123 > /tmp/next-auth-smoke.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          node tools/auth-boundary-smoke.mjs http://127.0.0.1:39123

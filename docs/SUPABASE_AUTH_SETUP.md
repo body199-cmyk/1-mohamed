@@ -75,3 +75,9 @@
 - لا نشر، ولا تعديل إنتاج، ولا إنشاء/تعديل مشروع Supabase سحابي، ولا إنشاء/رفع GitHub.
 - لا ادعاء أن المشروع جاهز لأموال حقيقية.
 - اختبارات المصادقة التي تعتمد على محاكاة لا تُستخدم لإثبات نجاح حفظ حقيقي أو صلاحيات فعلية.
+
+## تحديث H039 — ٥ نوفمبر ٢٠٢٦ (تطبيق حراسة مؤقتة، لا Auth)
+
+بدأنا `AUTH-01/PREP` بعد دمج H038. موجود على فرع `feat/auth01-safe-boundary-h039` ملف `apps/web/src/proxy.ts` في Next16، **يمنع** مسارات العمل الدائم ولا يسمح بتسجيل دخول أي شخص حتى يُربط `@supabase/ssr` و`supabase-js` وتُختبر هوية المالك الحقيقية. صفحة `/login` تنبيه فقط بدون كلمات مرور. الاختبار `tools/auth-boundary-smoke.mjs` يفحص HTTP عبر Next مع غياب الأسرار والسحابة. **إضافة الحراسة ليست دليلًا على جلسة سليمة ولا تُعد إتمام AUTH-01**.
+
+المرجع الحالي: [Supabase creating a client](https://supabase.com/docs/guides/auth/server-side/creating-a-client?framework=nextjs&package-manager=npm) و[Next.js 16 Proxy](https://nextjs.org/docs/app/api-reference/file-conventions/proxy). المرحلة التالية بعد اعتماد هذا الجزء هي حزم Supabase الرسمية و`client.ts`/`server.ts`/تحديث جلسة Proxy بـ`getClaims()`، مع تحقق المالك داخل الخادم وبيئة Auth منفصلة. لا تُفتح مسارات Server Action/HTTP أو تفوّض كتابة لعميل فقط لأنه يحمل cookie.

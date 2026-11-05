@@ -77,3 +77,10 @@
 - [PR #1](https://github.com/body199-cmyk/1-mohamed/pull/1) · [تقرير H038](DB_03_H038_REVIEW.md) · [التسليم H038](HANDOFF_LOG.md#h038).
 
 **دليل تحقق H038:** GitHub Actions run `41941247401`، commit `000c93cc` بتاريخ ٥ نوفمبر ٢٠٢٦: `npm ci`، ١٦٧ وحدة، ١٥ خطوة DB (harness + migrations + suites)، ثلاثة negative controls، وبناء Next جميعها PASS. يُعاد الاختبار على آخر commit قبل الدمج. لا تحقق HTTP أو Supabase Cloud.
+
+## H039 — AUTH-01/PREP (٥ نوفمبر ٢٠٢٦)
+
+- **استئناف مثبت:** DB-03/H038 دُمجت في `main` بنجاح عبر [PR #1](https://github.com/body199-cmyk/1-mohamed/pull/1)، commit `cf96b0c5`؛ GitHub Actions `41943012378` اختبرت ١٦٧ وحدة و١٦ خطوة SQL وكل أدوات التحكم السلبي والبناء، على بيئة معزولة فقط.
+- **T05 / AUTH-01** الآن **جزئي قيد التنفيذ** على `feat/auth01-safe-boundary-h039`: حراسة رفض مؤقتة في `apps/web/src/proxy.ts`، صفحة login غير فعّالة لا تجمع كلمة مرور، وHTTP smoke test في CI. **لا Supabase Auth حقيقي ولا اتصال دائم**.
+- **المطلوب قبل قبول H039:** فحص كامل diff، اختبارات `npm ci` / `npm run check` / `npm run db:verify` + controls / `npm run build` / `node tools/auth-boundary-smoke.mjs`، ومراجعة نقدية ثانية + تسليم موثق. [التفاصيل](AUTH_01_H039_REVIEW.md).
+- **المتبقي لإنهاء T05:** تثبيت الحزم الرسمية بنسخ ثابتة وإعداد cookie clients و`getClaims()` وRLS/owner gate وشاشات الدخول/الاسترجاع والخروج، وتجربة Supabase Auth/HTTP على **بيئة اختبار منفصلة**. لا تغيير T08/الدفعات أو D15/D16.
