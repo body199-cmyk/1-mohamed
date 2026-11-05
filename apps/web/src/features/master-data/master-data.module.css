@@ -181,3 +181,16 @@
 .audit { display:grid; gap:8px; border-top:1px solid var(--border-color); padding-top:16px; }
 .audit ol { padding-inline-start:24px; display:grid; gap:12px; }
 .audit pre { white-space:pre-wrap; overflow-wrap:anywhere; direction:ltr; text-align:left; }
+
+/* H057 consistent register inputs, tabs and error-safe mobile layout. */
+.page {min-width:0;}
+.card {border-top:3px solid var(--metric-edge);}
+.filters input:hover,.editor input:hover,.editor select:hover {border-color:var(--border-strong);}
+.filters input:focus-visible,.editor input:focus-visible,.editor select:focus-visible {outline:2px solid var(--border-focus);outline-offset:1px;}
+.tabBar {gap:8px;}
+.tab,.activeTab {transition:border-color .15s ease,background-color .15s ease;}
+.tab:hover {border-color:var(--border-focus);background:var(--surface-hover);}
+.primary:hover:not(:disabled){background:var(--color-primary-hover);}
+.primary:disabled {opacity:.55;cursor:not-allowed;}
+.secondary:hover:not(:disabled){background:var(--surface-hover);border-color:var(--border-strong);}
+.editor{background:var(--surface-card-subtle);}
