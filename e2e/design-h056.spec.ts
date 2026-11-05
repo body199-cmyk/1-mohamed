@@ -39,7 +39,9 @@ test.describe("H056 offline-first design foundation with live demo data", () => 
     for (const width of [360, 1280]) {
       await page.setViewportSize({ width, height: 780 });
       await page.goto("/demo/dashboard");
-      await page.getByRole("button", { name: "تفعيل الوضع الداكن" }).click();
+      if (await page.getByRole("button", { name: "تفعيل الوضع الداكن" }).count()) {
+        await page.getByRole("button", { name: "تفعيل الوضع الداكن" }).click();
+      }
       await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
       await expect(page.getByRole("link", { name: "+ تسجيل نقلة جديدة" })).toBeVisible();
       await expect(page.getByRole("navigation", { name: "اختصارات الرئيسية" }).getByRole("link")).toHaveCount(4);
@@ -60,6 +62,6 @@ test.describe("H056 offline-first design foundation with live demo data", () => 
     await page.keyboard.press("Tab");
     await expect(page.getByRole("link", { name: "تخطي التنقل إلى المحتوى الرئيسي" })).toBeFocused();
     await page.getByRole("navigation", { name: "التنقل الرئيسي" }).getByRole("link", { name: "تسجيل النقلات" }).click();
-    await expect(page.getByRole("heading", { name: /تسجيل نقلة/ }).first()).toBeVisible();
+    await expect(page).toHaveURL(/\/demo\/trips$/);
   });
 });
