@@ -172,6 +172,7 @@ export function MasterDataView() {
       </section>
 
       <QuickAddModal
+        key={`${quickAdd ?? "closed"}-${String(quickAdd !== null)}`}
         type={quickAdd ?? "contractor"}
         isOpen={quickAdd !== null}
         onClose={() => setQuickAdd(null)}
