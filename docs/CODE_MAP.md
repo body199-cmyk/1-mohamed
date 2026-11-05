@@ -148,3 +148,10 @@
 | `docs/AUTH_01_H039_REVIEW.md` | شروط القبول وحدود الأمان والمرجع للاستكمال | موجود على فرع H039 |
 
 لا يتم فتح أي حراسة حقيقية بمجرد ظهور متغيرات Supabase عامة. **التحقق الفعلي للهوية والمالك لاحقًا في السيرفر والـRPC**.
+
+## H040 — الحالة المعتمدة على main بعد الدمجين
+
+- SQL للمرحلة C + H038 metadata + جناح `05_phase_c_adversarial_review.sql` **موجودة على main** عبر PR #1 (`cf96b0c5`). الدليل CI `41943012378`، وليس مجرد وجود الملف.
+- `apps/web/src/proxy.ts` **موجودة على main** عبر PR #2 (`df6f54c7`): حراسة **deny-by-default** مؤقتة لا تحتوي جلسة حقيقية، مع السماح للصفحات العامة والأصول في GET/HEAD فقط. `apps/web/src/app/login/page.tsx` معلوماتية، و`tools/auth-boundary-smoke.mjs` تحقق HTTP. الدليل CI `41944665834`.
+- التوابع المخططة `apps/web/src/lib/supabase/client.ts` و`server.ts` و`proxy.ts` (cookie refresh helper) **لم تُنفذ**؛ لا تخلطها مع حارس `apps/web/src/proxy.ts` المؤقت.
+- بعض الصفوف التاريخية في الخريطة تسجل حالة «مخطط» أو «ينتظر CI» وقت الكتابة؛ **هذا القسم وSTATUS أحدث مرجع للحالة ولا يلغيان التاريخ**.
