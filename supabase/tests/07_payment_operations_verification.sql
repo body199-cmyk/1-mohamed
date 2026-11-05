@@ -19,8 +19,12 @@ values ('OB_H48_A','VEHICLE_CASH','K_AHMED','V_H48_A',
 set role authenticated;
 set "request.jwt.claim.role"='authenticated';
 set "request.jwt.claim.sub"='00000000-0000-0000-0000-000000000001';
+-- Admin executes this combined fixture + helper arithmetic verification.
+-- The JWT still identifies the authorized owner for the RPC calls.
+-- Direct client execution of helpers remains revoked, by design.
+reset role;
 
-do $$
+do $
 declare
   v_today date := (now() at time zone 'Africa/Cairo')::date;
   v_trip jsonb;
@@ -138,7 +142,11 @@ begin
     and (select count(*) from public.audit_log where entity_id='P_H48_SAME' and action='CANCEL')=1,
     'D16.14 cancellation is historical and auditable'
   );
-end $$;
+end $;
+
+set role authenticated;
+set "request.jwt.claim.role"='authenticated';
+set "request.jwt.claim.sub"='00000000-0000-0000-0000-000000000001';
 
 -- Verify fail-closed conditions; all rejected requests leave no partial writes.
 select public.app_test_expect_error(
