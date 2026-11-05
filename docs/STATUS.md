@@ -1,8 +1,12 @@
+> **الحالة الحية H046 — ٥ نوفمبر ٢٠٢٦:** تأكد دمج H043/UI-BASE-01A [PR #6](https://github.com/body199-cmyk/1-mohamed/pull/6)، H044/UI-BASE-01B [PR #7](https://github.com/body199-cmyk/1-mohamed/pull/7)، وH045/REPORTS-01 [PR #8](https://github.com/body199-cmyk/1-mohamed/pull/8). آخر `main` قبل بدء H046: `e939689b`. التنفيذ الحالي **T09.1 / H046** تصدير PNG من كشف المقاول نفسه، على فرع مستقل؛ لا دفعات ولا ربط Supabase/Vercel. **مهمة T09 جزئية**؛ D15/D16 مانعان DB-04-PAYMENTS، وD07 يحتاج اعتمادًا لاستعادة/حفظ النسخ. الحالة النهائية للـPR/CI تؤخذ من GitHub، لا من ملخص تاريخي أدناه.
+
+---
+
 > **الحالة الحية H045 / REPORTS-01 (٥ نوفمبر ٢٠٢٦):** PR #6 وPR #7 مدموجان في `main` (آخر H044 عند `d633dc49`). جاري إضافة تقرير شغل يومي تجريبي على فرع مستقل H045؛ لا دفعات ولا ربط Supabase/Vercel ولا نشر. حالة PR/CI تُحسم من GitHub الفعلي، ولا يُعلن REPORTS-01 مكتملًا قبل مراجعة CI على آخر SHA والدمج. تفاصيل [تقرير H045](REPORTS_01_H045_REVIEW.md).
 
 ---
 
-# الحالة الحالية
+# الأرشيف الزمني للحالة (اقرأ أحدث ملاحظة بالأعلى)
 
 **آخر تحديث: ٥ نوفمبر ٢٠٢٦ — H044 / UI-BASE-01A على [PR #6](https://github.com/body199-cmyk/1-mohamed/pull/6).** استكمال الوظائف المستقلة قبل ربط حسابات Supabase/Vercel، بناءً على [الخطة H042](OFFLINE_FIRST_ROADMAP_H042.md).
 
