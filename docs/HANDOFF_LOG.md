@@ -922,3 +922,17 @@
   - `supabase/migrations/20261104200010_phase_b_foundation.sql` و`20261104200011_phase_b_operations.sql` كنمط للعمليات الجديدة.
   - `tools/db-verify.mjs` و`supabase/tests/02_phase_b_operations_verification.sql` كنمط للاختبار.
   - بطاقة `DB-03-TRIPS` في `docs/SUBTASKS.md`؛ و`docs/SUPABASE_AUTH_SETUP.md` للعائق الموازي.
+
+## H038 — ٥ نوفمبر ٢٠٢٦ — استلام GitHub وتصحيح بيانات النقلات في DB-03
+
+- **المهمة:** `DB-03-TRIPS` (إصلاح صغير بحدود حقول النقلة + ضبط تسليم الاستلام).
+- **المنفذ/المراجع:** ChatGPT عبر GitHub connector؛ الكود يحتاج مراجعة ونتيجة تشغيل مستقلة قبل الاعتماد.
+- **الحالة عند التسليم:** [Draft PR #1](https://github.com/body199-cmyk/1-mohamed/pull/1) على `fix/db03-trip-details-h038`؛ **لا دمج، ولا نجاح اختبارات مُثبت، ولا نشر/قاعدة إنتاج**.
+- **تصحيح معلومة سابقة:** سجل H037 وSTATUS عند الاستلام يقولان إن C لم تبدأ؛ **الملفات الفعلية على main** تشمل migrations `20261104200020`/`21`/`22` وجناح SQL `03` والأوامر في `db-verify.mjs`. وُصفت بأنها «كود موجود يحتاج تحققًا» ولم ننسب إليها نجاح H037 الخاص بـA/B.
+- **السبب والتعديل:** المتطلبات وواجهة `trip-entry-panel` تشمل `origin/destination/receiptNumber`، لكن جدول وعمليات DB-03 لا تخزن الطريق/الإيصال، وقارئ RPC لا يعيد الملاحظات. أُضيفت Migration `20261104200023_phase_c_trip_details.sql` بأعمدة اختيارية ودوال CREATE/UPDATE/READ محدثة وتدقيق للوصف، دون تغيير migrations السابقة؛ رقم الإيصال نص للأصفار البادئة.
+- **كود واختبارات:** `supabase/migrations/20261104200023_phase_c_trip_details.sql`؛ `supabase/tests/04_phase_c_trip_details_verification.sql` (١١ تأكيدًا للوصف/التدقيق/إعادة الطلب)؛ تعديل `tools/db-verify.mjs`؛ إضافة `.github/workflows/verify.yml` لفحوص كل PR.
+- **ملفات المتابعة:** `AGENTS.md`، `docs/STATUS.md`، `docs/TASKS.md`، `docs/SUBTASKS.md`، `docs/PROMPTS.md`، `docs/CODE_MAP.md`، `docs/ISSUES.md`، `docs/DB_03_H038_REVIEW.md` وهذا السجل. `BUILD_01_REPORT.md` وH037 تاريخيان ولم يُمحَ محتواهما.
+- **ما تحقق:** الوصول المباشر للريبو وصلاحية الكتابة؛ فحص وصفي للكود وتعريفات SQL والتحويلات؛ إنشاء ملفات فعلية وCommits على فرع PR. لا دليل تشغيل لاحق لـCI حتى كتابة هذا التسليم.
+- **ما لم يتحقق:** `npm ci` / `npm run check` / `npm run db:verify` (بما فيها negative controls) / `npm run build` **لم تُشغّل في هذه الجلسة** بسبب عدم توافر نسخ المشروع/شبكة GitHub في بيئة التشغيل. لا تشغيل مصادقة Supabase أو HTTP أو تزامن حقيقي ولا اختبارات متصفح مستمرة.
+- **قيد الإغلاق:** تحقق من فحص PR، أصلح أي فشل في نفس الفرع، سجّل روابط النتائج ولا تدمج `main` أو تعتبر T07 كاملًا قبلها. لا تبدأ DB-04 أو AUTH-01 ضمن هذا التكليف.
+- **نقطة الاستئناف:** `docs/STATUS.md` → [`docs/DB_03_H038_REVIEW.md`](DB_03_H038_REVIEW.md) → [PR #1](https://github.com/body199-cmyk/1-mohamed/pull/1) → سجل CI ثم مراجعة واعتماد/إصلاح محدود. D15/D16 مفتوحان للدفعات فقط.
