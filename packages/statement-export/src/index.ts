@@ -10,3 +10,6 @@ export { renderContractorStatementHtml } from "./render-statement-html";
 
 export { createStatementImageLayout, renderContractorStatementPng } from "./render-statement-image";
 export type { StatementImageLayout } from "./render-statement-image";
+
+export { paginateStatementForPdf, assemblePdfJpegPages, renderContractorStatementPdf } from "./render-statement-pdf";
+export type { PdfJpegPage } from "./render-statement-pdf";
