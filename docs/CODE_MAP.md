@@ -231,3 +231,8 @@
 - apps/web/src/features/reports/dashboard-summary.ts: مؤشرات عمل اليوم عبر buildDailyWorkReport، ومؤشر دفعات اليوم المستقل بالنقود النصية BigInt.
 - apps/web/src/features/reports/dashboard-view.tsx + dashboard.module.css وapp/demo/dashboard/page.tsx: لوحة الرئيسية والتوجيه من app/page.tsx، روابط لبقية الشاشات وعرض نشاط حديث.
 - apps/web/e2e/dashboard-validation.test.ts: 6 unit؛ e2e/dashboard.spec.ts: 2 Chromium E2E. tools/auth-boundary-smoke.mjs يثبت قبول المعاينة وتحويل الجذر.
+
+### H052 / T09.2 PDF مباشر
+- packages/statement-export/src/render-statement-pdf.ts: تحويل الصفوف لصفحات PDF محدودة دون إسقاط، رسمها بواسطة paintStatementImage الموجود وترقيمها، تغليف JPEG داخل PDF 1.4 بإحداثيات xref حقيقية (بدون مكتبة خارجية).
+- packages/statement-export/tests/pdf-rendering.test.ts: تحقق تقسيم الصفوف وPDF object offsets ورفض ملفات JPEG زائفة؛ e2e/statement-pdf.spec.ts: تنزيل PDF حقيقي من Chromium واسم الملف والفترة الفارغة.
+- apps/web/src/features/contractor-statements/statement-export-actions.tsx: زر PDF مباشر؛ حفظ PDF من الطباعة القديمة يظل داعمًا للنص القابل للبحث. workflow verify يضم اختبارات PDF.
