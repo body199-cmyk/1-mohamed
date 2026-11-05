@@ -71,6 +71,8 @@ const steps = [
   ['migration 10', 'supabase/migrations/20261104200023_phase_c_trip_details.sql', 'C: حفظ خط السير ورقم الإيصال وإرجاع الملاحظات'],
   ['tests C details', 'supabase/tests/04_phase_c_trip_details_verification.sql', 'C: اختبارات بيانات النقلة والتدقيق وإعادة الطلب'],
   ['tests C security review', 'supabase/tests/05_phase_c_adversarial_review.sql', 'C: مراجعة مستقلة للصلاحيات والإلغاء وإعادة الطلب'],
+  ['migration 11', 'supabase/migrations/20261104200030_payments_schema.sql', 'T08.1: جدول الدفعات وعلاقاته دون عمليات الصرف'],
+  ['tests payments schema', 'supabase/tests/06_payments_schema_verification.sql', 'T08.1: تحقق العلاقات والدقة والصلاحيات والحركات المحفوظة'],
 ];
 
 function describe(error) {
@@ -165,6 +167,8 @@ try {
       (select count(*) from public.opening_balances)   as opening_balances,
       (select count(*) from public.trips)              as trips,
       (select count(*) from public.trips where is_cancelled) as cancelled_trips,
+      (select count(*) from public.payments) as payments,
+      (select count(*) from public.payments where is_cancelled) as cancelled_payments,
       (select count(*) from public.audit_log)          as audit_rows,
       (select count(*) from public.idempotency_keys)   as idempotency_rows,
       (select count(*) from pg_proc p join pg_namespace n on n.oid = p.pronamespace
@@ -172,7 +176,7 @@ try {
       (select count(*) from pg_tables where schemaname = 'public') as tables
   `);
   console.log('\nfinal state:', JSON.stringify(counts.rows[0]));
-  console.log('\nALL STEPS PASSED — A + B + C migrations applied and five SQL suites (A/B/C/details/adversarial) executed on isolated PostgreSQL.');
+  console.log('\nALL STEPS PASSED — A/B/C plus T08.1 payments schema and isolated SQL suites executed on PostgreSQL.');
   console.log('NOTE: this is PostgreSQL, NOT Supabase Auth/GoTrue/PostgREST.');
   console.log('NOTE: PGlite is a single in-memory connection; true concurrent requests and login flows still require a real Supabase instance.');
 } catch (error) {

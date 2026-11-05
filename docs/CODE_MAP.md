@@ -204,3 +204,8 @@
 - `packages/statement-export/src/render-statement-image.ts`: تخطيط/طلاء الصورة بمتصفح Canvas من **نفس** `ContractorStatementDocument` الخاص بـHTML/CSV؛ خط Cairo محلي بعد `document.fonts.load`، وحد سعة صريح بلا إسقاط صامت.
 - `packages/statement-export/tests/image-rendering.test.ts`: مطابقة قيم الملخص والحركات ورفض السعة.
 - `apps/web/src/features/contractor-statements/statement-export-actions.tsx`: زر تنزيل PNG فقط (dynamic import)، بلا اتصالات أو APIs؛ `e2e/statement-image.spec.ts` متصفح Chromium يتحقق من bytes PNG الأصلية والفترة والتاريخ.
+
+### H047 / T08.1
+- `supabase/migrations/20261104200030_payments_schema.sql`: جدول payments، FK مركّب (vehicle_id, responsible_contractor_id) إلى vehicle_accounts، رابط وصفي اختياري `linked_trip_id` يحميه trigger عند الإدخال والتعديل؛ لا يخصم نقدًا ولا يغيّر الشغل. RLS مالك قراءة فقط ومنع كتابة مباشرة وTRUNCATE.
+- `supabase/tests/06_payments_schema_verification.sql`: Suite مستقل للربط/المبالغ/الإلغاء/RLS بدون خداع نتيجة رفض، باستخدام مساعدات suites A/B/C؛ `tools/db-verify.mjs` يشغل migration 11 وsuite بعد C.
+- D15 في `DECISIONS` و`ACCOUNTING_RULES` أصبح معتمدًا؛ D16 يظل مفتوحًا ولا توجد RPC دفعات في T08.1.
