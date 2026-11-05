@@ -78,75 +78,28 @@ export function TripFormFields({
         </select>
       </div>
 
-      {/* Direction Options */}
-      <div className={`${styles.formGroup} ${styles.fullWidth}`}>
-        <label className={styles.label}>
-          اتجاه الشغل والمسؤولية المالية <span className={styles.required}>*</span>
-        </label>
-        <div className={styles.directionGrid}>
-          <div
-            className={`${styles.directionOption} ${
-              tripDraft.direction === "AHMED_SUPPLIES"
-                ? styles.directionOptionActive
-                : ""
-            }`}
-            onClick={() =>
-              dispatch({
-                type: "EDIT_TRIP_DIRECTION",
-                direction: "AHMED_SUPPLIES",
-              })
-            }
-          >
-            <div className={styles.directionTitle}>
-              <input
-                type="radio"
-                name="trip-direction"
-                aria-label="أحمد جاب العربيات" checked={tripDraft.direction === "AHMED_SUPPLIES"}
-                onChange={() =>
-                  dispatch({
-                    type: "EDIT_TRIP_DIRECTION",
-                    direction: "AHMED_SUPPLIES",
-                  })
-                }
-              />
+      {/* Native radios inside labels; full card click and keyboard support. */}
+      <div className={[styles.formGroup, styles.fullWidth].join(" ")}>
+        <p className={styles.label}>اتجاه الشغل والمسؤولية المالية <span className={styles.required}>*</span></p>
+        <div className={styles.directionGrid} role="radiogroup" aria-label="اتجاه الشغل والمسؤولية المالية">
+          <label className={[styles.directionOption, tripDraft.direction === "AHMED_SUPPLIES" ? styles.directionOptionActive : ""].join(" ")}>
+            <span className={styles.directionTitle}>
+              <input type="radio" name="trip-direction" aria-label="أحمد جاب العربيات"
+                checked={tripDraft.direction === "AHMED_SUPPLIES"}
+                onChange={() => dispatch({ type: "EDIT_TRIP_DIRECTION", direction: "AHMED_SUPPLIES" })} />
               <span>شغل أحمد (المقاول مدين لأحمد)</span>
-            </div>
-            <div className={styles.directionDesc}>
-              عربيات أحمد أو طرفه تورّد للمقاول المسؤول
-            </div>
-          </div>
-
-          <div
-            className={`${styles.directionOption} ${
-              tripDraft.direction === "OTHER_SUPPLIES"
-                ? styles.directionOptionActive
-                : ""
-            }`}
-            onClick={() =>
-              dispatch({
-                type: "EDIT_TRIP_DIRECTION",
-                direction: "OTHER_SUPPLIES",
-              })
-            }
-          >
-            <div className={styles.directionTitle}>
-              <input
-                type="radio"
-                name="trip-direction"
-                aria-label="المقاول جاب العربيات" checked={tripDraft.direction === "OTHER_SUPPLIES"}
-                onChange={() =>
-                  dispatch({
-                    type: "EDIT_TRIP_DIRECTION",
-                    direction: "OTHER_SUPPLIES",
-                  })
-                }
-              />
+            </span>
+            <span className={styles.directionDesc}>عربيات أحمد أو طرفه تورّد للمقاول المسؤول</span>
+          </label>
+          <label className={[styles.directionOption, tripDraft.direction === "OTHER_SUPPLIES" ? styles.directionOptionActive : ""].join(" ")}>
+            <span className={styles.directionTitle}>
+              <input type="radio" name="trip-direction" aria-label="المقاول جاب العربيات"
+                checked={tripDraft.direction === "OTHER_SUPPLIES"}
+                onChange={() => dispatch({ type: "EDIT_TRIP_DIRECTION", direction: "OTHER_SUPPLIES" })} />
               <span>شغل المقاول (أحمد مدين للمقاول)</span>
-            </div>
-            <div className={styles.directionDesc}>
-              عربيات المقاول تورّد لشغل أحمد
-            </div>
-          </div>
+            </span>
+            <span className={styles.directionDesc}>عربيات المقاول تورّد لشغل أحمد</span>
+          </label>
         </div>
       </div>
 

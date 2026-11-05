@@ -28,3 +28,14 @@
 .audit { padding-inline-start:20px;display:grid;gap:8px; }
 .audit pre { white-space:pre-wrap;overflow-wrap:anywhere;direction:ltr;text-align:left; }
 @media(max-width:600px) { .filters,.form,.section,.summary{padding:12px}.page h1{font-size:1.35rem} }
+
+/* H057 unified invoice/payment inputs without ledger changes. */
+.filters,.form,.section,.summary {box-shadow:var(--shadow-card);}
+.form {border-top:3px solid var(--metric-edge);}
+.page input:hover:not(:disabled),.page select:hover:not(:disabled){border-color:var(--border-strong);}
+.page input:focus-visible,.page select:focus-visible {border-color:var(--border-focus);outline:2px solid var(--border-focus);outline-offset:1px;}
+.primary:hover:not(:disabled){background:var(--color-primary-hover);}
+.secondary:hover:not(:disabled){background:var(--surface-hover);border-color:var(--border-strong);}
+.scroll th{background:var(--surface-card-subtle);}
+.scroll tbody tr:hover td{background:var(--surface-hover);}
+@media(max-width:600px){.buttons .primary{flex:1 1 180px;}}
