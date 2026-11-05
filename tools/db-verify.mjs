@@ -171,7 +171,7 @@ try {
       (select count(*) from pg_tables where schemaname = 'public') as tables
   `);
   console.log('\nfinal state:', JSON.stringify(counts.rows[0]));
-  console.log('\nALL STEPS PASSED — A + B + C migrations applied and the three suites executed on an isolated PostgreSQL instance.');
+  console.log('\nALL STEPS PASSED — A + B + C migrations applied and four SQL suites (A/B/C/details) executed on isolated PostgreSQL.');
   console.log('NOTE: this is PostgreSQL, NOT Supabase Auth/GoTrue/PostgREST.');
   console.log('NOTE: PGlite is a single in-memory connection; true concurrent requests and login flows still require a real Supabase instance.');
 } catch (error) {
