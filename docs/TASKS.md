@@ -200,3 +200,9 @@
 - تجانس الحدود والألوان والـfocus والمظهر الداكن والخطوط والـminimum touch 44px في trips/master-data/payments CSS، مع تحويل badges/alerts hardcoded light-only إلى ثيمات CSS variables. لا تغير نماذج بيانات أو عمليات مالية.
 - 3 اختبارات متصفح: Radio عبر click/Space وfocus outline، عدم overflow على 3 شاشات × 360/768/1280، صور Light/Dark للثلاث شاشات؛ 6 screenshots في GitHub Actions سبعة أيام، وCI الكامل مع 31 اختبارًا سابقًا = 34 إجمالي.
 - متابعة H058 للكشوف والتصدير ثم H059 مراجعة صور كاملة واعتماد المستخدم قبل Supabase/Vercel.
+
+### H058 / T11-UI-POLISH-03 — Reports + Export Actions
+- تقرير المقاول: تبويب badge/result يعرض الدائن والمدين ومتوازن بألوان متوافقة مع theme tokens بدل hard-coded light-only؛ errorState يستخدم danger tokens في الوضع الداكن والفاتح.
+- 5 خيارات تصدير PDF/Print/PNG/CSV/XLSX أصبحت أزرارًا واضحة مختلفة عن حقول اختيار المقاول؛ حفظ أسمائها ومسارات التصدير ومحركها دون تعديل. PDF مباشر هو زر Primary للمعلومية فقط ولا يغير محتواه.
+- اليومية: فلاتر وجداول تتماشى بصريًا مع الكشوف، focus وhover واضح. كشف النقد يستخدم payments CSS الموحد منذ H057.
+- القبول: 3 Chromium تشمل 3 تقارير على 360/768/1280، قابلية التركيز وعرض 5 أزرار تصدير، 6 screenshots Light/Dark في GitHub Actions، وجميع 34 Browser/SQL/الأمان/النسخ + 3=37 اختبار متصفح إجمالي؛ ثم مراجعة diff وmerge. H059 مراجعة نهائية قبل Supabase.

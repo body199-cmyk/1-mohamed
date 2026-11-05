@@ -1094,3 +1094,7 @@
 ## H057 — Form polish — ٥ نوفمبر ٢٠٢٦
 - PR #19/H056 على main 6d9ff310773a213fdeb7d4dffc5708a370b78d2b، CI 42114716783 SUCCESS 31/31 Chromium وصور Design artifact 13456420098. بدأت H057 لتشطيب الثلاث شاشات الأساسية قبل Supabase/Vercel.
 - التركيز: accessible native radio card direction دون أي تغيير محرك المال، وألوان badges/alerts وضع داكن وCSS focus/44px/بطاقات موحدة. اختبارات Chromium إضافية و6 screenshots. بوابة merge بعد CI على آخر SHA ومراجعة نقدية.
+
+## H058 / Reports and exports polish — ٥ نوفمبر ٢٠٢٦
+- بعد نجاح PR #20/H057 (main ac39b634995c259c817338b770cda18e5ce2edb3 وCI 42116651005، 34 Chromium و6 صور Light/Dark)، بدأ H058 لتشطيب تقارير المقاول واليومية ونقد العربية وأزرار التصدير فقط.
+- لا تغيير لحسابات مالية أو عناصر إيرادات أو فعلية PDF/XLSX/CSV/PNG؛ إنما تحسين UX/CSS theme وإضافة 3 tests للعرض والتركيز وموبايل/تابلت وصور في Actions. H059 للمراجعة الشاملة واعتماد المستخدم؛ بعدها خدمات حقيقية.

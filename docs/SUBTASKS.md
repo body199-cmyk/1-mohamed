@@ -461,3 +461,8 @@
 - trips/trip-form-fields.tsx: استبدال اختيار الاتجاه من div onClick ببطاقة label+radio أصلية، مع radiogroup. لا تعديل reducer ولا payload.
 - trips/master-data/payments CSS Modules: حدود بطاقات وعناصر وfocus ألوان محمية في الوضعين، modalCloseBtn 44px، مع CSS var للنجاح والتحذير والخطأ. لا API.
 - e2e/forms-h057.spec.ts + 6 screenshots في artifact: keyboard/hover/space، 3 شاشات وثلاثة أحجام، Light/Dark. مراجعة diff وCI على أحدث SHA قبل دمج.
+
+### H058 / Reports design before cloud
+- تحسين CSS Modules للكشوف: دلالات النجاح والتحذير والخطأ في الوضعين، اتساق فلاتر وجداول اليومية، وعناصر التصدير buttons مستقلة عن select inputs.
+- اختبار Playwright 3 حالات جديدة +6 screenshots لتقرير المقاول واليومية ونقد العربية في 360 light/dark، اختبار 768/1280 وكشف عدم overflow؛ لا يتغير المال أو فلاتر التواريخ ولا محرك الملفات.
+- H059 بعد دمج PR H058: مراجعة الصور لجميع الشاشات وفتح أي defects حقيقية، واستلام قبول المستخدم للشكل قبل الخدمات.

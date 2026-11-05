@@ -261,3 +261,8 @@
 - apps/web/src/features/trips/trip-form-fields.tsx: native radio cards مع role radiogroup لعزل تغيير الاتجاه بالنموذج نفسه.
 - apps/web/src/features/trips/trips.module.css وmaster-data/master-data.module.css وpayments/payments.module.css: توحيد تركيز الحقول والألوان والبطاقات وهدف الإغلاق، دون تعديل data.
 - e2e/forms-h057.spec.ts و.github/workflows/verify.yml: 3 Chromium tests و6 صور Light/Dark محفوظة مؤقتًا في Actions artifact.
+
+### H058 / reports and export controls visual scope
+- apps/web/src/features/contractor-statements/statement-export-actions.tsx: أزرار تصدير منفصلة بصريًا عن حقول select مع نفس handlers.
+- apps/web/src/features/contractor-statements/statements.module.css: themed badges/alerts/export button panel.
+- apps/web/src/features/reports/daily-work.module.css: focus/tabular surfaces consistent; e2e/reports-h058.spec.ts + verify.yml: UI tests and screenshots 3 reports×2 themes.
