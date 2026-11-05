@@ -1,0 +1,36 @@
+name: H041 one-time lockfile generation
+
+on:
+  pull_request:
+    paths:
+      - apps/web/package.json
+      - package-lock.json
+      - .github/workflows/auth-lock-export.yml
+
+permissions:
+  contents: read
+
+jobs:
+  lockfile:
+    # Only our own dedicated branch: no publishing, push, tokens or secrets.
+    if: github.event.pull_request.head.repo.full_name == github.repository && github.head_ref == 'feat/auth01-ssr-sdk-h041'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Recalculate npm v3 lockfile without running package scripts
+        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund --workspace=web
+      - name: Emit lockfile in encoded chunks for tracked GitHub update
+        run: |
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const data = fs.readFileSync('package-lock.json', 'utf8');
+          for (let n = 0, i = 0; n < data.length; n += 500, i++) {
+            console.log('LOCKCHUNK|' + i + '|' + encodeURIComponent(data.slice(n,n+500)));
+          }
+          console.log('LOCKCHUNKS_TOTAL|' + Math.ceil(data.length / 500));
+          NODE
