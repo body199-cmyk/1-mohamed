@@ -85,6 +85,18 @@ test("B04 validates cross-table FKs, account isolation and historical trip refer
   assert.doesNotThrow(()=>createBusinessBackup(oldLink)); // descriptive history D13
 });
 
+test("B04 valid contractor work opening may have null vehicle without bogus cash account",()=>{
+  const data=fixture();
+  data.opening_balances.push({
+    id:"OB_WORK",balance_type:"CONTRACTOR_WORK",contractor_id:"K_2",
+    vehicle_id:null,start_date:"2026-11-01",signed_piastres:"-7500",
+    is_cancelled:false,version:1,cancel_reason:null,cancelled_at:null,
+  });
+  const verified=verifyBusinessBackup(createBusinessBackup(data));
+  assert.equal(verified.counts.opening_balances,2);
+  assert.equal(verified.data.opening_balances[1].vehicle_id,null);
+});
+
 test("B04 rejects mismatched totals, fractional piastres, prototype pollution and duplicates",()=>{
   const badTotal=fixture();badTotal.trips[0].vehicle_total_piastres="10001";
   assertInvalid(()=>createBusinessBackup(badTotal),/إجمالي/);
@@ -92,9 +104,6 @@ test("B04 rejects mismatched totals, fractional piastres, prototype pollution an
   assertInvalid(()=>createBusinessBackup(fraction));
   const duplicate=fixture();duplicate.payments.push({...duplicate.payments[0]});
   assertInvalid(()=>createBusinessBackup(duplicate),/مكرر/);
-  const poison=JSON.parse(JSON.stringify(fixture()).replace('"notes":', '"__proto__":{},"notes":'));
-  // Explicit injected prototype keys are forbidden even though JSON.parse is safe.
-  poison.payments[0]["__proto__"]={};
   const poisoned=fixture();
   Object.defineProperty(poisoned.payments[0],"__proto__",{value:{x:1},enumerable:true});
   assertInvalid(()=>createBusinessBackup(poisoned),/مفتاح JSON/);

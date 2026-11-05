@@ -153,7 +153,8 @@ export function verifyBusinessDataset(data) {
       jsonCheck(row);
       requireValid(Object.keys(row).every(f => COLUMNS[table].includes(f)),
         "حقل مجهول أو غير آمن في " + table);
-      requireValid(REQUIRED[table].every(f => Object.hasOwn(row,f) && row[f] !== null),
+      requireValid(REQUIRED[table].every(f => Object.hasOwn(row,f) &&
+        (row[f] !== null || (table === "opening_balances" && f === "vehicle_id"))),
         "حقل إلزامي ناقص في " + table);
       const key = KEY[table](row);
       requireValid(typeof key === "string" && key.length > 0 && !keys.has(key),
