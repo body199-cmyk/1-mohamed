@@ -24,6 +24,7 @@ export function VehicleCashView() {
     { vehicleId, responsibleContractorId: responsibleId, from, to }
   ), [trips, payments, cashOpenings, vehicleId, responsibleId, from, to]);
 
+  const tripLookup = useMemo(() => new Map(trips.map(trip => [trip.id, trip])), [trips]);
   const vehicle = vehicles.find(v => v.id === vehicleId);
   const responsibleName = responsibleId === DEMO_PRIMARY_RESPONSIBLE_ID
     ? "أحمد أبو علي"
@@ -83,12 +84,18 @@ export function VehicleCashView() {
           <p className={styles.muted} role="status">لا توجد حركات في الفترة المحددة. الرصيد السابق والختامي محفوظان في الملخص.</p> :
           <div className={styles.scroll} role="region" aria-label="تمرير جدول كشف العربية" tabIndex={0}>
             <table aria-label="جدول حركات كشف العربية">
-              <thead><tr><th>تاريخ الحركة</th><th>النوع</th><th>البيان / الإيصال</th><th>القيمة</th><th>الرصيد بعد الحركة</th></tr></thead>
+              <thead><tr><th>تاريخ الحركة</th><th>النوع</th><th>البيان / الإيصال</th><th>خط السير</th><th>اتجاه الشغل</th><th>القيمة</th><th>الرصيد بعد الحركة</th></tr></thead>
               <tbody>{result.value.rows.map(row =>
                 <tr key={row.type + "|" + row.id}>
                   <td>{row.date}</td>
                   <td>{row.type === "WORK" ? "مستحق نقلة" : "دفعة نقدية"}</td>
                   <td>{row.label}</td>
+                  <td>{row.type === "WORK"
+                    ? (tripLookup.get(row.id)?.origin ?? "—") + " ← " +
+                      (tripLookup.get(row.id)?.destination ?? "—") : "—"}</td>
+                  <td>{row.type === "WORK"
+                    ? (tripLookup.get(row.id)?.direction === "AHMED_SUPPLIES"
+                      ? "أحمد جاب العربية" : "المقاول جاب العربية") : "—"}</td>
                   <td>{egp(row.amountPiastres)}</td>
                   <td>{egp(row.balancePiastres)}</td>
                 </tr>
