@@ -36,7 +36,7 @@ export function CashOpeningsPanel() {
         setError("راجع المقاول والعربية والتاريخ والمبلغ وسبب التغيير."); return;
       }
       if (!saveCashOpening({ contractorId, vehicleId, startDate: date, signedPiastres: signed }, reason)) {
-        setError("لا يمكن الحفظ؛ الحساب مؤرشف أو البيانات لم تتغير."); return;
+        setError("لا يمكن حفظ الافتتاحي: راجع نشاط الحساب وتاريخ أقدم نقلة والدفعات السابقة، وحالة الأرشفة أو سبب التغيير."); return;
       }
       setReason(""); setSuccess("حُفظ الافتتاحي في المعاينة فقط مع سجل التعديل.");
     }}>

@@ -24,7 +24,7 @@ import {
 } from "./demo-data";
 
 import { normalizeMasterKey, validOpeningDate, validOpeningPiastres } from "../features/master-data/master-data-validation";
-import { buildCashLedger, validateDemoPayment, cairoBusinessDate, DEMO_PRIMARY_RESPONSIBLE_ID, type PaymentDraft } from "../features/payments/cash-ledger";
+import { buildCashLedger, validateDemoPayment, cairoBusinessDate, cashResponsibleForTrip, DEMO_PRIMARY_RESPONSIBLE_ID, type PaymentDraft } from "../features/payments/cash-ledger";
 
 const DemoStoreContext = createContext<DemoStoreContextType | null>(null);
 
@@ -136,7 +136,9 @@ export function DemoStoreProvider({ children }: { children: React.ReactNode }) {
     const vehicle = vehicles.find(v => v.id === opening.vehicleId);
     if ((opening.contractorId !== DEMO_PRIMARY_RESPONSIBLE_ID && (!contractor || contractor.isArchived)) || !vehicle || vehicle.isArchived ||
       !reason.trim() || !validOpeningDate(opening.startDate) ||
-      !validOpeningPiastres(opening.signedPiastres)) return false;
+      !validOpeningPiastres(opening.signedPiastres) ||
+      trips.some(t => t.vehicleId === opening.vehicleId &&
+        cashResponsibleForTrip(t) === opening.contractorId && t.workDate < opening.startDate)) return false;
     const existing = cashOpenings.find(c => c.vehicleId === opening.vehicleId && c.contractorId === opening.contractorId);
     if (existing && existing.startDate === opening.startDate && existing.signedPiastres === opening.signedPiastres) return false;
     const tentative = [...cashOpenings.filter(c => c.vehicleId !== opening.vehicleId || c.contractorId !== opening.contractorId), opening];
