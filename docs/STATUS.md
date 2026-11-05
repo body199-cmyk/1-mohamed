@@ -1,26 +1,40 @@
 # الحالة الحالية
 
-**آخر تحديث: ٥ نوفمبر ٢٠٢٦ — H041 / AUTH-01 SDK FOUNDATION على [PR #4](https://github.com/body199-cmyk/1-mohamed/pull/4).** الحالة على الفرع: SDK والعملاء المقترحون موجودون، والحراسة الأصلية لم تتغير؛ تشغيل CI `42013608596` نجح بعد المراجعة النقدية، ويلزم أحدث CI قبل الدمج. **المصادقة الحقيقية والحفظ الدائم غير متاحين بعد.**
+**آخر تحديث: ٥ نوفمبر ٢٠٢٦ — H042 / ترتيب العمل بدون توصيل الحسابات أولًا.**
+**طلب المستخدم الأحدث:** إنهاء أكبر قدر ممكن من وظائف المشروع بالبيانات التجريبية والاختبارات، وترك Supabase الحقيقي وVercel في النهاية. [الخطة المعتمدة للترتيب](OFFLINE_FIRST_ROADMAP_H042.md).
 
-## ما تأكد إغلاقه سابقًا
+## تم ودمج فعليًا في main
 
-- **DB-03 / H038:** [PR #1](https://github.com/body199-cmyk/1-mohamed/pull/1) مدموج SHA `cf96b0c5`؛ CI `41943012378` نجاح (PostgreSQL معزول).
-- **AUTH-01/PREP / H039:** [PR #2](https://github.com/body199-cmyk/1-mohamed/pull/2) مدموج SHA `df6f54c7`؛ CI `41944665834` نجاح، حراسة deny-by-default مع HTTP smoke.
-- **توثيق الاستلام H040:** [PR #3](https://github.com/body199-cmyk/1-mohamed/pull/3) مدموج SHA `8eb59690`.
-- **منطق التطبيق:** أربع حزم + معاينة `/demo/*` مؤقتة بالذاكرة، وSQL A/B/C مع H038 اختبرت ضمن بيئة PGlite. لا بيانات Supabase حية.
+| النطاق | الدليل | الحد |
+|---|---|---|
+| H038 / DB-03 للنقلات ووصف الطريق والإيصال وعمليات SQL | [PR #1](https://github.com/body199-cmyk/1-mohamed/pull/1)، CI `41943012378` | اختبارات PGlite فقط |
+| H039 / حراسة مؤقتة deny-by-default | [PR #2](https://github.com/body199-cmyk/1-mohamed/pull/2)، CI `41944665834` | يمنع الجميع، ليس دخولًا حقيقيًا |
+| H040 / متابعة المشروع | [PR #3](https://github.com/body199-cmyk/1-mohamed/pull/3) | التوثيق |
+| H041 / عميل Supabase SDK وملف lock وفحص المالك المبدئي **غير المُفعّل** | [PR #4](https://github.com/body199-cmyk/1-mohamed/pull/4)، merge SHA `8e7efc16e4a5f0c2178e7f3735ec941c854705a7`، آخر CI `42014035425` PASS | **لا GoTrue، لا جلسة، لا حفظ دائم** |
+| أربع حزم domain ومعاينة `/demo/trips` و`/demo/contractors` | ١٦٧ اختبار وحدة، ١٦ SQL+٣ negative controls وبناء Next واختبار HTTP في CI H041 | معاينة مؤقتة فقط |
 
-## المهمة الجارية H041 (غير مكتملة وغير مدموجة)
+## ما بقي بالترتيب الجديد
 
-نطاق مستقل من `AUTH-01/REAL-INTEGRATION`: تثبيت `@supabase/ssr@0.12.7` و`@supabase/supabase-js@2.119.0` مع lockfile مولد فعليًا، وإنشاء `client.ts` و`server.ts` و`owner.ts` و`proxy-session.ts` بلا تشغيل لها على المسارات، واختبار حدود SDK وHTTP. المرجع: [تقرير H041](AUTH_01_H041_REVIEW.md).
+1. `UI-BASE-01`: شاشات المقاولين والعربيات والأرصدة الافتتاحية على fixtures بالذاكرة، وإضافة/بحث/تعديل وأرشفة، دون تفعيل البيانات الدائمة.
+2. `DB-04 / PAYMENTS`: الدفعات والحساب النقدي/واجهة الدفعات بعد قرار المستخدم في D15/D16، مع الاحتفاظ بالفصل عن فرق الشغل.
+3. `REPORTS`: الرئيسية واليومي وكشف حساب العربيات والتاريخ والفترات.
+4. `EXPORT`: صورة وPDF وExcel حسب النطاق، مع استمرار HTML/CSV الحالية.
+5. `BACKUP-CORE`: صحة ملف النسخة والتراجع والاستعادة التجريبية؛ النسخ السحابي المجدول لاحقًا بعد حسم D07.
+6. `QUALITY`: هاتف/RTL/أمان/أداء وE2E على fixtures.
+7. `SUPABASE-TEST`: أول مرحلة تحتاج ربط **حساب Supabase اختباري منفصل**؛ Auth حقيقي، ربط الواجهة بقاعدة، اختبارات RLS/HTTP/التزامن/النسخ.
+8. `VERCEL-RELEASE`: أول مرحلة تحتاج **Vercel** والنشر التجريبي ثم قبول إطلاق.
 
-**القبول مشروط** بمراجعة نقدية منفصلة ونجاح CI على أحدث commit، وتوثيق النتيجة هنا ثم دمج PR بإذن المستخدم السابق. لا نحسب وجود الملف أو مرور `npm ci` وحده نجاح Auth حقيقي.
+هذه مراحل **قابلة للتنفيذ بالتوازي عند الاستقلال** وليست شهادة جاهزية إنتاج. لا يُعلن حفظ بيانات مالية فعلي قبل SUPABASE-TEST.
 
-## المتبقي بعد هذه الخطوة
+## نقطة الاستئناف التالية
 
-- مشروع Supabase **اختباري منفصل** مع GoTrue/PostgREST وحساب المالك الإداري؛ لا أسرار في GitHub.
-- ربط login/logout/recovery/callback بالكوكي و`getClaims()`، والتحقق من `app_is_owner()` لكل عملية؛ اختبار المالك وغير المالك والـanon والجلسات المنتهية ورفض الطلبات وخطر تسريب الكوكي/التخزين.
-- بعدها فقط يُسمح بدراسة فتح واجهة الحفظ الدائم، ومهمات الدفعات تتطلب D15/D16. لا نشر أو أموال حقيقية الآن.
+**مهمة واحدة:** `UI-BASE-01` على فرع منفصل بعد مراجعة كود Demo الحالي والوثائق؛ لا تكرر ما يعمل، ولا تُغيّر `apps/web/src/proxy.ts` ولا توصل `@supabase/*` بواجهات التداول الآن. راجع [الخطة H042](OFFLINE_FIRST_ROADMAP_H042.md) و[TASKS](TASKS.md) و[SUBTASKS](SUBTASKS.md). بعد الإنجاز: مراجعة نقدية منفصلة، اختبارات، `HANDOFF_LOG`، CI على آخر SHA، ثم الدمج.
 
-**نقطة الاستئناف:** [AGENTS](../AGENTS.md) ← هذا الملف ← [TASKS](TASKS.md) ← [SUBTASKS](SUBTASKS.md) ← [تقرير H041](AUTH_01_H041_REVIEW.md) ← [HANDOFF](HANDOFF_LOG.md#h041) ← [PR #4](https://github.com/body199-cmyk/1-mohamed/pull/4).
+**قرارات معلقة عند موعدها:** `D15/D16` للدفعات، و`D07` للنسخ. لا نفترض الموافقة. [DECISIONS](DECISIONS.md).
 
-المعاينة: `npm run dev` ثم `/demo/trips` أو `/demo/contractors`؛ لا حفظ دائم. اختبارات PGlite: `npm run db:verify`، حراسة HTTP: `node tools/auth-boundary-smoke.mjs` مع خادم Next.
+## قواعد سلامة لا تُكسر
+
+- `/demo/*` بيانات مؤقتة تمحى عند تحديث الصفحة. المسارات غير العامة ممنوعة افتراضيًا.
+- لا سر، لا owner bootstrap، لا Supabase production، لا Vercel deployment قبل أوانهم.
+- افصل فرق الشغل بين المقاولين عن دفعات العربيات. [ACCOUNTING_RULES](ACCOUNTING_RULES.md).
+- مرجع التسليم: [AGENTS](../AGENTS.md) ثم [خريطة الملفات](CODE_MAP.md) ثم [سجل H042](HANDOFF_LOG.md#h042).
