@@ -29,7 +29,7 @@ test.describe("T09.1 — download real PNG of same work statement", () => {
     ]);
     expect(download.suggestedFilename()).toContain("2026-11-12-2026-11-13.png");
     await page.getByLabel("من تاريخ").fill("2026-10-01");
-    await expect(page.getByRole("alert")).toContainText("يسبق تاريخ بداية حساب المقاول");
+    await expect(page.getByRole("main").getByRole("alert")).toContainText("يسبق تاريخ بداية حساب المقاول");
     await expect(page.getByRole("button", { name: "تنزيل صورة PNG" })).toHaveCount(0);
   });
 });
