@@ -94,10 +94,13 @@ export function buildCashLedger(
   for (const payment of source.payments) {
     if (payment.vehicleId !== vehicleId || payment.responsibleContractorId !== responsibleId
         || payment.isCancelled || payment.id === excludePaymentId) continue;
-    if (!validOpeningDate(payment.paymentDate) || payment.paymentDate > asOf ||
+    if (!validOpeningDate(payment.paymentDate) ||
         (opening && payment.paymentDate < opening.startDate)) {
       return { ok: false, error: "توجد دفعة بتاريخ غير صالح في الحساب؛ تم إيقاف الحفظ." };
     }
+    // A historical statement must ignore later real payments, not fail merely
+    // because another payment exists AFTER its requested end date.
+    if (payment.paymentDate > asOf) continue;
     let amount: bigint;
     try {
       amount = BigInt(payment.amountPiastres);

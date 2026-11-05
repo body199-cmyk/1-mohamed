@@ -31,7 +31,7 @@ for (let attempt = 0; attempt < 45; attempt += 1) {
 }
 assert.ok(serverReady, "Next.js demo did not become available in time");
 
-for (const path of ["/demo/trips", "/demo/contractors", "/demo/master-data", "/demo/reports/daily", "/demo/payments", "/login", "/favicon.svg", "/fonts/cairo.css"]) {
+for (const path of ["/demo/trips", "/demo/contractors", "/demo/master-data", "/demo/reports/daily", "/demo/reports/vehicle-cash", "/demo/payments", "/login", "/favicon.svg", "/fonts/cairo.css"]) {
   const res = await request(path);
   assert.equal(res.status, 200, `Expected 200 for public ${path}`);
 }
