@@ -13,6 +13,9 @@ import type {
   DemoStoreContextType,
   DemoVehicleCashOpening,
   DemoMasterAudit,
+  DemoPayment,
+  DemoPaymentAudit,
+  DemoPaymentResult,
 } from "./demo-types";
 import {
   INITIAL_CONTRACTORS,
@@ -21,12 +24,14 @@ import {
 } from "./demo-data";
 
 import { normalizeMasterKey, validOpeningDate, validOpeningPiastres } from "../features/master-data/master-data-validation";
+import { buildCashLedger, validateDemoPayment, cairoBusinessDate, DEMO_PRIMARY_RESPONSIBLE_ID, type PaymentDraft } from "../features/payments/cash-ledger";
 
 const DemoStoreContext = createContext<DemoStoreContextType | null>(null);
 
 let tripSequence = 1;
 let vehicleSequence = 4;
 let contractorSequence = 4;
+let paymentSequence = 1;
 
 export function DemoStoreProvider({ children }: { children: React.ReactNode }) {
   const [contractors, setContractors] = useState<DemoContractor[]>(() => [
@@ -40,6 +45,8 @@ export function DemoStoreProvider({ children }: { children: React.ReactNode }) {
   ]);
   const [cashOpenings, setCashOpenings] = useState<DemoVehicleCashOpening[]>([]);
   const [masterAudit, setMasterAudit] = useState<DemoMasterAudit[]>([]);
+  const [payments, setPayments] = useState<DemoPayment[]>([]);
+  const [paymentAudit, setPaymentAudit] = useState<DemoPaymentAudit[]>([]);
   const writeAudit = useCallback((
     target: DemoMasterAudit["target"], key: string, action: DemoMasterAudit["action"],
     reason: string, before: unknown, after: unknown
@@ -127,15 +134,78 @@ export function DemoStoreProvider({ children }: { children: React.ReactNode }) {
   const saveCashOpening = useCallback((opening: DemoVehicleCashOpening, reason: string): boolean => {
     const contractor = contractors.find(c => c.id === opening.contractorId);
     const vehicle = vehicles.find(v => v.id === opening.vehicleId);
-    if (!contractor || contractor.isArchived || !vehicle || vehicle.isArchived ||
+    if ((opening.contractorId !== DEMO_PRIMARY_RESPONSIBLE_ID && (!contractor || contractor.isArchived)) || !vehicle || vehicle.isArchived ||
       !reason.trim() || !validOpeningDate(opening.startDate) ||
       !validOpeningPiastres(opening.signedPiastres)) return false;
     const existing = cashOpenings.find(c => c.vehicleId === opening.vehicleId && c.contractorId === opening.contractorId);
     if (existing && existing.startDate === opening.startDate && existing.signedPiastres === opening.signedPiastres) return false;
-    setCashOpenings(prev => [...prev.filter(c => c.vehicleId !== opening.vehicleId || c.contractorId !== opening.contractorId), opening]);
+    const tentative = [...cashOpenings.filter(c => c.vehicleId !== opening.vehicleId || c.contractorId !== opening.contractorId), opening];
+    // Do not allow demo opening edits that silently invalidate earlier payment
+    // timelines; D04 historical migration remains a separate production task.
+    if (payments.some(p => !p.isCancelled && p.vehicleId === opening.vehicleId &&
+        p.responsibleContractorId === opening.contractorId)) {
+      const ledger = buildCashLedger({ trips, payments, cashOpenings: tentative },
+        opening.vehicleId, opening.contractorId, cairoBusinessDate());
+      if (!ledger.ok || ledger.value.rows.some(r => r.type === "PAYMENT" &&
+          BigInt(r.balancePiastres) < 0n)) return false;
+    }
+    setCashOpenings(tentative);
     writeAudit("vehicle-cash", opening.contractorId + "|" + opening.vehicleId, "cash-opening", reason, existing ?? null, opening);
     return true;
-  }, [contractors, vehicles, cashOpenings, writeAudit]);
+  }, [contractors, vehicles, cashOpenings, payments, trips, writeAudit]);
+
+
+  const addPayment = useCallback((draft: PaymentDraft): DemoPaymentResult => {
+    const check = validateDemoPayment({ trips, payments, cashOpenings, vehicles, contractors },
+      draft, cairoBusinessDate());
+    if (!check.ok) return check;
+    const created: DemoPayment = {
+      id: "P-DEMO-" + paymentSequence++,
+      vehicleId: draft.vehicleId, responsibleContractorId: draft.responsibleContractorId,
+      paymentDate: draft.paymentDate, amountPiastres: check.value,
+      linkedTripId: draft.linkedTripId, receiptNumber: draft.receiptNumber.trim(),
+      notes: draft.notes.trim(), createdAt: new Date().toISOString(),
+      version: 1, isCancelled: false, cancelReason: "",
+    };
+    setPayments(prev => [...prev, created]);
+    setPaymentAudit(prev => [{ id:created.id, action:"create", reason:"",
+      before:"null", after:JSON.stringify(created), at:new Date().toISOString() }, ...prev]);
+    return { ok:true,payment:created };
+  }, [trips,payments,cashOpenings,vehicles,contractors]);
+
+  const editPayment = useCallback((
+    id: string, expectedVersion: number, reason: string, draft: PaymentDraft
+  ): DemoPaymentResult => {
+    const previous = payments.find(p => p.id === id);
+    if (!previous || previous.isCancelled || previous.version !== expectedVersion ||
+        !reason.trim()) return { ok:false,error:"الدفعة غير موجودة أو اتغير إصدارها، أو سبب التعديل غير مكتوب." };
+    const check = validateDemoPayment({ trips, payments, cashOpenings, vehicles, contractors },
+      draft,cairoBusinessDate(),id);
+    if (!check.ok) return check;
+    const updated: DemoPayment = {
+      ...previous,vehicleId:draft.vehicleId,
+      responsibleContractorId:draft.responsibleContractorId,
+      paymentDate:draft.paymentDate,amountPiastres:check.value,
+      linkedTripId:draft.linkedTripId,receiptNumber:draft.receiptNumber.trim(),
+      notes:draft.notes.trim(),version:previous.version+1,
+    };
+    setPayments(prev => prev.map(p => p.id === id ? updated : p));
+    setPaymentAudit(prev => [{ id,action:"update",reason:reason.trim(),
+      before:JSON.stringify(previous),after:JSON.stringify(updated),at:new Date().toISOString() }, ...prev]);
+    return { ok:true,payment:updated };
+  },[trips,payments,cashOpenings,vehicles,contractors]);
+
+  const cancelPayment = useCallback((id: string, expectedVersion: number, reason: string): DemoPaymentResult => {
+    const previous = payments.find(p => p.id === id);
+    if (!previous || previous.isCancelled || previous.version !== expectedVersion ||
+      !reason.trim()) return { ok:false,error:"الدفعة غير موجودة أو اتغير إصدارها، أو سبب الإلغاء غير مكتوب." };
+    const updated: DemoPayment = { ...previous, isCancelled:true,
+      cancelReason:reason.trim(),version:previous.version+1 };
+    setPayments(prev => prev.map(p => p.id === id ? updated : p));
+    setPaymentAudit(prev => [{ id,action:"cancel",reason:reason.trim(),
+      before:JSON.stringify(previous),after:JSON.stringify(updated),at:new Date().toISOString() }, ...prev]);
+    return { ok:true,payment:updated };
+  },[payments]);
 
   const addTrip = useCallback(
     (tripData: Omit<DemoTripRecord, "id" | "createdAt">): DemoTripRecord => {
@@ -205,6 +275,11 @@ export function DemoStoreProvider({ children }: { children: React.ReactNode }) {
       trips,
       cashOpenings,
       masterAudit,
+      payments,
+      paymentAudit,
+      addPayment,
+      editPayment,
+      cancelPayment,
       editContractor,
       editVehicle,
       archiveContractor,
@@ -223,6 +298,11 @@ export function DemoStoreProvider({ children }: { children: React.ReactNode }) {
       trips,
       cashOpenings,
       masterAudit,
+      payments,
+      paymentAudit,
+      addPayment,
+      editPayment,
+      cancelPayment,
       editContractor,
       editVehicle,
       archiveContractor,

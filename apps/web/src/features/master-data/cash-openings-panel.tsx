@@ -4,6 +4,7 @@ import { formatEgpFromPiastres } from "@ledger/accounting";
 import { useDemoStore } from "../../demo/demo-context";
 import { parseOpeningEgp, validOpeningDate } from "./master-data-validation";
 import styles from "./master-data.module.css";
+import { DEMO_PRIMARY_RESPONSIBLE_ID } from "../payments/cash-ledger";
 type Direction = "VEHICLE" | "CONTRACTOR" | "ZERO";
 
 export function CashOpeningsPanel() {
@@ -27,7 +28,7 @@ export function CashOpeningsPanel() {
   };
   const exists = cashOpenings.some(x => x.contractorId === contractorId && x.vehicleId === vehicleId);
   return <div className={styles.cashPanel}>
-    <p className={styles.muted}>افتتاحي النقد منفصل لكل (عربية + مقاول مسؤول)، وليس فرق شغل المقاول. التسجيل هنا مؤقت وبلا أثر على الكشوف أو الدفعات. لا تحويل للتاريخ القديم قبل D04.</p>
+    <p className={styles.muted}>افتتاحي النقد منفصل لكل (عربية + مقاول مسؤول)، وليس فرق شغل المقاول. التسجيل هنا مؤقت وولا يُضاف لفرق الشغل. يؤثر على حساب الدفعات التجريبي فقط، ويُرفض تغييره إن تسبب في عجز تاريخي. لا تحويل للتاريخ القديم قبل D04.</p>
     <form className={styles.editor} aria-label="افتتاحي نقد العربية" onSubmit={e => {
       e.preventDefault(); setError(""); setSuccess("");
       const signed = parseOpeningEgp(amount, direction);
@@ -44,6 +45,7 @@ export function CashOpeningsPanel() {
         <label>المقاول المسؤول
           <select aria-label="المقاول المسؤول" required value={contractorId} onChange={e => selectPair(e.target.value, vehicleId)}>
             <option value="">اختر المقاول</option>
+            <option value={DEMO_PRIMARY_RESPONSIBLE_ID}>أحمد أبو علي (المقاول الأساسي)</option>
             {contractors.filter(c => !c.isArchived).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
         </label>
@@ -82,7 +84,7 @@ export function CashOpeningsPanel() {
       const amount = formatEgpFromPiastres(x.signedPiastres);
       const sign = BigInt(x.signedPiastres);
       return <article key={x.contractorId + "|" + x.vehicleId} className={styles.card}>
-        <h3>{v?.plateNumber ?? x.vehicleId} / {c?.name ?? x.contractorId}</h3>
+        <h3>{v?.plateNumber ?? x.vehicleId} / {x.contractorId === DEMO_PRIMARY_RESPONSIBLE_ID ? "أحمد أبو علي" : c?.name ?? x.contractorId}</h3>
         <p>تاريخ البداية: {x.startDate}</p>
         <p>افتتاحي النقد: {amount.ok ? amount.amount : "غير صالح"} ج.م — {sign > 0n ? "لصالح العربية" : sign < 0n ? "على العربية" : "متعادل"}</p>
         <button type="button" className={styles.secondary} disabled={c?.isArchived || v?.isArchived} onClick={() => selectPair(x.contractorId, x.vehicleId)}>تعديل هذا الافتتاحي</button>
