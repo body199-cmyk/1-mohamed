@@ -57,10 +57,11 @@ export function renderContractorStatementCsv(
     formatCsvRow(["عدد الحركات", document.summary.movementCountText]),
     "",
     formatCsvRow([
-      "المرجع",
+      "رقم النقلة",
       "التاريخ",
+      "رقم الإيصال",
       "اتجاه الشغل",
-      "قيمة الشغل — جنيه",
+      "الأثر على حساب أحمد (+/−) — جنيه",
       "الرصيد بعد الحركة — جنيه",
     ]),
   ];
@@ -71,6 +72,7 @@ export function renderContractorStatementCsv(
       formatCsvRow([
         row.reference,
         row.workDate,
+        row.receiptNumber?.trim() || "—",
         row.directionText,
         row.amountText,
         row.runningBalanceText,
