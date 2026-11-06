@@ -37,7 +37,7 @@ describe("H063 signed contractor statements from Ahmed's perspective",()=>{
     for(const t of ["رقم النقلة","رقم الإيصال","REC-001","+300.00 ج.م","-600.00 ج.م","-300.00 ج.م"]) {
       expect(html).toContain(t);
     }
-    expect(html).toContain('colspan="6"').toBe(false); // only empty statement gets placeholder
+    expect(html).not.toContain('colspan="6"'); // only empty statement gets placeholder
     const first=html.indexOf("TRIP-001"),receipt=html.indexOf("REC-001"),date=html.indexOf("2026-11-01",first);
     expect(first).toBeGreaterThan(-1);
     expect(receipt).toBeGreaterThan(first);
