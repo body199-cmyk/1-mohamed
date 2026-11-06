@@ -27,10 +27,14 @@ export default function RootLayout({
         <ThemeProvider>
           <DemoStoreProvider><EntrySessionProvider>
             <DemoBanner />
-            <NavHeader />
-            <main id="main-content" tabIndex={-1} className="container" style={{ paddingBlock: "24px" }}>
-              {children}
-            </main>
+            <div className="appShell">
+              <NavHeader />
+              <div className="appWorkspace">
+                <main id="main-content" tabIndex={-1} className="container appMain">
+                  {children}
+                </main>
+              </div>
+            </div>
           </EntrySessionProvider></DemoStoreProvider>
         </ThemeProvider>
       </body>
