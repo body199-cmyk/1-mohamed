@@ -278,3 +278,10 @@
 - `apps/web/src/styles/variables.css`: Tabler-inspired neutral surfaces/blue tokens, light/dark supported; `apps/web/src/features/reports/dashboard.module.css`: flatter cards/hero, original dashboard-view/data unchanged.
 - `e2e/h060-tabler-identity.spec.ts`: desktop/sidebar geometry, responsive nav, primary button contrast, 8 screenshot states. `.github/workflows/verify.yml` saves H060 artifact.
 - `docs/H060_TABLER_IDENTITY_REVIEW.md`: source/license notes and regression gates.
+
+### H061 / Tabler operational forms
+- `apps/web/src/features/trips/trips.module.css`: horizontally constrained two-column entry/summary layout with >=1361px breakpoint; ≤1360px stack cards to account for 252px right sidebar; existing route/entry logic stays untouched. Theme-token primary button label and flat card border.
+- `apps/web/src/features/master-data/master-data.module.css`: selected tab foreground `--text-main` contrasts on blue background in both themes; flat cards, quiet editor borders.
+- `apps/web/src/features/payments/payments.module.css`: primary action uses `--color-primary-text` (not hardcoded white in dark), existing ledger summary sections get separate card surfaces; shared vehicle cash report reuses this CSS.
+- `e2e/h061-operational-forms.spec.ts`: 12 screenshots/primary contrast/selected-tab/no-overflow check; `.github/workflows/verify.yml` persists images as `h061-tabler-operational-forms` for 7 days.
+- `docs/H061_OPERATIONS_VISUAL_REVIEW.md`: decision origin and before/after review evidence.
