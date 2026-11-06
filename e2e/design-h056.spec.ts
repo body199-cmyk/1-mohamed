@@ -3,6 +3,8 @@ import { mkdir } from "node:fs/promises";
 
 test.describe("H056 offline-first design foundation with live demo data", () => {
   test("dashboard is a coherent responsive grid and keeps the same financial values", async ({ page }) => {
+    // Match the historical demo fixture instead of relying on the date GitHub Actions runs.
+    await page.clock.setFixedTime(new Date("2026-11-05T12:00:00+02:00"));
     for (const width of [360, 768, 1280]) {
       await page.setViewportSize({ width, height: 780 });
       await page.goto("/demo/dashboard");
