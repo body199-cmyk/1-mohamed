@@ -1106,3 +1106,8 @@
 - H058/PR #21 تم دمجه بالفعل في `main=0c6243cce0f2ba96af64bcab830513d9ae56bf86` بعد نجاح CI `42142088654` على head `ffc4f3fb`، مع 37 اختبار Chromium وGitHub merge confirmed. BUG-008 انحراف تاريخ E2E تم إصلاحه داخل الاختبارات فقط.
 - فحص H058 screenshots الأولية على موبايل رصد active navigation في dark: تباين text/background من theme tokens `#3b82f6/#1e3a8a` = 2.82:1 دون AA. H059 يصلحه بـ `--text-main` (expected >9:1) ويضيف قياس Chromium على computed CSS.
 - مرحلة H059 التقنية تحضر 42 screenshot حقيقية (7 routes × 3 عرض × Light/Dark) وتحافظ على اختبارات كل المراحل السابقة؛ artifact من GitHub Actions لمدة 7 أيام. لا تغییر لـSQL/Auth/financial calculations أو export file logic. يظل قرار شكل المستخدم النهائي مفتوحًا حتى يتفرج على النتائج، ولا يفتح Supabase/Vercel تلقائيًا.
+
+## H060 — Adopt pre-existing Tabler visual language — ٦ نوفمبر ٢٠٢٦
+- USER DIRECTION: البحث عن هوية بصرية موجودة على الإنترنت وتطبيقها، لا تأليف شكل مختلف من الصفر. Found Tabler UI (official docs MIT, RTL, Light/Dark, existing layout/cards); adopt neutral background, blue primary, subtle card borders, RTL desktop right sidebar while maintaining compact mobile strip and Cairo.
+- H059 prior PR #22 merged to main `2fdac9d1`; CI `42143320305` successful with 44/44 Chromium. Original 42-image H059 screenshots remain historical baseline, user visual approval not yet given.
+- Isolated H060 branch only CSS presentation and root shell markup; next review verifies diff against current accounting, persistence, PDF/XLSX, authentication, migrations. E2E and 8 screenshots are required before merge, and only technical pass can be merged under authorization. No Supabase/Vercel or production changes.
