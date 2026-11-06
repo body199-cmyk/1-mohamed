@@ -51,7 +51,7 @@ export function createStatementImageLayout(doc: ContractorStatementDocument): St
 
 const NAVY = "#16324f";
 const MUTED = "#425b71";
-const BLUE = "#205cb3";
+const BLUE = "#206bc4"; // Fixed Tabler blue in downloadable PNG and A4 PDF, not the UI theme.
 const BORDER = "#d1deec";
 const STRIPE = "#f2f7fd";
 
