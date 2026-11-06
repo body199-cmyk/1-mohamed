@@ -1133,3 +1133,5 @@
 - Review gate: source diff, CI full 54 Chromium target incl 3 new, package tests, A4 PNG/PDF artifact and true HTML/CSV/XLSX text, user visual approval separately. No Supabase/Vercel or physical-device claim until tested.
 
 - H063 initial PR #26 CI `42213645950` FAILED early on 3 outdated exact-column assertions (2 CSV, 1 HTML), not finance, typecheck or data. Regression suite updated for approved D18 six-column contract, no safeguards removed. Refer to TEST-012 in ISSUES; final CI and code review still mandatory before technical merge.
+
+- H063 full second CI after fixing old test contract: `42214020869` **SUCCESS 54/54 Chromium**, all SQL/unit/negative/Auth/backup/build, latest inspected head `6df1c472`; GitHub artifact `13498989823` has actual exported PNG/A4 PDF. Independent visual check found BUG-013: Arabic currency on PDF/PNG metric summary could position signed prefixes at end of digits even though all table rows correct. Corrected summary drawing: isolate signed numeric as LTR and put `(ج.م)` in label; source data unchanged. New CI + visual inspection mandatory on later head.
