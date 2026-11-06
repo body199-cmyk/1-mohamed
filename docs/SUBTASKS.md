@@ -471,3 +471,8 @@
 - مراجعة لقطات H056–H058 وحددت تباين nav dark active أقل من AA؛ إصلاح CSS صغير مع قياس contrast عبر المتصفح.
 - `e2e/visual-audit-h059.spec.ts` يعبر 7 مسارات × 3 أحجام × ثيمين: 42 screenshots، و6 حالات Capture + regression مستقل للتباين؛ ملف CI يحفظ artifact أسبوعًا. Screenshots وChromium محاكاة **ليست** تجربة جهاز Android حقيقي.
 - نجاح الاختبارات والمراجعة ثم الدمج يغلقان التغيير الفني فقط؛ لا توسم موافقة المستخدم على الشكل قبل أن يراجع الصور. Supabase test وخدمة backup D07 ثم Vercel منفصلة وفق H042.
+
+### H060 / existing-identity adoption, before cloud
+- العمل ليس تصميمًا من الصفر: Tabler MIT UI as visual reference؛ لا Bootstrap أو CSS/HTML من Tabler نسخ؛ أعد استخدام CSS Modules وCairo وNext routes.
+- desktop >1100 RTL sidebar على يمين المحتوى؛ ≤1100 mobile/tablet nav أفقي قابل للتمرير وبنفس الـaria labels وkeyboard focus. قاعدة 1100 تحفظ E2E H055 وسلوك tablet.
+- الواجهة الأساسية والمقاييس المالية قائمة على source دون تغيير. اختبار 47 Chromium مستهدف و8 صور، وقبول code review/CI على SHA النهائي قبل الدمج، مع بقاء قبول المستخدم للشكل مفتوحًا.
