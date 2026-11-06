@@ -483,3 +483,8 @@
 - 12 artifact images (trips/master-data/payments, light/dark, 360/1280), selected-tab and primary-button contrast >=4.5, no global horizontal overflow. Repeat existing 46 browser tests, SQL/negative controls/Auth/backup/build; review actual patch separately and only merge on latest passing SHA.
 - After verified merge, H062 narrow report/statement harmonization, then user visual acceptance and separate Supabase/Vercel plan.
 - Bug fixes before acceptance: old H059 screenshot readiness BUG-010 and H061 dark primary action WCAG ratio BUG-011. Full passing CI on new head mandatory.
+### H062 / Tabler statement rendering, D17 fixed-document contract
+- From `main 569af350` on `feat/h062-tabler-reports-fixed-export`. CSS للـ3 تقارير؛ مستندات المقاول (PNG/PDF/CSV/XLSX/print) تحافظ على الشكل المستقل عن `window.innerWidth` و`data-theme`.
+- `#206bc4` طابع ثابت في طباعة HTML/صورة PNG وصورة PDF وExcel، مع نفس المستند ومحتوى المال والمرجع. لا إعادة تجميع مالية.
+- 18 screenshots متجاوبة، و4 قياسات hash لملفات حقيقية تصدر مرتين في Chromium 360/1280 والثيمين؛ PDF صفحة A4 وصورة PNG 1440، ملف XLSX RTL. اختبار الورق الوحدة. التقارير اليومية/نقد العربية شاشة فقط.
+- مراجعة diff مستقلة + full CI أحدث SHA، سجّل عيوب ولو نجحت باقي الحالات. Merge فقط نجاح مثبت؛ اختبار أجهزة هاتف فعلية وتصديق المستخدم منفصلان قبل Supabase/Vercel.
