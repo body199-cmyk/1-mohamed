@@ -271,3 +271,10 @@
 - `apps/web/src/components/nav-header.module.css`: active navigation label legibility in dark mode via `--text-main`; no changed route semantics.
 - `e2e/visual-audit-h059.spec.ts`: computed active-route text/background contrast in both themes, full 7×3×2 screenshots plus no body overflow. `.github/workflows/verify.yml` adds these tests and retains artifact `h059-precloud-seven-route-visual-matrix` for seven days.
 - `docs/T11_H059_VISUAL_REVIEW.md` records evidence and separates technical review from user visual approval.
+
+### H060 / open-source Tabler-inspired visual shell
+- `apps/web/src/app/layout.tsx` + `apps/web/src/styles/globals.css`: existing same Next providers and fail-closed auth untouched; RTL `appShell` and `appWorkspace` containers for sidebar/main at >=1101, top-nav mobile/tablet.
+- `apps/web/src/components/nav-header.module.css`: desktop vertical sidebar, mobile single scroll row with same `nav-header.tsx` links; no new layout dependency.
+- `apps/web/src/styles/variables.css`: Tabler-inspired neutral surfaces/blue tokens, light/dark supported; `apps/web/src/features/reports/dashboard.module.css`: flatter cards/hero, original dashboard-view/data unchanged.
+- `e2e/h060-tabler-identity.spec.ts`: desktop/sidebar geometry, responsive nav, primary button contrast, 8 screenshot states. `.github/workflows/verify.yml` saves H060 artifact.
+- `docs/H060_TABLER_IDENTITY_REVIEW.md`: source/license notes and regression gates.
