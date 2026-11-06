@@ -266,3 +266,8 @@
 - apps/web/src/features/contractor-statements/statement-export-actions.tsx: أزرار تصدير منفصلة بصريًا عن حقول select مع نفس handlers.
 - apps/web/src/features/contractor-statements/statements.module.css: themed badges/alerts/export button panel.
 - apps/web/src/features/reports/daily-work.module.css: focus/tabular surfaces consistent; e2e/reports-h058.spec.ts + verify.yml: UI tests and screenshots 3 reports×2 themes.
+
+### H059 / final before-cloud visual coverage
+- `apps/web/src/components/nav-header.module.css`: active navigation label legibility in dark mode via `--text-main`; no changed route semantics.
+- `e2e/visual-audit-h059.spec.ts`: computed active-route text/background contrast in both themes, full 7×3×2 screenshots plus no body overflow. `.github/workflows/verify.yml` adds these tests and retains artifact `h059-precloud-seven-route-visual-matrix` for seven days.
+- `docs/T11_H059_VISUAL_REVIEW.md` records evidence and separates technical review from user visual approval.
