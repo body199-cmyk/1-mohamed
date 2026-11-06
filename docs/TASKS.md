@@ -226,3 +226,9 @@
 - تقفل تقنيًا بعد نجاح أحدث SHA ومراجعة diff مستقلة وPR merge موثّق؛ H062 مراجعة باقي كشوف التقارير بنفس الهوية + موافقة مستخدم على الشكل النهائي قبل أي cloud trial.
 
 - **Regression recorded:** BUG-010: first CI failed due E2E theme hydration race; BUG-011: second CI detected actual 4.43895:1 dark trip CTA contrast. Applied minimal readiness assertion and darker primary text token; complete CI verification still required, no merge on failure.
+### H062 / T11-TABLER-REPORTS — كشوف ثابتة التصدير وعرض متجاوب — ٦ نوفمبر ٢٠٢٦
+- **الموافقة:** المستخدم وافق على إكمال الخطة وأكد شرط D17: الشكل النهائي لملف التقرير ثابت على الهاتف والكمبيوتر، أما واجهة التطبيق فتتكيف مع الجهاز.
+- **اعتماديات:** H061/PR #24 merged to main `569af350`، CI `42196853481` PASS 48/48 Chromium.
+- **نطاق:** تحسين `statements.module.css`، `daily-work.module.css`، و`payments.module.css` المشترك مع vehicle cash؛ التمرير الأفقي داخل الجدول فقط، وتوحيد تصاميم البطاقات والفلترة. بالـpackage فصل تصميم التصدير عن Light/Dark UI، ضبط لون أزرق مستند ثابت `#206bc4` في print HTML، 1440px image/PDF، رأس Excel. لا تغيير معادلات أو محتوى مُصدَّر.
+- **بوابة قبول قوية:** 18 screenshots لشاشات التقارير (360/768/1280 × light/dark × 3) مع مقارنة بايتات SHA-256 فعلية لـPNG وPDF وCSV وXLSX لمقاول وفترة ونفس الساعة ثابتة بين هاتف (360) وديسكتوب (1280) وثيمين معاكسين؛ A4/1440px/RTL، عدم تسرب سكرول لصفحة كاملة؛ تحذيرات فترة غير صالحة والحركات/الملخصات الأصلية لا تتغير.
+- الفحص الكامل: unit/TypeScript، SQL isolated migrations + 3 negative controls، backup، Auth/HTTP، build، Chromium القديم والجديد، قراءة patch نقدية وCI على latest SHA. الدمج الفني ليس موافقة المستخدم النهائية ولا اختبار هاتف حقيقي. **التصدير الحالي لكشف المقاول فقط**؛ اليومية وكشف النقد عرض تفاعلي لا ننسب لهما ملفات غير موجودة.
