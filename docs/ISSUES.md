@@ -132,3 +132,8 @@
 - **Evidence:** second H061 CI run `42195882955`, 48 browser cases pass while new contrast test fails consistently for `/demo/trips` dark primary action: measured **4.438954753:1** vs WCAG 4.5:1 target. Earlier H059 hydration race was fixed: old screenshots all passed. Financial/DB/backup/build/Auth steps green.
 - **Correction:** dark theme primary label token in `apps/web/src/styles/variables.css` dark changes `#10283f` → `#061629` for a measurable contrast margin; `e2e/h061-operational-forms.spec.ts` also waits for `data-theme` after each navigation and logs exact computed foreground/background in test errors, avoiding color checks during theme rehydration.
 - **Status:** pending complete CI on final head and separate patch review before merge. No changes to records, amounts, calculations, or application behaviour.
+
+## H063 / TEST-012 — Old CSV and A4 header assertions lagged user-approved six-column report (6 Nov 2026)
+- Initial H063 PR #26 run `42213645950` failed in **3 legacy rendering tests only**: 2 CSV exact-array expectations and 1 HTML required-heading check still expected 5 columns (e.g., “المرجع”, “قيمة الشغل”) instead of approved 6 columns (“رقم النقلة”, “رقم الإيصال”, “الأثر على حساب أحمد”). TypeScript checks and 29 package tests passed; no evidence of business calculation defect.
+- Change: update these *exact order assertions* to the six-column structure, including explicit “—” for optional missing receipt. Do not weaken security escaping/formula guard or record-order tests. New H063 positive/negative and receipt tests remain active.
+- Status: pending full CI rerun on latest PR SHA and independent diff review; do **not** merge failed run.
