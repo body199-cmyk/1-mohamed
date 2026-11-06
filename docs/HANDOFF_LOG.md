@@ -1101,3 +1101,8 @@
 
 ### H058 independent CI finding and recovery — ٦ نوفمبر ٢٠٢٦
 - فتح PR #21 على `feat/h058-precloud-reports-polish` من main `ac39b634`. أول CI (`42141473302`) فشل 3 اختبارات dashboard/H056 قديمة مع مرور 34 اختبارًا، وبينها اختبارات H058 الثلاثة. الـfixtures مواعيدها 2026-11-05 و2026-11-06؛ الاختبارات القديمة توقعت شغل 5 نوفمبر باستعمال تاريخ القاهرة الحي يوم 6 نوفمبر. تم تثبيت ساعة Playwright *داخل الاختبارات الثلاثة فقط* لنصف نهار 5 نوفمبر من غير تغيير حسابات التطبيق أو بياناته. الرجوع إلى PR #21 وH058 review لدليل CI النهائي، ولا دمج قبل نجاحه.
+
+## H059 / final pre-cloud seven-screen review — ٦ نوفمبر ٢٠٢٦
+- H058/PR #21 تم دمجه بالفعل في `main=0c6243cce0f2ba96af64bcab830513d9ae56bf86` بعد نجاح CI `42142088654` على head `ffc4f3fb`، مع 37 اختبار Chromium وGitHub merge confirmed. BUG-008 انحراف تاريخ E2E تم إصلاحه داخل الاختبارات فقط.
+- فحص H058 screenshots الأولية على موبايل رصد active navigation في dark: تباين text/background من theme tokens `#3b82f6/#1e3a8a` = 2.82:1 دون AA. H059 يصلحه بـ `--text-main` (expected >9:1) ويضيف قياس Chromium على computed CSS.
+- مرحلة H059 التقنية تحضر 42 screenshot حقيقية (7 routes × 3 عرض × Light/Dark) وتحافظ على اختبارات كل المراحل السابقة؛ artifact من GitHub Actions لمدة 7 أيام. لا تغییر لـSQL/Auth/financial calculations أو export file logic. يظل قرار شكل المستخدم النهائي مفتوحًا حتى يتفرج على النتائج، ولا يفتح Supabase/Vercel تلقائيًا.
