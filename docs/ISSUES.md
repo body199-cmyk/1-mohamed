@@ -107,3 +107,10 @@
 - **BUG-007:** إغلاق محدود لنطاق تخزين حقول النقلات في SQL؛ اختبارات CREATE/UPDATE/READ/CANCEL/replay والمراجعة الأمنية اللاحقة نجحت على قاعدة معزولة، PR #1 مدموج. **لا يُفسَّر هذا كاكتمال واجهة حفظ دائم**.
 - **DOC-002:** انحراف نقطة الاستئناف القديمة صُحّح، والسجل التاريخي محفوظ. STATUS H040 هي المرجع الحالي الوحيد؛ أي مهمة جديدة تقارنها بملفات الكود الفعلية وGitHub.
 - **H039:** عيوب الحراسة المؤقتة رُصدت وأُصلحت **قبل الدمج** ضمن مراجعتها النقدية؛ دليل HTTP/CI في PR #2 وAUTH_01_H039_REVIEW. لا توجد تذكرة عطل إنتاج لأن Auth الحقيقية لم تبدأ ولم توجد بيانات إنتاج.
+
+## H058 / BUG-008 — Dashboard E2E assertions tied to wall-clock date (6 Nov 2026)
+
+- **Status:** correction submitted for CI re-verification in PR #21 (not closed until PASS).
+- **Evidence:** GitHub Actions run `42141473302`: 3 old Chromium assertions expected the 2026-11-05 fixture (`2.000` tonnes, `1000.00/900.00` EGP and payment on the 5th), but the current Cairo date became 2026-11-06 (`1.500` tonnes, `600.00/525.00` EGP). New H058 tests passed. No proof of financial-engine error.
+- **Root cause:** tests read live `cairoBusinessDate()` while expecting one specific fixture day. **Correction:** fixed browser clock at 2026-11-05 noon Cairo before each affected E2E navigation; retain all existing monetary assertions. Production date handling unchanged.
+- **Follow-up:** require full green CI and critical review on exact PR SHA; do not merge otherwise. Long-term server/physical-device clock alignment remains an integration quality gate.
