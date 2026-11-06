@@ -86,6 +86,11 @@ describe("H063 signed contractor statements from Ahmed's perspective",()=>{
     for(const t of ["رقم النقلة","رقم الإيصال","REC-001","TRIP-001","-600.00 ج.م","+300.00 ج.م"]) {
       expect(calls.some(x=>x.includes(t)),t).toBe(true);
     }
+    // Financial signs must be a leading LTR numeric token in the rendered PDF/PNG
+    // summary too, not visually moved after the amount by bidi currency glyphs.
+    expect(calls).toContain("+300.00");
+    expect(calls).toContain("-600.00");
+    expect(calls).toContain("شغل المقاول خلال الفترة (ج.م)");
     const long=sample(35);
     const pages=paginateStatementForPdf(long);
     expect(pages.map(p=>p.rows.length)).toEqual([17,17,1]);
