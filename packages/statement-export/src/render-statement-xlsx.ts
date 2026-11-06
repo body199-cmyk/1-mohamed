@@ -106,7 +106,7 @@ export function createStatementXlsxParts(doc: ContractorStatementDocument): read
     '<fonts count="2"><font><sz val="11"/><name val="Cairo"/></font>' +
     '<font><b/><color rgb="FFFFFFFF"/><sz val="11"/><name val="Cairo"/></font></fonts>' +
     '<fills count="2"><fill><patternFill patternType="none"/></fill>' +
-    '<fill><patternFill patternType="solid"><fgColor rgb="FF205CB3"/><bgColor indexed="64"/></patternFill></fill></fills>' +
+    '<fill><patternFill patternType="solid"><fgColor rgb="FF206BC4"/><bgColor indexed="64"/></patternFill></fill></fills>' +
     '<borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders>' +
     '<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>' +
     '<cellXfs count="2"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>' +
