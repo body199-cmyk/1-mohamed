@@ -30,6 +30,8 @@ test.describe("H059 final pre-cloud visual review matrix", () => {
   test("active header route text meets 4.5:1 in light and dark", async ({ page }) => {
     await page.setViewportSize({ width: 360, height: 780 });
     await page.goto("/demo/dashboard");
+        // Wait until ThemeProvider has hydrated before deciding which switch to click.
+        await expect(page.locator("html")).toHaveAttribute("data-theme", /^(light|dark)$/);
     for (const theme of ["light", "dark"] as const) {
       if (await page.locator("html").getAttribute("data-theme") !== theme) {
         await page.getByRole("button", {
@@ -54,6 +56,8 @@ test.describe("H059 final pre-cloud visual review matrix", () => {
         await mkdir("artifacts/h059", { recursive: true });
         await page.setViewportSize({ width, height: 780 });
         await page.goto("/demo/dashboard");
+        // Wait until ThemeProvider has hydrated before deciding which switch to click.
+        await expect(page.locator("html")).toHaveAttribute("data-theme", /^(light|dark)$/);
         if (await page.locator("html").getAttribute("data-theme") !== theme) {
           await page.getByRole("button", {
             name: theme === "dark" ? "تفعيل الوضع الداكن" : "تفعيل الوضع الفاتح",
