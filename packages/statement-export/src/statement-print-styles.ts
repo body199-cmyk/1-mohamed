@@ -169,23 +169,27 @@ export const STATEMENT_PRINT_STYLES = `
   }
 
   .col-ref {
-    width: 16%;
+    width: 15%;
   }
 
   .col-date {
-    width: 14%;
+    width: 13%;
+  }
+
+  .col-receipt {
+    width: 12%;
   }
 
   .col-dir {
-    width: 34%;
+    width: 27%;
   }
 
   .col-amount {
-    width: 18%;
+    width: 16%;
   }
 
   .col-balance {
-    width: 18%;
+    width: 17%;
   }
 
   .ltr-token {
@@ -196,6 +200,17 @@ export const STATEMENT_PRINT_STYLES = `
     max-width: 100%;
     overflow-wrap: anywhere;
     word-break: break-word;
+  }
+
+  /* The printed signs—not colors—carry the accounting meaning. */
+  .signed-positive {
+    color: #116744;
+    font-weight: 700;
+  }
+
+  .signed-negative {
+    color: #a34a20;
+    font-weight: 700;
   }
 
   .empty-state-cell {

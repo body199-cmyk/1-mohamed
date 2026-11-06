@@ -8,7 +8,7 @@ import { StatementExportActions } from "./statement-export-actions";
 import styles from "./statements.module.css";
 
 export function ContractorStatementsView() {
-  const { contractors, getStatementForContractor } = useDemoStore();
+  const { contractors, trips, getStatementForContractor } = useDemoStore();
 
   const [selectedContractorId, setSelectedContractorId] = useState<string>(
     contractors[0]?.id ?? "K1"
@@ -27,6 +27,13 @@ export function ContractorStatementsView() {
     }
     return getStatementForContractor(selectedContractorId, fromDate, toDate);
   }, [selectedContractorId, fromDate, toDate, getStatementForContractor]);
+
+  // Join only the chosen contractor's trip receipts by stable trip ID.
+  // Never fold receipts or payment cash into the contractor work ledger.
+  const receiptByTripId = useMemo(() => new Map(
+    trips.filter(trip => trip.counterpartyId === selectedContractorId)
+      .map(trip => [trip.id, trip.receiptNumber] as const)
+  ), [trips, selectedContractorId]);
 
   return (
     <div className={styles.pageContainer}>
@@ -131,8 +138,8 @@ export function ContractorStatementsView() {
             contractorName={currentContractor.name}
           />
 
-          <StatementExportActions statement={statementResult.statement} name={currentContractor.name} />
-          <StatementTable rows={statementResult.statement.rows} />
+          <StatementExportActions statement={statementResult.statement} name={currentContractor.name} receiptByTripId={receiptByTripId} />
+          <StatementTable rows={statementResult.statement.rows} receiptByTripId={receiptByTripId} />
         </>
       )}
     </div>

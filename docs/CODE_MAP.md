@@ -295,3 +295,12 @@
 - `e2e/h062-device-independent-reports.spec.ts`: actual downloadable byte hashes across phone 360 / desktop 1280, light/dark, 18 responsive screenshots. `.github/workflows/verify.yml` runs tests and stores `artifacts/h062`.
 - `docs/DECISIONS.md` D17, `docs/H062_REPORTS_FIXED_EXPORT_REVIEW.md`: accepted contract, evidence and future-agent handoff.
 - H062 review evidence: `artifacts/h062/contractor-statement-fixed-A4.pdf` and `contractor-statement-fixed-1440.png` from the actual browser download (not recreated static mockups) are preserved alongside the 18 on-screen screenshots by CI for PDF visual checks.
+
+### H063 — signed contractor reports (D18)
+- `apps/web/src/features/contractor-statements/contractor-statements-view.tsx`: creates contractor-filtered trip ID to receipt map; passes to `statement-table.tsx` and `statement-export-actions.tsx`; no calculations added.
+- `apps/web/src/features/contractor-statements/statement-table.tsx`: separate receipt column and a single `signedDeltaPiastres` amount from Ahmed's perspective.
+- `apps/web/src/features/contractor-statements/statement-document.ts`: only formats + for positive, - for counterparty work and negative balances; map preserves receipts alongside internal trip ID.
+- `packages/statement-export/src/document-types.ts`: optional `receiptNumber` to maintain existing package caller fixtures.
+- `packages/statement-export/src/render-statement-html.ts`, `render-statement-csv.ts`, `render-statement-xlsx.ts`, `render-statement-image.ts`, `statement-print-styles.ts`: six-column fixed paper/export layout, with explicit signed effect and receipt, fixed 1440 PNG/ A4 PDF, CSV formula guard, XLSX inline text and six-column autofilter.
+- `e2e/h063-contractor-signed-receipts.spec.ts`, `packages/statement-export/tests/signed-presentation-h063.test.ts`: browser and package tests with actual +300/-600, REC-001/REC-003, CSV/XLSX and PDF/PNG; `artifacts/h063` saved by verify workflow.
+- `docs/H063_CONTRACTOR_SIGNS_REVIEW.md`: independent audit and user D18 request.

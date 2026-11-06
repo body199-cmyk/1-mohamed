@@ -8,8 +8,22 @@ function money(value: string): string {
   return `${formatted.amount} ج.م`;
 }
 
-/** Formats the exact displayed statement; never recalculates or queries movements. */
-export function toStatementDocument(statement: ContractorStatement, name: string): ContractorStatementDocument {
+/** Explicit sign is presentation-only; the accounting engine already owns signed piastres. */
+function signedMoney(value: string): string {
+  return (BigInt(value) > 0n ? "+" : "") + money(value);
+}
+function contractorWorkMoney(value: string): string {
+  return (BigInt(value) > 0n ? "-" : "") + money(value);
+}
+
+/** Formats the exact displayed statement; never recalculates or queries movements.
+ * Receipts are optional presentation metadata joined by the original trip ID.
+ */
+export function toStatementDocument(
+  statement: ContractorStatement,
+  name: string,
+  receiptByTripId: ReadonlyMap<string, string> = new Map(),
+): ContractorStatementDocument {
   return {
     businessName: "أحمد أبو علي — بيانات تجريبية، ليست كشفًا فعليًا",
     counterpartyName: name,
@@ -18,18 +32,18 @@ export function toStatementDocument(statement: ContractorStatement, name: string
       timeZone: "Africa/Cairo", dateStyle: "medium", timeStyle: "short",
     }).format(new Date()),
     summary: {
-      openingBalanceText: money(statement.openingBalancePiastres),
-      ahmedWorkText: money(statement.ahmedWorkPiastres),
-      counterpartyWorkText: money(statement.counterpartyWorkPiastres),
-      closingBalanceText: money(statement.closingBalancePiastres),
+      openingBalanceText: signedMoney(statement.openingBalancePiastres),
+      ahmedWorkText: signedMoney(statement.ahmedWorkPiastres),
+      counterpartyWorkText: contractorWorkMoney(statement.counterpartyWorkPiastres),
+      closingBalanceText: signedMoney(statement.closingBalancePiastres),
       closingBeneficiaryText: statement.beneficiary === "AHMED" ? "لصالح أحمد أبو علي" :
         statement.beneficiary === "COUNTERPARTY" ? `لصالح ${name}` : "الحساب متعادل",
       movementCountText: String(statement.movementCount),
     },
     rows: statement.rows.map(row => ({
-      reference: row.id, workDate: row.workDate,
+      reference: row.id, receiptNumber: receiptByTripId.get(row.id)?.trim() || "—", workDate: row.workDate,
       directionText: row.direction === "AHMED_SUPPLIES" ? "أحمد جاب العربيات لشغل المقاول" : "المقاول جاب العربيات لشغل أحمد",
-      amountText: money(row.signedDeltaPiastres),
+      amountText: signedMoney(row.signedDeltaPiastres),
       runningBalanceText: money(row.runningBalancePiastres),
     })),
   };

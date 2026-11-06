@@ -5,9 +5,10 @@ import styles from "./statements.module.css";
 
 interface StatementTableProps {
   rows: readonly ContractorStatementRow[];
+  receiptByTripId: ReadonlyMap<string, string>;
 }
 
-export function StatementTable({ rows }: StatementTableProps) {
+export function StatementTable({ rows, receiptByTripId }: StatementTableProps) {
   if (rows.length === 0) {
     return (
       <div className={styles.tableCard}>
@@ -38,15 +39,14 @@ export function StatementTable({ rows }: StatementTableProps) {
             <tr>
               <th>تاريخ النقلة</th>
               <th>رقم النقلة</th>
+              <th>رقم الإيصال</th>
               <th>الاتجاه والمسؤولية</th>
-              <th>قيمة النقلة</th>
-              <th>الأثر على الرصيد</th>
+              <th>الأثر على حساب أحمد (+/−)</th>
               <th>الرصيد التراكمي</th>
             </tr>
           </thead>
           <tbody>
             {rows.map((row) => {
-              const totalFmt = formatEgpFromPiastres(row.contractorTotalPiastres);
               const deltaFmt = formatEgpFromPiastres(row.signedDeltaPiastres);
               const runningFmt = formatEgpFromPiastres(row.runningBalancePiastres);
 
@@ -58,6 +58,7 @@ export function StatementTable({ rows }: StatementTableProps) {
                   <td style={{ fontFamily: "monospace", fontSize: "0.85rem" }}>
                     {row.id}
                   </td>
+                  <td>{receiptByTripId.get(row.id)?.trim() || "—"}</td>
                   <td>
                     {isAhmed ? (
                       <span style={{ color: "var(--color-success)", fontWeight: 600 }}>
@@ -68,9 +69,6 @@ export function StatementTable({ rows }: StatementTableProps) {
                         ✓ شغل المقاول (خصم على أحمد)
                       </span>
                     )}
-                  </td>
-                  <td dir="ltr" style={{ fontWeight: 600 }}>
-                    {totalFmt.ok ? totalFmt.amount : "0.00"} ج.م
                   </td>
                   <td dir="ltr"
                     style={{

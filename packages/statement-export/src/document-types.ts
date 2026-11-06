@@ -13,7 +13,10 @@ export interface ContractorStatementSummary {
 }
 
 export interface ContractorStatementRow {
+  /** Stable internal trip identifier, not a commercial receipt. */
   readonly reference: string;
+  /** Separate receipt reference when recorded; absent on older/imported rows. */
+  readonly receiptNumber?: string;
   readonly workDate: string;
   readonly directionText: string;
   readonly amountText: string;

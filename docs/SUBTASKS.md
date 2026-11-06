@@ -488,3 +488,9 @@
 - `#206bc4` طابع ثابت في طباعة HTML/صورة PNG وصورة PDF وExcel، مع نفس المستند ومحتوى المال والمرجع. لا إعادة تجميع مالية.
 - 18 screenshots متجاوبة، و4 قياسات hash لملفات حقيقية تصدر مرتين في Chromium 360/1280 والثيمين؛ PDF صفحة A4 وصورة PNG 1440، ملف XLSX RTL. اختبار الورق الوحدة. التقارير اليومية/نقد العربية شاشة فقط.
 - مراجعة diff مستقلة + full CI أحدث SHA، سجّل عيوب ولو نجحت باقي الحالات. Merge فقط نجاح مثبت؛ اختبار أجهزة هاتف فعلية وتصديق المستخدم منفصلان قبل Supabase/Vercel.
+
+### H063 / D18 signed contractor statements and separate receipt
+- Branch `feat/h063-signed-contractor-report-receipts` from verified H062 `9e0f40ca`. Do not modify financial packages, signed-ledger formulas, trip ID generation, database or cloud.
+- Add receipt metadata to export document (optional for fixtures/backward compatibility); join from trip records by current contractor and trip ID; missing -> «—». Visible table shows a *single signed effect* instead of an unsigned gross amount plus duplicate signed effect.
+- All renderers: HTML print/PDF/PNG/CSV/XLSX 6 columns (trip ID/date/receipt/direction/signed effect/running). Export totals: Ahmed + and contractor - with zero neutral. Multi-page PDFs preserve page count and rows.
+- E2E visual 360-dark/1280-light with PNG/PDF saved, CSV/XLSX text/receipt tests, PDF/PNG cross-device hashes, package unit; review CI and actual PDF. Merge only success on exact SHA; user acceptance separate.
