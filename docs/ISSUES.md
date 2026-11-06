@@ -121,3 +121,10 @@
 - **Evidence:** inspected actual dark-mode H058 contractor report screenshot, then verified theme tokens and `nav-header.module.css`: active text `#3b82f6` against `#1e3a8a` gives **2.82:1**, below WCAG AA 4.5:1 for ordinary text. Light mode was 4.75:1. This is a measurable visual/accessibility defect, not a financial issue.
 - **Correction:** active link text uses `--text-main` while preserving primary underline and active background. The expected dark contrast from exact tokens is **9.9:1**. Added computed-color Playwright regression in `e2e/visual-audit-h059.spec.ts` testing both themes with threshold 4.5:1.
 - **Verification:** full H059 CI and final patch review required; physical Android and final user aesthetic acceptance remain separate.
+
+## H061 / BUG-010 — E2E screenshot theme hydration race (6 Nov 2026)
+
+- **Evidence:** H061 CI run `42194563268` on initial PR #24 head: all unit, SQL-negative, backup, build, Auth/HTTP steps PASS; browser results **47 passed, one failed and one flaky**. The H059 seven-route screenshot test in *light mode* at 360px and 1280px sometimes timed out at 120 seconds while waiting to click `getByRole('button', { name: 'تفعيل الوضع الفاتح' })`. Tests often passed if retried after hydration. All 12 new H061 screenshots were uploaded and their own UI tests passed.
+- **Root cause:** `html[data-theme]` is set in the client ThemeProvider `useEffect`. The screenshot test read `getAttribute('data-theme')` immediately after `page.goto`, sometimes receiving `null` before hydration and choosing the wrong toggle (asking for “light switch” even though default mode is light).
+- **Fix:** E2E only: `await expect(page.locator("html")).toHaveAttribute("data-theme", /^(light|dark)$/)` before deciding to toggle in `e2e/visual-audit-h059.spec.ts` and new `e2e/h061-operational-forms.spec.ts`. No production UI, calculations, auth, storage or theme provider changed.
+- **Status:** pending full CI verification on latest PR head and critical review; do **not** merge on first failed run.
