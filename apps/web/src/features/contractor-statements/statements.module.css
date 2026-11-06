@@ -1,21 +1,22 @@
 .pageContainer {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 20px;
+  min-width: 0;
 }
 
 .filtersCard {
   background-color: var(--surface-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
-  padding: 24px;
+  padding: 20px;
   box-shadow: var(--shadow-card);
 }
 
 .filtersGrid {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr auto;
-  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
+  gap: 12px;
   align-items: flex-end;
 }
 
@@ -57,7 +58,7 @@
   background-color: var(--surface-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
-  padding: 24px;
+  padding: 20px;
   box-shadow: var(--shadow-card);
 }
 
@@ -93,12 +94,12 @@
 
 .summaryGrid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 185px), 1fr));
+  gap: 12px;
 }
 
 .metricBox {
-  background-color: var(--surface-hover);
+  background-color: var(--surface-card-subtle);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   padding: 16px;
@@ -189,13 +190,14 @@
 
 .table {
   width: 100%;
+  min-width: 800px;
   border-collapse: collapse;
   text-align: right;
   font-size: 0.92rem;
 }
 
 .table th {
-  background-color: var(--surface-hover);
+  background-color: var(--surface-card-subtle);
   color: var(--text-main);
   font-weight: 700;
   padding: 14px 16px;
@@ -270,3 +272,15 @@
 .exportButton:disabled {opacity:.55;cursor:not-allowed;}
 .exportDescription {font-size:.85rem;color:var(--text-muted);line-height:1.85;}
 @media(max-width:640px){.exportPanel{padding:12px}.exportButton{flex:1 1 100%;}}
+
+/* H062: screen tables stay horizontally scrollable, while exported pages
+   have their own fixed A4/1440px layout independent of this CSS and theme. */
+.filtersGrid > * { min-width: 0; }
+.tableWrapper { max-width: 100%; scrollbar-width: thin; }
+.metricValue { overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+.exportPanel { margin-block: 12px; background: var(--surface-card-subtle); }
+.exportActions { align-items: stretch; }
+@media (max-width: 640px) {
+  .filtersCard, .summaryCard { padding: 16px; }
+  .tableHeader { padding: 16px; }
+}
