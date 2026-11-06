@@ -101,8 +101,9 @@ export function paintStatementImage(
   }
 
   write(ctx, "تفاصيل الحركات", right, 647, { size: 29, bold: true });
-  const widths = [230, 170, 360, 250, 270];
-  const headings = ["المرجع", "التاريخ", "اتجاه الشغل", "قيمة الشغل", "الرصيد بعد الحركة"];
+  // Stable six-column RTL page: internal trip ID and optional receipt remain distinct.
+  const widths = [190, 145, 150, 330, 220, 245];
+  const headings = ["رقم النقلة", "التاريخ", "رقم الإيصال", "اتجاه الشغل", "الأثر على أحمد", "الرصيد"];
 
   ctx.fillStyle = BLUE;
   ctx.fillRect(left, 682, 1280, 70);
@@ -126,12 +127,15 @@ export function paintStatementImage(
     ctx.lineTo(right, y + ROW_HEIGHT - 0.5);
     ctx.stroke();
 
-    const cells = [row.reference, row.workDate, row.directionText, row.amountText, row.runningBalanceText];
+    const cells = [row.reference, row.workDate, row.receiptNumber?.trim() || "—", row.directionText, row.amountText, row.runningBalanceText];
     let cellRight = right;
     for (let column = 0; column < cells.length; column++) {
-      write(ctx, cells[column]!, cellRight - 15, y + 39, {
+      const cell = cells[column]!;
+      write(ctx, cell, cellRight - 15, y + 39, {
         size: 20, maxWidth: widths[column]! - 28,
-        ltr: column === 0 || column === 1,
+        ltr: column === 0 || column === 1 || column === 2 || column === 4 || column === 5,
+        color: column === 4 && cell.startsWith("-") ? "#a34a20" :
+          column === 4 && cell.startsWith("+") ? "#116744" : NAVY,
       });
       cellRight -= widths[column]!;
     }
