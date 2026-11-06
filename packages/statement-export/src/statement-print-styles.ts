@@ -202,6 +202,17 @@ export const STATEMENT_PRINT_STYLES = `
     word-break: break-word;
   }
 
+  /* The printed signs—not colors—carry the accounting meaning. */
+  .signed-positive {
+    color: #116744;
+    font-weight: 700;
+  }
+
+  .signed-negative {
+    color: #a34a20;
+    font-weight: 700;
+  }
+
   .empty-state-cell {
     text-align: center;
     padding: 16px 10px;
