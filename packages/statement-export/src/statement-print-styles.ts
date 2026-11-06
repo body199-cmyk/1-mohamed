@@ -1,3 +1,4 @@
+/** Stable A4 white-paper document: intentionally independent of dashboard theme, screen size and device. */
 export const STATEMENT_PRINT_STYLES = `
   @page {
     size: A4;
@@ -30,7 +31,7 @@ export const STATEMENT_PRINT_STYLES = `
   }
 
   .statement-header {
-    border-bottom: 2px solid #2563eb;
+    border-bottom: 2px solid #206bc4;
     padding-bottom: 12px;
     margin-bottom: 16px;
   }
@@ -38,7 +39,7 @@ export const STATEMENT_PRINT_STYLES = `
   .business-name {
     font-size: 14px;
     font-weight: 700;
-    color: #2563eb;
+    color: #206bc4;
     margin: 0 0 4px 0;
     overflow-wrap: anywhere;
     word-break: break-word;
@@ -86,7 +87,7 @@ export const STATEMENT_PRINT_STYLES = `
     color: #1e293b;
     margin: 0 0 8px 0;
     padding-right: 8px;
-    border-right: 3px solid #2563eb;
+    border-right: 3px solid #206bc4;
   }
 
   .summary-section {
