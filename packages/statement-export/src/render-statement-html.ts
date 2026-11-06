@@ -16,10 +16,10 @@ function renderDetailRowHtml(row: ContractorStatementRow): string {
   return [
     "          <tr>",
     `            <td><span class="ltr-token">${reference}</span></td>`,
-    `            <td><span class="ltr-token">${receiptNumber}</span></td>`,
     `            <td><span class="ltr-token">${workDate}</span></td>`,
+    `            <td><span class="ltr-token">${receiptNumber}</span></td>`,
     `            <td>${directionText}</td>`,
-    `            <td><span class="ltr-token">${amountText}</span></td>`,
+    `            <td class="${row.amountText.startsWith("-") ? "signed-negative" : row.amountText.startsWith("+") ? "signed-positive" : ""}"><span class="ltr-token">${amountText}</span></td>`,
     `            <td><span class="ltr-token">${runningBalanceText}</span></td>`,
     "          </tr>",
   ].join("\n");
