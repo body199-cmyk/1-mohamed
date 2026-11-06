@@ -1,7 +1,7 @@
 .layoutGrid {
   display: grid;
-  grid-template-columns: 1fr 380px;
-  gap: 24px;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 330px);
+  gap: 18px;
   align-items: start;
 }
 
@@ -202,7 +202,7 @@
   padding: 12px 24px;
   font-size: 1rem;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--color-primary-text);
   background-color: var(--color-primary);
   border: none;
   border-radius: var(--radius-md);
@@ -441,7 +441,7 @@
 }
 
 /* H057 visual and accessibility polish: business math unchanged. */
-.card { min-width:0; border-top:3px solid var(--metric-edge); }
+.card { min-width:0; }
 .formGrid { grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr)); }
 .quickActionBtn { min-height:36px; padding-inline:9px; }
 .input:hover:not(:disabled),.select:hover:not(:disabled),.textarea:hover:not(:disabled){border-color:var(--border-strong);}
@@ -455,3 +455,10 @@
 .badgeInfo {background-color:var(--color-info-bg);color:var(--color-info);border-color:var(--color-info-border);}
 .modalCloseBtn {min-width:44px;min-height:44px;}
 @media(prefers-reduced-motion:reduce){.directionOption,.btnPrimary,.btnSecondary,.btnOutline,.btnDangerOutline{transition:none;}}
+
+/* H061: a narrower Tabler sidebar reduces usable workspace width; stack
+   the entry form and account preview before either becomes cramped. */
+@media (max-width: 1360px) {
+  .layoutGrid { grid-template-columns: minmax(0, 1fr); }
+  .sideColumn { position: static; }
+}
