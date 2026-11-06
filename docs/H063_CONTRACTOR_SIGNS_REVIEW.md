@@ -19,3 +19,8 @@ The accounting model in `packages/contractor-statements/src/contractor-statement
 - Critically re-read full PR diff and record exact successful SHA, run and merge evidence. Technical merge not final user screenshot approval. No real device or cloud integrations included.
 
 Status: **pending CI, independent review and merge**.
+
+## Initial CI review and narrow test-contract correction
+- Run `42213645950` failed in statement-export package test phase; 29 package tests passed, **3 legacy exact-column expectations failed** because they still expected old 5-column headings/rows. This is not a financial or renderer calculation failure. Run stopped before SQL/browser stages.
+- Updated old `html-rendering.test.ts` and `csv-rendering.test.ts` to assert 6 columns and the default «—» receipt; no former escaping, formula guard, or order checks removed. Independently checked actual diff and existing positive/negative test fixtures.
+- Full CI must rerun at latest SHA before merge; screenshots and PDF rendered proof must be checked.
