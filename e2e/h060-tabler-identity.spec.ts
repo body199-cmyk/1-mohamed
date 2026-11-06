@@ -3,7 +3,7 @@ import { mkdir } from "node:fs/promises";
 
 function contrast(foreground: string, background: string): number {
   const linear = (color: string) => {
-    const values = (color.match(/[\\d.]+/g) ?? []).slice(0, 3).map(Number);
+    const values = (color.match(/[\d.]+/g) ?? []).slice(0, 3).map(Number);
     if (values.length !== 3) throw new Error("Expected RGB computed color: " + color);
     const [r, g, b] = values.map(x => {
       const v = x / 255;
