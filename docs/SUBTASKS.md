@@ -476,3 +476,10 @@
 - العمل ليس تصميمًا من الصفر: Tabler MIT UI as visual reference؛ لا Bootstrap أو CSS/HTML من Tabler نسخ؛ أعد استخدام CSS Modules وCairo وNext routes.
 - desktop >1100 RTL sidebar على يمين المحتوى؛ ≤1100 mobile/tablet nav أفقي قابل للتمرير وبنفس الـaria labels وkeyboard focus. قاعدة 1100 تحفظ E2E H055 وسلوك tablet.
 - الواجهة الأساسية والمقاييس المالية قائمة على source دون تغيير. اختبار 47 Chromium مستهدف و8 صور، وقبول code review/CI على SHA النهائي قبل الدمج، مع بقاء قبول المستخدم للشكل مفتوحًا.
+
+### H061 — Tabler operational forms
+- Branch `feat/h061-tabler-operational-forms` from H060 merged main `b93e2bdc`.
+- 3 operational CSS Modules plus one dark primary text token in variables.css (BUG-011 after measured 4.43895 contrast); leave JSX, store, payment-date validation, ledger and finance rules untouched; responsive stacking <=1360px where right sidebar narrows available space.
+- 12 artifact images (trips/master-data/payments, light/dark, 360/1280), selected-tab and primary-button contrast >=4.5, no global horizontal overflow. Repeat existing 46 browser tests, SQL/negative controls/Auth/backup/build; review actual patch separately and only merge on latest passing SHA.
+- After verified merge, H062 narrow report/statement harmonization, then user visual acceptance and separate Supabase/Vercel plan.
+- Bug fixes before acceptance: old H059 screenshot readiness BUG-010 and H061 dark primary action WCAG ratio BUG-011. Full passing CI on new head mandatory.

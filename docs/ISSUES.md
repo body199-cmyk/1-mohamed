@@ -121,3 +121,14 @@
 - **Evidence:** inspected actual dark-mode H058 contractor report screenshot, then verified theme tokens and `nav-header.module.css`: active text `#3b82f6` against `#1e3a8a` gives **2.82:1**, below WCAG AA 4.5:1 for ordinary text. Light mode was 4.75:1. This is a measurable visual/accessibility defect, not a financial issue.
 - **Correction:** active link text uses `--text-main` while preserving primary underline and active background. The expected dark contrast from exact tokens is **9.9:1**. Added computed-color Playwright regression in `e2e/visual-audit-h059.spec.ts` testing both themes with threshold 4.5:1.
 - **Verification:** full H059 CI and final patch review required; physical Android and final user aesthetic acceptance remain separate.
+
+## H061 / BUG-010 — E2E screenshot theme hydration race (6 Nov 2026)
+
+- **Evidence:** H061 CI run `42194563268` on initial PR #24 head: all unit, SQL-negative, backup, build, Auth/HTTP steps PASS; browser results **47 passed, one failed and one flaky**. The H059 seven-route screenshot test in *light mode* at 360px and 1280px sometimes timed out at 120 seconds while waiting to click `getByRole('button', { name: 'تفعيل الوضع الفاتح' })`. Tests often passed if retried after hydration. All 12 new H061 screenshots were uploaded and their own UI tests passed.
+- **Root cause:** `html[data-theme]` is set in the client ThemeProvider `useEffect`. The screenshot test read `getAttribute('data-theme')` immediately after `page.goto`, sometimes receiving `null` before hydration and choosing the wrong toggle (asking for “light switch” even though default mode is light).
+- **Fix:** E2E only: `await expect(page.locator("html")).toHaveAttribute("data-theme", /^(light|dark)$/)` before deciding to toggle in `e2e/visual-audit-h059.spec.ts` and new `e2e/h061-operational-forms.spec.ts`. No production UI, calculations, auth, storage or theme provider changed.
+- **Status:** pending full CI verification on latest PR head and critical review; do **not** merge on first failed run.
+## H061 / BUG-011 — Dark primary text contrast just below 4.5 (6 Nov 2026)
+- **Evidence:** second H061 CI run `42195882955`, 48 browser cases pass while new contrast test fails consistently for `/demo/trips` dark primary action: measured **4.438954753:1** vs WCAG 4.5:1 target. Earlier H059 hydration race was fixed: old screenshots all passed. Financial/DB/backup/build/Auth steps green.
+- **Correction:** dark theme primary label token in `apps/web/src/styles/variables.css` dark changes `#10283f` → `#061629` for a measurable contrast margin; `e2e/h061-operational-forms.spec.ts` also waits for `data-theme` after each navigation and logs exact computed foreground/background in test errors, avoiding color checks during theme rehydration.
+- **Status:** pending complete CI on final head and separate patch review before merge. No changes to records, amounts, calculations, or application behaviour.

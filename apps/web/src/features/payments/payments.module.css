@@ -9,11 +9,11 @@
 .wide { grid-column:1/-1; }
 .buttons { display:flex;flex-wrap:wrap;gap:8px;margin-top:12px; }
 .primary,.secondary { min-height:44px;padding:9px 14px;border-radius:var(--radius-md);font:inherit;font-weight:700; }
-.primary { color:white;background:var(--color-primary);border:1px solid var(--color-primary); }
+.primary { color:var(--color-primary-text);background:var(--color-primary);border:1px solid var(--color-primary); }
 .secondary { color:var(--text-main);background:var(--surface-hover);border:1px solid var(--border-color); }
 .primary:disabled { opacity:.5;cursor:not-allowed; }
 .summary { display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));gap:12px;background:var(--surface-card-subtle); }
-.summary div { display:grid;gap:7px; }
+.summary div { display:grid;gap:7px;min-width:0;padding:14px;border:1px solid var(--border-color);border-radius:var(--radius-md);background:var(--surface-card); }
 .summary span { color:var(--text-muted);font-size:.88rem; }
 .summary strong { font-size:1.25rem;overflow-wrap:anywhere;font-variant-numeric:tabular-nums; }
 .summary p { grid-column:1/-1;color:var(--text-muted);font-size:.85rem; }
@@ -31,7 +31,7 @@
 
 /* H057 unified invoice/payment inputs without ledger changes. */
 .filters,.form,.section,.summary {box-shadow:var(--shadow-card);}
-.form {border-top:3px solid var(--metric-edge);}
+.form {border-top:1px solid var(--border-color);}
 .page input:hover:not(:disabled),.page select:hover:not(:disabled){border-color:var(--border-strong);}
 .page input:focus-visible,.page select:focus-visible {border-color:var(--border-focus);outline:2px solid var(--border-focus);outline-offset:1px;}
 .primary:hover:not(:disabled){background:var(--color-primary-hover);}
@@ -39,3 +39,7 @@
 .scroll th{background:var(--surface-card-subtle);}
 .scroll tbody tr:hover td{background:var(--surface-hover);}
 @media(max-width:600px){.buttons .primary{flex:1 1 180px;}}
+
+/* H061: primary action and ledger summary match the shared dashboard tokens. */
+.primary:hover:not(:disabled) { color:var(--color-primary-text); }
+.summary strong { line-height:1.6; }
