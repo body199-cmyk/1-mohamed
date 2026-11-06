@@ -24,3 +24,8 @@ Status: **pending CI, independent review and merge**.
 - Run `42213645950` failed in statement-export package test phase; 29 package tests passed, **3 legacy exact-column expectations failed** because they still expected old 5-column headings/rows. This is not a financial or renderer calculation failure. Run stopped before SQL/browser stages.
 - Updated old `html-rendering.test.ts` and `csv-rendering.test.ts` to assert 6 columns and the default «—» receipt; no former escaping, formula guard, or order checks removed. Independently checked actual diff and existing positive/negative test fixtures.
 - Full CI must rerun at latest SHA before merge; screenshots and PDF rendered proof must be checked.
+
+## Second critical pass — actual output review found bidi mismatch (BUG-013)
+- After TEST-012 alignment, full CI `42214020869` on head `6df1c472` passed **54/54 Chromium**, full unit/typecheck, isolated SQL negative controls, backup, Auth/HTTP and build. GitHub Actions H063 artifact `13498989823` included actual downloaded PNG and direct A4 PDF and screen screenshots.
+- Manually rendered the exported PDF to PNG, confirmed trip ID and receipt appear in distinct columns and row sign `-600.00` is visible. Found a genuine remaining visual defect in the *six summary metrics*: with mixed Arabic currency and digit glyphs, sign rendered at the end of numbers. Fixed only canvas summary presentation to draw amounts as LTR signed numerals while moving `ج.م` unit to the corresponding metric caption. No source document money values changed.
+- New unit checks verify `+300.00` and `-600.00` exact drawing text and summary caption units. **Require final fresh SHA and screenshot re-review** before merge.
