@@ -77,14 +77,19 @@ test.describe("H060 open-source dashboard identity — Tabler-inspired RTL shell
           await page.getByRole("button",{name:theme==="dark"?"تفعيل الوضع الداكن":"تفعيل الوضع الفاتح"}).click();
         }
         await expect(page.locator("html")).toHaveAttribute("data-theme",theme);
-        // Wait out the brief surface transition on theme switch (BUG-011
-        // pattern); the terminal AA threshold assertion is unchanged.
-        await expect.poll(async () => {
-          const c=await page.getByRole("link",{name:"+ تسجيل نقلة جديدة"}).evaluate(el=>({
-            fg:getComputedStyle(el).color,bg:getComputedStyle(el).backgroundColor
-          }));
-          return contrast(c.fg,c.bg);
-        }).toBeGreaterThanOrEqual(4.5);
+        // Wait for the CTA background transition to finish before measuring
+        // the final theme colors; do not accept an intermediate transition frame.
+        const primary = page.getByRole("link",{name:"+ تسجيل نقلة جديدة"});
+        await primary.evaluate(async el => {
+          await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+          await Promise.all(el.getAnimations().map(animation =>
+            animation.finished.catch(() => undefined)
+          ));
+        });
+        const c=await primary.evaluate(el=>({
+          fg:getComputedStyle(el).color,bg:getComputedStyle(el).backgroundColor
+        }));
+        expect(contrast(c.fg,c.bg),theme+" primary button").toBeGreaterThanOrEqual(4.5);
         for(const [route,name] of [["/demo/dashboard","dashboard"],["/demo/contractors","statement"]] as const){
           await page.goto(route);
           await expect(page.locator("html")).toHaveAttribute("data-theme",theme);

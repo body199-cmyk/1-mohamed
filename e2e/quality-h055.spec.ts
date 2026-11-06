@@ -101,15 +101,14 @@ test.describe("H055 / T11: bounded desktop-Chromium UX quality gate", () => {
     for (const expectedTheme of ["light","dark"] as const) {
       if(expectedTheme==="dark")await page.getByRole("button",{name:"تفعيل الوضع الداكن"}).click();
       await expect(page.locator("html")).toHaveAttribute("data-theme",expectedTheme);
-      // Wait out the brief surface transition on theme switch (BUG-011 pattern);
-      // the terminal AA threshold assertion is unchanged.
-      await expect.poll(async () => {
-        const style = await banner.evaluate(el => ({
-          foreground:getComputedStyle(el).color,
-          background:getComputedStyle(el).backgroundColor,
-        }));
-        return contrast(style.foreground,style.background);
-      }).toBeGreaterThanOrEqual(4.5);
+      // The status banner has no CSS color transition; once the root theme
+      // attribute is applied, measure its final theme tokens directly.
+      const style = await banner.evaluate(el => ({
+        foreground:getComputedStyle(el).color,
+        background:getComputedStyle(el).backgroundColor,
+      }));
+      expect(contrast(style.foreground,style.background),expectedTheme+" contrast")
+        .toBeGreaterThanOrEqual(4.5);
     }
   });
 
