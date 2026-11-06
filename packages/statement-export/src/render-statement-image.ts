@@ -96,8 +96,16 @@ export function paintStatementImage(
     ctx.strokeStyle = BORDER;
     ctx.lineWidth = 1;
     ctx.strokeRect(x + 0.5, y + 0.5, 409, 107);
-    write(ctx, metric.label, x + 386, y + 39, { size: 19, color: MUTED, maxWidth: 370 });
-    write(ctx, metric.value, x + 386, y + 82, { size: 25, bold: true, maxWidth: 370 });
+    // Mixed RTL currency text can visually move a leading - to the end.
+    // Keep the money amount as an LTR numeric token and put the currency
+    // in its metric label; the source monetary value itself is unchanged.
+    const hasCurrency = metric.value.endsWith(" ج.م");
+    const displayValue = hasCurrency ?
+      metric.value.slice(0, -" ج.م".length) : metric.value;
+    write(ctx, metric.label + (hasCurrency ? " (ج.م)" : ""), x + 386, y + 39,
+      { size: 19, color: MUTED, maxWidth: 370 });
+    write(ctx, displayValue, x + 386, y + 82,
+      { size: 25, bold: true, maxWidth: 370, ltr: hasCurrency });
   }
 
   write(ctx, "تفاصيل الحركات", right, 647, { size: 29, bold: true });
