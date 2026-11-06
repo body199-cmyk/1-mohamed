@@ -84,10 +84,11 @@ describe("EXPORT-01 renderContractorStatementHtml", () => {
     }
 
     const detailHeaders = [
-      "المرجع",
+      "رقم النقلة",
       "التاريخ",
+      "رقم الإيصال",
       "اتجاه الشغل",
-      "قيمة الشغل — جنيه",
+      "الأثر على حساب أحمد (+/−) — جنيه",
       "الرصيد بعد الحركة — جنيه",
     ];
     for (const header of detailHeaders) {
@@ -95,7 +96,7 @@ describe("EXPORT-01 renderContractorStatementHtml", () => {
     }
 
     const lastSummaryLabelPos = html.indexOf("عدد الحركات");
-    const firstTableHeaderPos = html.indexOf("المرجع");
+    const firstTableHeaderPos = html.indexOf("رقم النقلة");
     expect(lastSummaryLabelPos > 0).toBe(true);
     expect(firstTableHeaderPos > lastSummaryLabelPos).toBe(true);
   });
