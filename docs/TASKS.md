@@ -212,3 +212,9 @@
 - أصلح تباين النص النشط في شريط التنقل في الوضع الداكن (BUG-009، 2.82:1 قبل الإصلاح) واختبر threshold 4.5:1 للوضعين.
 - صور UI: 7 مسارات × 3 عروض 360/768/1280 × الوضعين = 42 صورة تُرفع artifact؛ كل حالة تتأكد من main/active route/theme/no body overflow. لا تتكرر قواعد الحساب أو الدفع؛ تُشغّل معها فحوص الوحدات/SQL/security/backup/build/HTTP وباقي Playwright.
 - شروط القبول الفني: مراجعة الفرق النقدية + CI ناجح آخر SHA + PR merge verified. **شرط إغلاق H059 بصريًا منفصل:** مراجعة المستخدم للصور واعتماد الشكل أو طلب إصلاح محدد. Real Android/iOS وSupabase/Vercel خارج هذا النطاق.
+
+### H060 / T11-UI-IDENTITY — اعتماد مرجع بصري موجود
+- مرجع واضح: [Tabler Admin](https://tabler.io/admin-template) + [Tabler UI docs](https://docs.tabler.io/ui/getting-started) (MIT، RTL، dark/light)، **استلهام التصميم فقط** وليس نسخ شعار/كود/أصول أو تركيب framework آخر.
+- نطاق أول دفعة: shared variables + globals RTL app shell + nav-header sidebar desk/one-row mobile + dashboard CSS، دون تغيير حسابات أو Routes/Handler. حجم الملفات والتغييرات محدود لتمكين نقد مستقل.
+- ضمان: 3 Playwright tests جديدة للموقع الحقيقي للقائمة اليمنى، التحرك/التباين/عدم overflow في الموبايل ووضعين، و8 screenshots Dashboard/Contractor statement × 360/1280 × Light/Dark؛ CI الحالي 44 اختبار متصفح + 3 = 47، مع الوحدات وSQL السلبية والبناء والأمان والنسخ.
+- بعد النجاح: مراجعة screenshots مع المستخدم، وإصلاحات مركزة لكل صفحة (H061 عند الحاجة). **لا نعتبر هوية Tabler هي علامة تجارية مسجلة باسم مشروعنا ولا قبول المستخدم النهائي قبل رؤيتها**.
