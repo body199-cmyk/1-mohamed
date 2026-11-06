@@ -1143,3 +1143,14 @@
 - **Review findings closed:** TEST-012 (3 obsolete exact column expectations) updated without weakening security tests; BUG-013 (Arabic/Latin bidi moved summary sign) corrected by isolating numeric token LTR and moving currency unit to label. Initial failing and intermediate green-but-visually-defective runs retained as history.
 - **Scope:** presentation only. Accounting packages, D15/D16, payments, SQL, migrations, Auth/RLS, backup, Supabase, Vercel, and real user data untouched.
 - **Next overall work:** offline-first implementation is largely built in DemoStore; persistent connection/auth is intentionally last. Remaining gaps: T09 export for daily/vehicle cash only if user confirms scope (today both are on-screen-only); T10 real backup/restore policy requires D07; T11 physical Android/iOS, performance/network and release-security checks; then isolated Supabase-TEST (real Auth, RLS/HTTP, persistent CRUD, concurrency, actual backup/restore) and Vercel preview/release last. Repo remains Public; decide private visibility before secrets or real business data. D15/D16 are approved and implemented in demo engine. User aesthetic sign-off remains separate.
+
+
+## H064 — إغلاق متابعة أساس E2E والمراجعة المستقلة — ٧ نوفمبر ٢٠٢٦
+
+- **GitHub main قبل المهمة:** `f672e7157780d3dc08d3f61d5ea885565366089f`؛ **بعد الدمج:** `433658bfc32a411dbfbbd2640a6d564f3577a1e4`.
+- **فرع التنفيذ:** `opencode/fix-e2e-baseline`؛ **آخر SHA مختبر:** `1e533d6f0a9c0c84aecd1299a2accf15e4f0bfdb`؛ **PR #28:** https://github.com/body199-cmyk/1-mohamed/pull/28 — merged (squash).
+- **CI:** run `42314459722` SUCCESS؛ 55/55 في مجموعة E2E الرئيسية و9/9 في `review-regressions.spec.ts`، إضافة إلى typecheck/package/SQL/negative controls/backup/build/Auth HTTP وجميع artifacts.
+- **المراجعة المستقلة:** تم اكتشاف أن `expect.poll(contrast >= 4.5)` قد ينجح على إطار من الثيم السابق قبل اكتمال الانتقال؛ استُبدل بانتظار `requestAnimationFrame` ثم انتهاء `getAnimations().finished` قبل القياس. لم تُخفّض عتبة 4.5:1. اختبار H055 banner قيس مباشرة لأن CSS الخاص به بلا transition.
+- **النطاق:** تحديث توقع CSV H063 في الاختبار، تقوية اختبارات H055/H059/H060، وإضافة regression suite إلى CI. صفر تعديل في كود التطبيق أو المنطق المالي أو migrations أو Supabase/Vercel.
+- **النتيجة المحلية:** 69/70 في إحدى الدورات الكاملة؛ الفشل المحلي المتغير بيئي، بينما GitHub CI النهائي أخضر على SHA المختبر. لا نكرر الاختبارات بلا تغيير.
+- **الخطوة التالية على المشروع:** مراجعة النطاق غير المكتمل في T09 (تصدير اليومية ونقد العربية)، وحسم D07 لنسخ الأمان، وقرار خصوصية المستودع قبل أي بيانات حقيقية؛ ثم Supabase-TEST فقط، وVercel أخيرًا. لا توجد موافقة مستخدم موثقة بعد على D07 أو تحويل المستودع إلى Private.
