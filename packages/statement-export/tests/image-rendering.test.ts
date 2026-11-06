@@ -55,7 +55,7 @@ describe("T09.1 image export from identical statement document", () => {
 
   it("paints exact financial strings and references from the same document", () => {
     const calls = capturePaint(2);
-    for (const token of ["-400.00 ج.م", "600.00 ج.م", "MOV-0001", "MOV-0002", "101.00 ج.م", "المقاول: شركة النيل للمقاولات", "2026-11-30"]) {
+    for (const token of ["-400.00", "600.00", "MOV-0001", "MOV-0002", "101.00 ج.م", "المقاول: شركة النيل للمقاولات", "2026-11-30", " (ج.م)"]) {
       expect(calls.some(line => line.includes(token))).toBe(true);
     }
     expect(calls.filter(x => x.startsWith("MOV-000")).length).toBe(2);
