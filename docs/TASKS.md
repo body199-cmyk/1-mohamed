@@ -218,3 +218,9 @@
 - نطاق أول دفعة: shared variables + globals RTL app shell + nav-header sidebar desk/one-row mobile + dashboard CSS، دون تغيير حسابات أو Routes/Handler. حجم الملفات والتغييرات محدود لتمكين نقد مستقل.
 - ضمان: 3 Playwright tests جديدة للموقع الحقيقي للقائمة اليمنى، التحرك/التباين/عدم overflow في الموبايل ووضعين، و8 screenshots Dashboard/Contractor statement × 360/1280 × Light/Dark؛ CI الحالي 44 اختبار متصفح + 3 = 47، مع الوحدات وSQL السلبية والبناء والأمان والنسخ.
 - بعد النجاح: مراجعة screenshots مع المستخدم، وإصلاحات مركزة لكل صفحة (H061 عند الحاجة). **لا نعتبر هوية Tabler هي علامة تجارية مسجلة باسم مشروعنا ولا قبول المستخدم النهائي قبل رؤيتها**.
+
+### H061 / T11-TABLER-FORMS — استكمال الشاشات التشغيلية (٦ نوفمبر)
+- H060/PR #23 أُدمج في `main b93e2bdc`، CI `42188103788` نجاح 46/46 Chromium؛ لم تُربط خدمات خارجية.
+- نطاق محدد: `trips.module.css` و`master-data.module.css` و`payments.module.css` فقط. دعم مساحة sidebar 252px للديسكتوب، توحيد حدود الكروت مع Tabler وإزالة top-accent الثقيل، إصلاح dark-mode primary button contrast بالألوان الأساسية الحالية، تبويب البيانات، بطاقات ملخص حساب النقد المنفصلة.
+- اختبارات جديدة: 12 screenshot (3 pages × 2 widths × 2 themes) وقياس تباين 4.5:1 للأزرار والتبويب، مع عدم تجاوز عرض الصفحة؛ CI الكامل وكل regressions دون تعديل المالي/الصادرات/Auth.
+- تقفل تقنيًا بعد نجاح أحدث SHA ومراجعة diff مستقلة وPR merge موثّق؛ H062 مراجعة باقي كشوف التقارير بنفس الهوية + موافقة مستخدم على الشكل النهائي قبل أي cloud trial.
