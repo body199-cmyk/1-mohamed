@@ -43,3 +43,9 @@
 /* H061: primary action and ledger summary match the shared dashboard tokens. */
 .primary:hover:not(:disabled) { color:var(--color-primary-text); }
 .summary strong { line-height:1.6; }
+
+/* H062: vehicle cash and payment tables share stable financial presentation.
+   Scroll stays inside the ledger, never across the entire device viewport. */
+.scroll { scrollbar-width: thin; }
+.scroll td { font-variant-numeric: tabular-nums; }
+.section h2 { padding-bottom: 10px; border-bottom: 1px solid var(--border-color); }
