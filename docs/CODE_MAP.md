@@ -294,3 +294,4 @@
 - `packages/statement-export/tests/fixed-format-h062.test.ts`: paper A4, image 1440, Excel RTL and shared palette.
 - `e2e/h062-device-independent-reports.spec.ts`: actual downloadable byte hashes across phone 360 / desktop 1280, light/dark, 18 responsive screenshots. `.github/workflows/verify.yml` runs tests and stores `artifacts/h062`.
 - `docs/DECISIONS.md` D17, `docs/H062_REPORTS_FIXED_EXPORT_REVIEW.md`: accepted contract, evidence and future-agent handoff.
+- H062 review evidence: `artifacts/h062/contractor-statement-fixed-A4.pdf` and `contractor-statement-fixed-1440.png` from the actual browser download (not recreated static mockups) are preserved alongside the 18 on-screen screenshots by CI for PDF visual checks.
