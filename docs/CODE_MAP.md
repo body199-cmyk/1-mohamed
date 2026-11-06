@@ -286,3 +286,12 @@
 - `e2e/h061-operational-forms.spec.ts`: 12 screenshots/primary contrast/selected-tab/no-overflow check and theme rehydration readiness; `.github/workflows/verify.yml` persists images as `h061-tabler-operational-forms` for 7 days.
 - `docs/H061_OPERATIONS_VISUAL_REVIEW.md`: decision origin and before/after review evidence.
 - `apps/web/src/styles/variables.css`: H061 only changes dark `--color-primary-text` to `#061629` after measured E2E dark action ratio 4.43895 on prior token; no other design system variables or accounting logic changed. `e2e/visual-audit-h059.spec.ts` waits for theme hydration (BUG-010).
+### H062 / responsive Tabler reports and fixed exports across devices
+- `apps/web/src/features/contractor-statements/statements.module.css`: grid filters/cards and constrained scrolling report table; responsive on-screen, fixed exported paper untouched.
+- `apps/web/src/features/reports/daily-work.module.css`: same Tabler surface, local scrollable table (the displayed report still uses exact existing totals).
+- `apps/web/src/features/payments/payments.module.css`: shared vehicle cash and payment report presentation; separate responsible account still same ledger.
+- `packages/statement-export/src/statement-print-styles.ts`: stable white A4 + Tabler blue `#206bc4`, no screen breakpoints or browser theme; `render-statement-image.ts`: fixed 1440 canvas blue for PNG and JPEG-in-PDF; `render-statement-xlsx.ts`: fixed branded header blue, all original exact text cells.
+- `packages/statement-export/tests/fixed-format-h062.test.ts`: paper A4, image 1440, Excel RTL and shared palette.
+- `e2e/h062-device-independent-reports.spec.ts`: actual downloadable byte hashes across phone 360 / desktop 1280, light/dark, 18 responsive screenshots. `.github/workflows/verify.yml` runs tests and stores `artifacts/h062`.
+- `docs/DECISIONS.md` D17, `docs/H062_REPORTS_FIXED_EXPORT_REVIEW.md`: accepted contract, evidence and future-agent handoff.
+- H062 review evidence: `artifacts/h062/contractor-statement-fixed-A4.pdf` and `contractor-statement-fixed-1440.png` from the actual browser download (not recreated static mockups) are preserved alongside the 18 on-screen screenshots by CI for PDF visual checks.

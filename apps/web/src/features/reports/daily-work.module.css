@@ -24,9 +24,18 @@
 @media(max-width:600px){.filters{padding:12px}.card{padding:14px}}
 
 /* H058 — same report card surfaces and navigation controls as other screens. */
-.filters {box-shadow:var(--shadow-card);border-top:3px solid var(--metric-edge);}
+.filters {box-shadow:var(--shadow-card);}
 .filters input:hover:not(:disabled),.filters select:hover:not(:disabled){border-color:var(--border-strong);}
 .filters input:focus-visible,.filters select:focus-visible{outline:2px solid var(--border-focus);outline-offset:1px;}
 .reset:hover:not(:disabled){background:var(--surface-hover);border-color:var(--border-focus);}
 .tableScroll{box-shadow:var(--shadow-card);}
 .table tbody tr:hover td{background:var(--surface-hover);}
+
+/* H062: consistent Tabler report surfaces and legible local table scrolling.
+   The visible screen adapts; exported statements use a separate fixed template. */
+.filters { align-items: end; }
+.card { background: var(--surface-card); }
+.card h2 { padding-bottom: 10px; border-bottom: 1px solid var(--border-color); }
+.tableScroll { scrollbar-width: thin; }
+.table th { background: var(--surface-card-subtle); }
+.table td { font-variant-numeric: tabular-nums; }
