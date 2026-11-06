@@ -30,6 +30,8 @@ test.describe("H061 Tabler-style operational entry and payment screens", () => {
       await page.setViewportSize({width,height:780});
       for (const theme of ["light","dark"] as const) {
         await page.goto("/demo/trips");
+        // Wait until ThemeProvider has hydrated before deciding which switch to click.
+        await expect(page.locator("html")).toHaveAttribute("data-theme", /^(light|dark)$/);
         if (await page.locator("html").getAttribute("data-theme") !== theme) {
           await page.getByRole("button",{name:theme==="dark"?"تفعيل الوضع الداكن":"تفعيل الوضع الفاتح"}).click();
         }
@@ -55,6 +57,8 @@ test.describe("H061 Tabler-style operational entry and payment screens", () => {
     await page.setViewportSize({width:360,height:780});
     for (const theme of ["light","dark"] as const) {
       await page.goto("/demo/trips");
+        // Wait until ThemeProvider has hydrated before deciding which switch to click.
+        await expect(page.locator("html")).toHaveAttribute("data-theme", /^(light|dark)$/);
       if (await page.locator("html").getAttribute("data-theme") !== theme) {
         await page.getByRole("button",{name:theme==="dark"?"تفعيل الوضع الداكن":"تفعيل الوضع الفاتح"}).click();
       }
