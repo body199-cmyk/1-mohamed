@@ -14,7 +14,7 @@ const screens = [
 
 function contrastRatio(foreground: string, background: string): number {
   function luminance(color: string): number {
-    const channels = (color.match(/[\\d.]+/g) ?? []).slice(0, 3).map(Number);
+    const channels = (color.match(/[\d.]+/g) ?? []).slice(0, 3).map(Number);
     if (channels.length !== 3) throw new Error("Expected an opaque RGB color: " + color);
     const linear = channels.map(value => {
       const c = value / 255;
