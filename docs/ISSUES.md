@@ -114,3 +114,10 @@
 - **Evidence:** GitHub Actions run `42141473302`: 3 old Chromium assertions expected the 2026-11-05 fixture (`2.000` tonnes, `1000.00/900.00` EGP and payment on the 5th), but the current Cairo date became 2026-11-06 (`1.500` tonnes, `600.00/525.00` EGP). New H058 tests passed. No proof of financial-engine error.
 - **Root cause:** tests read live `cairoBusinessDate()` while expecting one specific fixture day. **Correction:** fixed browser clock at 2026-11-05 noon Cairo before each affected E2E navigation; retain all existing monetary assertions. Production date handling unchanged.
 - **Follow-up:** require full green CI and critical review on exact PR SHA; do not merge otherwise. Long-term server/physical-device clock alignment remains an integration quality gate.
+
+## H059 / BUG-009 — Active navigation contrast below AA in dark mode
+
+- **Status:** fixed on H059 branch; final acceptance requires passing CI at latest SHA and PR review.
+- **Evidence:** inspected actual dark-mode H058 contractor report screenshot, then verified theme tokens and `nav-header.module.css`: active text `#3b82f6` against `#1e3a8a` gives **2.82:1**, below WCAG AA 4.5:1 for ordinary text. Light mode was 4.75:1. This is a measurable visual/accessibility defect, not a financial issue.
+- **Correction:** active link text uses `--text-main` while preserving primary underline and active background. The expected dark contrast from exact tokens is **9.9:1**. Added computed-color Playwright regression in `e2e/visual-audit-h059.spec.ts` testing both themes with threshold 4.5:1.
+- **Verification:** full H059 CI and final patch review required; physical Android and final user aesthetic acceptance remain separate.
