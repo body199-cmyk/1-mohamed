@@ -50,13 +50,17 @@ test.describe("H060 open-source dashboard identity — Tabler-inspired RTL shell
     await page.setViewportSize({width:360,height:760});
     await page.goto("/demo/dashboard");
     const nav=page.getByRole("navigation",{name:"التنقل الرئيسي"});
+    // Measurement hygiene: hydration may swap the nav node mid-measure and
+    // yield empty computed styles; wait for the connected, styled element.
+    // Terminal expectations below are unchanged from H060.
+    await expect.poll(async () => (await nav.evaluate(el => ({
+      connected: el.isConnected,
+      direction: getComputedStyle(el).flexDirection,
+      overflow: getComputedStyle(el).overflowX,
+    })))).toEqual({ connected: true, direction: "row", overflow: "auto" });
     const values=await nav.evaluate(el => ({
-      direction:getComputedStyle(el).flexDirection,
-      overflow:getComputedStyle(el).overflowX,
       scroll:el.scrollWidth, client:el.clientWidth,
     }));
-    expect(values.direction).toBe("row");
-    expect(values.overflow).toBe("auto");
     expect(values.scroll).toBeGreaterThan(values.client);
     await nav.getByRole("link",{name:"كشف حساب نقد العربية"}).click();
     await expect(page.getByRole("heading",{name:"كشف حساب نقد العربية"})).toBeVisible();
@@ -73,7 +77,16 @@ test.describe("H060 open-source dashboard identity — Tabler-inspired RTL shell
           await page.getByRole("button",{name:theme==="dark"?"تفعيل الوضع الداكن":"تفعيل الوضع الفاتح"}).click();
         }
         await expect(page.locator("html")).toHaveAttribute("data-theme",theme);
-        const c=await page.getByRole("link",{name:"+ تسجيل نقلة جديدة"}).evaluate(el=>({
+        // Wait for the CTA background transition to finish before measuring
+        // the final theme colors; do not accept an intermediate transition frame.
+        const primary = page.getByRole("link",{name:"+ تسجيل نقلة جديدة"});
+        await primary.evaluate(async el => {
+          await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+          await Promise.all(el.getAnimations().map(animation =>
+            animation.finished.catch(() => undefined)
+          ));
+        });
+        const c=await primary.evaluate(el=>({
           fg:getComputedStyle(el).color,bg:getComputedStyle(el).backgroundColor
         }));
         expect(contrast(c.fg,c.bg),theme+" primary button").toBeGreaterThanOrEqual(4.5);

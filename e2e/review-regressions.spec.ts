@@ -92,7 +92,8 @@ test("التصدير يطابق الفترة المعروضة ويدعم الع�
   expect([...bytes.subarray(0, 3)]).toEqual([239, 187, 191]);
   const csv = bytes.toString("utf8");
   expect(csv).toContain('"رصيد أول الفترة","\'-100.00 ج.م"');
-  expect(csv).toContain('"رصيد آخر الفترة","300.00 ج.م"');
+  // H063 (PR #26): closing balance carries an explicit '+' sign and the formula guard apostrophe.
+  expect(csv).toContain('"رصيد آخر الفترة","\'+300.00 ج.م"');
   expect(csv).toContain('"عدد الحركات","2"');
   const popupEvent = page.waitForEvent("popup");
   await page.getByRole("button", { name: "طباعة / حفظ PDF" }).click();

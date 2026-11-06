@@ -41,11 +41,20 @@ test.describe("H059 final pre-cloud visual review matrix", () => {
       await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
       const active = page.getByRole("navigation", { name: "التنقل الرئيسي" })
         .locator('[aria-current="page"]');
+      // Wait for the CSS color/background transitions to finish before measuring.
+      // A threshold-only poll could pass on the previous theme's high contrast.
+      await active.evaluate(async el => {
+        await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+        await Promise.all(el.getAnimations().map(animation =>
+          animation.finished.catch(() => undefined)
+        ));
+      });
       const colors = await active.evaluate(el => ({
         fg: getComputedStyle(el).color,
         bg: getComputedStyle(el).backgroundColor,
       }));
-      expect(contrastRatio(colors.fg,colors.bg), theme + " active navigation").toBeGreaterThanOrEqual(4.5);
+      expect(contrastRatio(colors.fg, colors.bg), theme + " active navigation")
+        .toBeGreaterThanOrEqual(4.5);
     }
   });
 

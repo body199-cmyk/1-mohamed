@@ -55,14 +55,21 @@ test.describe("H055 / T11: bounded desktop-Chromium UX quality gate", () => {
     await page.setViewportSize({ width: 1024, height: 768 });
     await page.goto("/demo/dashboard");
     const nav = page.getByRole("navigation",{name:"التنقل الرئيسي"});
+    // Measurement hygiene (same pattern as BUG-010/BUG-011 fixes in H061):
+    // hydration may replace the server-rendered nav node mid-measure, which
+    // yields empty computed styles. Wait for the connected, styled element.
+    // Terminal expectations below are unchanged from H055.
+    await expect.poll(async () => (await nav.evaluate(n => ({
+      connected: n.isConnected,
+      overflow: getComputedStyle(n).overflowX,
+      flexDirection: getComputedStyle(n).flexDirection,
+    })))).toEqual({ connected: true, overflow: "auto", flexDirection: "row" });
     const props = await nav.evaluate(n => ({
       height:n.getBoundingClientRect().height,
-      overflow:getComputedStyle(n).overflowX,
       wrapped:Array.from(n.children).some((child,i,a) => i>0 &&
         Math.abs(child.getBoundingClientRect().top - a[0]!.getBoundingClientRect().top)>6),
     }));
     expect(props.height).toBeLessThan(66);
-    expect(props.overflow).toBe("auto");
     expect(props.wrapped).toBe(false);
     await nav.getByRole("link",{name:"دفعات العربيات"}).click();
     await expect(page.getByRole("heading",{name:"دفعات العربيات"})).toBeVisible();
@@ -93,11 +100,15 @@ test.describe("H055 / T11: bounded desktop-Chromium UX quality gate", () => {
     const banner = page.getByRole("status",{name:"تنبيه النسخة التجريبية"});
     for (const expectedTheme of ["light","dark"] as const) {
       if(expectedTheme==="dark")await page.getByRole("button",{name:"تفعيل الوضع الداكن"}).click();
+      await expect(page.locator("html")).toHaveAttribute("data-theme",expectedTheme);
+      // The status banner has no CSS color transition; once the root theme
+      // attribute is applied, measure its final theme tokens directly.
       const style = await banner.evaluate(el => ({
         foreground:getComputedStyle(el).color,
         background:getComputedStyle(el).backgroundColor,
       }));
-      expect(contrast(style.foreground,style.background),expectedTheme + " contrast").toBeGreaterThanOrEqual(4.5);
+      expect(contrast(style.foreground,style.background),expectedTheme+" contrast")
+        .toBeGreaterThanOrEqual(4.5);
     }
   });
 
