@@ -64,6 +64,8 @@ test.describe("H061 Tabler-style operational entry and payment screens", () => {
       }
       for(const [path] of routes) {
         await page.goto(path);
+        // A route navigation can server-render before ThemeProvider rehydrates.
+        await expect(page.locator("html")).toHaveAttribute("data-theme",theme);
         const button = path==="/demo/trips"
           ? page.locator('main button[class*="btnPrimary"]').first()
           : page.locator('main button[class*="_primary_"]').first();
@@ -71,7 +73,7 @@ test.describe("H061 Tabler-style operational entry and payment screens", () => {
         const colors=await button.evaluate(el=>({
           fg:getComputedStyle(el).color,bg:getComputedStyle(el).backgroundColor,
         }));
-        expect(contrast(colors.fg,colors.bg),path+" "+theme+" primary action")
+        expect(contrast(colors.fg,colors.bg),path+" "+theme+" primary action, computed colors "+JSON.stringify(colors))
           .toBeGreaterThanOrEqual(4.5);
         if(path==="/demo/master-data") {
           const tab = page.locator('[role="tab"][aria-selected="true"]');
