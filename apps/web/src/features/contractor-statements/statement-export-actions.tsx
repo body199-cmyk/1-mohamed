@@ -97,15 +97,15 @@ export function StatementExportActions({ statement, name }: { statement: Contrac
     }
   }
 
-  return <section aria-label="تصدير كشف الحساب" style={{ marginBlock: 16 }}>
-    <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-      <button className={styles.select} style={{ width: "auto" }} disabled={busy} onClick={() => exportStatement("print")}>طباعة / حفظ PDF</button>
-      <button className={styles.select} style={{ width: "auto" }} disabled={busy} onClick={() => exportStatement("pdf")}>تنزيل PDF مباشر</button>
-      <button className={styles.select} style={{ width: "auto" }} disabled={busy} onClick={() => exportStatement("png")}>تنزيل صورة PNG</button>
-      <button className={styles.select} style={{ width: "auto" }} disabled={busy} onClick={() => exportStatement("csv")}>تنزيل CSV</button>
-      <button className={styles.select} style={{ width: "auto" }} disabled={busy} onClick={() => exportStatement("xlsx")}>تنزيل Excel XLSX</button>
+  return <section aria-label="تصدير كشف الحساب" className={styles.exportPanel}>
+    <div className={styles.exportActions}>
+      <button className={styles.exportButton} disabled={busy} onClick={() => exportStatement("print")}>طباعة / حفظ PDF</button>
+      <button className={[styles.exportButton, styles.exportButtonPrimary].join(" ")} disabled={busy} onClick={() => exportStatement("pdf")}>تنزيل PDF مباشر</button>
+      <button className={styles.exportButton} disabled={busy} onClick={() => exportStatement("png")}>تنزيل صورة PNG</button>
+      <button className={styles.exportButton} disabled={busy} onClick={() => exportStatement("csv")}>تنزيل CSV</button>
+      <button className={styles.exportButton} disabled={busy} onClick={() => exportStatement("xlsx")}>تنزيل Excel XLSX</button>
     </div>
-    <p>الملخص والتفاصيل لنفس المقاول والفترة المعروضين. صورة PNG للكشوف متوسطة الحجم. تنزيل PDF المباشر يصل إلى ٦٠ صفحة، بصور Cairo واضحة مرقّمة (نصه غير قابل للتحديد/البحث). لو عايز PDF بنص قابل للتحديد والبحث استخدم طباعة / حفظ PDF. ملف Excel فيه ملخص وتفاصيل RTL؛ المبالغ والمراجع كنص للحفاظ على الدقة والأصفار البادئة. لا تُحذف حركات بصمت.</p>
+    <p className={styles.exportDescription}>الملخص والتفاصيل لنفس المقاول والفترة المعروضين. صورة PNG للكشوف متوسطة الحجم. تنزيل PDF المباشر يصل إلى ٦٠ صفحة، بصور Cairo واضحة مرقّمة (نصه غير قابل للتحديد/البحث). لو عايز PDF بنص قابل للتحديد والبحث استخدم طباعة / حفظ PDF. ملف Excel فيه ملخص وتفاصيل RTL؛ المبالغ والمراجع كنص للحفاظ على الدقة والأصفار البادئة. لا تُحذف حركات بصمت.</p>
     {error && <p role="alert">{error}</p>}
   </section>;
 }
