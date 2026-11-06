@@ -221,6 +221,8 @@
 
 ### H061 / T11-TABLER-FORMS — استكمال الشاشات التشغيلية (٦ نوفمبر)
 - H060/PR #23 أُدمج في `main b93e2bdc`، CI `42188103788` نجاح 46/46 Chromium؛ لم تُربط خدمات خارجية.
-- نطاق محدد: `trips.module.css` و`master-data.module.css` و`payments.module.css` فقط. دعم مساحة sidebar 252px للديسكتوب، توحيد حدود الكروت مع Tabler وإزالة top-accent الثقيل، إصلاح dark-mode primary button contrast بالألوان الأساسية الحالية، تبويب البيانات، بطاقات ملخص حساب النقد المنفصلة.
+- نطاق محدد: `trips.module.css` و`master-data.module.css` و`payments.module.css`؛ مع تصحيح توكن لون النص الداكن في `styles/variables.css` بعد فشل اختبار 4.43895:1. دعم مساحة sidebar 252px للديسكتوب، توحيد حدود الكروت مع Tabler وإزالة top-accent الثقيل، إصلاح dark-mode primary button contrast بالألوان الأساسية الحالية، تبويب البيانات، بطاقات ملخص حساب النقد المنفصلة.
 - اختبارات جديدة: 12 screenshot (3 pages × 2 widths × 2 themes) وقياس تباين 4.5:1 للأزرار والتبويب، مع عدم تجاوز عرض الصفحة؛ CI الكامل وكل regressions دون تعديل المالي/الصادرات/Auth.
 - تقفل تقنيًا بعد نجاح أحدث SHA ومراجعة diff مستقلة وPR merge موثّق؛ H062 مراجعة باقي كشوف التقارير بنفس الهوية + موافقة مستخدم على الشكل النهائي قبل أي cloud trial.
+
+- **Regression recorded:** BUG-010: first CI failed due E2E theme hydration race; BUG-011: second CI detected actual 4.43895:1 dark trip CTA contrast. Applied minimal readiness assertion and darker primary text token; complete CI verification still required, no merge on failure.
