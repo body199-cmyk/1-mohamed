@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { createHash } from "node:crypto";
-import { mkdir, readFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 
 const reports = [
   ["/demo/contractors", "contractors", 'div[class*="tableWrapper"]'],
@@ -75,6 +75,12 @@ test.describe("H062 responsive report screens, device-independent exported paper
       expect(png.bytes.readUInt32BE(16)).toBe(1440);
       expect(pdf.bytes.subarray(0,8).toString()).toBe("%PDF-1.4");
       expect(pdf.bytes.toString("latin1")).toContain("/MediaBox [0 0 595.28 841.89]");
+      // Save one real exported PDF and PNG for independent visual inspection.
+      if (width === 360) {
+        await mkdir("artifacts/h062", {recursive:true});
+        await writeFile("artifacts/h062/contractor-statement-fixed-A4.pdf",pdf.bytes);
+        await writeFile("artifacts/h062/contractor-statement-fixed-1440.png",png.bytes);
+      }
       results.push({png,pdf});
     }
     expect(results[0]!.png.name).toBe(results[1]!.png.name);
