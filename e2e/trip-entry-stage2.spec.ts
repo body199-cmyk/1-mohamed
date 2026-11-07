@@ -113,7 +113,7 @@ test.describe("Stage 2 — trip entry and history", () => {
     await page.getByRole("button", { name: "اختيار المقاول الطرف الآخر" }).click();
     const reopenedContractorDialog = page.getByRole("dialog", { name: "اختيار المقاول الطرف الآخر" });
     await expect(reopenedContractorDialog.getByLabel("المقاولون المستخدمون مؤخرًا")).toContainText("المقاول أحمد علام");
-    await page.keyboard.press("Escape");
+    await reopenedContractorDialog.getByRole("searchbox", { name: "بحث عن مقاول داخل القائمة" }).press("Escape");
     await expect(reopenedContractorDialog).not.toBeVisible();
 
     await page.getByRole("button", { name: "اختيار السيارة المنفذة" }).click();
