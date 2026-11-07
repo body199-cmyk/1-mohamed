@@ -22,8 +22,7 @@ export function NavHeader() {
   const scrollNav = (direction: "next" | "previous") => {
     const nav = navRef.current;
     if (!nav) return;
-    const rtl = getComputedStyle(nav).direction === "rtl";
-    nav.scrollBy({ left: (direction === "next" ? -1 : 1) * (rtl ? 1 : -1) * Math.max(220, nav.clientWidth * 0.7), behavior: "smooth" });
+    nav.scrollBy({ left: (direction === "next" ? -1 : 1) * Math.max(220, nav.clientWidth * 0.7), behavior: "smooth" });
   };
   const { theme, toggleTheme } = useTheme();
   return <header className={styles.header}>
