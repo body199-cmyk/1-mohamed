@@ -5,10 +5,9 @@ import type { ContractorStatement } from "@ledger/contractor-statements";
 import { toStatementDocument } from "./statement-document";
 import styles from "./statements.module.css";
 
-export function StatementExportActions({ statement, name, receiptByTripId }: {
+export function StatementExportActions({ statement, name }: {
   statement: ContractorStatement;
   name: string;
-  receiptByTripId: ReadonlyMap<string, string>;
 }) {
   const [busy, setBusy] = useState(false);
   const lock = useRef(false);
@@ -20,7 +19,7 @@ export function StatementExportActions({ statement, name, receiptByTripId }: {
     setBusy(true);
     setError(null);
     try {
-      const document = toStatementDocument(statement, name, receiptByTripId);
+      const document = toStatementDocument(statement, name);
       const renderer = await import("@ledger/statement-export");
       const blob = await renderer.renderContractorStatementPng(document);
       const file = new File([blob], `statement-${statement.period.from}-${statement.period.to}.png`, { type: "image/png" });
@@ -48,7 +47,7 @@ export function StatementExportActions({ statement, name, receiptByTripId }: {
     const preview = kind === "print" ? window.open("", "_blank") : null;
     try {
       if (kind === "print" && !preview) throw new Error("اسمح بفتح نافذة الطباعة في المتصفح ثم حاول مجددًا.");
-      const document = toStatementDocument(statement, name, receiptByTripId);
+      const document = toStatementDocument(statement, name);
       const renderer = await import("@ledger/statement-export");
       if (kind === "xlsx") {
         const blob = renderer.renderContractorStatementXlsx(document);
