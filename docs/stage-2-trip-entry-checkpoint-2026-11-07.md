@@ -70,3 +70,5 @@ This is a **draft** PR based on main and intentionally separate from unmerged PR
 - Run `42413191717` passed save-and-exit/re-entry, mobile selection dialogs, mobile history cards and sticky save actions. The active-filter test still failed because the test clicked the summary text without proving the native `details` was open, and used an ambiguous label locator.
 - Corrected the test to click `details.historyAdvanced > summary`, assert the `open` attribute, then scope comboboxes by explicit role/name; filter-chip container now uses its exact aria-label selector. Commit `2949367`.
 - **Rerun on latest head required.** Do not close the filter UX item until the dedicated test passes.
+
+- Fourth stage-2 run `42413439067`: save-exit, mobile bottom-sheet search/recent/Escape, sticky actions and mobile history passed. Active-filter test failed because it queried the CSS-module class as a literal DOM class (`details.historyAdvanced`), so the summary locator never existed. Changed it to the semantic first `details` element and kept the explicit role/name assertions (`efa6e89`). Latest-head rerun required.
