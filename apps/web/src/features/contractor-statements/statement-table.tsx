@@ -5,11 +5,10 @@ import styles from "./statements.module.css";
 
 interface StatementTableProps {
   rows: readonly ContractorStatementRow[];
-  receiptByTripId: ReadonlyMap<string, string>;
   tripDetailsById: ReadonlyMap<string, { vehicle: string; route: string }>;
 }
 
-export function StatementTable({ rows, receiptByTripId, tripDetailsById }: StatementTableProps) {
+export function StatementTable({ rows, tripDetailsById }: StatementTableProps) {
   if (rows.length === 0) {
     return (
       <div className={styles.tableCard}>
