@@ -29,6 +29,7 @@ export function renderOperationalReportCsv(doc: OperationalReportDocument): stri
   const lines: string[] = [
     row(["اسم المنشأة", doc.businessName]),
     row(["نوع التقرير", doc.title]),
+    row(["وصف التقرير", doc.subtitle]),
     ...doc.metadata.map(item => row([item.label, item.value])),
     row(["تاريخ الإعداد", doc.generatedAtLabel]),
     "",
