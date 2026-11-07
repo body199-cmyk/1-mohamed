@@ -25,6 +25,7 @@ export function TripFormFields({
   const [contractorSearch, setContractorSearch] = useState("");
   return (
     <div className={styles.formGrid}>
+      <details className={styles.formSection} open><summary>١. بيانات النقلة والمقاول واتجاه الشغل</summary><div className={styles.formGrid}>
       {/* Work Date */}
       <div className={styles.formGroup}>
         <label className={styles.label}>
@@ -103,6 +104,8 @@ export function TripFormFields({
         </div>
       </div>
 
+      </div></details>
+      <details className={styles.formSection} open><summary>٢. العربية والوزن والأسعار</summary><div className={styles.formGrid}>
       {/* Vehicle */}
       <div className={styles.formGroup}>
         <div className={styles.labelRow}>
@@ -217,6 +220,8 @@ export function TripFormFields({
         />
       </div>
 
+      </div></details>
+      <details className={styles.formSection}><summary>٣. المسار والمصاريف والملاحظات (اختياري)</summary><div className={styles.formGrid}>
       {/* Locations */}
       <div className={styles.formGroup}>
         <label className={styles.label}>مكان التحميل</label>
@@ -288,6 +293,7 @@ export function TripFormFields({
           className={styles.textarea}
         />
       </div>
+      </div></details>
     </div>
   );
 }
