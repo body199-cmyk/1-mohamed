@@ -78,6 +78,10 @@ export function buildCashLedger(
     if (!validOpeningDate(trip.workDate) || (opening && trip.workDate < opening.startDate)) {
       return { ok: false, error: "توجد نقلة بتاريخ يسبق بداية افتتاحي النقد؛ راجع الحساب." };
     }
+    // Historical projections are isolated from future movements. Date/opening
+    // consistency is checked above, but future trip amounts cannot alter an
+    // earlier report or prevent an otherwise valid historical payment.
+    if (trip.workDate > asOf) continue;
     const result = calculateTripAmounts({
       weightTonnes: trip.weightTonnes, contractorRateEgp: trip.contractorRateEgp,
       vehicleRateEgp: trip.vehicleRateEgp, expenseEgp: trip.expenseEgp,
@@ -85,11 +89,9 @@ export function buildCashLedger(
     if (!result.ok || result.vehicleTotalPiastres !== trip.vehicleTotalPiastres) {
       return { ok: false, error: "مستحق نقلة لا يطابق محرك الحساب؛ تم إيقاف دفعات هذا الحساب." };
     }
-    if (trip.workDate <= asOf) {
-      movements.push({ date: trip.workDate, id: trip.id, type: "WORK",
-        amount: BigInt(trip.vehicleTotalPiastres), label: "مستحق نقلة " + (trip.receiptNumber || trip.id),
-        createdAt: trip.createdAt });
-    }
+    movements.push({ date: trip.workDate, id: trip.id, type: "WORK",
+      amount: BigInt(trip.vehicleTotalPiastres), label: "مستحق نقلة " + (trip.receiptNumber || trip.id),
+      createdAt: trip.createdAt });
   }
   for (const payment of source.payments) {
     if (payment.vehicleId !== vehicleId || payment.responsibleContractorId !== responsibleId
