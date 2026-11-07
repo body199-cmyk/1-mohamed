@@ -8,7 +8,7 @@ test.describe("T09.2 actual paginated PDF download",()=>{
       page.waitForEvent("download"),
       page.getByRole("button",{name:"تنزيل PDF مباشر"}).click()
     ]);
-    expect(download.suggestedFilename()).toBe("demo-statement-2026-11-01-2026-11-30.pdf");
+    expect(download.suggestedFilename()).toBe(`demo-statement-2026-11-01-${new Intl.DateTimeFormat('en-CA',{timeZone:'Africa/Cairo',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())}.pdf`);
     const file=await download.path();
     expect(file).toBeTruthy();
     const pdf=await readFile(file!);
