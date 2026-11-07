@@ -5,6 +5,8 @@ import { formatEgpFromPiastres } from "@ledger/accounting";
 import { useDemoStore } from "../../demo/demo-context";
 import { buildDailyWorkReport, type DailyWorkTotals } from "./daily-work-report";
 import styles from "./daily-work.module.css";
+import { ReportExportActions } from "./report-export-actions";
+import { toDailyWorkOperationalReport } from "./report-export-documents";
 
 function currentCairoDate(): string {
   const parts = new Intl.DateTimeFormat("en-GB", {
@@ -43,6 +45,14 @@ export function DailyWorkView() {
   );
   const contractorNames = useMemo(() => new Map(contractors.map(c => [c.id, c.name])), [contractors]);
   const vehiclePlates = useMemo(() => new Map(vehicles.map(v => [v.id, v.plateNumber])), [vehicles]);
+
+  const exportDocument = useMemo(() => report.ok ? toDailyWorkOperationalReport(report, {
+    workDate,
+    contractorLabel: contractorId ? contractorNames.get(contractorId) ?? contractorId : "جميع المقاولين",
+    vehicleLabel: vehicleId ? vehiclePlates.get(vehicleId) ?? vehicleId : "جميع العربيات",
+    contractorNames,
+    vehiclePlates,
+  }) : null, [report, workDate, contractorId, vehicleId, contractorNames, vehiclePlates]);
 
   return <div className={styles.page}>
     <header>
@@ -83,6 +93,7 @@ export function DailyWorkView() {
         : "تم إيقاف عرض المجاميع: بيانات نقلة غير متطابقة مع محرك الحساب" +
           (report.tripId ? " (" + report.tripId + ")." : ".")}
     </p> : <>
+      {exportDocument && <ReportExportActions document={exportDocument} fileNameBase={"daily-work-" + workDate} />}
       <div className={styles.stats}>
         <TotalCard label="إجمالي اليوم المحدد" totals={report.totals} />
         <TotalCard label="شغل أحمد للطرف الآخر" totals={report.ahmedSupplies} />
