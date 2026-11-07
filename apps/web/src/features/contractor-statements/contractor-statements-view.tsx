@@ -7,6 +7,14 @@ import { StatementTable } from "./statement-table";
 import { StatementExportActions } from "./statement-export-actions";
 import styles from "./statements.module.css";
 
+function cairoDate(date: Date): string {
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Africa/Cairo", year: "numeric", month: "2-digit", day: "2-digit",
+  }).formatToParts(date);
+  const part = (type: string) => parts.find((item) => item.type === type)?.value ?? "";
+  return `${part("year")}-${part("month")}-${part("day")}`;
+}
+
 export function ContractorStatementsView() {
   const { contractors, vehicles, trips, getStatementForContractor } = useDemoStore();
 
@@ -15,7 +23,7 @@ export function ContractorStatementsView() {
   );
   const [periodMode, setPeriodMode] = useState<"all" | "range">("all");
   const [fromDate, setFromDate] = useState("2026-11-01");
-  const [toDate, setToDate] = useState(() => { const parts = new Intl.DateTimeFormat("en-GB", { timeZone: "Africa/Cairo", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date()); const part = (type:string) => parts.find(p=>p.type===type)?.value ?? ""; return `${part("year")}-${part("month")}-${part("day")}`; });
+  const [toDate, setToDate] = useState(() => cairoDate(new Date()));
 
   const currentContractor = useMemo(
     () => contractors.find((c) => c.id === selectedContractorId),
@@ -89,12 +97,13 @@ export function ContractorStatementsView() {
               {(["اليوم","الأسبوع","الشهر"] as const).map(period => <button key={period} type="button" className={styles.select}
                 style={{width:"auto",minHeight:44,cursor:"pointer",fontWeight:700}}
                 onClick={() => {
-                  const today = new Date();
-                  const local = (date: Date) => [date.getFullYear(),String(date.getMonth()+1).padStart(2,"0"),String(date.getDate()).padStart(2,"0")].join("-");
-                  const start = new Date(today);
-                  if (period === "الأسبوع") start.setDate(today.getDate() - ((today.getDay()+1)%7));
-                  if (period === "الشهر") start.setDate(1);
-                  setPeriodMode("range"); setFromDate(local(start)); setToDate(local(today));
+                  const today = cairoDate(new Date());
+                  const [year, month, day] = today.split("-").map(Number);
+                  const utcDate = new Date(Date.UTC(year, month - 1, day));
+                  const start = new Date(utcDate);
+                  if (period === "الأسبوع") start.setUTCDate(day - ((utcDate.getUTCDay() + 1) % 7));
+                  if (period === "الشهر") start.setUTCDate(1);
+                  setPeriodMode("range"); setFromDate(start.toISOString().slice(0, 10)); setToDate(today);
                 }}>{period}</button>)}
             </div>
           </div>
