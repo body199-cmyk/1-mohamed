@@ -14,6 +14,31 @@ export function StatementExportActions({ statement, name, receiptByTripId }: {
   const lock = useRef(false);
   const [error, setError] = useState<string | null>(null);
 
+  async function shareStatementImage() {
+    if (lock.current) return;
+    lock.current = true;
+    setBusy(true);
+    setError(null);
+    try {
+      const document = toStatementDocument(statement, name, receiptByTripId);
+      const renderer = await import("@ledger/statement-export");
+      const blob = await renderer.renderContractorStatementPng(document);
+      const file = new File([blob], `statement-${statement.period.from}-${statement.period.to}.png`, { type: "image/png" });
+      if (typeof navigator.share === "function" && navigator.canShare?.({ files: [file] })) {
+        await navigator.share({ files: [file], title: `كشف حساب ${name}` });
+      } else {
+        setError("المشاركة المباشرة للصورة غير مدعومة في هذا المتصفح. استخدم زر تنزيل صورة PNG ثم شاركها من جهازك.");
+      }
+    } catch (cause) {
+      if (!(cause instanceof DOMException && cause.name === "AbortError")) {
+        setError(cause instanceof Error ? cause.message : "تعذرت مشاركة الصورة. جرّب تنزيلها.");
+      }
+    } finally {
+      lock.current = false;
+      setBusy(false);
+    }
+  }
+
   async function exportStatement(kind: "csv" | "print" | "png" | "pdf" | "xlsx") {
     if (lock.current) return;
     lock.current = true;
@@ -103,6 +128,7 @@ export function StatementExportActions({ statement, name, receiptByTripId }: {
 
   return <section aria-label="تصدير كشف الحساب" className={styles.exportPanel}>
     <div className={styles.exportActions}>
+      <button className={[styles.exportButton, styles.exportButtonPrimary].join(" ")} disabled={busy} onClick={shareStatementImage}>مشاركة صورة الكشف مباشرة</button>
       <button className={styles.exportButton} disabled={busy} onClick={() => exportStatement("print")}>طباعة / حفظ PDF</button>
       <button className={[styles.exportButton, styles.exportButtonPrimary].join(" ")} disabled={busy} onClick={() => exportStatement("pdf")}>تنزيل PDF مباشر</button>
       <button className={styles.exportButton} disabled={busy} onClick={() => exportStatement("png")}>تنزيل صورة PNG</button>
