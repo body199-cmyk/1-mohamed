@@ -26,7 +26,19 @@ export function StatementExportActions({ statement, name }: {
       if (typeof navigator.share === "function" && navigator.canShare?.({ files: [file] })) {
         await navigator.share({ files: [file], title: `كشف حساب ${name}` });
       } else {
-        setError("المشاركة المباشرة للصورة غير مدعومة في هذا المتصفح. استخدم زر تنزيل صورة PNG ثم شاركها من جهازك.");
+        // Approved fallback: deliver the same image when native file sharing is unavailable.
+        const url = URL.createObjectURL(blob);
+        const link = window.document.createElement("a");
+        try {
+          link.href = url;
+          link.download = file.name;
+          window.document.body.append(link);
+          link.click();
+        } finally {
+          link.remove();
+          window.setTimeout(() => URL.revokeObjectURL(url), 10000);
+        }
+        setError("المشاركة المباشرة غير مدعومة في هذا المتصفح؛ تم بدء تنزيل صورة الكشف لتشاركها من جهازك.");
       }
     } catch (cause) {
       if (!(cause instanceof DOMException && cause.name === "AbortError")) {
