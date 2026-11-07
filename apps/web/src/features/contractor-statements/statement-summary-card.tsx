@@ -64,6 +64,20 @@ export function StatementSummaryCard({
         </div>
       </div>
 
+      <div role="status" style={{ background: "#175CD3", color: "#fff", borderRadius: 16, padding: "20px 24px", marginBottom: 18 }}>
+        <div style={{ fontSize: 13, opacity: 0.9 }}>مين باقي له عند مين؟ — حتى {statement.period.to}</div>
+        <div style={{ fontSize: "clamp(1.2rem, 3vw, 1.9rem)", fontWeight: 800, marginTop: 8 }}>
+          {statement.beneficiary === "AHMED"
+            ? `المقاول ${contractorName} عليه لأحمد أبو علي ${closingAmount} ج.م`
+            : statement.beneficiary === "COUNTERPARTY"
+              ? `أحمد أبو علي عليه للمقاول ${contractorName} ${closingAmount} ج.م`
+              : "الحساب متعادل — لا يوجد رصيد مستحق لأي طرف"}
+        </div>
+        <div style={{ fontSize: 13, marginTop: 10, opacity: 0.9 }}>
+          الرصيد يشمل الرصيد السابق وشغل الطرفين المسجل حتى نهاية الفترة، وفق حساب الكشف.
+        </div>
+      </div>
+
       <div className={styles.summaryGrid}>
         {/* Metric 1: Opening Balance */}
         <div className={styles.metricBox}>
