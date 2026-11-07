@@ -55,6 +55,14 @@ export function PaymentsView() {
   const ledger = useMemo(() => buildCashLedger({ trips, payments, cashOpenings },
     vehicleId,responsibleId,today),[trips,payments,cashOpenings,vehicleId,responsibleId,today]);
 
+  const draftPreview = useMemo(() => {
+    if (!ledger.ok || !/^\\d+(?:\\.\\d{1,2})?$/.test(draft.amountEgp.trim())) return null;
+    const amount = BigInt(draft.amountEgp.split(".")[0]) * 100n + BigInt((draft.amountEgp.split(".")[1] ?? "").padEnd(2,"0"));
+    const oldAmount = editId ? BigInt(payments.find(p => p.id === editId)?.amountPiastres ?? "0") : 0n;
+    const remaining = BigInt(ledger.value.balancePiastres) + oldAmount - amount;
+    return { before: BigInt(ledger.value.balancePiastres) + oldAmount, amount, after: remaining };
+  }, [ledger, draft.amountEgp, editId, payments]);
+
   function switchAccount(nextVehicle:string,nextResponsible:string) {
     setVehicleId(nextVehicle);
     setResponsibleId(nextResponsible);
@@ -160,6 +168,12 @@ export function PaymentsView() {
             onChange={e=>setEditReason(e.target.value)} />
         </label>}
       </div>
+      {draftPreview && <section aria-label="الرصيد بعد الدفعة" className={styles.summary}>
+        <div><span>المتبقي قبل الدفعة {editId ? "بعد استبعاد قيمة الدفعة القديمة" : ""}</span><strong>{money(draftPreview.before.toString())}</strong></div>
+        <div><span>قيمة الدفعة الجديدة</span><strong>{money(draftPreview.amount.toString())}</strong></div>
+        <div><span>المتبقي للعربية بعد الدفعة</span><strong style={{fontSize:"1.6rem",color:draftPreview.after < 0n ? "#DC2626" : "var(--color-primary)"}}>{money(draftPreview.after.toString())}</strong></div>
+        {draftPreview.after < 0n && <p role="alert">تحذير: الدفعة تتجاوز الرصيد الحالي، وقد تُرفض بسبب رصيد يوم سابق أيضًا.</p>}
+      </section>}
       <p className={styles.muted}>D15: شغل نفس اليوم يُحسب قبل دفعاته. D16: لن تُقبل أي دفعة تجعل رصيد أي يوم وسيط بالسالب، حتى لو المتبقي الحالي كافٍ.</p>
       <div className={styles.buttons}>
         <button type="submit" className={styles.primary} disabled={!activeSelection || !ledger.ok}>
