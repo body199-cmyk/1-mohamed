@@ -155,3 +155,12 @@
 @media (prefers-reduced-motion: reduce) {
   .navLink { transition: none; }
 }
+
+/* Workflow-based navigation groups */
+.navGroup { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.groupTitle { display: block; padding: 14px 13px 5px; color: var(--text-muted); font-size: .72rem; font-weight: 800; letter-spacing: .01em; }
+.navGroup:first-child .groupTitle { padding-top: 2px; }
+@media (max-width: 1100px) {
+  .navGroup { flex-direction: row; align-items: center; flex: 0 0 auto; gap: 4px; }
+  .groupTitle { display: none; }
+}
