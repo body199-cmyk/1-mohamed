@@ -16,3 +16,10 @@ Trip entry: collapsible sections; searchable contractor/vehicle and recent selec
 
 ## Integration policy
 This is a **draft** PR based on main and intentionally separate from unmerged PR #34. Do not merge until stage 1 has passed its gate, and until stage 2's remaining approved work and tests are complete. If PR #34 lands, rebase/review against latest main before merge. No new UX decisions without user approval.
+
+## Subsequent implementation — 2026-11-07
+- `224ebc9`: repaired inherited main-branch auth HTTP smoke expectation (`/demo/home`, not `/demo/dashboard`); PR #35 initial CI `42366783348` failed **only** this smoke step after build; confirmed from the workflow job logs. This fix is limited to test expectations and adds a public home check.
+- `d2288fc` / `2e10b64`: searchable selections now show up to three recent active contractor/vehicle choices **during the current form mount**. The history is intentionally ephemeral, not persisted across reloads. Test with archived and newly added entities.
+- `4e45482` / `40d1f60`: added save-and-new and save-and-exit submit buttons, success navigation to `/demo/home`, and explicit release of the duplicate-submission lock on failed saves. The existing accounting validation and `claimSubmission` lock remain intact. Form uses manual validation to avoid native required controls inside collapsed details becoming non-focusable.
+- IMPORTANT: browser QA still needed for submitter identification, success flow, error recovery, duplicate click, and mobile; no CI green result has been observed for these commits yet.
+- Still outstanding: trips list date filters and mobile cards, full accessibility QA, independent review, merge and deploy.
