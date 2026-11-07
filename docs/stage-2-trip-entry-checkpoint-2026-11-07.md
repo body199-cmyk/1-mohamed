@@ -57,3 +57,10 @@ This is a **draft** PR based on main and intentionally separate from unmerged PR
   3. Native dialog Escape cancellation did not synchronize React state in the test — added explicit `onCancel` handling to close the bottom sheet and update state.
 - Fix commits: `05766d8` (exact test locators), `e2d8e02` (dialog Escape state synchronization). These are test/code corrections, **not yet verified** by a rerun on the latest head.
 - Vercel Preview for the latest head reported build-rate-limit failure; this is a provider limit, not evidence of a code build failure. GitHub Actions latest-head run is required for validation.
+
+
+## Second stage-2 browser run findings — 2026-11-07
+- Run `42412869749` passed the first four trip-entry tests (including save-and-exit re-entry), and mobile expandable history, but failed two new tests:
+  - Filter test could not locate selects reliably because accessible names were derived from nested label text/options. Added explicit `aria-label` values `فلتر المقاول`, `فلتر العربية`, `فلتر اتجاه الشغل` and updated test locators (`771980d`, `96f4ed0`).
+  - Escape on a focused `input[type=search]` can clear the input instead of closing its enclosing dialog. Added explicit Escape handling on the search input plus dialog cancel handling, and changed the test to press Escape on the focused search field (`293d3a3`, `f0df3a8`).
+- **Latest-head rerun still required**; do not close UX items until the dedicated Playwright suite passes on the latest head.
