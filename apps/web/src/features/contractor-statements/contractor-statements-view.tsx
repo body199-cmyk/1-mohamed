@@ -18,12 +18,18 @@ function cairoDate(date: Date): string {
 export function ContractorStatementsView() {
   const { contractors, vehicles, trips, getStatementForContractor } = useDemoStore();
 
+  const today = cairoDate(new Date());
+  const monthStart = today.slice(0, 7) + "-01";
+  const initialContractor = contractors[0];
   const [selectedContractorId, setSelectedContractorId] = useState<string>(
-    contractors[0]?.id ?? "K1"
+    initialContractor?.id ?? "K1"
   );
-  const [periodMode, setPeriodMode] = useState<"all" | "range">("all");
-  const [fromDate, setFromDate] = useState("2026-11-01");
-  const [toDate, setToDate] = useState(() => cairoDate(new Date()));
+  const [periodMode, setPeriodMode] = useState<"all" | "range">("range");
+  const [fromDate, setFromDate] = useState(() =>
+    initialContractor?.openingDate && initialContractor.openingDate > monthStart
+      ? initialContractor.openingDate : monthStart
+  );
+  const [toDate, setToDate] = useState(today);
 
   const currentContractor = useMemo(
     () => contractors.find((c) => c.id === selectedContractorId),
@@ -41,6 +47,9 @@ export function ContractorStatementsView() {
 
   const tripDetailsById = useMemo(() => new Map(trips.map(trip => [trip.id, {
     vehicle: vehicles.find(vehicle => vehicle.id === trip.vehicleId)?.plateNumber ?? trip.vehicleId,
+    vehicleId: trip.vehicleId,
+    origin: trip.origin,
+    destination: trip.destination,
     route: [trip.origin, trip.destination].filter(Boolean).join(" ← "),
   }] as const)), [trips, vehicles]);
 
@@ -55,7 +64,12 @@ export function ContractorStatementsView() {
             <select
               aria-label="اختر المقاول"
               value={selectedContractorId}
-              onChange={(e) => setSelectedContractorId(e.target.value)}
+              onChange={(e) => {
+                const id = e.target.value;
+                setSelectedContractorId(id);
+                const next = contractors.find(item => item.id === id);
+                if (next?.openingDate && fromDate < next.openingDate) setFromDate(next.openingDate);
+              }}
               className={styles.select}
             >
               {contractors.map((c) => (
@@ -97,7 +111,6 @@ export function ContractorStatementsView() {
               {(["اليوم","الأسبوع","الشهر"] as const).map(period => <button key={period} type="button" className={styles.select}
                 style={{width:"auto",minHeight:44,cursor:"pointer",fontWeight:700}}
                 onClick={() => {
-                  const today = cairoDate(new Date());
                   const [year, month, day] = today.split("-").map(Number);
                   const utcDate = new Date(Date.UTC(year, month - 1, day));
                   const start = new Date(utcDate);
@@ -119,11 +132,12 @@ export function ContractorStatementsView() {
                 backgroundColor: "var(--surface-hover)",
               }}
               onClick={() => {
-                setPeriodMode("range"); setFromDate("2026-11-01");
-                setToDate("2026-11-30");
+                setPeriodMode("range");
+                setFromDate(currentContractor?.openingDate && currentContractor.openingDate > monthStart ? currentContractor.openingDate : monthStart);
+                setToDate(today);
               }}
             >
-              نوفمبر 2026
+              هذا الشهر
             </button>
           </div>
         </div>
@@ -162,6 +176,7 @@ export function ContractorStatementsView() {
           <StatementSummaryCard
             statement={statementResult.statement}
             contractorName={currentContractor.name}
+            uniqueVehicleCount={new Set(statementResult.statement.rows.map(row => tripDetailsById.get(row.id)?.vehicleId ?? row.id)).size}
           />
 
           <StatementExportActions statement={statementResult.statement} name={currentContractor.name} />
