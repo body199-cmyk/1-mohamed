@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useEntrySession } from "../../demo/entry-session-context";
 import { buildContractorStatement } from "@ledger/contractor-statements";
 import { calculateTripAmounts } from "@ledger/accounting";
@@ -22,7 +23,8 @@ export function TripEntryPanel() {
     addContractor,
   } = useDemoStore();
 
-  const { state, dispatch, dirty: isDraftDirty, submitted, claimSubmission } = useEntrySession();
+  const { state, dispatch, dirty: isDraftDirty, submitted, claimSubmission, releaseSubmission } = useEntrySession();
+  const router = useRouter();
 
   const [quickAddTarget, setQuickAddTarget] = useState<"trip" | "shared">("trip");
   const [quickAddType, setQuickAddType] = useState<"vehicle" | "contractor" | null>(null);
@@ -157,8 +159,13 @@ export function TripEntryPanel() {
         `✓ تم تسجيل النقلة بنجاح (${added.id}). يمكنك الانتقال إلى كشف الحساب لرؤية الأثر المالي فورياً.`
       );
 
-      // Reset trip draft to ready next trip
-      // Keep the submitted draft visible until an explicit new-trip request.
+      const submitter = (e.nativeEvent as SubmitEvent).submitter as HTMLButtonElement | null;
+      const mode = submitter?.value === "exit" ? "exit" : "new";
+      if (mode === "new") dispatch({ type: "START_NEW_TRIP" });
+      else router.push("/demo/home");
+    } catch {
+      releaseSubmission();
+      setValidationError("تعذر حفظ النقلة. راجع البيانات وحاول مرة أخرى؛ لم يتم قفل النموذج.");
     } finally {
       setIsSubmitting(false);
     }
@@ -224,7 +231,7 @@ export function TripEntryPanel() {
               </div>
             )}
 
-            <form onSubmit={handleSubmitTrip}>
+            <form onSubmit={handleSubmitTrip} noValidate>
               <fieldset disabled={submitted} style={{ border: 0, minWidth: 0 }}>
               <TripFormFields
                 tripDraft={tripDraft}
@@ -242,8 +249,18 @@ export function TripEntryPanel() {
                   type="submit"
                   disabled={isSubmitting || submitted}
                   className={styles.btnPrimary}
+                  value="new"
                 >
-                  {isSubmitting ? "جاري الإضافة..." : "💾 إضافة للتجربة"}
+                  {isSubmitting ? "جاري الإضافة..." : "💾 حفظ وإضافة نقلة جديدة"}
+                </button>
+
+                <button
+                  type="submit"
+                  value="exit"
+                  disabled={isSubmitting || submitted}
+                  className={styles.btnSecondary}
+                >
+                  حفظ وخروج
                 </button>
 
                 <button
