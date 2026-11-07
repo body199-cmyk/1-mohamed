@@ -23,8 +23,12 @@ export function TripFormFields({
 }: TripFormFieldsProps) {
   const [vehicleSearch, setVehicleSearch] = useState("");
   const [contractorSearch, setContractorSearch] = useState("");
+  const [recentContractors, setRecentContractors] = useState<string[]>([]);
+  const [recentVehicles, setRecentVehicles] = useState<string[]>([]);
+  const remember = (ids: string[], id: string) => [id, ...ids.filter(item => item !== id)].slice(0, 3);
   return (
     <div className={styles.formGrid}>
+      <details className={styles.formSection} open><summary>١. بيانات النقلة والمقاول واتجاه الشغل</summary><div className={styles.formGrid}>
       {/* Work Date */}
       <div className={styles.formGroup}>
         <label className={styles.label}>
@@ -60,13 +64,13 @@ export function TripFormFields({
           </button>
         </div>
         <input type="search" aria-label="بحث عن مقاول" placeholder="ابحث باسم المقاول" className={styles.input} value={contractorSearch} onChange={e => setContractorSearch(e.target.value)} />
+        {recentContractors.length > 0 && <div className={styles.recentChoices} aria-label="المقاولون المستخدمون مؤخرًا">{recentContractors.map(id => { const c = contractors.find(item => item.id === id && !item.isArchived); return c ? <button type="button" className={styles.quickActionBtn} key={id} onClick={() => dispatch({ type: "EDIT_TRIP_COUNTERPARTY", counterpartyId: id })}>{c.name}</button> : null; })}</div>}
         <select aria-label="المقاول الطرف الآخر" value={tripDraft.counterpartyId ?? ""}
-          onChange={(e) =>
-            dispatch({
-              type: "EDIT_TRIP_COUNTERPARTY",
-              counterpartyId: e.target.value ? e.target.value : null,
-            })
-          }
+          onChange={(e) => {
+            const id = e.target.value;
+            dispatch({ type: "EDIT_TRIP_COUNTERPARTY", counterpartyId: id || null });
+            if (id) setRecentContractors(previous => remember(previous, id));
+          }}
           className={styles.select}
         >
           <option value="">-- اختر المقاول --</option>
@@ -103,6 +107,8 @@ export function TripFormFields({
         </div>
       </div>
 
+      </div></details>
+      <details className={styles.formSection} open><summary>٢. العربية والوزن والأسعار</summary><div className={styles.formGrid}>
       {/* Vehicle */}
       <div className={styles.formGroup}>
         <div className={styles.labelRow}>
@@ -118,13 +124,13 @@ export function TripFormFields({
           </button>
         </div>
         <input type="search" aria-label="بحث عن عربية" placeholder="ابحث برقم العربية أو السائق" className={styles.input} value={vehicleSearch} onChange={e => setVehicleSearch(e.target.value)} />
+        {recentVehicles.length > 0 && <div className={styles.recentChoices} aria-label="العربيات المستخدمة مؤخرًا">{recentVehicles.map(id => { const v = vehicles.find(item => item.id === id && !item.isArchived); return v ? <button type="button" className={styles.quickActionBtn} key={id} onClick={() => dispatch({ type: "EDIT_TRIP_VEHICLE", vehicleId: id })}>{v.plateNumber}</button> : null; })}</div>}
         <select aria-label="السيارة المنفذة" value={tripDraft.vehicleId ?? ""}
-          onChange={(e) =>
-            dispatch({
-              type: "EDIT_TRIP_VEHICLE",
-              vehicleId: e.target.value ? e.target.value : null,
-            })
-          }
+          onChange={(e) => {
+            const id = e.target.value;
+            dispatch({ type: "EDIT_TRIP_VEHICLE", vehicleId: id || null });
+            if (id) setRecentVehicles(previous => remember(previous, id));
+          }}
           className={styles.select}
         >
           <option value="">-- اختر السيارة --</option>
@@ -217,6 +223,8 @@ export function TripFormFields({
         />
       </div>
 
+      </div></details>
+      <details className={styles.formSection}><summary>٣. المسار والمصاريف والملاحظات (اختياري)</summary><div className={styles.formGrid}>
       {/* Locations */}
       <div className={styles.formGroup}>
         <label className={styles.label}>مكان التحميل</label>
@@ -288,6 +296,7 @@ export function TripFormFields({
           className={styles.textarea}
         />
       </div>
+      </div></details>
     </div>
   );
 }
