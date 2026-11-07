@@ -80,7 +80,9 @@ export function StatementSummaryCard({
         <div style={{fontSize:13,opacity:.9,marginTop:12}}>يشمل الرصيد المرحّل من قبل الفترة والشغل المسجل خلالها. دفعات العربيات النقدية مستقلة عن فرق شغل المقاولين.</div>
       </div>
 
-      <div className={styles.summaryGrid}>
+      <details className={styles.summaryBreakdown}>
+        <summary>عرض تفاصيل الرصيد الافتتاحي وشغل الطرفين والرصيد الختامي</summary>
+        <div className={styles.summaryGrid}>
         {/* Metric 1: Opening Balance */}
         <div className={styles.metricBox}>
           <span className={styles.metricLabel}>الرصيد الافتتاحي قبل الفترة</span>
@@ -132,7 +134,8 @@ export function StatementSummaryCard({
             {statement.beneficiary === "BALANCED" && "لا توجد مستحقات معلقة"}
           </span>
         </div>
-      </div>
+        </div>
+      </details>
     </div>
   );
 }
