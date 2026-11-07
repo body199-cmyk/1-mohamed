@@ -17,12 +17,10 @@ function contractorWorkMoney(value: string): string {
 }
 
 /** Formats the exact displayed statement; never recalculates or queries movements.
- * Receipts are optional presentation metadata joined by the original trip ID.
  */
 export function toStatementDocument(
   statement: ContractorStatement,
   name: string,
-  receiptByTripId: ReadonlyMap<string, string> = new Map(),
 ): ContractorStatementDocument {
   return {
     businessName: "أحمد أبو علي — بيانات تجريبية، ليست كشفًا فعليًا",
