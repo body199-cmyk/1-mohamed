@@ -497,3 +497,16 @@
 .historyChips button { min-height:34px; padding:6px 10px; border:1px solid var(--border-color); border-radius:999px; background:var(--surface-hover); color:var(--text-main); font:inherit; cursor:pointer; }
 .historyChips button:focus-visible { outline:2px solid var(--border-focus); outline-offset:2px; }
 .historyChips .clearHistoryFilters { background:transparent; color:var(--text-muted); border-style:dashed; }
+
+
+/* Keep approved trip save actions reachable while a long form is scrolled on phones. */
+@media (max-width: 640px) {
+  .btnGroup {
+    position: sticky;
+    bottom: 0;
+    z-index: 20;
+    padding: 12px 0 calc(12px + env(safe-area-inset-bottom));
+    background: var(--surface-card);
+    border-top: 1px solid var(--border-color);
+  }
+}
