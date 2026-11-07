@@ -38,3 +38,13 @@ This is a **draft** PR based on main and intentionally separate from unmerged PR
 - `8c0b3f7` / `5cfb006`: mobile save actions are sticky and safe-area aware; E2E asserts sticky positioning at 360px width.
 - **Still not complete:** contractor/vehicle selection currently uses a search input plus native select, not the approved searchable bottom sheet. Recent choices are session-local only. Need decide/implement the accessible bottom-sheet pattern and validate keyboard/focus/Android behavior before closing decision 10. Also test custom-range persistence and filter chips on device.
 - Latest stage-2 head: `5cfb0066e2d7ec72412c0c0fd343ab08fcedeaf8`. No completed green GitHub Actions run confirmed for this head yet; Vercel Preview status alone is not test evidence. PR #35 remains Draft and must not merge before PR #34 stage-1 gate.
+
+
+## Additional approved mobile-selection and filter UX — 2026-11-07
+- `5572270` / `9976ec4` / `1fc40dd` / `be383bf`: mobile contractor and vehicle controls now open native accessible `<dialog>` bottom sheets with autofocus search, recent active choices, full filtered list, archived options disabled, Escape/backdrop close, and focus restoration via native dialog behavior. Desktop retains the existing searchable native select. E2E covers search, selection, recent choices, Escape and 360px no-overflow.
+- `22dfd8d` / `e727954` / `81c3c36`: active filter chips and clear-all are implemented; removing one chip preserves the selected date period and other filters.
+- `8c0b3f7` / `5cfb006`: mobile save actions are sticky and safe-area aware; E2E checks the sticky container at 360px.
+- `4170141` / `66736b8`: save-and-exit resets the root-level entry session so returning to the route does not retain a stale duplicate-submit lock; E2E returns via client-side navigation and submits another trip.
+- Recent choices are currently held in component state for the mounted trip form; they are not persisted across reloads. This is deliberately not represented as cross-session history.
+- **Still outstanding:** latest-head CI/browser/accessibility QA; test dialog keyboard behavior with Android TalkBack and real device; test recent list with archived and newly created entities; verify custom range and active-chip interactions at tablet/desktop; independent review. PR #35 remains Draft.
+- Latest code commit before this checkpoint: `be383bfe305a7a65438bce8b7b56e6b0ce89ec98`. No successful GitHub Actions run confirmed for this head at documentation time.
