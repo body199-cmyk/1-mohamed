@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { buildVehicleCashReport } from "../src/features/reports/vehicle-cash-report";
+import { buildDailyWorkReport } from "../src/features/reports/daily-work-report";
+import { buildCashLedger } from "../src/features/payments/cash-ledger";
 import { DEMO_PRIMARY_RESPONSIBLE_ID } from "../src/features/payments/cash-ledger";
 import type { DemoTripRecord, DemoPayment, DemoVehicleCashOpening } from "../src/demo/demo-types";
 
@@ -77,6 +79,57 @@ describe("T08.4/5 vehicle cash statement is a strict projection of cash-ledger",
     const history=report("2026-11-02","2026-11-02");
     expect(history.ok && history.value.rows[0]?.label.includes("TR-1-0007")).toBe(true);
   });
+
+  it("ignores a corrupt future trip in a historical report but fails closed once it enters the report period",()=>{
+    const future={...work("TR-FUTURE","2026-11-09","AHMED_SUPPLIES","1000"),
+      vehicleRateEgp:"not-a-number",vehicleTotalPiastres:"1"};
+    const withFuture={...source,trips:[...source.trips,future]};
+    const historical=buildVehicleCashReport(withFuture,{
+      vehicleId:"V1",responsibleContractorId:DEMO_PRIMARY_RESPONSIBLE_ID,
+      from:"2026-11-01",to:"2026-11-05"
+    });
+    expect(historical.ok).toBe(true);
+    if(historical.ok) expect(historical.value.closingPiastres).toBe("33000");
+    const inclusive=buildVehicleCashReport(withFuture,{
+      vehicleId:"V1",responsibleContractorId:DEMO_PRIMARY_RESPONSIBLE_ID,
+      from:"2026-11-01",to:"2026-11-09"
+    });
+    expect(inclusive.ok).toBe(false);
+  });
+  it("fails closed when a trip date itself is invalid, even for a historical cutoff",()=>{
+    const invalidDate={...work("TR-BAD-DATE","2026-11-09","AHMED_SUPPLIES","1000"),
+      workDate:"not-a-date"};
+    const result=buildVehicleCashReport({...source,trips:[...source.trips,invalidDate]},{
+      vehicleId:"V1",responsibleContractorId:DEMO_PRIMARY_RESPONSIBLE_ID,
+      from:"2026-11-01",to:"2026-11-05"
+    });
+    expect(result.ok).toBe(false);
+  });
+  it("reconciles daily-work vehicle totals to the sum of separate cash-account work movements",()=>{
+    const otherSameDay=work("TR-OTHER-SAME-DAY","2026-11-02","OTHER_SUPPLIES","50");
+    const trips=[...source.trips,otherSameDay];
+    const daily=buildDailyWorkReport(trips,{workDate:"2026-11-02",contractorId:"",vehicleId:"V1"});
+    expect(daily.ok).toBe(true);
+    if(!daily.ok)return;
+    const primary=buildVehicleCashReport({...source,trips},{
+      vehicleId:"V1",responsibleContractorId:DEMO_PRIMARY_RESPONSIBLE_ID,
+      from:"2026-11-02",to:"2026-11-02"
+    });
+    const contractor=buildVehicleCashReport({...source,trips},{
+      vehicleId:"V1",responsibleContractorId:"K1",
+      from:"2026-11-02",to:"2026-11-02"
+    });
+    expect(primary.ok && contractor.ok).toBe(true);
+    if(!primary.ok || !contractor.ok)return;
+    const sumOfCashAccounts=BigInt(primary.value.workPiastres)+BigInt(contractor.value.workPiastres);
+    expect(daily.totals.vehicleTotalPiastres).toBe("33000");
+    expect(sumOfCashAccounts.toString()).toBe(daily.totals.vehicleTotalPiastres);
+    expect(primary.value.openingPiastres).toBe("5000");
+    expect(primary.value.closingPiastres).toBe("33000");
+    expect(contractor.value.openingPiastres).toBe("0");
+    expect(contractor.value.closingPiastres).toBe("5000");
+  });
+
   it("rejects reversed, malformed and pre-opening periods",()=>{
     expect(report("2026-11-06","2026-11-05").ok).toBe(false);
     expect(report("2026-02-30","2026-11-05").ok).toBe(false);
