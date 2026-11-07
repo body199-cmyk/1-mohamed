@@ -85,3 +85,13 @@ CI: run [42393467989](https://github.com/body199-cmyk/1-mohamed/actions/runs/423
 For each issue, record `status: open/in-progress/fixed/verified`, source line, test added, PR, commit, CI run, reviewer, and production deployment. Do not mark fixed without code; do not mark verified without test evidence. Keep this document as the canonical engineering audit; link detailed follow-up findings here.
 
 **Audit limitation:** direct clone was unavailable in the execution environment (DNS for github.com), so source review used the GitHub connector. The document intentionally differentiates observed bugs, stale tests, and unverified risks. No full codebase line-by-line certification, independent reviewer approval, successful latest-head CI, PR merge or production deployment is claimed.
+
+## 5. Execution log — batch TWO first (2026-11-07)
+User explicitly changed priority: **batch 2 (AUD-006 through AUD-010), then batch 3 (AUD-011–012), then batch 1 (AUD-001–005)**. Follow this order; within batch 2, do not assert a risk is fixed merely because documented.
+
+- **AUD-009 implementation (not yet CI-verified):** `15b6508` updates vehicle cash export filenames to include vehicle ID and responsible contractor ID in addition to dates. `89e87b9` updates daily work export filenames to include contractor and vehicle filter IDs in addition to date. Both are safe internal identifiers, not untrusted display names, and prevent collisions between differently filtered reports. **Pending** latest-head browser/export tests; do not mark verified.
+- **AUD-006:** remains an open range-policy investigation. Individual amounts are bounded, while cumulative BigInt totals are not. Determine persistence field limits before enforcing an arbitrary cap; add boundary tests.
+- **AUD-007:** remains open; test historical cutoff against future corrupted trip/payment snapshots and agree fail-closed semantics before altering code.
+- **AUD-008:** remains open; validate positive ending balance but negative intermediate balance and confirm rejected mutation; do not weaken D16.
+- **AUD-010:** invariant code reviewed, but comprehensive cross-ledger, cancellation, backdating and export reconciliation tests remain open.
+- **CI caution:** commits on PR #34 can cancel in-progress workflows due to concurrency. Wait for latest-head completion after the batch is stable; do not repeatedly push nonessential documentation while a final CI run is in progress.
