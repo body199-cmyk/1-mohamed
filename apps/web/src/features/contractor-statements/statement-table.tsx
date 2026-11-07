@@ -6,9 +6,10 @@ import styles from "./statements.module.css";
 interface StatementTableProps {
   rows: readonly ContractorStatementRow[];
   receiptByTripId: ReadonlyMap<string, string>;
+  tripDetailsById: ReadonlyMap<string, { vehicle: string; route: string }>;
 }
 
-export function StatementTable({ rows, receiptByTripId }: StatementTableProps) {
+export function StatementTable({ rows, receiptByTripId, tripDetailsById }: StatementTableProps) {
   if (rows.length === 0) {
     return (
       <div className={styles.tableCard}>
@@ -38,6 +39,8 @@ export function StatementTable({ rows, receiptByTripId }: StatementTableProps) {
           <thead>
             <tr>
               <th>تاريخ النقلة</th>
+              <th>العربية</th>
+              <th>المسار / الوجهة</th>
               <th>رقم النقلة</th>
               <th>رقم الإيصال</th>
               <th>الاتجاه والمسؤولية</th>
@@ -46,15 +49,19 @@ export function StatementTable({ rows, receiptByTripId }: StatementTableProps) {
             </tr>
           </thead>
           <tbody>
-            {rows.map((row) => {
+            {rows.map((row, index) => {
               const deltaFmt = formatEgpFromPiastres(row.signedDeltaPiastres);
               const runningFmt = formatEgpFromPiastres(row.runningBalancePiastres);
 
               const isAhmed = row.direction === "AHMED_SUPPLIES";
 
               return (
-                <tr key={row.id}>
+                <React.Fragment key={row.id}>
+                {(index === 0 || rows[index - 1].workDate !== row.workDate) && <tr style={{background:"var(--color-primary-bg)"}}><th colSpan={8} scope="rowgroup" style={{color:"var(--text-main)",fontSize:"1rem",padding:"12px 16px"}}>📅 شغل يوم {row.workDate}</th></tr>}
+                <tr>
                   <td>{row.workDate}</td>
+                  <td>{tripDetailsById.get(row.id)?.vehicle || "—"}</td>
+                  <td style={{whiteSpace:"normal",minWidth:140}}>{tripDetailsById.get(row.id)?.route || "—"}</td>
                   <td style={{ fontFamily: "monospace", fontSize: "0.85rem" }}>
                     {row.id}
                   </td>
@@ -85,6 +92,7 @@ export function StatementTable({ rows, receiptByTripId }: StatementTableProps) {
                     {runningFmt.ok ? runningFmt.amount : "0.00"} ج.م
                   </td>
                 </tr>
+                </React.Fragment>
               );
             })}
           </tbody>
