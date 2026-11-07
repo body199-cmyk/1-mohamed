@@ -62,7 +62,6 @@ export function toDailyWorkOperationalReport(
       { label: "الوزن (طن)", direction: "ltr", widthWeight: 0.8 },
       { label: "قيمة شغل المقاول", direction: "ltr", widthWeight: 1.25 },
       { label: "مستحق العربية", direction: "ltr", widthWeight: 1.2 },
-      { label: "رقم الإيصال", direction: "ltr", widthWeight: 0.8 },
     ],
     rows: report.rows.map(trip => [
       trip.id,
@@ -73,7 +72,6 @@ export function toDailyWorkOperationalReport(
       trip.weightTonnes,
       money(trip.contractorTotalPiastres),
       money(trip.vehicleTotalPiastres),
-      trip.receiptNumber || "—",
     ]),
     emptyMessage: "لا توجد نقلات في اليوم والفلاتر المحددة.",
     footerNotes: [
@@ -116,7 +114,7 @@ export function toVehicleCashOperationalReport(
     columns: [
       { label: "تاريخ الحركة", direction: "ltr", widthWeight: 1.1 },
       { label: "النوع", widthWeight: 1.15 },
-      { label: "البيان / الإيصال", widthWeight: 1.8 },
+      { label: "البيان", widthWeight: 1.8 },
       { label: "خط السير", widthWeight: 1.55 },
       { label: "اتجاه الشغل", widthWeight: 1.7 },
       { label: "حركة (+ مستحق / - دفعة)", direction: "ltr", widthWeight: 1.4 },
