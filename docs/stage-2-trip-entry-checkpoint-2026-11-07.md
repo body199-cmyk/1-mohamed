@@ -64,3 +64,9 @@ This is a **draft** PR based on main and intentionally separate from unmerged PR
   - Filter test could not locate selects reliably because accessible names were derived from nested label text/options. Added explicit `aria-label` values `فلتر المقاول`, `فلتر العربية`, `فلتر اتجاه الشغل` and updated test locators (`771980d`, `96f4ed0`).
   - Escape on a focused `input[type=search]` can clear the input instead of closing its enclosing dialog. Added explicit Escape handling on the search input plus dialog cancel handling, and changed the test to press Escape on the focused search field (`293d3a3`, `f0df3a8`).
 - **Latest-head rerun still required**; do not close UX items until the dedicated Playwright suite passes on the latest head.
+
+
+## Third stage-2 browser run findings — 2026-11-07
+- Run `42413191717` passed save-and-exit/re-entry, mobile selection dialogs, mobile history cards and sticky save actions. The active-filter test still failed because the test clicked the summary text without proving the native `details` was open, and used an ambiguous label locator.
+- Corrected the test to click `details.historyAdvanced > summary`, assert the `open` attribute, then scope comboboxes by explicit role/name; filter-chip container now uses its exact aria-label selector. Commit `2949367`.
+- **Rerun on latest head required.** Do not close the filter UX item until the dedicated test passes.
