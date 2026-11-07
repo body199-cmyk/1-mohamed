@@ -48,3 +48,12 @@ This is a **draft** PR based on main and intentionally separate from unmerged PR
 - Recent choices are currently held in component state for the mounted trip form; they are not persisted across reloads. This is deliberately not represented as cross-session history.
 - **Still outstanding:** latest-head CI/browser/accessibility QA; test dialog keyboard behavior with Android TalkBack and real device; test recent list with archived and newly created entities; verify custom range and active-chip interactions at tablet/desktop; independent review. PR #35 remains Draft.
 - Latest code commit before this checkpoint: `be383bfe305a7a65438bce8b7b56e6b0ce89ec98`. No successful GitHub Actions run confirmed for this head at documentation time.
+
+
+## E2E feedback and corrections — 2026-11-07
+- Initial stage-2 run `42412560902` reached the dedicated trip-entry Playwright suite. The original save-and-exit flow test passed; the three new tests failed on test/dialog details:
+  1. Save-and-exit re-entry locator matched both nav and home shortcut links — changed to exact accessible name.
+  2. Contractor filter label was a substring of the direction label — changed to exact label matching.
+  3. Native dialog Escape cancellation did not synchronize React state in the test — added explicit `onCancel` handling to close the bottom sheet and update state.
+- Fix commits: `05766d8` (exact test locators), `e2d8e02` (dialog Escape state synchronization). These are test/code corrections, **not yet verified** by a rerun on the latest head.
+- Vercel Preview for the latest head reported build-rate-limit failure; this is a provider limit, not evidence of a code build failure. GitHub Actions latest-head run is required for validation.
