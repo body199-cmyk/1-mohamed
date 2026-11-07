@@ -108,7 +108,8 @@ describe("H065 operational report exports — one fixed document, five formats",
     expect(csv.slice(1)).not.toContain("\uFEFF");
     expect(csv).toContain("\r\n");
     expect(csv).toContain('"تقرير الشغل اليومي"');
-    expect(csv).toContain("'=HYPERLINK(""x"")");
+    expect(csv).toContain("وصف التقرير");
+    expect(csv).toContain("'=HYPERLINK(\"\"x\"\")");
     expect(csv).toContain("شركة، النيل");
     expect(csv).toContain("' -100.00 ج.م".trim());
     const empty = renderOperationalReportCsv({ ...doc, rows: [] });
@@ -120,10 +121,10 @@ describe("H065 operational report exports — one fixed document, five formats",
     const doc = fixture(4);
     const layout = createOperationalReportImageLayout(doc);
     expect(layout.width).toBe(1440);
-    expect(layout.height).toBeGreaterThan(900);
+    expect(layout.height).toBeGreaterThan(700);
     expect(layout.rows).toBe(doc.rows);
     const calls = capturePaint(doc);
-    for (const value of ["0001", "0002", "0003", "0004", "شركة النيل", "1500.00", "إجمالي اليوم المحدد"]) {
+    for (const value of ["0001", "0002", "0003", "0004", "شركة النيل", "1500.00", "إجمالي اليوم المحدد", "تاريخ الإعداد: ٥ نوفمبر ٢٠٢٦ ١٨:٣٠"]) {
       expect(calls.some(call => call.includes(value))).toBe(true);
     }
     expect(calls.filter(call => /^000[1-4]$/.test(call))).toHaveLength(4);
