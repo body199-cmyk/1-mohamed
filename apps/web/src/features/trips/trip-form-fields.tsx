@@ -125,7 +125,8 @@ export function TripFormFields({
             <button type="button" aria-label="إغلاق اختيار المقاول" onClick={() => setContractorSheetOpen(false)}>إغلاق</button>
           </div>
           <input type="search" aria-label="بحث عن مقاول داخل القائمة" autoFocus className={styles.input}
-            placeholder="ابحث باسم المقاول أو الكود" value={contractorSearch} onChange={event => setContractorSearch(event.target.value)} />
+            placeholder="ابحث باسم المقاول أو الكود" value={contractorSearch} onChange={event => setContractorSearch(event.target.value)}
+            onKeyDown={event => { if (event.key === "Escape") { event.preventDefault(); setContractorSheetOpen(false); } }} />
           {recentContractors.length > 0 && <div className={styles.sheetRecent} role="group" aria-label="المقاولون المستخدمون مؤخرًا">
             <strong>المستخدمون مؤخرًا</strong>
             <div>{recentContractors.map(id => { const item = contractors.find(entry => entry.id === id && !entry.isArchived); return item ? <button type="button" key={id} onClick={() => { dispatch({ type: "EDIT_TRIP_COUNTERPARTY", counterpartyId: id }); setRecentContractors(previous => remember(previous, id)); setContractorSheetOpen(false); }}>{item.name}</button> : null; })}</div>
@@ -216,7 +217,8 @@ export function TripFormFields({
             <button type="button" aria-label="إغلاق اختيار العربية" onClick={() => setVehicleSheetOpen(false)}>إغلاق</button>
           </div>
           <input type="search" aria-label="بحث عن عربية داخل القائمة" autoFocus className={styles.input}
-            placeholder="ابحث برقم العربية أو السائق أو الكود" value={vehicleSearch} onChange={event => setVehicleSearch(event.target.value)} />
+            placeholder="ابحث برقم العربية أو السائق أو الكود" value={vehicleSearch} onChange={event => setVehicleSearch(event.target.value)}
+            onKeyDown={event => { if (event.key === "Escape") { event.preventDefault(); setVehicleSheetOpen(false); } }} />
           {recentVehicles.length > 0 && <div className={styles.sheetRecent} role="group" aria-label="العربيات المستخدمة مؤخرًا">
             <strong>المستخدمون مؤخرًا</strong>
             <div>{recentVehicles.map(id => { const item = vehicles.find(entry => entry.id === id && !entry.isArchived); return item ? <button type="button" key={id} onClick={() => { dispatch({ type: "EDIT_TRIP_VEHICLE", vehicleId: id }); setRecentVehicles(previous => remember(previous, id)); setVehicleSheetOpen(false); }}>{item.plateNumber}</button> : null; })}</div>
