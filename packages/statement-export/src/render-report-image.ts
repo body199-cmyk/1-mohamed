@@ -194,6 +194,9 @@ export function paintOperationalReportImage(
   write(ctx, layout.businessName, RIGHT, 72, { size: 21, color: MUTED, maxWidth: 1250 });
   write(ctx, layout.title, RIGHT, 132, { size: 38, bold: true, maxWidth: 1250 });
   write(ctx, layout.subtitle, RIGHT, 176, { size: 17, color: MUTED, maxWidth: 1250 });
+  write(ctx, "تاريخ الإعداد: " + layout.generatedAtLabel, RIGHT, 204, {
+    size: 16, color: MUTED, maxWidth: 1250,
+  });
   paintMetadata(ctx, layout.metadata);
   paintSummaries(ctx, layout.summarySections, layout.summaryStart);
   const rowsBottom = paintTable(ctx, layout);
