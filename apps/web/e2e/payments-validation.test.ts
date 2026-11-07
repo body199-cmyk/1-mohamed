@@ -59,6 +59,48 @@ describe("T08.3 cash ledger demo follows T08.2/D15/D16",()=>{
     }
     expect(validateDemoPayment({...source,payments:[]},draft("1000"),today).ok).toBe(true);
   });
+
+  it("rejects non-canonical persisted piastres encodings for openings and payments",()=>{
+    for(const signedPiastres of ["+1","0x10","01","-0"]){
+      const source={...base,trips:[],payments:[],cashOpenings:[{
+        vehicleId:"V1",contractorId:DEMO_PRIMARY_RESPONSIBLE_ID,
+        startDate:"2026-11-01",signedPiastres
+      }]};
+      expect(buildCashLedger(source,"V1",DEMO_PRIMARY_RESPONSIBLE_ID,today).ok).toBe(false);
+    }
+    for(const amountPiastres of ["+1","0x10","01","0"]){
+      const source={...base,trips:[],payments:[payment("BAD-AMOUNT","2026-11-03",amountPiastres)],cashOpenings:[]};
+      expect(buildCashLedger(source,"V1",DEMO_PRIMARY_RESPONSIBLE_ID,today).ok).toBe(false);
+    }
+  });
+  it("rejects an individual work movement above signed 64-bit even if a negative opening would offset it",()=>{
+    const max="9223372036854775807";
+    const oversized={...trip("OVER-MOVEMENT","2026-11-03","V1","AHMED_SUPPLIES","1"),
+      vehicleRateEgp:"92233720368547758.08",
+      vehicleTotalPiastres:"9223372036854775808"};
+    const source={...base,trips:[oversized],payments:[],cashOpenings:[{
+      vehicleId:"V1",contractorId:DEMO_PRIMARY_RESPONSIBLE_ID,
+      startDate:"2026-11-01",signedPiastres:"-"+max
+    }]};
+    expect(buildCashLedger(source,"V1",DEMO_PRIMARY_RESPONSIBLE_ID,today).ok).toBe(false);
+  });
+  it("rejects a payment dated before the cash opening starts",()=>{
+    const source={...base,trips:[],payments:[],cashOpenings:[{
+      vehicleId:"V1",contractorId:DEMO_PRIMARY_RESPONSIBLE_ID,
+      startDate:"2026-11-04",signedPiastres:"100000"
+    }]};
+    const result=validateDemoPayment(source,draft("100","2026-11-02"),today);
+    expect(result.ok).toBe(false);
+    if(!result.ok) expect(result.error).toContain("افتتاحي النقد");
+  });
+  it("fails closed for every cash account when an in-period trip direction is corrupted",()=>{
+    const invalid={...trip("BAD-DIRECTION","2026-11-03","V1","OTHER_SUPPLIES","10"),
+      direction:"UNKNOWN" as unknown as DemoTripRecord["direction"]};
+    const source={...base,trips:[invalid],payments:[],cashOpenings:[]};
+    expect(buildCashLedger(source,"V1","K1",today).ok).toBe(false);
+    expect(buildCashLedger(source,"V1",DEMO_PRIMARY_RESPONSIBLE_ID,today).ok).toBe(false);
+  });
+
   it("D15 aggregates every same-day work movement before D16 evaluates the payment minimum",()=>{
     const source={...base,trips:[
       trip("T1","2026-11-03","V1","AHMED_SUPPLIES","100"),
