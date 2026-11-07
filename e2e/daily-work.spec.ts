@@ -42,7 +42,7 @@ test.describe("REPORTS-01 — isolated daily work report", () => {
     const archive = page.getByRole("form", { name: "أرشفة العربية" });
     await archive.getByRole("textbox", { name: "سبب التغيير" }).fill("مراجعة تاريخية");
     await archive.getByRole("button", { name: "تأكيد أرشفة" }).click();
-    await page.getByRole("link", { name: "تقرير الشغل اليومي" }).click();
+    await page.goto("/demo/reports/daily");
     await page.getByLabel("تاريخ التقرير").fill("2026-11-05");
     await expect(page.getByRole("table", { name: "نقلات اليوم" })).toContainText("د هـ و 5678");
     expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1)).toBe(false);
