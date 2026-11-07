@@ -30,6 +30,10 @@ export function ContractorStatementsView() {
       ? initialContractor.openingDate : monthStart
   );
   const [toDate, setToDate] = useState(today);
+  const [search, setSearch] = useState("");
+  const [originFilter, setOriginFilter] = useState("");
+  const [destinationFilter, setDestinationFilter] = useState("");
+  const [directionFilter, setDirectionFilter] = useState<"" | "AHMED_SUPPLIES" | "OTHER_SUPPLIES">("");
 
   const currentContractor = useMemo(
     () => contractors.find((c) => c.id === selectedContractorId),
@@ -52,6 +56,43 @@ export function ContractorStatementsView() {
     destination: trip.destination,
     route: [trip.origin, trip.destination].filter(Boolean).join(" ← "),
   }] as const)), [trips, vehicles]);
+  const contractorTrips = useMemo(() => trips.filter(trip =>
+    trip.counterpartyId === selectedContractorId &&
+    trip.workDate >= effectiveFromDate && trip.workDate <= toDate
+  ), [trips, selectedContractorId, effectiveFromDate, toDate]);
+  const originOptions = [...new Set(contractorTrips.map(trip => trip.origin.trim()).filter(Boolean))].sort();
+  const destinationOptions = [...new Set(contractorTrips.map(trip => trip.destination.trim()).filter(Boolean))].sort();
+  const statementRows = statementResult?.ok ? statementResult.statement.rows : [];
+  const filteredRows = useMemo(() => {
+    const query = search.trim().toLocaleLowerCase("ar");
+    return statementRows.filter(row => {
+      const details = tripDetailsById.get(row.id);
+      const searchable = [row.id, details?.vehicle, details?.route, details?.origin, details?.destination]
+        .filter(Boolean).join(" ").toLocaleLowerCase("ar");
+      return (!query || searchable.includes(query)) &&
+        (!originFilter || details?.origin === originFilter) &&
+        (!destinationFilter || details?.destination === destinationFilter) &&
+        (!directionFilter || row.direction === directionFilter);
+    });
+  }, [statementRows, tripDetailsById, search, originFilter, destinationFilter, directionFilter]);
+  const hasActiveFilters = !!search.trim() || !!originFilter || !!destinationFilter || !!directionFilter;
+  const filteredWorkSummary = useMemo(() => {
+    let ahmed = 0n, counterparty = 0n;
+    const vehicleIds = new Set<string>();
+    for (const row of filteredRows) {
+      const amount = BigInt(row.contractorTotalPiastres);
+      if (row.direction === "AHMED_SUPPLIES") ahmed += amount;
+      else counterparty += amount;
+      const vehicleId = tripDetailsById.get(row.id)?.vehicleId;
+      if (vehicleId) vehicleIds.add(vehicleId);
+    }
+    return { count: filteredRows.length, vehicleCount: vehicleIds.size, ahmed, counterparty };
+  }, [filteredRows, tripDetailsById]);
+  const displayMoney = (amount: bigint) => {
+    const result = new Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+      .format(Number(amount) / 100);
+    return result + " ج.م";
+  };
 
   return (
     <div className={styles.pageContainer}>
@@ -69,6 +110,7 @@ export function ContractorStatementsView() {
                 setSelectedContractorId(id);
                 const next = contractors.find(item => item.id === id);
                 if (next?.openingDate && fromDate < next.openingDate) setFromDate(next.openingDate);
+                setSearch(""); setOriginFilter(""); setDestinationFilter(""); setDirectionFilter("");
               }}
               className={styles.select}
             >
@@ -105,6 +147,39 @@ export function ContractorStatementsView() {
             />
           </div>
 
+          <div className={styles.formGroup}>
+            <label className={styles.label} htmlFor="contractor-statement-search">بحث دائم في النقلات</label>
+            <input id="contractor-statement-search" type="search" aria-label="بحث في كشف المقاول" value={search}
+              onChange={event => setSearch(event.target.value)} className={styles.input}
+              placeholder="رقم النقلة أو العربية أو المسار" />
+          </div>
+          <details className={styles.advancedFilters}>
+            <summary>فلاتر متقدمة للموقع والاتجاه</summary>
+            <div className={styles.advancedFiltersGrid}>
+              <label className={styles.formGroup}>موقع التحميل
+                <select aria-label="فلتر موقع التحميل" className={styles.select} value={originFilter} onChange={event => setOriginFilter(event.target.value)}>
+                  <option value="">كل المواقع</option>{originOptions.map(value => <option key={value} value={value}>{value}</option>)}
+                </select>
+              </label>
+              <label className={styles.formGroup}>الوجهة
+                <select aria-label="فلتر الوجهة" className={styles.select} value={destinationFilter} onChange={event => setDestinationFilter(event.target.value)}>
+                  <option value="">كل الوجهات</option>{destinationOptions.map(value => <option key={value} value={value}>{value}</option>)}
+                </select>
+              </label>
+              <label className={styles.formGroup}>اتجاه الشغل
+                <select aria-label="فلتر اتجاه الشغل" className={styles.select} value={directionFilter} onChange={event => setDirectionFilter(event.target.value as typeof directionFilter)}>
+                  <option value="">كل الاتجاهات</option><option value="AHMED_SUPPLIES">أحمد جاب العربيات</option><option value="OTHER_SUPPLIES">المقاول جاب العربيات</option>
+                </select>
+              </label>
+            </div>
+          </details>
+          {hasActiveFilters && <div className={styles.activeFilterChips} aria-label="فلاتر كشف المقاول النشطة">
+            {search.trim() && <button type="button" aria-label="إزالة بحث كشف المقاول" onClick={() => setSearch("")}>بحث: {search} ×</button>}
+            {originFilter && <button type="button" aria-label="إزالة فلتر موقع التحميل" onClick={() => setOriginFilter("")}>الموقع: {originFilter} ×</button>}
+            {destinationFilter && <button type="button" aria-label="إزالة فلتر الوجهة" onClick={() => setDestinationFilter("")}>الوجهة: {destinationFilter} ×</button>}
+            {directionFilter && <button type="button" aria-label="إزالة فلتر اتجاه الشغل" onClick={() => setDirectionFilter("")}>الاتجاه: {directionFilter === "AHMED_SUPPLIES" ? "أحمد جاب العربيات" : "المقاول جاب العربيات"} ×</button>}
+            <button type="button" className={styles.clearFilterButton} onClick={() => { setSearch(""); setOriginFilter(""); setDestinationFilter(""); setDirectionFilter(""); }}>مسح كل الفلاتر</button>
+          </div>}
           <div className={styles.formGroup}>
             <label className={styles.label}>فترة سريعة</label>
             <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
@@ -179,8 +254,15 @@ export function ContractorStatementsView() {
             uniqueVehicleCount={new Set(statementResult.statement.rows.map(row => tripDetailsById.get(row.id)?.vehicleId ?? row.id)).size}
           />
 
+          {hasActiveFilters && <section className={styles.filteredWorkSummary} aria-label="ملخص قيمة الشغل في النتائج المفلترة">
+            <strong>ملخص الشغل في النتائج المفلترة فقط — لا يمثل صافي حساب المقاول النهائي</strong>
+            <div>{filteredWorkSummary.count} نقلة • {filteredWorkSummary.vehicleCount} عربية</div>
+            <div>شغل أحمد في النتائج: {displayMoney(filteredWorkSummary.ahmed)}</div>
+            <div>شغل المقاول في النتائج: {displayMoney(filteredWorkSummary.counterparty)}</div>
+          </section>}
+          <p className={styles.exportScopeNote}>التصدير يعرض كشف الحساب الكامل للفترة، بينما الفلاتر تحدد تفاصيل العرض على الشاشة فقط. صافي المستحق النهائي يظل محسوبًا على الحساب كاملًا.</p>
           <StatementExportActions statement={statementResult.statement} name={currentContractor.name} />
-          <StatementTable rows={statementResult.statement.rows} tripDetailsById={tripDetailsById} />
+          <StatementTable rows={filteredRows} tripDetailsById={tripDetailsById} />
         </>
       )}
     </div>
