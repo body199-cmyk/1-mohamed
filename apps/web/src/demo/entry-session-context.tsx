@@ -30,7 +30,11 @@ function useEntrySessionState() {
     setSubmitted(true);
     return true;
   };
-  return { state, dispatch, dirty, submitted, claimSubmission };
+  const releaseSubmission = () => {
+    submissionLock.current = false;
+    setSubmitted(false);
+  };
+  return { state, dispatch, dirty, submitted, claimSubmission, releaseSubmission };
 }
 
 const EntrySessionContext = createContext<ReturnType<typeof useEntrySessionState> | null>(null);
