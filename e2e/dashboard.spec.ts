@@ -5,6 +5,8 @@ test.describe("T08.6 dashboard — daily indicators and independent payments",()
     // The demo fixtures are dated 2026-11-05; the live Cairo date must not change financial assertions.
     await page.clock.setFixedTime(new Date("2026-11-05T12:00:00+02:00"));
     await page.goto("/");
+    await expect(page).toHaveURL(/\/demo\/home$/);
+    await page.getByRole("link",{name:/لوحة المؤشرات/}).click();
     await expect(page).toHaveURL(/\/demo\/dashboard$/);
     await expect(page.getByRole("heading",{name:"الرئيسية — ملخص اليوم"})).toBeVisible();
     const metrics=page.getByRole("region",{name:"المؤشرات اليومية"});
