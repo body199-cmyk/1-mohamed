@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { formatEgpFromPiastres } from "@ledger/accounting";
 import { useDemoStore } from "../../demo/demo-context";
 import { StatementSummaryCard } from "./statement-summary-card";
 import { StatementTable } from "./statement-table";
@@ -89,9 +90,8 @@ export function ContractorStatementsView() {
     return { count: filteredRows.length, vehicleCount: vehicleIds.size, ahmed, counterparty };
   }, [filteredRows, tripDetailsById]);
   const displayMoney = (amount: bigint) => {
-    const result = new Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-      .format(Number(amount) / 100);
-    return result + " ج.م";
+    const result = formatEgpFromPiastres(amount.toString());
+    return result.ok ? result.amount + " ج.م" : "غير صالح";
   };
 
   return (
