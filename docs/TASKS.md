@@ -1,6 +1,6 @@
 # المهام
 
-الحالة بتاريخ **٦ نوفمبر ٢٠٢٦ / H063**: التطبيق يتضمن محرك حساب النقلات، بيانات أساسية، دفعات، تقارير يومية/نقد عربية/مقاول، وواجهات معاينة متكاملة على `DemoStore` بالذاكرة، إضافة إلى مراحل SQL A/B/C وعمليات مالية محمية اختُبرت على PostgreSQL معزول عبر GitHub Actions. H063/PR #26 أُغلق بدمج ناجح في `main=7735761450571f755041cb02a75b30b392b9f0cb` بعد CI #42215230226 (54/54 Chromium وكل فحوص الحزمة/SQL/الأمان/النسخ/البناء). **هذا لا يثبت حفظًا دائمًا أو Auth حقيقيًا أو تزامن Supabase**. ما زال المشروع في وضع المعاينة، ومستودعه Public حتى الآن؛ تُراجع [STATUS](STATUS.md) و[OFFLINE_FIRST_ROADMAP_H042](OFFLINE_FIRST_ROADMAP_H042.md) و[SUPABASE_AUTH_SETUP](SUPABASE_AUTH_SETUP.md).
+الحالة بتاريخ **٧ نوفمبر ٢٠٢٦ / H064**: H063/PR #26 ما زال مرجع إغلاق تقرير المقاول؛ وأُضيف H064 لمتابعة أساس E2E بعده. PR #28 دُمج في `main=433658bfc32a411dbfbbd2640a6d564f3577a1e4` بعد CI #42314459722 بنجاح (55/55 Chromium + 9/9 cross-feature regression، وكل فحوص typecheck/package/SQL/negative controls/backup/build/Auth HTTP). H064 غيّر الاختبارات وملف CI والتوثيق فقط، ولم يغيّر كود التطبيق أو المعادلات أو SQL. **هذا لا يثبت حفظًا دائمًا أو Auth حقيقيًا أو تزامن Supabase**. ما زال المشروع في وضع المعاينة، والمستودع Public حتى الآن؛ تُراجع STATUS وOFFLINE_FIRST_ROADMAP_H042 وSUPABASE_AUTH_SETUP.
 
 ## الحالات والدليل
 

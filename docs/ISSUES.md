@@ -142,3 +142,13 @@
 - Evidence: H063 browser CI `42214020869` passed 54/54 Playwright and all full checks on head `6df1c472`, with actual PDF artifact `13498989823`. After rendering its A4 page to an image, **row values displayed −600/+300 correctly, but summary mixed Arabic currency with digits and visually placed +/− after numbers** (e.g. `ج.م 600.00-`). User explicitly requested sign on number; this visual problem would undermine D18 despite passing byte equality tests.
 - Narrow fix in `render-statement-image.ts` only: when metric value ends with ` ج.م`, draw the numeric amount including leading sign as its own LTR canvas text token, and display `(ج.م)` in the summary metric label. Underlying raw `ContractorStatementDocument` string, amount, sign, page widths and financial calculations remain unchanged. Update exact `image-rendering.test.ts` text expectations and add explicit leading-sign assertion in H063 renderer test; preserve six columns/receipts.
 - **Status: CLOSED.** Final CI `42215230226` passed; artifact `13501365580` was downloaded and PDF/PNG visually inspected. The summary now draws signed numerals as LTR and places currency in the label; leading signs are visually correct. Merged with PR #26 at `7735761450571f755041cb02a75b30b392b9f0cb`.
+
+
+## H064 / TEST-013 — E2E baseline measurement and CSV regression (7 Nov 2026)
+
+- **CSV:** تم تحديث توقع regression إلى صيغة H063 المعتمدة مع الإشارة الموجبة وعلامة حماية CSV؛ لم يتغير كود التصدير أو الحساب. أُضيف ملف `e2e/review-regressions.spec.ts` إلى GitHub Actions؛ نجحت اختبارات الملف 9/9.
+- **H059 contrast:** لا يوجد عيب جديد في ألوان التطبيق. كانت قراءة 1.56:1 أثناء انتقال CSS بين الثيمين؛ القيم النهائية الداكنة `#eaf1f8` على `#1c4167` تعطي نحو 9.21:1. عُدّل الاختبار لينتظر انتهاء انتقالات CSS عبر Web Animations API ثم يقيس اللون النهائي، مع بقاء حد 4.5:1 كما هو.
+- **H055/H060:** تم انتظار جاهزية العناصر وقياس زر الإجراء بعد انتهاء انتقال الخلفية؛ شريط التنبيه في H055 لا يملك انتقال ألوان، لذلك يُقاس مباشرة بعد تطبيق سمة الثيم.
+- **forms-h057:** فشل Target crashed الذي ظهر محليًا لم يتكرر في GitHub CI؛ لا دليل على عيب في التطبيق. لا نُخفيه من السجل التاريخي، لكنه لا يمنع خط الأساس بعد نجاح CI.
+- **Final evidence:** PR #28 merged at `433658bfc32a411dbfbbd2640a6d564f3577a1e4`; exact tested head `1e533d6f0a9c0c84aecd1299a2accf15e4f0bfdb`; run `42314459722` SUCCESS (55 + 9 browser tests and all remaining workflow checks).
+- **Status: CLOSED.** Test-only/CI/documentation correction; no application source, accounting, SQL, Auth, or persistence changes.
