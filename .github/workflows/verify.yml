@@ -69,6 +69,18 @@ jobs:
       - name: Test cross-feature regressions and H063 CSV export in real browser
         run: npx playwright test --config=playwright.ui.config.ts e2e/review-regressions.spec.ts
 
+      - name: Test H065 daily and vehicle cash exports across devices and themes
+        run: npx playwright test --config=playwright.ui.config.ts e2e/h065-daily-vehicle-report-exports.spec.ts
+
+      - name: Preserve H065 operational report exports for independent review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: h065-daily-vehicle-cash-five-exports
+          path: artifacts/h065/
+          if-no-files-found: ignore
+          retention-days: 7
+
 
       - name: Keep demo design screenshots for review without Vercel
         if: always()

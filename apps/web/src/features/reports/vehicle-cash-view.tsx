@@ -6,6 +6,8 @@ import { useDemoStore } from "../../demo/demo-context";
 import { DEMO_PRIMARY_RESPONSIBLE_ID } from "../payments/cash-ledger";
 import { buildVehicleCashReport } from "./vehicle-cash-report";
 import styles from "../payments/payments.module.css";
+import { ReportExportActions } from "./report-export-actions";
+import { toVehicleCashOperationalReport } from "./report-export-documents";
 
 function egp(piastres: string): string {
   const result = formatEgpFromPiastres(piastres);
@@ -29,6 +31,12 @@ export function VehicleCashView() {
   const responsibleName = responsibleId === DEMO_PRIMARY_RESPONSIBLE_ID
     ? "أحمد أبو علي"
     : contractors.find(c => c.id === responsibleId)?.name ?? "غير معروف";
+
+  const exportDocument = useMemo(() => result.ok ? toVehicleCashOperationalReport(result.value, {
+    vehicleLabel: vehicle?.plateNumber ?? vehicleId,
+    responsibleName,
+    tripLookup,
+  }) : null, [result, vehicle?.plateNumber, vehicleId, responsibleName, tripLookup]);
 
   return <div className={styles.page}>
     <header>
@@ -70,6 +78,7 @@ export function VehicleCashView() {
     </section>
 
     {!result.ok ? <p className={styles.error} role="alert">{result.error}</p> : <>
+      {exportDocument && <ReportExportActions document={exportDocument} fileNameBase={"vehicle-cash-" + from + "-" + to} />}
       <section className={styles.summary} aria-label="ملخص كشف نقد العربية">
         <div><span>الرصيد السابق للفترة</span><strong>{egp(result.value.openingPiastres)}</strong></div>
         <div><span>مستحق شغل العربية خلال الفترة</span><strong>{egp(result.value.workPiastres)}</strong></div>
