@@ -61,7 +61,7 @@ export function renderOperationalReportHtml(doc: OperationalReportDocument): str
     '      <p class="meta-label">' + subtitle + "</p>",
     '      <div class="meta-grid">' + metadata +
     '        <div class="meta-item"><span class="meta-label">تاريخ الإعداد</span>' +
-    '<span class="meta-value ltr-token">' + generated + "</span></div>",
+    '<span class="meta-value">' + generated + "</span></div>",
     "      </div>",
     "    </header>",
     summaries,

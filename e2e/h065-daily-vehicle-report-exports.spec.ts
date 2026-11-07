@@ -135,7 +135,8 @@ test.describe("H065 daily and vehicle cash exports", () => {
     await page.getByLabel("رقم إيصال الدفعة").fill("000012");
     await page.getByRole("button", { name: "تسجيل الدفعة" }).click();
     await expect(page.getByRole("main").getByRole("status")).toContainText("تم تسجيل الدفعة");
-    await page.goto("/demo/reports/vehicle-cash");
+    await page.getByRole("link", { name: "كشف حساب نقد العربية" }).click();
+    await expect(page.getByRole("heading", { name: "كشف حساب نقد العربية" })).toBeVisible();
     const table = page.getByRole("table", { name: "جدول حركات كشف العربية" });
     await expect(table).toContainText("000012");
     await expect(table).toContainText("-100.00 ج.م");

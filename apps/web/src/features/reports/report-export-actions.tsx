@@ -2,13 +2,6 @@
 
 import { useRef, useState } from "react";
 import type { OperationalReportDocument } from "@ledger/statement-export";
-import {
-  renderOperationalReportCsv,
-  renderOperationalReportHtml,
-  renderOperationalReportPdf,
-  renderOperationalReportPng,
-  renderOperationalReportXlsx,
-} from "@ledger/statement-export";
 import styles from "../contractor-statements/statements.module.css";
 
 type ExportKind = "print" | "pdf" | "png" | "csv" | "xlsx";
@@ -46,9 +39,11 @@ export function ReportExportActions(props: {
       if (kind === "print" && !preview) {
         throw new Error("اسمح بفتح نافذة الطباعة في المتصفح ثم حاول مجددًا.");
       }
+      // Keep the relatively large PDF/PNG/XLSX renderers out of the initial report-screen chunk.
+      const renderer = await import("@ledger/statement-export");
       if (kind === "print" && preview) {
         preview.document.open();
-        preview.document.write(renderOperationalReportHtml(props.document));
+        preview.document.write(renderer.renderOperationalReportHtml(props.document));
         preview.document.close();
         const fontStyles = preview.document.createElement("link");
         fontStyles.rel = "stylesheet";
@@ -64,14 +59,14 @@ export function ReportExportActions(props: {
         preview.focus();
         preview.print();
       } else if (kind === "csv") {
-        const content = renderOperationalReportCsv(props.document);
+        const content = renderer.renderOperationalReportCsv(props.document);
         downloadBlob(new Blob([content], { type: "text/csv;charset=utf-8" }), props.fileNameBase + ".csv");
       } else if (kind === "xlsx") {
-        downloadBlob(renderOperationalReportXlsx(props.document), props.fileNameBase + ".xlsx");
+        downloadBlob(renderer.renderOperationalReportXlsx(props.document), props.fileNameBase + ".xlsx");
       } else if (kind === "png") {
-        downloadBlob(await renderOperationalReportPng(props.document), props.fileNameBase + ".png");
+        downloadBlob(await renderer.renderOperationalReportPng(props.document), props.fileNameBase + ".png");
       } else if (kind === "pdf") {
-        downloadBlob(await renderOperationalReportPdf(props.document), props.fileNameBase + ".pdf");
+        downloadBlob(await renderer.renderOperationalReportPdf(props.document), props.fileNameBase + ".pdf");
       }
     } catch (cause) {
       preview?.close();

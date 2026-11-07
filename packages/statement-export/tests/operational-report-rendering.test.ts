@@ -94,6 +94,7 @@ describe("H065 operational report exports — one fixed document, five formats",
     expect(html).not.toContain("<script>");
     expect(html).toContain("&lt;script&gt;alert(1)&lt;/script&gt;");
     expect(html).toContain("&lt;النيل&gt;");
+    expect(html).toContain('<span class="meta-value">٥ نوفمبر ٢٠٢٦ ١٨:٣٠</span>');
     expect(html.indexOf("إجمالي اليوم المحدد")).toBeLessThan(html.indexOf("رقم النقلة"));
     expect(html).toContain("0001");
   });
