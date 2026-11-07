@@ -15,7 +15,7 @@ export function ContractorStatementsView() {
   );
   const [periodMode, setPeriodMode] = useState<"all" | "range">("all");
   const [fromDate, setFromDate] = useState("2026-11-01");
-  const [toDate, setToDate] = useState(() => new Date().toLocaleDateString("en-CA", { timeZone: "Africa/Cairo" }));
+  const [toDate, setToDate] = useState(() => { const parts = new Intl.DateTimeFormat("en-GB", { timeZone: "Africa/Cairo", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date()); const part = (type:string) => parts.find(p=>p.type===type)?.value ?? ""; return `${part("year")}-${part("month")}-${part("day")}`; });
 
   const currentContractor = useMemo(
     () => contractors.find((c) => c.id === selectedContractorId),
