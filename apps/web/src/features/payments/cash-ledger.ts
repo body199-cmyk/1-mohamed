@@ -86,7 +86,8 @@ export function buildCashLedger(
       weightTonnes: trip.weightTonnes, contractorRateEgp: trip.contractorRateEgp,
       vehicleRateEgp: trip.vehicleRateEgp, expenseEgp: trip.expenseEgp,
     });
-    if (!result.ok || result.vehicleTotalPiastres !== trip.vehicleTotalPiastres) {
+    if (!result.ok || result.vehicleTotalPiastres !== trip.vehicleTotalPiastres ||
+        (trip.direction !== "AHMED_SUPPLIES" && trip.direction !== "OTHER_SUPPLIES")) {
       return { ok: false, error: "مستحق نقلة لا يطابق محرك الحساب؛ تم إيقاف دفعات هذا الحساب." };
     }
     movements.push({ date: trip.workDate, id: trip.id, type: "WORK",
