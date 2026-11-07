@@ -10,7 +10,7 @@ test.describe("Stage 2 — trip entry and history", () => {
     await optional.locator("summary").click();
     await expect(page.getByRole("textbox", { name: "مكان التحميل" })).toBeVisible();
     await page.getByRole("button", { name: "حفظ وإضافة نقلة جديدة" }).click();
-    await expect(page.getByRole("alert")).toBeVisible();
+    await expect(page.getByRole("alert").filter({ hasText: "يرجى اختيار المقاول الطرف الآخر" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "سجل النقلات" })).toBeVisible();
     await page.getByRole("button", { name: "فترة مخصصة" }).click();
     await expect(page.getByRole("textbox", { name: "بحث في النقلات" })).toBeVisible();
@@ -27,6 +27,7 @@ test.describe("Stage 2 — trip entry and history", () => {
     await page.getByRole("combobox", { name: "السيارة المنفذة" }).selectOption("V1");
     await page.getByRole("textbox", { name: "الوزن بالطن" }).fill("2.000");
     await page.getByRole("textbox", { name: "سعر المقاول للطن" }).fill("300");
+    await page.getByRole("checkbox", { name: /ربط سعر السيارة بسعر المقاول/ }).uncheck();
     await page.getByRole("textbox", { name: "سعر السيارة للطن" }).fill("280");
     await page.getByRole("button", { name: "حفظ وإضافة نقلة جديدة" }).dblclick();
     await expect(page.getByRole("status").filter({ hasText: "تم تسجيل النقلة بنجاح" })).toBeVisible();
@@ -45,6 +46,7 @@ test.describe("Stage 2 — trip entry and history", () => {
     await page.getByRole("combobox", { name: "السيارة المنفذة" }).selectOption("V2");
     await page.getByRole("textbox", { name: "الوزن بالطن" }).fill("1.000");
     await page.getByRole("textbox", { name: "سعر المقاول للطن" }).fill("100");
+    await page.getByRole("checkbox", { name: /ربط سعر السيارة بسعر المقاول/ }).uncheck();
     await page.getByRole("textbox", { name: "سعر السيارة للطن" }).fill("90");
     await page.getByRole("button", { name: "حفظ وخروج" }).click();
     await expect(page).toHaveURL(new RegExp("/demo/home$"));
