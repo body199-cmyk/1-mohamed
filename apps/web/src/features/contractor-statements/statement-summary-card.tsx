@@ -6,11 +6,13 @@ import styles from "./statements.module.css";
 interface StatementSummaryCardProps {
   statement: ContractorStatement;
   contractorName: string;
+  uniqueVehicleCount: number;
 }
 
 export function StatementSummaryCard({
   statement,
   contractorName,
+  uniqueVehicleCount,
 }: StatementSummaryCardProps) {
   const openingFormatted = formatEgpFromPiastres(statement.openingBalancePiastres);
   const ahmedWorkFormatted = formatEgpFromPiastres(statement.ahmedWorkPiastres);
@@ -66,7 +68,7 @@ export function StatementSummaryCard({
 
         <div className={styles.periodBadge}>
           الفترة من {statement.period.from} إلى {statement.period.to} (
-          {statement.movementCount} نقلة)
+          {statement.movementCount} نقلة • {uniqueVehicleCount} عربية)
         </div>
       </div>
 
