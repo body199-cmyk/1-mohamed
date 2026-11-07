@@ -270,22 +270,6 @@ export function TripFormFields({
         />
       </div>
 
-      <div className={styles.formGroup}>
-        <label className={styles.label}>رقم البون أو الإيصال</label>
-        <input
-          type="text"
-          placeholder="مثال: REC-908"
-          aria-label="رقم الإيصال" value={tripDraft.receiptNumber}
-          onChange={(e) =>
-            dispatch({
-              type: "EDIT_TRIP_TEXT",
-              field: "receiptNumber",
-              value: e.target.value,
-            })
-          }
-          className={styles.input}
-        />
-      </div>
 
       {/* Notes */}
       <div className={`${styles.formGroup} ${styles.fullWidth}`}>
