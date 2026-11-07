@@ -302,3 +302,15 @@
 .summaryBreakdown > summary { cursor: pointer; color: var(--text-main); font-weight: 700; padding: 10px 4px; line-height: 1.8; }
 .summaryBreakdown > summary:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 3px; border-radius: var(--radius-md); }
 .summaryBreakdown[open] > .summaryGrid { margin-top: 12px; }
+
+
+.dailySummaryList { display:grid; gap:10px; padding:12px 16px 4px; }
+.dailySummary { border:1px solid var(--border-color); border-radius:var(--radius-md); background:var(--surface-card-subtle); overflow:hidden; }
+.dailySummary > summary { padding:12px 14px; cursor:pointer; color:var(--text-main); font-weight:800; line-height:1.8; }
+.dailySummary > summary:focus-visible { outline:2px solid var(--color-primary); outline-offset:-2px; }
+.dailySummaryContent { display:grid; gap:10px; padding:0 12px 12px; }
+.dailyVehicleSummary { border:1px solid var(--border-color); border-radius:var(--radius-md); padding:12px; background:var(--surface-card); min-width:0; }
+.dailyVehicleSummary h4 { margin:0 0 8px; font-size:1rem; }
+.dailyVehicleMetrics { display:flex; flex-wrap:wrap; gap:8px; }
+.dailyVehicleMetrics span { border-radius:999px; background:var(--surface-card-subtle); border:1px solid var(--border-color); padding:5px 9px; font-size:.88rem; font-weight:700; }
+.dailyVehicleSummary ul { margin:10px 0 0; padding-inline-start:20px; color:var(--text-muted); }
