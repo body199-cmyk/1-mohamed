@@ -284,3 +284,15 @@
   .filtersCard, .summaryCard { padding: 16px; }
   .tableHeader { padding: 16px; }
 }
+
+/* Approved decision 4: show expandable movement cards instead of horizontal table on phones. */
+.mobileMovements { display: none; }
+@media (max-width: 767px) {
+  .desktopMovements { display: none; }
+  .mobileMovements { display: grid; gap: 10px; padding: 12px; }
+  .mobileMovement { border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 12px; background: var(--surface-card); }
+  .mobileMovement summary { cursor: pointer; font-weight: 700; line-height: 1.8; }
+  .mobileMovement dl { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px 12px; margin-bottom: 0; }
+  .mobileMovement dt { color: var(--text-muted); }
+  .mobileMovement dd { margin: 0; overflow-wrap: anywhere; }
+}
