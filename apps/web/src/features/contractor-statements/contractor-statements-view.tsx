@@ -86,6 +86,21 @@ export function ContractorStatementsView() {
             />
           </div>
 
+          <div className={styles.formGroup}>
+            <label className={styles.label}>فترة سريعة</label>
+            <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+              {(["اليوم","الأسبوع","الشهر"] as const).map(period => <button key={period} type="button" className={styles.select}
+                style={{width:"auto",minHeight:44,cursor:"pointer",fontWeight:700}}
+                onClick={() => {
+                  const today = new Date();
+                  const local = (date: Date) => [date.getFullYear(),String(date.getMonth()+1).padStart(2,"0"),String(date.getDate()).padStart(2,"0")].join("-");
+                  const start = new Date(today);
+                  if (period === "الأسبوع") start.setDate(today.getDate() - ((today.getDay()+1)%7));
+                  if (period === "الشهر") start.setDate(1);
+                  setFromDate(local(start)); setToDate(local(today));
+                }}>{period}</button>)}
+            </div>
+          </div>
           {/* Quick Reset */}
           <div style={{ display: "flex", gap: "8px" }}>
             <button
