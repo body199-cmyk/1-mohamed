@@ -462,3 +462,76 @@
   .layoutGrid { grid-template-columns: minmax(0, 1fr); }
   .sideColumn { position: static; }
 }
+
+/* Approved stage 2: keyboard-accessible collapsible trip form sections. */
+.formSection { grid-column: 1 / -1; min-width: 0; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 12px; background: var(--surface-card); }
+.formSection > summary { cursor: pointer; font-weight: 700; color: var(--text-main); padding: 8px 4px; line-height: 1.7; }
+.formSection > summary:focus-visible { outline: 2px solid var(--border-focus); outline-offset: 2px; }
+.formSection[open] > .formGrid { margin-top: 12px; }
+
+.recentChoices { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.recentChoices > button { border: 1px solid var(--border-color); border-radius: var(--radius-md); background: var(--surface-hover); min-height: 36px; }
+
+/* Stage 2: date-filtered history and mobile expandable cards. */
+.historyFilters { display:flex; flex-direction:column; gap:12px; margin-top:16px; }
+.historyRanges { display:flex; flex-wrap:wrap; gap:8px; }
+.historyRanges button[aria-pressed="true"] { background:var(--color-primary-bg); border-color:var(--color-primary); color:var(--color-primary); }
+.historyAdvanced { border:1px solid var(--border-color); border-radius:var(--radius-md); padding:12px; }
+.historyAdvanced summary { cursor:pointer; font-weight:600; }
+.historyAdvanced .formGrid { margin-top:12px; }
+.historyCount { color:var(--text-muted); margin:12px 0; }
+.historyDesktop { overflow-x:auto; }
+.historyTable { border-collapse:collapse; width:100%; min-width:800px; text-align:right; }
+.historyTable th,.historyTable td { border-bottom:1px solid var(--border-color); padding:12px 8px; vertical-align:top; }
+.historyTable th { background:var(--surface-hover); }
+.historyMobile { display:none; }
+.historyTrip { border:1px solid var(--border-color); border-radius:var(--radius-md); padding:12px; margin-bottom:10px; }
+.historyTrip summary { cursor:pointer; display:flex; flex-direction:column; gap:4px; }
+.historyTrip dl { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:12px 0 0; }
+.historyTrip dt { color:var(--text-muted); }
+.historyTrip dd { margin:0; overflow-wrap:anywhere; }
+@media(max-width:700px) { .historyDesktop{display:none;} .historyMobile{display:block;} }
+
+
+.historyChips { display:flex; flex-wrap:wrap; align-items:center; gap:8px; }
+.historyChips button { min-height:34px; padding:6px 10px; border:1px solid var(--border-color); border-radius:999px; background:var(--surface-hover); color:var(--text-main); font:inherit; cursor:pointer; }
+.historyChips button:focus-visible { outline:2px solid var(--border-focus); outline-offset:2px; }
+.historyChips .clearHistoryFilters { background:transparent; color:var(--text-muted); border-style:dashed; }
+
+
+/* Keep approved trip save actions reachable while a long form is scrolled on phones. */
+@media (max-width: 640px) {
+  .btnGroup {
+    position: sticky;
+    bottom: 0;
+    z-index: 20;
+    padding: 12px 0 calc(12px + env(safe-area-inset-bottom));
+    background: var(--surface-card);
+    border-top: 1px solid var(--border-color);
+  }
+}
+
+
+.desktopChoiceControls { display:flex; flex-direction:column; gap:8px; }
+.mobileChoiceTrigger { display:none; width:100%; min-height:48px; padding:10px 14px; align-items:center; justify-content:space-between; border:1px solid var(--border-color); border-radius:var(--radius-md); background:var(--surface-card); color:var(--text-main); font:inherit; text-align:right; cursor:pointer; }
+.choiceDialog { width:min(560px,calc(100vw - 32px)); max-height:min(78vh,720px); margin:auto; padding:18px; border:1px solid var(--border-color); border-radius:18px; background:var(--surface-card); color:var(--text-main); box-shadow:var(--shadow-card); }
+.choiceDialog::backdrop { background:rgba(16,24,40,.52); }
+.choiceSheetHeader { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; }
+.choiceSheetHeader h3 { margin:0; font-size:1.05rem; }
+.choiceSheetHeader button,.sheetRecent button,.choiceList button { min-height:44px; border:1px solid var(--border-color); border-radius:var(--radius-md); background:var(--surface-hover); color:var(--text-main); font:inherit; cursor:pointer; }
+.choiceSheetHeader button { padding:6px 12px; }
+.sheetRecent { display:flex; flex-direction:column; gap:8px; margin:14px 0; }
+.sheetRecent > div { display:flex; flex-wrap:wrap; gap:8px; }
+.sheetRecent button { padding:6px 12px; }
+.choiceList { display:flex; flex-direction:column; gap:8px; overflow:auto; max-height:42vh; margin-top:12px; }
+.choiceList button { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 12px; text-align:right; }
+.choiceList button[aria-pressed="true"] { border-color:var(--color-primary); background:var(--color-primary-bg); }
+.choiceList button:disabled { opacity:.55; cursor:not-allowed; }
+.choiceList button small { color:var(--text-muted); }
+.choiceDialog button:focus-visible,.mobileChoiceTrigger:focus-visible { outline:2px solid var(--border-focus); outline-offset:2px; }
+@media (max-width: 640px) {
+  .desktopChoiceControls { display:none; }
+  .mobileChoiceTrigger { display:flex; }
+  .choiceDialog { position:fixed; inset:auto 0 0; width:100%; max-width:none; max-height:82dvh; margin:0; padding:16px 16px calc(16px + env(safe-area-inset-bottom)); border:0; border-top:1px solid var(--border-color); border-radius:20px 20px 0 0; }
+  .choiceList { max-height:42dvh; }
+}
