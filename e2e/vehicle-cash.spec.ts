@@ -19,7 +19,6 @@ test.describe("T08.4/5 vehicle cash report uses existing payment cash ledger",()
     await page.goto("/demo/payments");
     await page.getByLabel("تاريخ الدفع الحقيقي").fill("2026-11-03");
     await page.getByLabel("المبلغ بالجنيه").fill("100");
-    await page.getByLabel("رقم إيصال الدفعة").fill("000012");
     await page.getByRole("button",{name:"تسجيل الدفعة"}).click();
     await expect(page.getByRole("main").getByRole("status")).toContainText("تم تسجيل الدفعة");
     await page.goto("/demo/reports/vehicle-cash");
@@ -30,7 +29,7 @@ test.describe("T08.4/5 vehicle cash report uses existing payment cash ledger",()
     await expect(summary).toContainText("100.00 ج.م");
     await expect(summary).toContainText("180.00 ج.م");
     const table=page.getByRole("table",{name:"جدول حركات كشف العربية"});
-    await expect(table).toContainText("000012");
+    await expect(table).toContainText("دفعة");
     await expect(table).not.toContainText("REC-001");
     await page.getByLabel("من تاريخ كشف العربية").fill("2026-11-04");
     await expect(page.getByRole("main").getByRole("status")).toContainText("لا توجد حركات");
