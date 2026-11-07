@@ -25,6 +25,7 @@ test.describe("T09.2 actual paginated PDF download",()=>{
   });
   test("valid empty period exports a PDF, invalid range disables export",async({page})=>{
     await page.goto("/demo/contractors");
+    await page.getByLabel("نطاق كشف الحساب").selectOption("range");
     await page.getByLabel("من تاريخ").fill("2026-11-12");
     await page.getByLabel("إلى تاريخ").fill("2026-11-13");
     const [download]=await Promise.all([
