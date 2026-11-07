@@ -68,9 +68,9 @@ export function TripHistoryPanel() {
         <details className={styles.historyAdvanced}>
           <summary>فلاتر متقدمة</summary>
           <div className={styles.formGrid}>
-            <label className={styles.formGroup}>المقاول<select className={styles.select} value={contractorId} onChange={event => setContractorId(event.target.value)}><option value="">كل المقاولين</option>{contractors.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select></label>
-            <label className={styles.formGroup}>العربية<select className={styles.select} value={vehicleId} onChange={event => setVehicleId(event.target.value)}><option value="">كل العربيات</option>{vehicles.map(v => <option key={v.id} value={v.id}>{v.plateNumber}</option>)}</select></label>
-            <label className={styles.formGroup}>اتجاه الشغل<select className={styles.select} value={direction} onChange={event => setDirection(event.target.value)}><option value="">الاتجاهان</option><option value="AHMED_SUPPLIES">شغل أحمد</option><option value="OTHER_SUPPLIES">شغل المقاول</option></select></label>
+            <label className={styles.formGroup}>المقاول<select aria-label="فلتر المقاول" className={styles.select} value={contractorId} onChange={event => setContractorId(event.target.value)}><option value="">كل المقاولين</option>{contractors.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select></label>
+            <label className={styles.formGroup}>العربية<select aria-label="فلتر العربية" className={styles.select} value={vehicleId} onChange={event => setVehicleId(event.target.value)}><option value="">كل العربيات</option>{vehicles.map(v => <option key={v.id} value={v.id}>{v.plateNumber}</option>)}</select></label>
+            <label className={styles.formGroup}>اتجاه الشغل<select aria-label="فلتر اتجاه الشغل" className={styles.select} value={direction} onChange={event => setDirection(event.target.value)}><option value="">الاتجاهان</option><option value="AHMED_SUPPLIES">شغل أحمد</option><option value="OTHER_SUPPLIES">شغل المقاول</option></select></label>
           </div>
         </details>
         {hasActiveFilters && <div className={styles.historyChips} aria-label="الفلاتر النشطة">
