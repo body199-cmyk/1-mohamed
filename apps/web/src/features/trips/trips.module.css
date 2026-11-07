@@ -491,3 +491,9 @@
 .historyTrip dt { color:var(--text-muted); }
 .historyTrip dd { margin:0; overflow-wrap:anywhere; }
 @media(max-width:700px) { .historyDesktop{display:none;} .historyMobile{display:block;} }
+
+
+.historyChips { display:flex; flex-wrap:wrap; align-items:center; gap:8px; }
+.historyChips button { min-height:34px; padding:6px 10px; border:1px solid var(--border-color); border-radius:999px; background:var(--surface-hover); color:var(--text-main); font:inherit; cursor:pointer; }
+.historyChips button:focus-visible { outline:2px solid var(--border-focus); outline-offset:2px; }
+.historyChips .clearHistoryFilters { background:transparent; color:var(--text-muted); border-style:dashed; }
