@@ -260,6 +260,7 @@ export function ContractorStatementsView() {
             <div>شغل أحمد في النتائج: {displayMoney(filteredWorkSummary.ahmed)}</div>
             <div>شغل المقاول في النتائج: {displayMoney(filteredWorkSummary.counterparty)}</div>
           </section>}
+          {hasActiveFilters && <p className={styles.exportScopeNote}>الرصيد التراكمي في كل حركة يعكس الحساب الكامل؛ قد تظهر قفزات عند إخفاء حركات أخرى بالفلاتر. الملخص أعلاه يعرض قيمة الشغل في النتائج فقط ولا يمثل صافي المستحق.</p>}
           <p className={styles.exportScopeNote}>التصدير يعرض كشف الحساب الكامل للفترة، بينما الفلاتر تحدد تفاصيل العرض على الشاشة فقط. صافي المستحق النهائي يظل محسوبًا على الحساب كاملًا.</p>
           <StatementExportActions statement={statementResult.statement} name={currentContractor.name} />
           <StatementTable rows={filteredRows} tripDetailsById={tripDetailsById} />
