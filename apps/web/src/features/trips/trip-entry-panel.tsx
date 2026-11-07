@@ -7,6 +7,7 @@ import { buildContractorStatement } from "@ledger/contractor-statements";
 import { calculateTripAmounts } from "@ledger/accounting";
 import { useDemoStore } from "../../demo/demo-context";
 import { TripFormFields } from "./trip-form-fields";
+import { TripHistoryPanel } from "./trip-history-panel";
 import { TripPreviewCard } from "./trip-preview-card";
 import { SharedDataPanel } from "./shared-data-panel";
 import { QuickAddModal } from "./quick-add-modal";
@@ -293,6 +294,8 @@ export function TripEntryPanel() {
           />
         </aside>
       </div>
+
+      <TripHistoryPanel />
 
       {/* Modals */}
       <QuickAddModal key={`${quickAddType}-${String(quickAddType !== null)}`}
