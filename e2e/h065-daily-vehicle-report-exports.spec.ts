@@ -113,7 +113,7 @@ test.describe("H065 daily and vehicle cash exports", () => {
         if (results.length) {
           for (let i = 0; i < outputs.length; i++) {
             expect(outputs[i]!.sha, report.title + " " + outputs[i]!.name +
-              " must not depend on viewport or theme").toBe(results[i * outputs.length / outputs.length]?.sha);
+              " must not depend on viewport or theme").toBe(results[i]?.sha);
           }
         }
         results.push(...outputs.map(file => ({ name: file.name, sha: file.sha })));
