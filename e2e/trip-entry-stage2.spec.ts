@@ -21,6 +21,7 @@ test.describe("Stage 2 — trip entry and history", () => {
 
   test("save-and-new adds exactly one trip and clears the form for another", async ({ page }) => {
     await page.goto("/demo/trips");
+    const tripDate = await page.locator('input[aria-label="تاريخ النقلة"]').inputValue();
     await page.getByRole("combobox", { name: "المقاول الطرف الآخر" }).selectOption("K1");
     await page.getByRole("radio", { name: "أحمد جاب العربيات" }).check();
     await page.getByRole("combobox", { name: "السيارة المنفذة" }).selectOption("V1");
@@ -32,8 +33,8 @@ test.describe("Stage 2 — trip entry and history", () => {
     await expect(page.getByRole("textbox", { name: "الوزن بالطن" })).toHaveValue("");
     await page.getByRole("button", { name: "فترة مخصصة" }).click();
     const history = page.getByRole("region", { name: "سجل النقلات" });
-    await history.locator('input[type="date"]').first().fill("2026-11-04");
-    await history.locator('input[type="date"]').last().fill("2026-11-04");
+    await history.locator('input[type="date"]').first().fill(tripDate);
+    await history.locator('input[type="date"]').last().fill(tripDate);
     await expect(history.getByRole("status")).toContainText("عدد النقلات في الفترة: 1");
   });
 
