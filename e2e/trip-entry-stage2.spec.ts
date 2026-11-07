@@ -102,6 +102,8 @@ test.describe("Stage 2 — trip entry and history", () => {
   test("mobile trip history uses expandable cards without horizontal overflow", async ({ page }) => {
     await page.setViewportSize({ width: 360, height: 740 });
     await page.goto("/demo/trips");
+    const exitButton = page.getByRole("button", { name: "حفظ وخروج" });
+    expect(await exitButton.evaluate(el => getComputedStyle(el.parentElement!).position)).toBe("sticky");
     await expect(page.getByRole("heading", { name: "سجل النقلات" })).toBeVisible();
     await page.getByRole("button", { name: "الشهر" }).click();
     await expect(page.locator("details").filter({ has: page.locator("summary", { hasText: "فلاتر متقدمة" }) })).toHaveCount(1);
