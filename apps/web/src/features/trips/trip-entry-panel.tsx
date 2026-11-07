@@ -75,6 +75,10 @@ export function TripEntryPanel() {
     setValidationError(null);
     if (submitted) return;
 
+    if (!tripDraft.workDate) {
+      setValidationError("يرجى اختيار تاريخ النقلة.");
+      return;
+    }
     if (!tripDraft.counterpartyId) {
       setValidationError("يرجى اختيار المقاول الطرف الآخر.");
       return;
@@ -137,8 +141,9 @@ export function TripEntryPanel() {
     if (!claimSubmission()) return;
     setIsSubmitting(true);
 
+    let added: ReturnType<typeof addTrip>;
     try {
-      const added = addTrip({
+      added = addTrip({
         workDate: tripDraft.workDate || state.sessionDate,
         counterpartyId: tripDraft.counterpartyId,
         vehicleId: tripDraft.vehicleId,
@@ -155,20 +160,20 @@ export function TripEntryPanel() {
         notes: tripDraft.notes,
       });
 
-      setSuccessBanner(
-        `✓ تم تسجيل النقلة بنجاح (${added.id}). يمكنك الانتقال إلى كشف الحساب لرؤية الأثر المالي فورياً.`
-      );
-
-      const submitter = (e.nativeEvent as SubmitEvent).submitter as HTMLButtonElement | null;
-      const mode = submitter?.value === "exit" ? "exit" : "new";
-      if (mode === "new") dispatch({ type: "START_NEW_TRIP" });
-      else router.push("/demo/home");
     } catch {
       releaseSubmission();
       setValidationError("تعذر حفظ النقلة. راجع البيانات وحاول مرة أخرى؛ لم يتم قفل النموذج.");
-    } finally {
       setIsSubmitting(false);
+      return;
     }
+    setIsSubmitting(false);
+    setSuccessBanner(
+      `✓ تم تسجيل النقلة بنجاح (${added.id}). يمكنك الانتقال إلى كشف الحساب لرؤية الأثر المالي فورياً.`
+    );
+    const submitter = (e.nativeEvent as SubmitEvent).submitter as HTMLButtonElement | null;
+    const mode = submitter?.value === "exit" ? "exit" : "new";
+    if (mode === "new") dispatch({ type: "START_NEW_TRIP" });
+    else router.push("/demo/home");
   };
 
   return (
