@@ -468,3 +468,6 @@
 .formSection > summary { cursor: pointer; font-weight: 700; color: var(--text-main); padding: 8px 4px; line-height: 1.7; }
 .formSection > summary:focus-visible { outline: 2px solid var(--border-focus); outline-offset: 2px; }
 .formSection[open] > .formGrid { margin-top: 12px; }
+
+.recentChoices { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.recentChoices > button { border: 1px solid var(--border-color); border-radius: var(--radius-md); background: var(--surface-hover); min-height: 36px; }
