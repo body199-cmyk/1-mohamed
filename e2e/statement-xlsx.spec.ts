@@ -41,6 +41,7 @@ test.describe("T09.3 download actual XLSX with exact Arabic source strings",()=>
   });
   test("exports empty period without phantom financial rows, invalid period cannot export",async({page})=>{
     await page.goto("/demo/contractors");
+    await page.getByLabel("نطاق كشف الحساب").selectOption("range");
     await page.getByLabel("من تاريخ").fill("2026-11-12");
     await page.getByLabel("إلى تاريخ").fill("2026-11-13");
     const [download]=await Promise.all([
