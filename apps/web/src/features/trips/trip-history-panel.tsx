@@ -50,6 +50,7 @@ export function TripHistoryPanel() {
 
   const name = (id: string) => contractors.find(item => item.id === id)?.name ?? id;
   const plate = (id: string) => vehicles.find(item => item.id === id)?.plateNumber ?? id;
+  const hasActiveFilters = !!search.trim() || !!contractorId || !!vehicleId || !!direction || range === "custom";
   return (
     <section className={styles.card} aria-label="سجل النقلات">
       <h2 className={styles.cardTitle}>سجل النقلات</h2>
@@ -72,6 +73,17 @@ export function TripHistoryPanel() {
             <label className={styles.formGroup}>اتجاه الشغل<select className={styles.select} value={direction} onChange={event => setDirection(event.target.value)}><option value="">الاتجاهان</option><option value="AHMED_SUPPLIES">شغل أحمد</option><option value="OTHER_SUPPLIES">شغل المقاول</option></select></label>
           </div>
         </details>
+        {hasActiveFilters && <div className={styles.historyChips} aria-label="الفلاتر النشطة">
+          {search.trim() && <button type="button" aria-label="إزالة فلتر البحث" onClick={() => setSearch("")}>بحث: {search} ×</button>}
+          {contractorId && <button type="button" aria-label={"إزالة فلتر المقاول " + name(contractorId)} onClick={() => setContractorId("")}>المقاول: {name(contractorId)} ×</button>}
+          {vehicleId && <button type="button" aria-label={"إزالة فلتر العربية " + plate(vehicleId)} onClick={() => setVehicleId("")}>العربية: {plate(vehicleId)} ×</button>}
+          {direction && <button type="button" aria-label="إزالة فلتر اتجاه الشغل" onClick={() => setDirection("")}>الاتجاه: {direction === "AHMED_SUPPLIES" ? "شغل أحمد" : "شغل المقاول"} ×</button>}
+          {range === "custom" && <button type="button" aria-label="إزالة فلتر الفترة المخصصة" onClick={() => { setRange("today"); setFrom(today); setTo(today); }}>الفترة: {from} — {to} ×</button>}
+          <button type="button" className={styles.clearHistoryFilters} onClick={() => {
+            setSearch(""); setContractorId(""); setVehicleId(""); setDirection("");
+            setRange("today"); setFrom(today); setTo(today);
+          }}>مسح كل الفلاتر</button>
+        </div>}
       </div>
       <p role="status" className={styles.historyCount}>{start > end ? "تاريخ البداية بعد النهاية؛ راجع الفترة." : `عدد النقلات في الفترة: ${visible.length}`}</p>
       <div className={styles.historyDesktop}>
