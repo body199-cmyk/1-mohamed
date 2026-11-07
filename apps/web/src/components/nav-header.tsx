@@ -7,7 +7,7 @@ import { useTheme } from "./theme-provider";
 import styles from "./nav-header.module.css";
 
 const groups = [
-  { label: "نظرة عامة", links: [{ href: "/demo/dashboard", label: "لوحة التحكم" }] },
+  { label: "الرئيسية", links: [{ href: "/demo/home", label: "جميع الوظائف" }, { href: "/demo/dashboard", label: "لوحة المؤشرات" }] },
   { label: "العمليات اليومية", links: [
     { href: "/demo/trips", label: "تسجيل النقلات" },
     { href: "/demo/payments", label: "دفعات العربيات" },
