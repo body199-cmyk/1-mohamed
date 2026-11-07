@@ -66,6 +66,9 @@ jobs:
       - name: Test master-data demo interactions in real browser
         run: npx playwright test --config=playwright.ui.config.ts e2e/master-data.spec.ts e2e/daily-work.spec.ts e2e/statement-image.spec.ts e2e/payments.spec.ts e2e/vehicle-cash.spec.ts e2e/dashboard.spec.ts e2e/statement-pdf.spec.ts e2e/statement-xlsx.spec.ts e2e/quality-h055.spec.ts e2e/design-h056.spec.ts e2e/forms-h057.spec.ts e2e/reports-h058.spec.ts e2e/visual-audit-h059.spec.ts e2e/h060-tabler-identity.spec.ts e2e/h061-operational-forms.spec.ts e2e/h062-device-independent-reports.spec.ts e2e/h063-contractor-signed-receipts.spec.ts
 
+      - name: Test stage 2 trip-entry flows and mobile history in real browser
+        run: npx playwright test --config=playwright.ui.config.ts e2e/trip-entry-stage2.spec.ts
+
       - name: Test cross-feature regressions and H063 CSV export in real browser
         run: npx playwright test --config=playwright.ui.config.ts e2e/review-regressions.spec.ts
 
