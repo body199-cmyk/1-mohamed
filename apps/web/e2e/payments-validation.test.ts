@@ -135,7 +135,7 @@ describe("T08.3 cash ledger demo follows T08.2/D15/D16",()=>{
       direction:"UNKNOWN" as unknown as DemoTripRecord["direction"]};
     const result=buildCashLedger({...base,trips:[invalid],payments:[]},
       "V1","K1",today);
-    expect(result).toEqual({ok:false,error:"مستحق نقلة لا يطابق محرك الحساب؛ تم إيقاف دفعات هذا الحساب."});
+    expect(result).toEqual({ok:false,error:"اتجاه نقلة غير صالح في حساب العربية؛ تم إيقاف التقرير والحفظ."});
   });
   it("fails closed when a valid opening plus work or payment exceeds signed 64-bit cumulative balance",()=>{
     const max="9223372036854775807";
