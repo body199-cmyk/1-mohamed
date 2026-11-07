@@ -169,27 +169,23 @@ export const STATEMENT_PRINT_STYLES = `
   }
 
   .col-ref {
-    width: 15%;
+    width: 17%;
   }
 
   .col-date {
-    width: 13%;
-  }
-
-  .col-receipt {
-    width: 12%;
+    width: 15%;
   }
 
   .col-dir {
-    width: 27%;
+    width: 32%;
   }
 
   .col-amount {
-    width: 16%;
+    width: 18%;
   }
 
   .col-balance {
-    width: 17%;
+    width: 18%;
   }
 
   .ltr-token {
