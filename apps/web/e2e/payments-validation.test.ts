@@ -59,6 +59,15 @@ describe("T08.3 cash ledger demo follows T08.2/D15/D16",()=>{
     }
     expect(validateDemoPayment({...source,payments:[]},draft("1000"),today).ok).toBe(true);
   });
+  it("D15 aggregates every same-day work movement before D16 evaluates the payment minimum",()=>{
+    const source={...base,trips:[
+      trip("T1","2026-11-03","V1","AHMED_SUPPLIES","100"),
+      trip("T2","2026-11-03","V1","AHMED_SUPPLIES","900")],payments:[]};
+    const ledger=buildCashLedger(source,"V1",DEMO_PRIMARY_RESPONSIBLE_ID,today);
+    expect(ledger.ok).toBe(true);
+    if(ledger.ok) expect(ledger.value.rows.map(r=>r.balancePiastres)).toEqual(["10000","100000"]);
+    expect(validateDemoPayment(source,draft("1000","2026-11-03"),today).ok).toBe(true);
+  });
   it("D16 rejects backdated payment with intermediate deficit despite sufficient endpoints",()=>{
     const source={...base,trips:[
       trip("T1","2026-11-01","V1","AHMED_SUPPLIES","1000"),
