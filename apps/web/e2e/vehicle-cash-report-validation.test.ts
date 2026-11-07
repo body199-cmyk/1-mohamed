@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { buildVehicleCashReport } from "../src/features/reports/vehicle-cash-report";
 import { buildDailyWorkReport } from "../src/features/reports/daily-work-report";
+import { toVehicleCashOperationalReport } from "../src/features/reports/report-export-documents";
 import { buildCashLedger } from "../src/features/payments/cash-ledger";
 import { DEMO_PRIMARY_RESPONSIBLE_ID } from "../src/features/payments/cash-ledger";
 import type { DemoTripRecord, DemoPayment, DemoVehicleCashOpening } from "../src/demo/demo-types";
@@ -128,6 +129,23 @@ describe("T08.4/5 vehicle cash statement is a strict projection of cash-ledger",
     expect(primary.value.closingPiastres).toBe("33000");
     expect(contractor.value.openingPiastres).toBe("0");
     expect(contractor.value.closingPiastres).toBe("5000");
+  });
+
+
+  it("maps reconciled cash totals and signed movement values unchanged into the export document",()=>{
+    const r=report("2026-11-03","2026-11-05");
+    expect(r.ok).toBe(true);
+    if(!r.ok)return;
+    const document=toVehicleCashOperationalReport(r.value,{
+      vehicleLabel:"V1",
+      responsibleName:"أحمد",
+      tripLookup:new Map(source.trips.map(t=>[t.id,t])),
+    });
+    expect(document.summarySections[0]!.metrics.slice(0,4).map(metric=>metric.value)).toEqual([
+      "330.00 ج.م","100.00 ج.م","100.00 ج.م","330.00 ج.م"
+    ]);
+    expect(document.rows.map(row=>row[5])).toEqual(["-100.00 ج.م","100.00 ج.م"]);
+    expect(document.rows.map(row=>row[6])).toEqual(["230.00 ج.م","330.00 ج.م"]);
   });
 
   it("rejects reversed, malformed and pre-opening periods",()=>{
