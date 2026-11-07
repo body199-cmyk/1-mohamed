@@ -296,3 +296,9 @@
   .mobileMovement dt { color: var(--text-muted); }
   .mobileMovement dd { margin: 0; overflow-wrap: anywhere; }
 }
+
+/* Approved decision 16: compact summary with optional financial breakdown. */
+.summaryBreakdown { border-top: 1px solid var(--border-color); padding-top: 12px; }
+.summaryBreakdown > summary { cursor: pointer; color: var(--text-main); font-weight: 700; padding: 10px 4px; line-height: 1.8; }
+.summaryBreakdown > summary:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 3px; border-radius: var(--radius-md); }
+.summaryBreakdown[open] > .summaryGrid { margin-top: 12px; }
