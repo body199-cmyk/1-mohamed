@@ -2,20 +2,20 @@
   --font-family: 'Cairo', -apple-system, BlinkMacSystemFont, 'Segoe UI', Tahoma, Arial, sans-serif;
   
   /* Light theme */
-  --bg-page: #f6f8fb;
-  --text-main: #182433;
+  --bg-page: #F8FAFC;
+  --text-main: #101828;
   --text-muted: #626f82;
   --surface-card: #ffffff;
-  --surface-card-subtle: #f9fafc;
+  --surface-card-subtle: #F8FAFC;
   --surface-hover: #eff3f8;
   --border-color: #e1e6ed;
   --border-strong: #a8b2bf;
-  --border-focus: #206bc4;
+  --border-focus: #175CD3;
   
   /* Operational Blue */
-  --color-primary: #206bc4;
-  --color-primary-hover: #1859a8;
-  --color-primary-bg: #e8f1fd;
+  --color-primary: #175CD3;
+  --color-primary-hover: #124DAA;
+  --color-primary-bg: #D1E9FF;
   --color-primary-text: #ffffff;
   
   /* Statuses */
@@ -43,9 +43,9 @@
   --shadow-elevated: 0 4px 14px rgba(25, 54, 90, .07);
   --hero-start: #eff5fd;
   --hero-end: #ffffff;
-  --hero-fg: #182433;
+  --hero-fg: #101828;
   --hero-muted: #626f82;
-  --metric-edge: #206bc4;
+  --metric-edge: #175CD3;
   --radius-xl: 12px;
 }
 

@@ -29,6 +29,25 @@ export function ReportExportActions(props: {
   const [error, setError] = useState<string | null>(null);
   const lock = useRef(false);
 
+  async function shareImage(): Promise<void> {
+    if (lock.current) return;
+    lock.current = true; setBusy(true); setError(null);
+    try {
+      const renderer = await import("@ledger/statement-export");
+      const blob = await renderer.renderOperationalReportPng(props.document);
+      const file = new File([blob], props.fileNameBase + ".png", { type: "image/png" });
+      if (typeof navigator.share === "function" && navigator.canShare?.({ files: [file] })) {
+        await navigator.share({ files: [file], title: props.document.title });
+      } else {
+        setError("المشاركة المباشرة غير مدعومة على هذا الجهاز. استخدم تنزيل صورة PNG ثم شاركها.");
+      }
+    } catch (cause) {
+      if (!(cause instanceof DOMException && cause.name === "AbortError")) {
+        setError(cause instanceof Error ? cause.message : "تعذرت المشاركة؛ جرّب تنزيل الصورة.");
+      }
+    } finally { lock.current = false; setBusy(false); }
+  }
+
   async function exportReport(kind: ExportKind): Promise<void> {
     if (lock.current) return;
     lock.current = true;
@@ -79,6 +98,7 @@ export function ReportExportActions(props: {
 
   return <section aria-label="تصدير التقرير" className={styles.exportPanel}>
     <div className={styles.exportActions}>
+      <button className={[styles.exportButton, styles.exportButtonPrimary].join(" ")} disabled={busy} onClick={() => void shareImage()}>مشاركة صورة التقرير مباشرة</button>
       <button className={styles.exportButton} disabled={busy} onClick={() => void exportReport("print")}>طباعة / حفظ PDF</button>
       <button className={[styles.exportButton, styles.exportButtonPrimary].join(" ")} disabled={busy} onClick={() => void exportReport("pdf")}>تنزيل PDF مباشر</button>
       <button className={styles.exportButton} disabled={busy} onClick={() => void exportReport("png")}>تنزيل صورة PNG</button>

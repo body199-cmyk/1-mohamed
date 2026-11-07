@@ -8,25 +8,28 @@ import { StatementExportActions } from "./statement-export-actions";
 import styles from "./statements.module.css";
 
 export function ContractorStatementsView() {
-  const { contractors, trips, getStatementForContractor } = useDemoStore();
+  const { contractors, vehicles, trips, getStatementForContractor } = useDemoStore();
 
   const [selectedContractorId, setSelectedContractorId] = useState<string>(
     contractors[0]?.id ?? "K1"
   );
+  const [periodMode, setPeriodMode] = useState<"all" | "range">("all");
   const [fromDate, setFromDate] = useState("2026-11-01");
-  const [toDate, setToDate] = useState("2026-11-30");
+  const [toDate, setToDate] = useState(() => new Date().toLocaleDateString("en-CA", { timeZone: "Africa/Cairo" }));
 
   const currentContractor = useMemo(
     () => contractors.find((c) => c.id === selectedContractorId),
     [contractors, selectedContractorId]
   );
 
+  const effectiveFromDate = periodMode === "all" ? (currentContractor?.openingDate ?? fromDate) : fromDate;
+
   const statementResult = useMemo(() => {
-    if (!selectedContractorId || !fromDate || !toDate) {
+    if (!selectedContractorId || !effectiveFromDate || !toDate) {
       return null;
     }
-    return getStatementForContractor(selectedContractorId, fromDate, toDate);
-  }, [selectedContractorId, fromDate, toDate, getStatementForContractor]);
+    return getStatementForContractor(selectedContractorId, effectiveFromDate, toDate);
+  }, [selectedContractorId, effectiveFromDate, toDate, getStatementForContractor]);
 
   // Join only the chosen contractor's trip receipts by stable trip ID.
   // Never fold receipts or payment cash into the contractor work ledger.
@@ -34,6 +37,11 @@ export function ContractorStatementsView() {
     trips.filter(trip => trip.counterpartyId === selectedContractorId)
       .map(trip => [trip.id, trip.receiptNumber] as const)
   ), [trips, selectedContractorId]);
+
+  const tripDetailsById = useMemo(() => new Map(trips.map(trip => [trip.id, {
+    vehicle: vehicles.find(vehicle => vehicle.id === trip.vehicleId)?.plateNumber ?? trip.vehicleId,
+    route: [trip.origin, trip.destination].filter(Boolean).join(" ← "),
+  }] as const)), [trips, vehicles]);
 
   return (
     <div className={styles.pageContainer}>
@@ -57,8 +65,9 @@ export function ContractorStatementsView() {
             </select>
           </div>
 
+          <div className={styles.formGroup}><label className={styles.label}>نطاق كشف الحساب</label><select aria-label="نطاق كشف الحساب" className={styles.select} value={periodMode} onChange={e=>setPeriodMode(e.target.value as "all" | "range")}><option value="all">من بداية حساب المقاول</option><option value="range">فترة محددة</option></select></div>
           {/* From Date */}
-          <div className={styles.formGroup}>
+          {periodMode === "range" && <div className={styles.formGroup}>
             <label className={styles.label}>من تاريخ</label>
             <input
               type="date"
@@ -67,7 +76,7 @@ export function ContractorStatementsView() {
               onChange={(e) => setFromDate(e.target.value)}
               className={styles.input}
             />
-          </div>
+          </div>}
 
           {/* To Date */}
           <div className={styles.formGroup}>
@@ -81,6 +90,21 @@ export function ContractorStatementsView() {
             />
           </div>
 
+          <div className={styles.formGroup}>
+            <label className={styles.label}>فترة سريعة</label>
+            <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+              {(["اليوم","الأسبوع","الشهر"] as const).map(period => <button key={period} type="button" className={styles.select}
+                style={{width:"auto",minHeight:44,cursor:"pointer",fontWeight:700}}
+                onClick={() => {
+                  const today = new Date();
+                  const local = (date: Date) => [date.getFullYear(),String(date.getMonth()+1).padStart(2,"0"),String(date.getDate()).padStart(2,"0")].join("-");
+                  const start = new Date(today);
+                  if (period === "الأسبوع") start.setDate(today.getDate() - ((today.getDay()+1)%7));
+                  if (period === "الشهر") start.setDate(1);
+                  setPeriodMode("range"); setFromDate(local(start)); setToDate(local(today));
+                }}>{period}</button>)}
+            </div>
+          </div>
           {/* Quick Reset */}
           <div style={{ display: "flex", gap: "8px" }}>
             <button
@@ -93,7 +117,7 @@ export function ContractorStatementsView() {
                 backgroundColor: "var(--surface-hover)",
               }}
               onClick={() => {
-                setFromDate("2026-11-01");
+                setPeriodMode("range"); setFromDate("2026-11-01");
                 setToDate("2026-11-30");
               }}
             >
@@ -118,7 +142,7 @@ export function ContractorStatementsView() {
           </p>
           <p style={{ margin: "6px 0 0", fontSize: "0.9rem" }}>
             {statementResult.error.code === "PERIOD_BEFORE_START" &&
-              `تاريخ بداية الفترة (${fromDate}) يسبق تاريخ بداية حساب المقاول (${currentContractor.openingDate}).`}
+              `تاريخ بداية الفترة (${effectiveFromDate}) يسبق تاريخ بداية حساب المقاول (${currentContractor.openingDate}).`}
             {statementResult.error.code === "INVALID_PERIOD" &&
               `تاريخ نهاية الفترة (${toDate}) يسبق تاريخ بداية الفترة (${fromDate}).`}
             {statementResult.error.code === "MOVEMENT_BEFORE_START" &&
@@ -139,7 +163,7 @@ export function ContractorStatementsView() {
           />
 
           <StatementExportActions statement={statementResult.statement} name={currentContractor.name} receiptByTripId={receiptByTripId} />
-          <StatementTable rows={statementResult.statement.rows} receiptByTripId={receiptByTripId} />
+          <StatementTable rows={statementResult.statement.rows} receiptByTripId={receiptByTripId} tripDetailsById={tripDetailsById} />
         </>
       )}
     </div>

@@ -64,6 +64,22 @@ export function StatementSummaryCard({
         </div>
       </div>
 
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,230px),1fr))",gap:12,marginBottom:16}}>
+        <div className={styles.metricBox}><strong>شغل أحمد — مستحق له عند المقاول</strong><strong style={{fontSize:"1.65rem"}}>{ahmedAmount} ج.م</strong></div>
+        <div className={styles.metricBox}><strong>شغل المقاول — مستحق له عند أحمد</strong><strong style={{fontSize:"1.65rem"}}>{counterpartyAmount} ج.م</strong></div>
+      </div>
+      <div style={{textAlign:"center",color:"var(--text-muted)",marginBottom:12,fontWeight:700}}>فرق الشغل = شغل أحمد − شغل المقاول، ثم يُحتسب الرصيد المرحّل للوصول إلى الصافي النهائي.</div>
+      <div role="status" style={{background:"#175CD3",color:"#fff",borderRadius:16,padding:"24px",marginBottom:18,textAlign:"center"}}>
+        <div style={{fontSize:14,opacity:.9}}>صافي المستحق النهائي حتى {statement.period.to}</div>
+        <div style={{fontSize:"clamp(2rem,5vw,3rem)",fontWeight:900,marginTop:8}}>{closingAmount} ج.م</div>
+        <div style={{fontSize:"clamp(1.1rem,3vw,1.6rem)",fontWeight:800,marginTop:8}}>
+          {statement.beneficiary === "AHMED" ? `أحمد أبو علي له عند المقاول ${contractorName}` :
+           statement.beneficiary === "COUNTERPARTY" ? `المقاول ${contractorName} له عند أحمد أبو علي` :
+           "الحساب متعادل — لا يوجد مستحق على أي طرف"}
+        </div>
+        <div style={{fontSize:13,opacity:.9,marginTop:12}}>يشمل الرصيد المرحّل من قبل الفترة والشغل المسجل خلالها. دفعات العربيات النقدية مستقلة عن فرق شغل المقاولين.</div>
+      </div>
+
       <div className={styles.summaryGrid}>
         {/* Metric 1: Opening Balance */}
         <div className={styles.metricBox}>
