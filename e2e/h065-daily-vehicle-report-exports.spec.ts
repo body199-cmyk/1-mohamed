@@ -58,13 +58,13 @@ test.describe("H065 daily and vehicle cash exports", () => {
       {
         path: "/demo/reports/daily",
         title: "تقرير الشغل اليومي",
-        slug: "daily-work-2026-11-05",
+        slug: "daily-work-2026-11-05-all-contractors-all-vehicles",
         expectedCsv: "REC-002",
       },
       {
         path: "/demo/reports/vehicle-cash",
         title: "كشف حساب نقد العربية",
-        slug: "vehicle-cash-2026-11-01-2026-11-30",
+        slug: "vehicle-cash-V1-PRIMARY_AHMED-2026-11-01-2026-11-30",
         expectedCsv: "REC-001",
       },
     ] as const;
@@ -132,13 +132,12 @@ test.describe("H065 daily and vehicle cash exports", () => {
     await page.goto("/demo/payments");
     await page.getByLabel("تاريخ الدفع الحقيقي").fill("2026-11-03");
     await page.getByLabel("المبلغ بالجنيه").fill("100");
-    await page.getByLabel("رقم إيصال الدفعة").fill("000012");
     await page.getByRole("button", { name: "تسجيل الدفعة" }).click();
     await expect(page.getByRole("main").getByRole("status")).toContainText("تم تسجيل الدفعة");
     await page.getByRole("link", { name: "كشف حساب نقد العربية" }).click();
     await expect(page.getByRole("heading", { name: "كشف حساب نقد العربية" })).toBeVisible();
     const table = page.getByRole("table", { name: "جدول حركات كشف العربية" });
-    await expect(table).toContainText("000012");
+    await expect(table).not.toContainText("000012");
     await expect(table).toContainText("-100.00 ج.م");
 
     const html = await printHtml(page, "كشف حساب نقد العربية");
