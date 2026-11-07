@@ -84,7 +84,7 @@ test.describe("Stage 2 — trip entry and history", () => {
     await page.goto("/demo/trips");
     const history = page.getByRole("region", { name: "سجل النقلات" });
     await history.getByRole("button", { name: "الشهر" }).click();
-    const advanced = history.locator("details.historyAdvanced");
+    const advanced = history.locator("details").first();
     await advanced.locator("summary").click();
     await expect(advanced).toHaveAttribute("open", "");
     await advanced.getByRole("combobox", { name: "فلتر المقاول" }).selectOption("K1");
