@@ -95,3 +95,8 @@ User explicitly changed priority: **batch 2 (AUD-006 through AUD-010), then batc
 - **AUD-008:** remains open; validate positive ending balance but negative intermediate balance and confirm rejected mutation; do not weaken D16.
 - **AUD-010:** invariant code reviewed, but comprehensive cross-ledger, cancellation, backdating and export reconciliation tests remain open.
 - **CI caution:** commits on PR #34 can cancel in-progress workflows due to concurrency. Wait for latest-head completion after the batch is stable; do not repeatedly push nonessential documentation while a final CI run is in progress.
+
+### Batch 2 continued — AUD-006 (2026-11-07)
+- **Implementation commit `e1d257e`, pending CI:** `buildCashLedger` now rejects a cumulative balance above `9223372036854775807` piastres or below its negative counterpart, consistently with the existing per-payment/opening range. This protects both historical reports and payment validation from returning an unrepresentable cumulative balance. It does **not** assert that the whole persistence schema has been audited.
+- **Further evidence:** existing `e2e/payments.spec.ts` already covers D16 backdated payment rejection; `e2e/vehicle-cash.spec.ts` covers carry-forward and cancelled/history concerns partially. Both currently have stale receipt-related expectations in the failing browser suite, to be handled in the explicitly last-priority batch 1. Do not restore removed receipt UX.
+- **Outstanding:** test cumulative overflow at +MAX and -MAX, validate storage boundary contract, investigate future invalid trip handling (AUD-007), test D16 adversarial sequence and cross-report reconciliation (AUD-008/010). **Batch 2 is not finished.**
