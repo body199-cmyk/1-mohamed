@@ -144,3 +144,15 @@ The last code commit is `2c6a327`. Wait for its PR-triggered workflow; capture r
 - Latest financial test additions: `e8cce90`, `2c6a327`, `8293ac5`, `6c1122e`; D16 code fix `41d5940`.
 - Latest audit doc update pending: this entry itself.
 - Batch 2 remains OPEN pending CI and export cross-format review; do not proceed to batch 3 or batch 1 until verified.
+
+
+### Batch 2 follow-up hardening — stacked branch `audit/batch2-financial-hardening-20261107` (2026-11-07)
+The PR #34 browser run was still active, so additional financial fixes were isolated on a stacked branch based on PR #34 head `2535b77`, avoiding cancellation of that in-progress run.
+
+- **AUD-006 strict persisted-money encoding:** `buildCashLedger` now validates opening balances with `validOpeningPiastres`; payment snapshots must be canonical positive decimal strings (no `+1`, hex, leading zeros or zero). Individual trip work movements above signed-64-bit max are rejected even if a negative opening could otherwise offset them. Tests cover positive/negative cumulative overflow, oversized movement offset, and noncanonical opening/payment strings. Code commit `c2b50c1`; tests commit `9bc7ac8`.
+- **AUD-007 payment/opening boundary:** found a confirmed hole in `validateDemoPayment`: a new payment dated before the account's cash-opening start date could pass when there were no prior movements. It now rejects payment dates before the matching opening date (or invalid opening dates). Regression test included in `9bc7ac8`.
+- **AUD-007 direction integrity:** an invalid in-period trip direction could be attributed to the counterparty by the fallback helper and silently disappear from the primary account. The ledger now rejects invalid in-period directions for the vehicle before account attribution; future-dated corrupt snapshots remain isolated from historical cutoffs. Tests assert both account ledgers fail closed.
+- **AUD-010 export mapping:** added a focused test proving the reconciled opening/work/paid/closing metrics and signed payment movement/after-movement balances map unchanged into the operational export document (`ef0ed73`). Existing statement-export tests exercise the shared document across HTML, CSV, PNG layout, PDF pagination and XLSX.
+- **Verification:** no completed CI on this stacked branch at time of writing. These fixes are not verified until PR #37's focused tests and full CI pass, then the changes are merged into PR #34 branch and its full-head CI is rerun. Do not mark batch 2 complete before that.
+
+- PR #37 initial focused CI run `42413356182` failed only one assertion in the pre-existing invalid-direction test: the new fail-closed path now returns the more specific direction error, while the old test expected the generic snapshot mismatch message. Updated the assertion to the specific error in commit `9320c4b`. The other 14 payment validation tests passed. A fresh run on this latest head is still required; later report/export/browser jobs were skipped by fail-fast.
