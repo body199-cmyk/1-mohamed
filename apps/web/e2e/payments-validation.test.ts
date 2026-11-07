@@ -81,7 +81,7 @@ describe("T08.3 cash ledger demo follows T08.2/D15/D16",()=>{
   });
   it("rejects an invalid trip direction when the movement is part of the selected cash account",()=>{
     const invalid={...trip("BAD-DIRECTION","2026-11-03","V1","OTHER_SUPPLIES","10"),
-      direction:"UNKNOWN" as DemoTripRecord["direction"]};
+      direction:"UNKNOWN" as unknown as DemoTripRecord["direction"]};
     const result=buildCashLedger({...base,trips:[invalid],payments:[]},
       "V1","K1",today);
     expect(result).toEqual({ok:false,error:"مستحق نقلة لا يطابق محرك الحساب؛ تم إيقاف دفعات هذا الحساب."});
