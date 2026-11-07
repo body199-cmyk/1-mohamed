@@ -176,7 +176,11 @@ export function validateDemoPayment(
       + base.value.rows.filter(r => r.date === draft.paymentDate && r.type === "WORK")
         .reduce((sum,r) => sum+BigInt(r.amountPiastres),0n)
     ) },
-    ...base.value.rows.filter(r => r.date >= draft.paymentDate)
+    // Same-day work is already credited in the first candidate above (D15).
+    // Include same-day payments after that point, plus every later movement;
+    // do not re-introduce intermediate same-day WORK balances into D16's minimum.
+    ...base.value.rows.filter(r => r.date > draft.paymentDate ||
+      (r.date === draft.paymentDate && r.type === "PAYMENT"))
       .map(r => ({ date:r.date, balance:BigInt(r.balancePiastres) })),
     { date:asOf, balance:BigInt(base.value.balancePiastres) },
   ];
