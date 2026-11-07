@@ -125,11 +125,11 @@ export function TripFormFields({
           </div>
           <input type="search" aria-label="بحث عن مقاول داخل القائمة" autoFocus className={styles.input}
             placeholder="ابحث باسم المقاول أو الكود" value={contractorSearch} onChange={event => setContractorSearch(event.target.value)} />
-          {recentContractors.length > 0 && <div className={styles.sheetRecent} aria-label="المقاولون المستخدمون مؤخرًا">
+          {recentContractors.length > 0 && <div className={styles.sheetRecent} role="group" aria-label="المقاولون المستخدمون مؤخرًا">
             <strong>المستخدمون مؤخرًا</strong>
             <div>{recentContractors.map(id => { const item = contractors.find(entry => entry.id === id && !entry.isArchived); return item ? <button type="button" key={id} onClick={() => { dispatch({ type: "EDIT_TRIP_COUNTERPARTY", counterpartyId: id }); setRecentContractors(previous => remember(previous, id)); setContractorSheetOpen(false); }}>{item.name}</button> : null; })}</div>
           </div>}
-          <div className={styles.choiceList} aria-label="كل المقاولين">
+          <div className={styles.choiceList} role="group" aria-label="كل المقاولين">
             {filteredContractors.map(item => <button type="button" key={item.id} disabled={item.isArchived}
               aria-pressed={tripDraft.counterpartyId === item.id}
               onClick={() => { dispatch({ type: "EDIT_TRIP_COUNTERPARTY", counterpartyId: item.id }); setRecentContractors(previous => remember(previous, item.id)); setContractorSheetOpen(false); }}>
@@ -215,11 +215,11 @@ export function TripFormFields({
           </div>
           <input type="search" aria-label="بحث عن عربية داخل القائمة" autoFocus className={styles.input}
             placeholder="ابحث برقم العربية أو السائق أو الكود" value={vehicleSearch} onChange={event => setVehicleSearch(event.target.value)} />
-          {recentVehicles.length > 0 && <div className={styles.sheetRecent} aria-label="العربيات المستخدمة مؤخرًا">
+          {recentVehicles.length > 0 && <div className={styles.sheetRecent} role="group" aria-label="العربيات المستخدمة مؤخرًا">
             <strong>المستخدمون مؤخرًا</strong>
             <div>{recentVehicles.map(id => { const item = vehicles.find(entry => entry.id === id && !entry.isArchived); return item ? <button type="button" key={id} onClick={() => { dispatch({ type: "EDIT_TRIP_VEHICLE", vehicleId: id }); setRecentVehicles(previous => remember(previous, id)); setVehicleSheetOpen(false); }}>{item.plateNumber}</button> : null; })}</div>
           </div>}
-          <div className={styles.choiceList} aria-label="كل العربيات">
+          <div className={styles.choiceList} role="group" aria-label="كل العربيات">
             {filteredVehicles.map(item => <button type="button" key={item.id} disabled={item.isArchived}
               aria-pressed={tripDraft.vehicleId === item.id}
               onClick={() => { dispatch({ type: "EDIT_TRIP_VEHICLE", vehicleId: item.id }); setRecentVehicles(previous => remember(previous, item.id)); setVehicleSheetOpen(false); }}>
