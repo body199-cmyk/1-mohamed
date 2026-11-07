@@ -16,12 +16,13 @@ export function ContractorStatementsView() {
   const [periodMode, setPeriodMode] = useState<"all" | "range">("all");
   const [fromDate, setFromDate] = useState("2026-11-01");
   const [toDate, setToDate] = useState(() => new Date().toLocaleDateString("en-CA", { timeZone: "Africa/Cairo" }));
-  const effectiveFromDate = periodMode === "all" ? (currentContractor?.openingDate ?? fromDate) : fromDate;
 
   const currentContractor = useMemo(
     () => contractors.find((c) => c.id === selectedContractorId),
     [contractors, selectedContractorId]
   );
+
+  const effectiveFromDate = periodMode === "all" ? (currentContractor?.openingDate ?? fromDate) : fromDate;
 
   const statementResult = useMemo(() => {
     if (!selectedContractorId || !effectiveFromDate || !toDate) {
