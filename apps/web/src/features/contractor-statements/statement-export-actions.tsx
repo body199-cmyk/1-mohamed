@@ -5,10 +5,9 @@ import type { ContractorStatement } from "@ledger/contractor-statements";
 import { toStatementDocument } from "./statement-document";
 import styles from "./statements.module.css";
 
-export function StatementExportActions({ statement, name, receiptByTripId }: {
+export function StatementExportActions({ statement, name }: {
   statement: ContractorStatement;
   name: string;
-  receiptByTripId: ReadonlyMap<string, string>;
 }) {
   const [busy, setBusy] = useState(false);
   const lock = useRef(false);
@@ -20,14 +19,26 @@ export function StatementExportActions({ statement, name, receiptByTripId }: {
     setBusy(true);
     setError(null);
     try {
-      const document = toStatementDocument(statement, name, receiptByTripId);
+      const document = toStatementDocument(statement, name);
       const renderer = await import("@ledger/statement-export");
       const blob = await renderer.renderContractorStatementPng(document);
       const file = new File([blob], `statement-${statement.period.from}-${statement.period.to}.png`, { type: "image/png" });
       if (typeof navigator.share === "function" && navigator.canShare?.({ files: [file] })) {
         await navigator.share({ files: [file], title: `كشف حساب ${name}` });
       } else {
-        setError("المشاركة المباشرة للصورة غير مدعومة في هذا المتصفح. استخدم زر تنزيل صورة PNG ثم شاركها من جهازك.");
+        // Approved fallback: deliver the same image when native file sharing is unavailable.
+        const url = URL.createObjectURL(blob);
+        const link = window.document.createElement("a");
+        try {
+          link.href = url;
+          link.download = file.name;
+          window.document.body.append(link);
+          link.click();
+        } finally {
+          link.remove();
+          window.setTimeout(() => URL.revokeObjectURL(url), 10000);
+        }
+        setError("المشاركة المباشرة غير مدعومة في هذا المتصفح؛ تم بدء تنزيل صورة الكشف لتشاركها من جهازك.");
       }
     } catch (cause) {
       if (!(cause instanceof DOMException && cause.name === "AbortError")) {
@@ -48,7 +59,7 @@ export function StatementExportActions({ statement, name, receiptByTripId }: {
     const preview = kind === "print" ? window.open("", "_blank") : null;
     try {
       if (kind === "print" && !preview) throw new Error("اسمح بفتح نافذة الطباعة في المتصفح ثم حاول مجددًا.");
-      const document = toStatementDocument(statement, name, receiptByTripId);
+      const document = toStatementDocument(statement, name);
       const renderer = await import("@ledger/statement-export");
       if (kind === "xlsx") {
         const blob = renderer.renderContractorStatementXlsx(document);

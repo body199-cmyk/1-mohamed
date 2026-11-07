@@ -32,47 +32,45 @@ function sample(rows = 2): ContractorStatementDocument {
 }
 
 describe("H063 signed contractor statements from Ahmed's perspective",()=>{
-  it("A4 print has separate trip and receipt columns with signed balances and no missing rows",()=>{
+  it("A4 print has trip IDs but no visible receipts with signed balances and no missing rows",()=>{
     const html=renderContractorStatementHtml(sample());
-    for(const t of ["رقم النقلة","رقم الإيصال","REC-001","+300.00 ج.م","-600.00 ج.م","-300.00 ج.م"]) {
+    for(const t of ["رقم النقلة","+300.00 ج.م","-600.00 ج.م","-300.00 ج.م"]) {
       expect(html).toContain(t);
     }
-    expect(html).not.toContain('colspan="6"'); // only empty statement gets placeholder
-    const first=html.indexOf("TRIP-001"),receipt=html.indexOf("REC-001"),date=html.indexOf("2026-11-01",first);
+    expect(html).not.toContain("رقم الإيصال");
+    expect(html).not.toContain("REC-001");
+    const first=html.indexOf("TRIP-001"),date=html.indexOf("2026-11-01",first);
     expect(first).toBeGreaterThan(-1);
-    expect(receipt).toBeGreaterThan(first);
     expect(date).toBeGreaterThan(first);
-    expect(html.indexOf('class="col-date"')).toBeLessThan(html.indexOf('class="col-receipt"'));
-    expect(renderContractorStatementHtml({...sample(),rows:[]})).toContain('colspan="6"');
+    expect(renderContractorStatementHtml({...sample(),rows:[]})).toContain('colspan="5"');
   });
 
-  it("CSV preserves both signs and treats untrusted receipts as escaped text, never formula",()=>{
+  it("CSV preserves both signs and hides receipts without changing monetary values",()=>{
     const csv=renderContractorStatementCsv(sample());
     expect(csv).toContain("رقم النقلة");
-    expect(csv).toContain("رقم الإيصال");
-    expect(csv).toContain("REC-001");
+    expect(csv).not.toContain("رقم الإيصال");
+    expect(csv).not.toContain("REC-001");
     expect(csv).toContain("+300.00 ج.م");
     expect(csv).toContain("-600.00 ج.م");
-    expect(csv).toContain("—"); // receipt absent on second row
     expect(csv).toContain('"\'-600.00 ج.م"'); // spreadsheet formula guard
   });
 
-  it("XLSX detail sheet has 6 text-only RTL columns and a correct autofilter",()=>{
+  it("XLSX detail sheet has 5 text-only RTL columns and a correct autofilter",()=>{
     const files=createStatementXlsxParts(sample());
     const detail=files.find(p=>p.name==="xl/worksheets/sheet2.xml")!.content;
-    expect(detail).toContain("رقم الإيصال");
-    expect(detail).toContain("REC-001");
+    expect(detail).not.toContain("رقم الإيصال");
+    expect(detail).not.toContain("REC-001");
     expect(detail).toContain("-600.00 ج.م");
-    expect(detail).toContain('autoFilter ref="A1:F3"');
+    expect(detail).toContain('autoFilter ref="A1:E3"');
     expect(detail).toContain('rightToLeft="1"');
     expect(detail).not.toContain("<f>");
-    expect((detail.match(/<c r="[A-F]2"/g)||[]).length).toBe(6);
+    expect((detail.match(/<c r="[A-E]2"/g)||[]).length).toBe(5);
     expect(createStatementXlsxParts({...sample(),rows:[]})
       .find(p=>p.name==="xl/worksheets/sheet2.xml")!.content)
       .toContain("لا توجد حركات خلال الفترة");
   });
 
-  it("PNG/PDF same immutable 1440-wide layout paints six columns, signs and receipt",()=>{
+  it("PNG/PDF same immutable 1440-wide layout paints five columns and signs without receipts",()=>{
     const doc=sample();
     const layout=createStatementImageLayout(doc);
     expect(layout.width).toBe(1440);
@@ -83,7 +81,7 @@ describe("H063 signed contractor statements from Ahmed's perspective",()=>{
       textAlign:"",textBaseline:"",direction:"",lineWidth:0,
     } as unknown as CanvasRenderingContext2D;
     paintStatementImage(ctx,layout);
-    for(const t of ["رقم النقلة","رقم الإيصال","REC-001","TRIP-001","-600.00 ج.م","+300.00 ج.م"]) {
+    for(const t of ["رقم النقلة","TRIP-001","-600.00 ج.م","+300.00 ج.م"]) {
       expect(calls.some(x=>x.includes(t)),t).toBe(true);
     }
     // Financial signs must be a leading LTR numeric token in the rendered PDF/PNG
@@ -95,6 +93,7 @@ describe("H063 signed contractor statements from Ahmed's perspective",()=>{
     const pages=paginateStatementForPdf(long);
     expect(pages.map(p=>p.rows.length)).toEqual([17,17,1]);
     expect(pages.flatMap(p=>p.rows.map(r=>r.reference))).toEqual(long.rows.map(r=>r.reference));
-    expect(pages[0]!.rows[0]!.receiptNumber).toBe("REC-001");
+    expect(calls).not.toContain("REC-001");
+    expect(calls).not.toContain("رقم الإيصال");
   });
 });
