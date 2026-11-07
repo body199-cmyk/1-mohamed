@@ -99,6 +99,32 @@ test.describe("Stage 2 — trip entry and history", () => {
     await expect(chips.getByRole("button", { name: "إزالة فلتر المقاول المقاول أحمد علام" })).toHaveCount(0);
   });
 
+
+  test("mobile contractor and vehicle selectors use searchable accessible bottom sheets with recent choices", async ({ page }) => {
+    await page.setViewportSize({ width: 360, height: 740 });
+    await page.goto("/demo/trips");
+    await page.getByRole("button", { name: "اختيار المقاول الطرف الآخر" }).click();
+    const contractorDialog = page.getByRole("dialog", { name: "اختيار المقاول الطرف الآخر" });
+    await expect(contractorDialog).toBeVisible();
+    await contractorDialog.getByRole("searchbox", { name: "بحث عن مقاول داخل القائمة" }).fill("أحمد علام");
+    await contractorDialog.getByRole("button", { name: /المقاول أحمد علام/ }).click();
+    await expect(contractorDialog).not.toBeVisible();
+
+    await page.getByRole("button", { name: "اختيار المقاول الطرف الآخر" }).click();
+    const reopenedContractorDialog = page.getByRole("dialog", { name: "اختيار المقاول الطرف الآخر" });
+    await expect(reopenedContractorDialog.getByLabel("المقاولون المستخدمون مؤخرًا")).toContainText("المقاول أحمد علام");
+    await page.keyboard.press("Escape");
+    await expect(reopenedContractorDialog).not.toBeVisible();
+
+    await page.getByRole("button", { name: "اختيار السيارة المنفذة" }).click();
+    const vehicleDialog = page.getByRole("dialog", { name: "اختيار السيارة المنفذة" });
+    await expect(vehicleDialog).toBeVisible();
+    await vehicleDialog.getByRole("searchbox", { name: "بحث عن عربية داخل القائمة" }).fill("أ ب ج 1234");
+    await vehicleDialog.getByRole("button", { name: /أ ب ج 1234/ }).click();
+    await expect(vehicleDialog).not.toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1)).toBe(false);
+  });
+
   test("mobile trip history uses expandable cards without horizontal overflow", async ({ page }) => {
     await page.setViewportSize({ width: 360, height: 740 });
     await page.goto("/demo/trips");
