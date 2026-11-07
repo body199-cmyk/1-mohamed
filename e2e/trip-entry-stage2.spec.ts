@@ -47,7 +47,7 @@ test.describe("Stage 2 — trip entry and history", () => {
     await page.getByRole("textbox", { name: "سعر المقاول للطن" }).fill("100");
     await page.getByRole("textbox", { name: "سعر السيارة للطن" }).fill("90");
     await page.getByRole("button", { name: "حفظ وخروج" }).click();
-    await expect(page).toHaveURL(/\\/demo\\/home$/);
+    await expect(page).toHaveURL(new RegExp("/demo/home$"));
   });
 
   test("mobile trip history uses expandable cards without horizontal overflow", async ({ page }) => {
