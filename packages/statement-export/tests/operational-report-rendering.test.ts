@@ -130,6 +130,27 @@ describe("H065 operational report exports — one fixed document, five formats",
     expect(calls.filter(call => /^000[1-4]$/.test(call))).toHaveLength(4);
   });
 
+  it("keeps negative cash movements as leading LTR signs in image/PDF painting and guards CSV", () => {
+    const doc = {
+      ...fixture(1),
+      title: "كشف حساب نقد العربية",
+      columns: [
+        { label: "البيان", widthWeight: 1 },
+        { label: "حركة", direction: "ltr" as const, widthWeight: 1 },
+        { label: "الرصيد", direction: "ltr" as const, widthWeight: 1 },
+      ],
+      rows: [["دفعة 000012", "-100.00 ج.م", "180.00 ج.م"]],
+    };
+    const calls = capturePaint(doc);
+    expect(calls).toContain("-100.00");
+    expect(calls).toContain("ج.م");
+    const csv = renderOperationalReportCsv(doc);
+    expect(csv).toContain("'-100.00 ج.م");
+    const detail = createOperationalReportXlsxParts(doc)
+      .find(part => part.name === "xl/worksheets/sheet2.xml")!.content;
+    expect(detail).toContain("-100.00 ج.م");
+  });
+
   it("prints an explicit empty row and refuses an oversized single PNG rather than truncating", () => {
     const empty = fixture(0);
     expect(capturePaint(empty)).toContain(empty.emptyMessage);
