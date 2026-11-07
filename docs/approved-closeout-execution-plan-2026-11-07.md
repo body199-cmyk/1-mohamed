@@ -61,3 +61,8 @@ Do not add navigation arrows, vehicle-cash redesign, new business rules, or alte
 - `f53bdfc`: implemented approved native image-share fallback: when `navigator.share` / `navigator.canShare` cannot share files, automatically download the exact generated PNG instead of merely telling the user to press a second button. User-facing explanation retained.
 - CI `42365218524` for previous `3e86f0f` head was still in progress at review, with browser master-data interaction test active; prior steps through build/auth succeeded. **This is not a pass** and later commits supersede it. Check completed latest-head CI before merging.
 - Latest changes after `3e86f0f` require full CI and real-device share testing. Never treat a branch-head change or cancelled older workflow as green.
+
+### Accounting presentation fix — follow-up
+- `ecf416e`: when the closing contractor balance is negative (counterparty beneficiary), the prominent **amount payable** and beneficiary badge now show the absolute amount, while the detailed signed ledger balance remains signed. This avoids confusing language like "contractor is owed -100 EGP" without changing underlying financial data or exported signed balances. Test both beneficiary signs and zero in browser.
+- The latest prior workflow `42365848224` (head `3c43c2e`) was observed **in progress** with no reported failed step; browser master-data test was active. It is not green and the new commit supersedes it.
+- Next: obtain completed green latest-head CI and independent browser review before any merge; do not keep pushing nonessential changes that cancel an in-progress run.
