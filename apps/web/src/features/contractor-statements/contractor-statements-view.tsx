@@ -8,7 +8,7 @@ import { StatementExportActions } from "./statement-export-actions";
 import styles from "./statements.module.css";
 
 export function ContractorStatementsView() {
-  const { contractors, trips, getStatementForContractor } = useDemoStore();
+  const { contractors, vehicles, trips, getStatementForContractor } = useDemoStore();
 
   const [selectedContractorId, setSelectedContractorId] = useState<string>(
     contractors[0]?.id ?? "K1"
@@ -34,6 +34,11 @@ export function ContractorStatementsView() {
     trips.filter(trip => trip.counterpartyId === selectedContractorId)
       .map(trip => [trip.id, trip.receiptNumber] as const)
   ), [trips, selectedContractorId]);
+
+  const tripDetailsById = useMemo(() => new Map(trips.map(trip => [trip.id, {
+    vehicle: vehicles.find(vehicle => vehicle.id === trip.vehicleId)?.plateNumber ?? trip.vehicleId,
+    route: [trip.origin, trip.destination].filter(Boolean).join(" ← "),
+  }] as const)), [trips, vehicles]);
 
   return (
     <div className={styles.pageContainer}>
@@ -139,7 +144,7 @@ export function ContractorStatementsView() {
           />
 
           <StatementExportActions statement={statementResult.statement} name={currentContractor.name} receiptByTripId={receiptByTripId} />
-          <StatementTable rows={statementResult.statement.rows} receiptByTripId={receiptByTripId} />
+          <StatementTable rows={statementResult.statement.rows} receiptByTripId={receiptByTripId} tripDetailsById={tripDetailsById} />
         </>
       )}
     </div>
