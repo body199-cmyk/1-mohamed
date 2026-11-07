@@ -151,19 +151,6 @@ export function PaymentsView() {
           <input aria-label="المبلغ بالجنيه" inputMode="decimal" required placeholder="100.00"
             value={draft.amountEgp} onChange={e=>setDraft({...draft,amountEgp:e.target.value})} />
         </label>
-        <label>رقم الإيصال (اختياري)
-          <input aria-label="رقم إيصال الدفعة" value={draft.receiptNumber}
-            onChange={e=>setDraft({...draft,receiptNumber:e.target.value})} />
-        </label>
-        <label>ربط وصفي بنقلة (اختياري)
-          <select aria-label="ربط الدفعة بنقلة" value={draft.linkedTripId}
-            onChange={e=>setDraft({...draft,linkedTripId:e.target.value})}>
-            <option value="">دفعة عامة — بلا تخصيص لنقلة</option>
-            {linkedTrips.map(t=><option key={t.id} value={t.id}>
-              {t.receiptNumber || t.id} — {t.workDate}
-            </option>)}
-          </select>
-        </label>
         <label className={styles.wide}>ملاحظات (اختياري)
           <input aria-label="ملاحظات الدفعة" value={draft.notes}
             onChange={e=>setDraft({...draft,notes:e.target.value})} />
@@ -189,10 +176,10 @@ export function PaymentsView() {
       <h2>دفعات الحساب ({accountPayments.length})</h2>
       {accountPayments.length === 0 ? <p className={styles.muted}>لا توجد دفعات مسجلة في الحساب المختار.</p> :
         <div className={styles.scroll} role="region" aria-label="جدول دفعات العربية" tabIndex={0}>
-          <table><thead><tr><th>تاريخ الدفع</th><th>المبلغ</th><th>الإيصال</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+          <table><thead><tr><th>تاريخ الدفع</th><th>المبلغ</th><th>الحالة</th><th>إجراءات</th></tr></thead>
             <tbody>{accountPayments.map(p=><tr key={p.id}>
               <td>{p.paymentDate}</td><td>{money(p.amountPiastres)}</td>
-              <td>{p.receiptNumber || "—"}</td>
+              
               <td>{p.isCancelled ? "ملغاة: "+p.cancelReason : "سارية"}</td>
               <td>{p.isCancelled ? "محفوظة للمراجعة" : <div className={styles.buttons}>
                 <button type="button" className={styles.secondary} onClick={()=>loadEdit(p)}>تعديل الدفعة {p.id}</button>
@@ -227,13 +214,6 @@ export function PaymentsView() {
       {ledger.value.rows.length===0 && <p className={styles.muted}>لا توجد حركات لهذا الحساب حتى تاريخ اليوم.</p>}
     </section>}
 
-    <section className={styles.section} aria-label="أثر تعديلات الدفعات">
-      <h2>سجل مراجعة الدفعات ({paymentAudit.length})</h2>
-      {paymentAudit.length===0 ? <p className={styles.muted}>لم تحدث تعديلات بعد.</p> :
-        <ol className={styles.audit}>{paymentAudit.map((entry,index)=><li key={entry.id+"|"+entry.at+"|"+index}>
-          <strong>{entry.action} — {entry.id}</strong> {entry.reason}
-          <details><summary>قبل / بعد</summary><pre>{entry.before}{"\n"}{entry.after}</pre></details>
-        </li>)}</ol>}
-    </section>
+    {/* Audit events remain in the store for financial traceability; raw JSON is not shown to ordinary users. */}
   </div>;
 }
