@@ -159,6 +159,10 @@ export function PaymentsView() {
           <input aria-label="المبلغ بالجنيه" inputMode="decimal" required placeholder="100.00"
             value={draft.amountEgp} onChange={e=>setDraft({...draft,amountEgp:e.target.value})} />
         </label>
+        <label>رقم إيصال الدفعة (اختياري)
+          <input aria-label="رقم إيصال الدفعة" value={draft.receiptNumber}
+            onChange={e=>setDraft({...draft,receiptNumber:e.target.value})} />
+        </label>
         <label className={styles.wide}>ملاحظات (اختياري)
           <input aria-label="ملاحظات الدفعة" value={draft.notes}
             onChange={e=>setDraft({...draft,notes:e.target.value})} />
