@@ -118,6 +118,7 @@ export function TripFormFields({
         <dialog ref={contractorDialogRef} className={styles.choiceDialog}
           aria-labelledby="contractor-choice-title"
           onClose={() => setContractorSheetOpen(false)}
+          onCancel={event => { event.preventDefault(); setContractorSheetOpen(false); }}
           onClick={event => { if (event.target === event.currentTarget) setContractorSheetOpen(false); }}>
           <div className={styles.choiceSheetHeader}>
             <h3 id="contractor-choice-title">اختيار المقاول الطرف الآخر</h3>
@@ -208,6 +209,7 @@ export function TripFormFields({
         <dialog ref={vehicleDialogRef} className={styles.choiceDialog}
           aria-labelledby="vehicle-choice-title"
           onClose={() => setVehicleSheetOpen(false)}
+          onCancel={event => { event.preventDefault(); setVehicleSheetOpen(false); }}
           onClick={event => { if (event.target === event.currentTarget) setVehicleSheetOpen(false); }}>
           <div className={styles.choiceSheetHeader}>
             <h3 id="vehicle-choice-title">اختيار السيارة المنفذة</h3>
