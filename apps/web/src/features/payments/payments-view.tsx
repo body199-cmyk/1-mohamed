@@ -56,7 +56,7 @@ export function PaymentsView() {
     vehicleId,responsibleId,today),[trips,payments,cashOpenings,vehicleId,responsibleId,today]);
 
   const draftPreview = useMemo(() => {
-    if (!ledger.ok || !/^\\d+(?:\\.\\d{1,2})?$/.test(draft.amountEgp.trim())) return null;
+    if (!ledger.ok || !/^\d+(?:\.\d{1,2})?$/.test(draft.amountEgp.trim())) return null;
     const amount = BigInt(draft.amountEgp.split(".")[0]) * 100n + BigInt((draft.amountEgp.split(".")[1] ?? "").padEnd(2,"0"));
     const oldAmount = editId ? BigInt(payments.find(p => p.id === editId)?.amountPiastres ?? "0") : 0n;
     const remaining = BigInt(ledger.value.balancePiastres) + oldAmount - amount;
