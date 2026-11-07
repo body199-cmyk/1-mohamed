@@ -69,6 +69,52 @@ describe("T08.3 cash ledger demo follows T08.2/D15/D16",()=>{
     const safe=validateDemoPayment(source,draft("200","2026-11-02"),today);
     expect(safe.ok).toBe(true);
   });
+
+  it("ignores corrupt future trip amounts in historical ledgers but fails when that trip enters the period",()=>{
+    const future={...trip("FUTURE","2026-11-10","V1","AHMED_SUPPLIES","1000"),
+      vehicleRateEgp:"not-a-number",vehicleTotalPiastres:"1"};
+    const source={...base,trips:[future],payments:[]};
+    const historical=buildCashLedger(source,"V1",DEMO_PRIMARY_RESPONSIBLE_ID,"2026-11-05");
+    expect(historical.ok).toBe(true);
+    if(historical.ok) expect(historical.value.balancePiastres).toBe("0");
+    expect(buildCashLedger(source,"V1",DEMO_PRIMARY_RESPONSIBLE_ID,"2026-11-10").ok).toBe(false);
+  });
+  it("rejects an invalid trip direction when the movement is part of the selected cash account",()=>{
+    const invalid={...trip("BAD-DIRECTION","2026-11-03","V1","OTHER_SUPPLIES","10"),
+      direction:"UNKNOWN" as DemoTripRecord["direction"]};
+    const result=buildCashLedger({...base,trips:[invalid],payments:[]},
+      "V1","K1",today);
+    expect(result).toEqual({ok:false,error:"مستحق نقلة لا يطابق محرك الحساب؛ تم إيقاف دفعات هذا الحساب."});
+  });
+  it("fails closed when a valid opening plus work or payment exceeds signed 64-bit cumulative balance",()=>{
+    const max="9223372036854775807";
+    const positive={...base,trips:[trip("OVER-POS","2026-11-03","V1","AHMED_SUPPLIES","1")],
+      payments:[],cashOpenings:[{vehicleId:"V1",contractorId:DEMO_PRIMARY_RESPONSIBLE_ID,
+        startDate:"2026-11-01",signedPiastres:max}]};
+    expect(buildCashLedger(positive,"V1",DEMO_PRIMARY_RESPONSIBLE_ID,today).ok).toBe(false);
+    const negative={...base,trips:[],payments:[payment("OVER-NEG","2026-11-03","1")],
+      cashOpenings:[{vehicleId:"V1",contractorId:DEMO_PRIMARY_RESPONSIBLE_ID,
+        startDate:"2026-11-01",signedPiastres:"-"+max}]};
+    expect(buildCashLedger(negative,"V1",DEMO_PRIMARY_RESPONSIBLE_ID,today).ok).toBe(false);
+  });
+  it("D16 rejects a payment that creates an intermediate deficit even though the final balance stays positive",()=>{
+    const source={...base,trips:[
+      trip("T1","2026-11-01","V1","AHMED_SUPPLIES","1000"),
+      trip("T2","2026-11-04","V1","AHMED_SUPPLIES","1000")],
+      payments:[payment("P1","2026-11-03","80000")]};
+    const rejected=validateDemoPayment(source,draft("500","2026-11-02"),today);
+    expect(rejected.ok).toBe(false);
+    if(!rejected.ok) expect(rejected.error).toContain("D16");
+    const hypothetical=buildCashLedger({...source,payments:[...source.payments,payment("P2","2026-11-02","50000")]},
+      "V1",DEMO_PRIMARY_RESPONSIBLE_ID,today);
+    expect(hypothetical.ok).toBe(true);
+    if(hypothetical.ok) {
+      expect(hypothetical.value.balancePiastres).toBe("70000");
+      expect(hypothetical.value.rows.some(row=>BigInt(row.balancePiastres)<0n)).toBe(true);
+    }
+    expect(source.payments).toHaveLength(1);
+  });
+
   it("updates exclude old payment once, changing date earlier than dues rejects",()=>{
     const source={...base,trips:[trip("T1","2026-11-03","V1","AHMED_SUPPLIES","1000")],
       payments:[payment("P1","2026-11-03","100000")]};
