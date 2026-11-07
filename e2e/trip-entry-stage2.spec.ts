@@ -79,6 +79,26 @@ test.describe("Stage 2 — trip entry and history", () => {
     await expect(page.getByRole("status").filter({ hasText: "تم تسجيل النقلة بنجاح" })).toBeVisible();
   });
 
+
+  test("history filters show removable active chips without resetting the chosen period", async ({ page }) => {
+    await page.goto("/demo/trips");
+    const history = page.getByRole("region", { name: "سجل النقلات" });
+    await history.getByRole("button", { name: "الشهر" }).click();
+    await history.getByText("فلاتر متقدمة").click();
+    await history.getByLabel("المقاول").selectOption("K1");
+    await history.getByLabel("العربية").selectOption("V1");
+    await history.getByLabel("اتجاه الشغل").selectOption("AHMED_SUPPLIES");
+    await history.getByRole("searchbox", { name: "بحث في النقلات" }).fill("TRIP");
+    const chips = history.getByLabel("الفلاتر النشطة");
+    await expect(chips.getByRole("button", { name: "إزالة فلتر المقاول المقاول أحمد علام" })).toBeVisible();
+    await expect(chips.getByRole("button", { name: "إزالة فلتر العربية أ ب ج 1234" })).toBeVisible();
+    await chips.getByRole("button", { name: "إزالة فلتر المقاول المقاول أحمد علام" }).click();
+    await expect(history.getByLabel("المقاول")).toHaveValue("");
+    await expect(history.getByLabel("العربية")).toHaveValue("V1");
+    await expect(history.getByRole("button", { name: "الشهر" })).toHaveAttribute("aria-pressed", "true");
+    await expect(chips.getByRole("button", { name: "إزالة فلتر المقاول المقاول أحمد علام" })).toHaveCount(0);
+  });
+
   test("mobile trip history uses expandable cards without horizontal overflow", async ({ page }) => {
     await page.setViewportSize({ width: 360, height: 740 });
     await page.goto("/demo/trips");
