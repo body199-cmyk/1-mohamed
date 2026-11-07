@@ -3,7 +3,7 @@ import type {
   DemoContractor, DemoVehicle, DemoVehicleCashOpening, DemoTripRecord, DemoPayment,
 } from "../../demo/demo-types";
 import { normalizeArabicNumbers } from "../trips/arabic-number-normalizer";
-import { validOpeningDate } from "../master-data/master-data-validation";
+import { validOpeningDate, validOpeningPiastres } from "../master-data/master-data-validation";
 
 /** The primary Ahmed account is not a counterparty entry in DemoStore. */
 export const DEMO_PRIMARY_RESPONSIBLE_ID = "PRIMARY_AHMED";
@@ -67,31 +67,43 @@ export function buildCashLedger(
   }
   let balance = 0n;
   try {
-    balance = BigInt(opening?.signedPiastres ?? "0");
+    const openingText = opening?.signedPiastres ?? "0";
+    if (!validOpeningPiastres(openingText)) throw new Error("invalid opening encoding");
+    balance = BigInt(openingText);
     if (balance > MAX_PIASTRES || balance < -MAX_PIASTRES) throw new Error("opening overflow");
   } catch {
     return { ok: false, error: "رصيد افتتاحي نقدي غير صالح." };
   }
   const movements: { date: string; id: string; type: "WORK" | "PAYMENT"; amount: bigint; label: string; createdAt: string }[] = [];
   for (const trip of source.trips) {
-    if (trip.vehicleId !== vehicleId || cashResponsibleForTrip(trip) !== responsibleId) continue;
-    if (!validOpeningDate(trip.workDate) || (opening && trip.workDate < opening.startDate)) {
-      return { ok: false, error: "توجد نقلة بتاريخ يسبق بداية افتتاحي النقد؛ راجع الحساب." };
+    if (trip.vehicleId !== vehicleId) continue;
+    if (!validOpeningDate(trip.workDate)) {
+      return { ok: false, error: "توجد نقلة بتاريخ غير صالح في حساب العربية؛ راجع البيانات." };
     }
     // Historical projections are isolated from future movements. Date/opening
     // consistency is checked above, but future trip amounts cannot alter an
     // earlier report or prevent an otherwise valid historical payment.
     if (trip.workDate > asOf) continue;
+    if (trip.direction !== "AHMED_SUPPLIES" && trip.direction !== "OTHER_SUPPLIES") {
+      return { ok: false, error: "اتجاه نقلة غير صالح في حساب العربية؛ تم إيقاف التقرير والحفظ." };
+    }
+    if (cashResponsibleForTrip(trip) !== responsibleId) continue;
+    if (opening && trip.workDate < opening.startDate) {
+      return { ok: false, error: "توجد نقلة بتاريخ يسبق بداية افتتاحي النقد؛ راجع الحساب." };
+    }
     const result = calculateTripAmounts({
       weightTonnes: trip.weightTonnes, contractorRateEgp: trip.contractorRateEgp,
       vehicleRateEgp: trip.vehicleRateEgp, expenseEgp: trip.expenseEgp,
     });
-    if (!result.ok || result.vehicleTotalPiastres !== trip.vehicleTotalPiastres ||
-        (trip.direction !== "AHMED_SUPPLIES" && trip.direction !== "OTHER_SUPPLIES")) {
+    if (!result.ok || result.vehicleTotalPiastres !== trip.vehicleTotalPiastres) {
       return { ok: false, error: "مستحق نقلة لا يطابق محرك الحساب؛ تم إيقاف دفعات هذا الحساب." };
     }
+    const workAmount = BigInt(result.vehicleTotalPiastres);
+    if (workAmount > MAX_PIASTRES) {
+      return { ok: false, error: "قيمة مستحق النقلة تجاوزت الحد المالي المسموح؛ تم إيقاف التقرير والحفظ." };
+    }
     movements.push({ date: trip.workDate, id: trip.id, type: "WORK",
-      amount: BigInt(trip.vehicleTotalPiastres), label: "مستحق نقلة " + (trip.receiptNumber || trip.id),
+      amount: workAmount, label: "مستحق نقلة " + (trip.receiptNumber || trip.id),
       createdAt: trip.createdAt });
   }
   for (const payment of source.payments) {
@@ -106,6 +118,9 @@ export function buildCashLedger(
     if (payment.paymentDate > asOf) continue;
     let amount: bigint;
     try {
+      if (payment.amountPiastres.length > 19 || !/^[1-9][0-9]*$/.test(payment.amountPiastres)) {
+        throw new Error("non-canonical payment encoding");
+      }
       amount = BigInt(payment.amountPiastres);
       if (amount <= 0n || amount > MAX_PIASTRES) throw new Error("payment bounds");
     } catch {
@@ -157,6 +172,12 @@ export function validateDemoPayment(
   }
   if (!validOpeningDate(draft.paymentDate) || draft.paymentDate > asOf) {
     return { ok: false, error: "تاريخ الدفعة يجب أن يكون صحيحًا ولا يتجاوز تاريخ اليوم بالقاهرة." };
+  }
+  const cashOpening = source.cashOpenings.find(o =>
+    o.vehicleId === draft.vehicleId && o.contractorId === draft.responsibleContractorId
+  );
+  if (cashOpening && (!validOpeningDate(cashOpening.startDate) || draft.paymentDate < cashOpening.startDate)) {
+    return { ok: false, error: "تاريخ الدفعة يسبق تاريخ افتتاحي النقد لهذا الحساب أو أن تاريخ الافتتاحي غير صالح." };
   }
   const amountText = parsePaymentEgp(draft.amountEgp);
   if (!amountText) return { ok: false, error: "مبلغ الدفعة يجب أن يكون موجبًا، وبحد أقصى رقمين للقروش." };
