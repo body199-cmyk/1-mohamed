@@ -29,3 +29,12 @@ This is a **draft** PR based on main and intentionally separate from unmerged PR
 - Filtering uses inclusive ISO work dates and explicitly handles a reversed custom range; filters do **not** silently alter the full contractor account balance.
 - Browser acceptance still required: today/week/month boundary, custom dates, archive records, RTL mobile cards, search after saving, accessibility and table/card consistency.
 - CI status at review: stage 1 head `dec8db1` run `42366047608` **cancelled**; stage 2 prior head `6d31198` run `42367506233` was in progress. Neither was green. Do not merge either PR until fresh completed green CI and independent review.
+
+
+## Additional UX hardening — 2026-11-07
+- `4170141`: save-and-exit now dispatches `START_NEW_TRIP` before navigating home. This resets the submission lock and draft because `EntrySessionProvider` is mounted in the root layout and survives client-side navigation; previously returning from home could leave the trip form permanently disabled.
+- `66736b8`: E2E covers save-and-exit, in-app return to trip entry without a full reload, and successful submission of the next trip.
+- `22dfd8d` / `e727954` / `81c3c36`: trip-history filters now expose removable active chips for search, contractor, vehicle, direction and custom range; clearing one chip preserves the selected period and other filters; a clear-all action resets to today.
+- `8c0b3f7` / `5cfb006`: mobile save actions are sticky and safe-area aware; E2E asserts sticky positioning at 360px width.
+- **Still not complete:** contractor/vehicle selection currently uses a search input plus native select, not the approved searchable bottom sheet. Recent choices are session-local only. Need decide/implement the accessible bottom-sheet pattern and validate keyboard/focus/Android behavior before closing decision 10. Also test custom-range persistence and filter chips on device.
+- Latest stage-2 head: `5cfb0066e2d7ec72412c0c0fd343ab08fcedeaf8`. No completed green GitHub Actions run confirmed for this head yet; Vercel Preview status alone is not test evidence. PR #35 remains Draft and must not merge before PR #34 stage-1 gate.
