@@ -33,7 +33,24 @@ export function StatementTable({ rows, tripDetailsById }: StatementTableProps) {
         <h3 className={styles.tableTitle}>حركات الفترة المفصلة ({rows.length} حركة)</h3>
       </div>
 
-      <div className={styles.tableWrapper}>
+      <div className={styles.mobileMovements} aria-label="حركات المقاول على الموبايل">
+        {rows.map(row => {
+          const details = tripDetailsById.get(row.id);
+          const delta = formatEgpFromPiastres(row.signedDeltaPiastres);
+          const balance = formatEgpFromPiastres(row.runningBalancePiastres);
+          return <details className={styles.mobileMovement} key={row.id}>
+            <summary>{row.workDate} — {details?.vehicle ?? "عربية غير معروفة"} — {delta.ok ? delta.amount : "غير صالح"} ج.م</summary>
+            <dl>
+              <dt>المسار</dt><dd>{details?.route || "—"}</dd>
+              <dt>الاتجاه</dt><dd>{row.direction === "AHMED_SUPPLIES" ? "شغل أحمد للمقاول" : "شغل المقاول لأحمد"}</dd>
+              <dt>رقم النقلة</dt><dd dir="ltr">{row.id}</dd>
+              <dt>أثر الحركة</dt><dd dir="ltr">{delta.ok ? delta.amount : "غير صالح"} ج.م</dd>
+              <dt>الرصيد بعد الحركة</dt><dd dir="ltr">{balance.ok ? balance.amount : "غير صالح"} ج.م</dd>
+            </dl>
+          </details>;
+        })}
+      </div>
+      <div className={`${styles.tableWrapper} ${styles.desktopMovements}`}>
         <table className={styles.table}>
           <thead>
             <tr>
