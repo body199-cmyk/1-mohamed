@@ -42,7 +42,6 @@ export function StatementTable({ rows, receiptByTripId, tripDetailsById }: State
               <th>العربية</th>
               <th>المسار / الوجهة</th>
               <th>رقم النقلة</th>
-              <th>رقم الإيصال</th>
               <th>الاتجاه والمسؤولية</th>
               <th>الأثر على حساب أحمد (+/−)</th>
               <th>الرصيد التراكمي</th>
@@ -57,7 +56,7 @@ export function StatementTable({ rows, receiptByTripId, tripDetailsById }: State
 
               return (
                 <React.Fragment key={row.id}>
-                {(index === 0 || rows[index - 1].workDate !== row.workDate) && <tr style={{background:"var(--color-primary-bg)"}}><th colSpan={8} scope="rowgroup" style={{color:"var(--text-main)",fontSize:"1rem",padding:"12px 16px"}}>📅 شغل يوم {row.workDate}</th></tr>}
+                {(index === 0 || rows[index - 1].workDate !== row.workDate) && <tr style={{background:"var(--color-primary-bg)"}}><th colSpan={7} scope="rowgroup" style={{color:"var(--text-main)",fontSize:"1rem",padding:"12px 16px"}}>📅 شغل يوم {row.workDate}</th></tr>}
                 <tr>
                   <td>{row.workDate}</td>
                   <td>{tripDetailsById.get(row.id)?.vehicle || "—"}</td>
@@ -65,7 +64,6 @@ export function StatementTable({ rows, receiptByTripId, tripDetailsById }: State
                   <td style={{ fontFamily: "monospace", fontSize: "0.85rem" }}>
                     {row.id}
                   </td>
-                  <td>{receiptByTripId.get(row.id)?.trim() || "—"}</td>
                   <td>
                     {isAhmed ? (
                       <span style={{ color: "var(--color-success)", fontWeight: 600 }}>
