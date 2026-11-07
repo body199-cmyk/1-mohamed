@@ -93,7 +93,7 @@ export function DailyWorkView() {
         : "تم إيقاف عرض المجاميع: بيانات نقلة غير متطابقة مع محرك الحساب" +
           (report.tripId ? " (" + report.tripId + ")." : ".")}
     </p> : <>
-      {exportDocument && <ReportExportActions document={exportDocument} fileNameBase={"daily-work-" + workDate} />}
+      {exportDocument && <ReportExportActions document={exportDocument} fileNameBase={"daily-work-" + workDate + "-" + (contractorId || "all-contractors") + "-" + (vehicleId || "all-vehicles")} />}
       <div className={styles.stats}>
         <TotalCard label="إجمالي اليوم المحدد" totals={report.totals} />
         <TotalCard label="شغل أحمد للطرف الآخر" totals={report.ahmedSupplies} />
