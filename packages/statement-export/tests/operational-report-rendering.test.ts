@@ -111,7 +111,7 @@ describe("H065 operational report exports — one fixed document, five formats",
     expect(csv).toContain("وصف التقرير");
     expect(csv).toContain("'=HYPERLINK(\"\"x\"\")");
     expect(csv).toContain("شركة، النيل");
-    expect(csv).toContain("' -100.00 ج.م".trim());
+    expect(csv).toContain("'-100.00 ج.م");
     const empty = renderOperationalReportCsv({ ...doc, rows: [] });
     expect(empty).toContain("لا توجد حركات خلال الفترة.");
     expect(empty).toContain("إجمالي اليوم المحدد");
@@ -178,7 +178,7 @@ describe("H065 operational report exports — one fixed document, five formats",
       .find(part => part.name === "xl/worksheets/sheet2.xml")!.content;
     expect(emptyDetail).toContain("لا توجد حركات خلال الفترة.");
     const hostile = fixture(1);
-    const altered = { ...hostile, rows: [["=1+1", "<img>&"] ] };
+    const altered = { ...hostile, rows: [["=1+1", "<img>&", "third"] ] };
     const detail = createOperationalReportXlsxParts(altered)
       .find(part => part.name === "xl/worksheets/sheet2.xml")!.content;
     expect(detail).toContain("=1+1");
