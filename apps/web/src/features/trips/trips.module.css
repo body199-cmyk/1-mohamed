@@ -471,3 +471,23 @@
 
 .recentChoices { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .recentChoices > button { border: 1px solid var(--border-color); border-radius: var(--radius-md); background: var(--surface-hover); min-height: 36px; }
+
+/* Stage 2: date-filtered history and mobile expandable cards. */
+.historyFilters { display:flex; flex-direction:column; gap:12px; margin-top:16px; }
+.historyRanges { display:flex; flex-wrap:wrap; gap:8px; }
+.historyRanges button[aria-pressed="true"] { background:var(--color-primary-bg); border-color:var(--color-primary); color:var(--color-primary); }
+.historyAdvanced { border:1px solid var(--border-color); border-radius:var(--radius-md); padding:12px; }
+.historyAdvanced summary { cursor:pointer; font-weight:600; }
+.historyAdvanced .formGrid { margin-top:12px; }
+.historyCount { color:var(--text-muted); margin:12px 0; }
+.historyDesktop { overflow-x:auto; }
+.historyTable { border-collapse:collapse; width:100%; min-width:800px; text-align:right; }
+.historyTable th,.historyTable td { border-bottom:1px solid var(--border-color); padding:12px 8px; vertical-align:top; }
+.historyTable th { background:var(--surface-hover); }
+.historyMobile { display:none; }
+.historyTrip { border:1px solid var(--border-color); border-radius:var(--radius-md); padding:12px; margin-bottom:10px; }
+.historyTrip summary { cursor:pointer; display:flex; flex-direction:column; gap:4px; }
+.historyTrip dl { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:12px 0 0; }
+.historyTrip dt { color:var(--text-muted); }
+.historyTrip dd { margin:0; overflow-wrap:anywhere; }
+@media(max-width:700px) { .historyDesktop{display:none;} .historyMobile{display:block;} }
