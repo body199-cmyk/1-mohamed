@@ -15,7 +15,7 @@ test.describe("Stage 2 — trip entry and history", () => {
     await page.getByRole("button", { name: "فترة مخصصة" }).click();
     await expect(page.getByRole("textbox", { name: "بحث في النقلات" })).toBeVisible();
     await page.getByText("فلاتر متقدمة").click();
-    await expect(page.getByText("كل العربيات")).toBeVisible();
+    await expect(page.locator("select").filter({ has: page.locator("option", { hasText: "كل العربيات" }) })).toBeVisible();
   });
 
   test("mobile trip history uses expandable cards without horizontal overflow", async ({ page }) => {
