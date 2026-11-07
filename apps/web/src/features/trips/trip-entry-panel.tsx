@@ -173,8 +173,11 @@ export function TripEntryPanel() {
     );
     const submitter = (e.nativeEvent as SubmitEvent).submitter as HTMLButtonElement | null;
     const mode = submitter?.value === "exit" ? "exit" : "new";
-    if (mode === "new") dispatch({ type: "START_NEW_TRIP" });
-    else router.push("/demo/home");
+    // Reset the entry session on both successful submit paths. The provider
+    // lives in the root layout, so leaving the page without releasing the
+    // submission lock would leave the form disabled when the user returns.
+    dispatch({ type: "START_NEW_TRIP" });
+    if (mode === "exit") router.push("/demo/home");
   };
 
   return (
