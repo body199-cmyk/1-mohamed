@@ -39,9 +39,13 @@ export function assertOperationalReportDocument(doc: OperationalReportDocument):
     }
   }
   for (const item of doc.metadata) {
-    if (!item || typeof item.label !== "string" || typeof item.value !== "string") {
+    if (!item || typeof item.label !== "string" || typeof item.value !== "string" ||
+        (item.direction !== undefined && item.direction !== "rtl" && item.direction !== "ltr")) {
       throw new Error("بيانات تعريف التقرير غير صالحة.");
     }
+  }
+  if (doc.footerNotes.some(note => typeof note !== "string")) {
+    throw new Error("ملاحظات التقرير غير صالحة.");
   }
   for (const section of doc.summarySections) {
     if (!section || typeof section.title !== "string" || !Array.isArray(section.metrics) ||
@@ -49,7 +53,8 @@ export function assertOperationalReportDocument(doc: OperationalReportDocument):
       throw new Error("ملخص التقرير غير صالح.");
     }
     for (const metric of section.metrics) {
-      if (!metric || typeof metric.label !== "string" || typeof metric.value !== "string") {
+      if (!metric || typeof metric.label !== "string" || typeof metric.value !== "string" ||
+          (metric.direction !== undefined && metric.direction !== "rtl" && metric.direction !== "ltr")) {
         throw new Error("قيمة في ملخص التقرير غير صالحة.");
       }
     }
