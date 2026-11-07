@@ -31,13 +31,6 @@ export function ContractorStatementsView() {
     return getStatementForContractor(selectedContractorId, effectiveFromDate, toDate);
   }, [selectedContractorId, effectiveFromDate, toDate, getStatementForContractor]);
 
-  // Join only the chosen contractor's trip receipts by stable trip ID.
-  // Never fold receipts or payment cash into the contractor work ledger.
-  const receiptByTripId = useMemo(() => new Map(
-    trips.filter(trip => trip.counterpartyId === selectedContractorId)
-      .map(trip => [trip.id, trip.receiptNumber] as const)
-  ), [trips, selectedContractorId]);
-
   const tripDetailsById = useMemo(() => new Map(trips.map(trip => [trip.id, {
     vehicle: vehicles.find(vehicle => vehicle.id === trip.vehicleId)?.plateNumber ?? trip.vehicleId,
     route: [trip.origin, trip.destination].filter(Boolean).join(" ← "),
@@ -162,8 +155,8 @@ export function ContractorStatementsView() {
             contractorName={currentContractor.name}
           />
 
-          <StatementExportActions statement={statementResult.statement} name={currentContractor.name} receiptByTripId={receiptByTripId} />
-          <StatementTable rows={statementResult.statement.rows} receiptByTripId={receiptByTripId} tripDetailsById={tripDetailsById} />
+          <StatementExportActions statement={statementResult.statement} name={currentContractor.name} />
+          <StatementTable rows={statementResult.statement.rows} tripDetailsById={tripDetailsById} />
         </>
       )}
     </div>
