@@ -27,7 +27,7 @@ test.describe("T09.3 download actual XLSX with exact Arabic source strings",()=>
       page.waitForEvent("download"),
       page.getByRole("button",{name:"تنزيل Excel XLSX"}).click()
     ]);
-    expect(download.suggestedFilename()).toBe("demo-statement-2026-11-01-2026-11-30.xlsx");
+    expect(download.suggestedFilename()).toBe(`demo-statement-2026-11-01-${new Intl.DateTimeFormat('en-CA',{timeZone:'Africa/Cairo',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())}.xlsx`);
     const path=await download.path();
     expect(path).toBeTruthy();
     const zip=await readFile(path!);
