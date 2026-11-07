@@ -13,7 +13,7 @@ test.describe("Stage 2 — trip entry and history", () => {
     await expect(page.getByRole("alert").filter({ hasText: "يرجى اختيار المقاول الطرف الآخر" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "سجل النقلات" })).toBeVisible();
     await page.getByRole("button", { name: "فترة مخصصة" }).click();
-    await expect(page.getByRole("textbox", { name: "بحث في النقلات" })).toBeVisible();
+    await expect(page.getByRole("searchbox", { name: "بحث في النقلات" })).toBeVisible();
     await page.getByText("فلاتر متقدمة").click();
     await expect(page.locator("select").filter({ has: page.locator("option", { hasText: "كل العربيات" }) })).toBeVisible();
   });
