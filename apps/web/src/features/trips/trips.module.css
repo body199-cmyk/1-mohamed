@@ -462,3 +462,9 @@
   .layoutGrid { grid-template-columns: minmax(0, 1fr); }
   .sideColumn { position: static; }
 }
+
+/* Approved stage 2: keyboard-accessible collapsible trip form sections. */
+.formSection { grid-column: 1 / -1; min-width: 0; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 12px; background: var(--surface-card); }
+.formSection > summary { cursor: pointer; font-weight: 700; color: var(--text-main); padding: 8px 4px; line-height: 1.7; }
+.formSection > summary:focus-visible { outline: 2px solid var(--border-focus); outline-offset: 2px; }
+.formSection[open] > .formGrid { margin-top: 12px; }
