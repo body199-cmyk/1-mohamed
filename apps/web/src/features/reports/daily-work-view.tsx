@@ -114,7 +114,6 @@ export function DailyWorkView() {
               <th scope="col">الوزن (طن)</th>
               <th scope="col">قيمة شغل المقاول</th>
               <th scope="col">مستحق العربية</th>
-              <th scope="col">رقم الإيصال</th>
             </tr></thead>
             <tbody>{report.rows.map(t => <tr key={t.id}>
               <th scope="row">{t.id}</th>
@@ -125,7 +124,6 @@ export function DailyWorkView() {
               <td>{t.weightTonnes}</td>
               <td>{egp(t.contractorTotalPiastres)}</td>
               <td>{egp(t.vehicleTotalPiastres)}</td>
-              <td>{t.receiptNumber || "—"}</td>
             </tr>)}</tbody>
           </table>
         </div>
