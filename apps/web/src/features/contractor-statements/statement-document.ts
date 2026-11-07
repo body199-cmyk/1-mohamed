@@ -41,7 +41,7 @@ export function toStatementDocument(
       movementCountText: String(statement.movementCount),
     },
     rows: statement.rows.map(row => ({
-      reference: row.id, receiptNumber: receiptByTripId.get(row.id)?.trim() || "—", workDate: row.workDate,
+      reference: row.id, workDate: row.workDate,
       directionText: row.direction === "AHMED_SUPPLIES" ? "أحمد جاب العربيات لشغل المقاول" : "المقاول جاب العربيات لشغل أحمد",
       amountText: signedMoney(row.signedDeltaPiastres),
       runningBalanceText: money(row.runningBalancePiastres),
