@@ -129,3 +129,18 @@ User explicitly changed priority: **batch 2 (AUD-006 through AUD-010), then batc
 
 ## 6. Next verification checkpoint
 The last code commit is `2c6a327`. Wait for its PR-triggered workflow; capture run ID, job conclusions, and failing step logs. If tests fail, classify the assertion before changing code. Do not push further changes while the full suite is running unless a real blocker requires a fix; concurrency cancels in-progress runs on this branch.
+
+### AUD-008 — additional D15/D16 defect found and fixed (2026-11-07)
+- **Confirmed logic defect:** `validateDemoPayment` seeded its D16 minimum with the balance after *all* same-day work (correct under D15), but then also included intermediate balances after each same-day WORK row. With multiple trips on one day, this reintroduced a pre-credit partial-day balance and could falsely reject a payment that was safe after all same-day work had been credited.
+- **Fix commit `41d5940`:** D16 candidates now include the post-all-work balance, same-day PAYMENT balances only, and every later-date movement. Same-day WORK is not counted twice or used as an intermediate deficit candidate. This preserves the intended ordering: all work for the date before payments.
+- **Regression commit `6c1122e`:** two same-day trips (EGP 100 + EGP 900) followed by a same-day EGP 1,000 payment must be accepted; test also verifies ledger ordering and balances.
+- **Important:** this is a substantive financial fix, but it remains unverified until the focused Vitest test and full required CI pass.
+
+### Batch 2 current code/test inventory
+- AUD-006: cumulative signed-64-bit balance guard + positive/negative overflow tests.
+- AUD-007: historical future-trip snapshot isolation + in-period rejection + invalid-date fail-closed tests.
+- AUD-008: D16 intermediate deficit test, positive final balance assertion, no-input-mutation assertion, plus newly found D15 multiple-work ordering fix/test.
+- AUD-010: daily work vehicle total reconciles against independently-owned primary/contractor cash ledgers, with opening/closing checks; existing report tests cover carry-forward, cancelled payments and empty periods.
+- Latest financial test additions: `e8cce90`, `2c6a327`, `8293ac5`, `6c1122e`; D16 code fix `41d5940`.
+- Latest audit doc update pending: this entry itself.
+- Batch 2 remains OPEN pending CI and export cross-format review; do not proceed to batch 3 or batch 1 until verified.
