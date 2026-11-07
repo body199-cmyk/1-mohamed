@@ -7,7 +7,6 @@ import { STATEMENT_PRINT_STYLES } from "./statement-print-styles";
 
 function renderDetailRowHtml(row: ContractorStatementRow): string {
   const reference = escapeHtmlText(row.reference);
-  const receiptNumber = escapeHtmlText(row.receiptNumber?.trim() || "—");
   const workDate = escapeHtmlText(row.workDate);
   const directionText = escapeHtmlText(row.directionText);
   const amountText = escapeHtmlText(row.amountText);
@@ -17,7 +16,6 @@ function renderDetailRowHtml(row: ContractorStatementRow): string {
     "          <tr>",
     `            <td><span class="ltr-token">${reference}</span></td>`,
     `            <td><span class="ltr-token">${workDate}</span></td>`,
-    `            <td><span class="ltr-token">${receiptNumber}</span></td>`,
     `            <td>${directionText}</td>`,
     `            <td class="${row.amountText.startsWith("-") ? "signed-negative" : row.amountText.startsWith("+") ? "signed-positive" : ""}"><span class="ltr-token">${amountText}</span></td>`,
     `            <td><span class="ltr-token">${runningBalanceText}</span></td>`,
@@ -53,7 +51,7 @@ export function renderContractorStatementHtml(
     document.rows.length === 0
       ? [
           "          <tr>",
-          '            <td colspan="6" class="empty-state-cell">لا توجد حركات خلال الفترة</td>',
+          '            <td colspan="5" class="empty-state-cell">لا توجد حركات خلال الفترة</td>',
           "          </tr>",
         ].join("\n")
       : document.rows.map(renderDetailRowHtml).join("\n");
@@ -127,7 +125,6 @@ export function renderContractorStatementHtml(
     "          <tr>",
     '            <th scope="col" class="col-ref">رقم النقلة</th>',
     '            <th scope="col" class="col-date">التاريخ</th>',
-    '            <th scope="col" class="col-receipt">رقم الإيصال</th>',
     '            <th scope="col" class="col-dir">اتجاه الشغل</th>',
     '            <th scope="col" class="col-amount">الأثر على حساب أحمد (+/−) — جنيه</th>',
     '            <th scope="col" class="col-balance">الرصيد بعد الحركة — جنيه</th>',
