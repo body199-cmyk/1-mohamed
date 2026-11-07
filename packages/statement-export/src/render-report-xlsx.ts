@@ -57,6 +57,7 @@ export function createOperationalReportXlsxParts(
   const summaryRows: string[][] = [
     [doc.title],
     ["اسم المنشأة", doc.businessName],
+    ["وصف التقرير", doc.subtitle],
     ...doc.metadata.map(item => [item.label, item.value]),
     ["تاريخ الإعداد", doc.generatedAtLabel],
     [],
