@@ -66,7 +66,7 @@ test.describe("Stage 2 — trip entry and history", () => {
     await expect(page).toHaveURL(/\/demo\/home$/);
 
     // Use in-app links so the root layout/provider remains mounted.
-    await page.getByRole("link", { name: "تسجيل النقلات" }).click();
+    await page.getByRole("link", { name: "تسجيل النقلات", exact: true }).click();
     await expect(page.locator("form fieldset")).not.toBeDisabled();
     await page.getByRole("combobox", { name: "المقاول الطرف الآخر" }).selectOption("K1");
     await page.getByRole("radio", { name: "أحمد جاب العربيات" }).check();
@@ -85,9 +85,9 @@ test.describe("Stage 2 — trip entry and history", () => {
     const history = page.getByRole("region", { name: "سجل النقلات" });
     await history.getByRole("button", { name: "الشهر" }).click();
     await history.getByText("فلاتر متقدمة").click();
-    await history.getByLabel("المقاول").selectOption("K1");
-    await history.getByLabel("العربية").selectOption("V1");
-    await history.getByLabel("اتجاه الشغل").selectOption("AHMED_SUPPLIES");
+    await history.getByLabel("المقاول", { exact: true }).selectOption("K1");
+    await history.getByLabel("العربية", { exact: true }).selectOption("V1");
+    await history.getByLabel("اتجاه الشغل", { exact: true }).selectOption("AHMED_SUPPLIES");
     await history.getByRole("searchbox", { name: "بحث في النقلات" }).fill("TRIP");
     const chips = history.getByLabel("الفلاتر النشطة");
     await expect(chips.getByRole("button", { name: "إزالة فلتر المقاول المقاول أحمد علام" })).toBeVisible();
