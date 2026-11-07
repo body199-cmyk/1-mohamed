@@ -53,3 +53,11 @@ For each stage record: PR/commit, tests and actual results, unresolved blockers,
 
 ### Scope guard
 Do not add navigation arrows, vehicle-cash redesign, new business rules, or alter source ledgers. Daily report and vehicle cash remain within previously approved scope only. D16 rejects payments causing a deficit on an intermediate day. Financial summaries must not conflate reciprocal contractor work and vehicle cash.
+
+### Follow-up review and implementation checkpoint
+- Reviewed actual PR diff against `main`: 25 commits and 19 changed files at review time; branch was not behind main. No PR reviews or review threads had been submitted yet; this does **not** constitute independent approval.
+- Confirmed trip form implementation paths: `apps/web/src/features/trips/trip-entry-panel.tsx` and `trip-form-fields.tsx`. Stage 2 gaps: approved collapsible sections, recent searchable selections, separate save-and-exit / save-and-new; current `claimSubmission()` guards duplicate submit but the submit path needs failure recovery QA. **Not implemented in this stage.**
+- Inspected statement CSV, HTML, PNG, XLSX and export actions: all consume the presentation-only document; receipt number no longer displayed in those output detail columns. Internal trip receipt data is retained and must not be deleted from source records without approval.
+- `f53bdfc`: implemented approved native image-share fallback: when `navigator.share` / `navigator.canShare` cannot share files, automatically download the exact generated PNG instead of merely telling the user to press a second button. User-facing explanation retained.
+- CI `42365218524` for previous `3e86f0f` head was still in progress at review, with browser master-data interaction test active; prior steps through build/auth succeeded. **This is not a pass** and later commits supersede it. Check completed latest-head CI before merging.
+- Latest changes after `3e86f0f` require full CI and real-device share testing. Never treat a branch-head change or cancelled older workflow as green.
