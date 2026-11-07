@@ -107,3 +107,8 @@ User explicitly changed priority: **batch 2 (AUD-006 through AUD-010), then batc
 - AUD-008 already has an E2E D16 rejection test, but the current full browser suite fails; acceptance requires a green focused test and proof that no rejected payment was persisted.
 - AUD-010 requires expanded test matrix, independent accounting package inspection, and cross-format reconciliation; one new E2E is not sufficient to close it.
 - **No claim of batch completion.** Order remains batch 2, then 3, then 1.
+
+### Batch 2 — AUD-007 implementation and cash-ledger integrity (2026-11-07)
+- **`1ef6148`**: Historical `buildCashLedger(..., asOf)` now checks each matching trip's date and opening boundary, but skips trips **after** `asOf` before recalculating their monetary snapshot. This matches the existing behavior for future payments: a corrupted future amount cannot invalidate an earlier statement, while an in-period corrupted snapshot still fails closed. Important: date/opening consistency of future trips remains globally validated. This is a time-isolation policy for historical projections, **not** permission to persist corrupt future records.
+- **`2dcba50`**: For in-period trips, reject invalid direction enum values before including the trip in the cash ledger, matching daily-work report's fail-closed validation. No change to approved UX or D16 payment rule.
+- **Verification pending:** unit/regression tests for future corrupted snapshots, in-period corrupted snapshots, and invalid directions; latest-head CI and accounting export reconciliation. AUD-007 implemented but **not closed**. AUD-008 and AUD-010 still require evidence and green tests. Continue batch 2 before batches 3 and 1.
