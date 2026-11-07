@@ -112,3 +112,20 @@ User explicitly changed priority: **batch 2 (AUD-006 through AUD-010), then batc
 - **`1ef6148`**: Historical `buildCashLedger(..., asOf)` now checks each matching trip's date and opening boundary, but skips trips **after** `asOf` before recalculating their monetary snapshot. This matches the existing behavior for future payments: a corrupted future amount cannot invalidate an earlier statement, while an in-period corrupted snapshot still fails closed. Important: date/opening consistency of future trips remains globally validated. This is a time-isolation policy for historical projections, **not** permission to persist corrupt future records.
 - **`2dcba50`**: For in-period trips, reject invalid direction enum values before including the trip in the cash ledger, matching daily-work report's fail-closed validation. No change to approved UX or D16 payment rule.
 - **Verification pending:** unit/regression tests for future corrupted snapshots, in-period corrupted snapshots, and invalid directions; latest-head CI and accounting export reconciliation. AUD-007 implemented but **not closed**. AUD-008 and AUD-010 still require evidence and green tests. Continue batch 2 before batches 3 and 1.
+
+### Batch 2 — expanded financial regression matrix (2026-11-07)
+**New tests authored on the working branch; execution/CI evidence still pending:**
+- `apps/web/e2e/payments-validation.test.ts` (commit `e8cce90`, fixture type correction `2c6a327`): historical cutoff ignores future-dated corrupt amount snapshots but rejects them once in-scope; invalid in-scope trip direction fails closed; positive and negative cumulative signed-64-bit overflow both fail closed; D16 rejects a payment that would make an intermediate date negative even though the final balance is positive, and the input payment collection remains unchanged.
+- `apps/web/e2e/vehicle-cash-report-validation.test.ts` (commit `8293ac5`): historical report isolation from future corrupt trip; invalid date fails closed; daily-work vehicle total reconciles to the sum of two separately-owned cash accounts (Ahmed primary and contractor K1), including the primary account's opening balance.
+- Existing test coverage inspected: same-day D15 ordering; D16 backdated deficit; edit excludes old payment once; cross-vehicle/contractor isolation; tampered snapshot rejection; cancelled/future payment exclusion; carry-forward across periods; empty-period and pre-opening validation.
+
+**AUD-006:** code guard exists (`e1d257e`) and boundary tests are now authored; close only after focused Vitest + latest PR-head CI pass. No DB signed-64 assumption claimed; demo store is in-memory and durable persistence is separately deferred.
+
+**AUD-007:** cutoff behavior is implemented (`1ef6148`) and now has tests for future corrupted financial snapshots (ignored historically, rejected once in period) and invalid date (fail closed). Close only after focused Vitest + CI pass.
+
+**AUD-008:** D16 algorithm itself was not weakened or rewritten. New test demonstrates the exact positive-final/negative-intermediate case and confirms no mutation of input data; existing tests cover safe exact-minimum acceptance and same-day D15 ordering. Close only after focused Vitest + CI pass.
+
+**AUD-010:** new cross-account reconciliation test ties daily work's vehicle total to account-specific cash-ledger movements and checks opening/closing; existing tests cover payment/cancel/carry-forward. Remaining scope: run all focused tests, inspect export documents for arithmetic equality, and ensure the latest browser/export suite is green. Not closed yet.
+
+## 6. Next verification checkpoint
+The last code commit is `2c6a327`. Wait for its PR-triggered workflow; capture run ID, job conclusions, and failing step logs. If tests fail, classify the assertion before changing code. Do not push further changes while the full suite is running unless a real blocker requires a fix; concurrency cancels in-progress runs on this branch.
