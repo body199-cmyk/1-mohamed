@@ -125,4 +125,42 @@ test.describe("H065 daily and vehicle cash exports", () => {
       }
     }
   });
+  test("negative cash payments keep the leading minus sign in print and downloadable reports", async ({ page }) => {
+    test.setTimeout(120_000);
+    await page.clock.setFixedTime(new Date("2026-11-05T12:00:00+02:00"));
+    await mkdir("artifacts/h065", { recursive: true });
+    await page.goto("/demo/payments");
+    await page.getByLabel("تاريخ الدفع الحقيقي").fill("2026-11-03");
+    await page.getByLabel("المبلغ بالجنيه").fill("100");
+    await page.getByLabel("رقم إيصال الدفعة").fill("000012");
+    await page.getByRole("button", { name: "تسجيل الدفعة" }).click();
+    await expect(page.getByRole("main").getByRole("status")).toContainText("تم تسجيل الدفعة");
+    await page.goto("/demo/reports/vehicle-cash");
+    const table = page.getByRole("table", { name: "جدول حركات كشف العربية" });
+    await expect(table).toContainText("000012");
+    await expect(table).toContainText("-100.00 ج.م");
+
+    const html = await printHtml(page, "كشف حساب نقد العربية");
+    expect(html).toContain("-100.00 ج.م");
+    await writeFile("artifacts/h065/vehicle-cash-negative-payment.html", html, "utf8");
+
+    const csv = await download(page, "تنزيل CSV");
+    expect(csv.bytes.toString("utf8")).toContain("'-100.00 ج.م");
+    await writeFile("artifacts/h065/vehicle-cash-negative-payment.csv", csv.bytes);
+
+    const xlsx = await download(page, "تنزيل Excel XLSX");
+    expect(xlsx.bytes.subarray(0, 4).toString()).toBe("PK\u0003\u0004");
+    await writeFile("artifacts/h065/vehicle-cash-negative-payment.xlsx", xlsx.bytes);
+
+    const png = await download(page, "تنزيل صورة PNG");
+    expect(png.bytes.subarray(0, 8).toString("hex")).toBe("89504e470d0a1a0a");
+    expect(png.bytes.readUInt32BE(16)).toBe(1440);
+    await writeFile("artifacts/h065/vehicle-cash-negative-payment.png", png.bytes);
+
+    const pdf = await download(page, "تنزيل PDF مباشر");
+    expect(pdf.bytes.subarray(0, 8).toString()).toBe("%PDF-1.4");
+    expect(pdf.bytes.toString("latin1")).toContain("/MediaBox [0 0 595.28 841.89]");
+    await writeFile("artifacts/h065/vehicle-cash-negative-payment.pdf", pdf.bytes);
+  });
+
 });
