@@ -1159,3 +1159,8 @@
 ## FIN-07 — 9 November 2026 — correct cumulative monetary domain (pending)
 - Identified false rejection of totals outside signed-64 despite each stored movement being valid; SQL aggregates in numeric. Small stacked branch on PR #37 removes cumulative-only check, adds ledger and report/export regressions.
 - No SQL migration, production operations, main merge, or redefinition of financial semantics. Exact-head CI and second review required; see [review](FIN07_AGGREGATE_BALANCE_REVIEW_2026-11-09.md).
+
+
+## FIN-01 / FIN-02 — 9 November 2026 — independent regression cases
+- Confirmed fixes already staged in PR #37 and #34; extended test coverage rather than replicating source changes. Four new cases span pre-opening create/edit, day-end work-before-payments, intermediate day minimum and account isolation.
+- CI pending; proof and caveats in [review](FIN01_FIN02_REGRESSION_REVIEW_2026-11-09.md). No main merge or production actions.
