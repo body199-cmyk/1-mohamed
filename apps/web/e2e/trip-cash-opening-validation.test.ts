@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { validateTripCashOpening } from "../src/features/trips/trip-cash-opening-validation";
+import { validateTripCashOpening, writeDemoTrip } from "../src/features/trips/trip-cash-opening-validation";
 import { DEMO_PRIMARY_RESPONSIBLE_ID } from "../src/features/payments/cash-ledger";
-import type { DemoVehicleCashOpening } from "../src/demo/demo-types";
+import type { DemoVehicleCashOpening, DemoTripRecord } from "../src/demo/demo-types";
 
 const start = "2026-11-05";
 const initial: DemoVehicleCashOpening[] = [
@@ -48,4 +48,34 @@ describe("FIN-03 — trip entry must respect responsible vehicle cash opening", 
     const duplicate = [initial[0]!, initial[0]!];
     expect(validateTripCashOpening(trip("AHMED_SUPPLIES", start), duplicate).ok).toBe(false);
   });
+});
+
+describe("FIN-03 DemoStore.addTrip write boundary — no mutation before opening", () => {
+  const input: Omit<DemoTripRecord, "id" | "createdAt"> = {
+    workDate:"2026-11-04",counterpartyId:"K1",vehicleId:"V1",
+    direction:"AHMED_SUPPLIES",origin:"A",destination:"B",
+    weightTonnes:"1.000",contractorRateEgp:"100",vehicleRateEgp:"100",
+    expenseEgp:"0",contractorTotalPiastres:"10000",
+    vehicleTotalPiastres:"10000",receiptNumber:"",notes:""
+  };
+  it.each(["AHMED_SUPPLIES","OTHER_SUPPLIES"] as const)(
+    "rejects before-opening %s at write boundary, then commits exactly one opening-day trip",
+    direction => {
+      const entries: DemoTripRecord[] = [];
+      let idCount = 0;
+      const nextId = () => "TRIP-"+(++idCount);
+      const commit = (record: DemoTripRecord) => { entries.unshift(record); };
+      const draft = {...input,direction};
+      const before = structuredClone(draft);
+      expect(() => writeDemoTrip(draft,initial,nextId,commit)).toThrow("افتتاحي نقد العربية");
+      expect(entries).toHaveLength(0);
+      expect(idCount).toBe(0);
+      expect(draft).toEqual(before);
+      const saved = writeDemoTrip({...draft,workDate:start},initial,nextId,commit,()=> "2026-11-05T12:00:00.000Z");
+      expect(saved.id).toBe("TRIP-1");
+      expect(saved.workDate).toBe(start);
+      expect(entries).toEqual([saved]);
+      expect(idCount).toBe(1);
+    }
+  );
 });
