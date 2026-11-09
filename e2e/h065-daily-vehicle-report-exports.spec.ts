@@ -10,13 +10,16 @@ const EXPORTS = [
 ] as const;
 
 async function setTheme(page: Page, theme: "light" | "dark"): Promise<void> {
-  await expect(page.locator("html")).toHaveAttribute("data-theme", /^(light|dark)$/);
-  if (await page.locator("html").getAttribute("data-theme") !== theme) {
-    await page.getByRole("button", {
-      name: theme === "dark" ? "تفعيل الوضع الداكن" : "تفعيل الوضع الفاتح",
-    }).click();
+  const previous = new URL(page.url()).pathname;
+  await page.goto("/demo/settings");
+  const html = page.locator("html");
+  await expect(html).toHaveAttribute("data-theme", /^(light|dark)$/);
+  if (await html.getAttribute("data-theme") !== theme) {
+    await page.getByRole("button",{name:"تغيير المظهر"}).click();
   }
-  await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
+  await expect(html).toHaveAttribute("data-theme",theme);
+  if(previous!=="/demo/settings") await page.goto(previous);
+  await expect(page.locator("html")).toHaveAttribute("data-theme",theme);
 }
 
 async function download(page: Page, label: string) {
@@ -134,7 +137,8 @@ test.describe("H065 daily and vehicle cash exports", () => {
     await page.getByLabel("المبلغ بالجنيه").fill("100");
     await page.getByRole("button", { name: "تسجيل الدفعة" }).click();
     await expect(page.getByRole("main").getByRole("status")).toContainText("تم تسجيل الدفعة");
-    await page.getByRole("link", { name: "كشف حساب نقد العربية" }).click();
+    await page.getByRole("navigation",{name:"التنقل الرئيسي"})
+      .getByRole("link",{name:"نقدية العربية",exact:true}).click();
     await expect(page.getByRole("heading", { name: "كشف حساب نقد العربية" })).toBeVisible();
     const table = page.getByRole("table", { name: "جدول حركات كشف العربية" });
     await expect(table).not.toContainText("000012");
