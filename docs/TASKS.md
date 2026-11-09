@@ -245,3 +245,7 @@
 - قرار D18: شغل أحمد موجب، وشغل المقاول سالب على حساب أحمد؛ «رقم النقلة» ID داخلي مستقل عن «رقم الإيصال». الشاشة وHTML/Print/PDF/PNG/CSV/XLSX متسقة، من غير تعديل محرك الحساب أو SQL.
 - CI النهائي قبل الدمج: [42215230226](https://github.com/body199-cmyk/1-mohamed/actions/runs/42215230226) SUCCESS، 54/54 Chromium، unit/typecheck/SQL negative controls/backup/Auth HTTP/Next build. Artifact [13501365580](https://github.com/body199-cmyk/1-mohamed/actions/runs/42215230226/artifacts/13501365580) يحوي صور 360/1280 وPDF A4/PNG؛ فُحصت علامات +/− بصريًا بعد إصلاح BUG-013.
 - أخطاء CI القديمة TEST-012 وBUG-013 أُغلقت؛ التفاصيل في ISSUES/HANDOFF_LOG.
+
+
+## UI-01 — preview acceptance, 9 November 2026
+- PR #36 already corrects the amount parser; `test/ui01-payment-preview-boundaries-20261109` adds 390px, normal amount, edit-once and D16 historical-rejection browser checks. Pending exact-head CI. [Evidence](UI01_PAYMENT_PREVIEW_REVIEW_2026-11-09.md).
