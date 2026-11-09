@@ -156,9 +156,9 @@ export function TripEntryPanel() {
 
     const saved = commitTripOrRelease(() => addTrip({
         workDate: tripDraft.workDate || state.sessionDate,
-        counterpartyId: tripDraft.counterpartyId,
-        vehicleId: tripDraft.vehicleId,
-        direction: tripDraft.direction,
+        counterpartyId: selectedContractor.id,
+        vehicleId: selectedVehicle.id,
+        direction: tripDraft.direction!,
         origin: tripDraft.origin,
         destination: tripDraft.destination,
         weightTonnes: tripDraft.weightTonnes,
