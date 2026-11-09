@@ -1,5 +1,6 @@
 import { test, expect, type Page } from "@playwright/test";
 import { readFile } from "node:fs/promises";
+import { selectThemeViaSettings } from "./support/approved-theme";
 
 async function fillTrip(page: Page) {
   await page.goto("/demo/trips");
@@ -83,6 +84,7 @@ test("التصدير يطابق الفترة المعروضة ويدعم الع�
   // The OS print dialog is the boundary; inspect its actual HTML input instead.
   await context.addInitScript(() => { window.print = () => {}; });
   await page.goto("/demo/contractors");
+  await page.getByLabel("نطاق كشف الحساب").selectOption("range");
   await page.getByLabel("من تاريخ").fill("2026-11-05");
   await page.getByLabel("إلى تاريخ").fill("2026-11-06");
   const downloadEvent = page.waitForEvent("download");
@@ -118,12 +120,12 @@ for (const width of [390, 768, 1440]) {
       await page.goto(`/demo/${route}`);
       await page.evaluate(() => document.fonts.ready);
       for (const mode of ["light", "dark"]) {
-        if (mode === "dark") await page.getByRole("button", { name: "تفعيل الوضع الداكن" }).click();
+        await selectThemeViaSettings(page, mode as "light"|"dark");
         const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
         expect(overflow).toBe(false);
         await page.screenshot({ path: `apps/web/e2e/screenshots/review-${route}-${width}-${mode}.png`, fullPage: true });
       }
-      await page.getByRole("button", { name: "تفعيل الوضع الفاتح" }).click();
+      await selectThemeViaSettings(page,"light");
     }
     expect(errors).toEqual([]);
   });
