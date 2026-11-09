@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { mkdir } from "node:fs/promises";
+import { selectThemeViaSettings } from "./support/approved-theme";
 
 function contrast(foreground: string, background: string): number {
   const linear = (color: string) => {
@@ -40,9 +41,9 @@ test.describe("H060 open-source dashboard identity — Tabler-inspired RTL shell
     expect(dims.sidebarLeft).toBeGreaterThanOrEqual(dims.mainRight-1);
     expect(dims.scrollWidth).toBeLessThanOrEqual(dims.viewport+1);
     const nav=page.getByRole("navigation",{name:"التنقل الرئيسي"});
-    await expect(nav.getByRole("link",{name:"الرئيسية"})).toHaveAttribute("aria-current","page");
+    await expect(nav.getByRole("link",{name:"لوحة المؤشرات"})).toHaveAttribute("aria-current","page");
     await nav.getByRole("link",{name:"دفعات العربيات"}).click();
-    await expect(page.getByRole("heading",{name:"دفعات العربيات"})).toBeVisible();
+    await expect(page.getByRole("heading",{name:/دفعات العربيات/})).toBeVisible();
     await expect(nav.getByRole("link",{name:"دفعات العربيات"})).toHaveAttribute("aria-current","page");
   });
 
@@ -62,7 +63,7 @@ test.describe("H060 open-source dashboard identity — Tabler-inspired RTL shell
       scroll:el.scrollWidth, client:el.clientWidth,
     }));
     expect(values.scroll).toBeGreaterThan(values.client);
-    await nav.getByRole("link",{name:"كشف حساب نقد العربية"}).click();
+    await nav.getByRole("link",{name:"نقدية العربية"}).click();
     await expect(page.getByRole("heading",{name:"كشف حساب نقد العربية"})).toBeVisible();
     expect(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1)).toBe(false);
   });
@@ -72,10 +73,8 @@ test.describe("H060 open-source dashboard identity — Tabler-inspired RTL shell
     for(const width of [360,1280]){
       await page.setViewportSize({width,height:780});
       for(const theme of ["light","dark"] as const){
+        await selectThemeViaSettings(page,theme);
         await page.goto("/demo/dashboard");
-        if(await page.locator("html").getAttribute("data-theme")!==theme){
-          await page.getByRole("button",{name:theme==="dark"?"تفعيل الوضع الداكن":"تفعيل الوضع الفاتح"}).click();
-        }
         await expect(page.locator("html")).toHaveAttribute("data-theme",theme);
         // Wait for the CTA background transition to finish before measuring
         // the final theme colors; do not accept an intermediate transition frame.

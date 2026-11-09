@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { createHash } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { selectThemeViaSettings } from "./support/approved-theme";
 
 const reports = [
   ["/demo/contractors", "contractors", 'div[class*="tableWrapper"]'],
@@ -9,11 +10,7 @@ const reports = [
 ] as const;
 
 async function setTheme(page: import("@playwright/test").Page, theme: "light"|"dark") {
-  await expect(page.locator("html")).toHaveAttribute("data-theme", /^(light|dark)$/);
-  if (await page.locator("html").getAttribute("data-theme") !== theme) {
-    await page.getByRole("button", {name: theme === "dark" ? "تفعيل الوضع الداكن" : "تفعيل الوضع الفاتح"}).click();
-  }
-  await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
+  await selectThemeViaSettings(page,theme);
 }
 
 async function downloadReport(page: import("@playwright/test").Page, label: string) {

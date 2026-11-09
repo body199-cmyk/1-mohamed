@@ -174,3 +174,9 @@
 @media (min-width:768px) and (max-width:1100px) {
   .header { position:sticky;top:0; }
 }
+
+
+/* H059: dark active mobile tab must achieve >=4.5:1 against its blue surface. */
+@media (max-width: 767px) {
+  :global([data-theme="dark"]) .active { color: var(--color-primary-hover); }
+}

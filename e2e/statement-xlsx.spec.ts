@@ -22,12 +22,13 @@ function entries(buffer:Buffer):Map<string,string>{
 
 test.describe("T09.3 download actual XLSX with exact Arabic source strings",()=>{
   test("exports a valid ZIP workbook with two RTL sheets and original statement values",async({page})=>{
+    await page.clock.setFixedTime(new Date("2026-11-09T12:00:00+02:00"));
     await page.goto("/demo/contractors");
     const [download]=await Promise.all([
       page.waitForEvent("download"),
       page.getByRole("button",{name:"تنزيل Excel XLSX"}).click()
     ]);
-    expect(download.suggestedFilename()).toBe("demo-statement-2026-11-01-2026-11-30.xlsx");
+    expect(download.suggestedFilename()).toBe("demo-statement-2026-11-01-2026-11-09.xlsx");
     const path=await download.path();
     expect(path).toBeTruthy();
     const zip=await readFile(path!);
@@ -41,6 +42,7 @@ test.describe("T09.3 download actual XLSX with exact Arabic source strings",()=>
   });
   test("exports empty period without phantom financial rows, invalid period cannot export",async({page})=>{
     await page.goto("/demo/contractors");
+    await page.getByLabel("نطاق كشف الحساب").selectOption("range");
     await page.getByLabel("من تاريخ").fill("2026-11-12");
     await page.getByLabel("إلى تاريخ").fill("2026-11-13");
     const [download]=await Promise.all([
