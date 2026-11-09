@@ -25,6 +25,7 @@ import {
 
 import { normalizeMasterKey, validOpeningDate, validOpeningPiastres } from "../features/master-data/master-data-validation";
 import { buildCashLedger, validateDemoPayment, cairoBusinessDate, cashResponsibleForTrip, DEMO_PRIMARY_RESPONSIBLE_ID, type PaymentDraft } from "../features/payments/cash-ledger";
+import { applyDemoPaymentEdit } from "../features/payments/demo-payment-operation";
 
 const DemoStoreContext = createContext<DemoStoreContextType | null>(null);
 
@@ -178,24 +179,14 @@ export function DemoStoreProvider({ children }: { children: React.ReactNode }) {
   const editPayment = useCallback((
     id: string, expectedVersion: number, reason: string, draft: PaymentDraft
   ): DemoPaymentResult => {
-    const previous = payments.find(p => p.id === id);
-    if (!previous || previous.isCancelled || previous.version !== expectedVersion ||
-        !reason.trim()) return { ok:false,error:"الدفعة غير موجودة أو اتغير إصدارها، أو سبب التعديل غير مكتوب." };
-    const check = validateDemoPayment({ trips, payments, cashOpenings, vehicles, contractors },
-      draft,cairoBusinessDate(),id);
-    if (!check.ok) return check;
-    const updated: DemoPayment = {
-      ...previous,vehicleId:draft.vehicleId,
-      responsibleContractorId:draft.responsibleContractorId,
-      paymentDate:draft.paymentDate,amountPiastres:check.value,
-      linkedTripId:draft.linkedTripId,receiptNumber:draft.receiptNumber.trim(),
-      notes:draft.notes.trim(),version:previous.version+1,
-    };
-    setPayments(prev => prev.map(p => p.id === id ? updated : p));
-    setPaymentAudit(prev => [{ id,action:"update",reason:reason.trim(),
-      before:JSON.stringify(previous),after:JSON.stringify(updated),at:new Date().toISOString() }, ...prev]);
-    return { ok:true,payment:updated };
-  },[trips,payments,cashOpenings,vehicles,contractors]);
+    const transition = applyDemoPaymentEdit({
+      trips, payments, paymentAudit, cashOpenings, vehicles, contractors
+    }, id, expectedVersion, reason, draft, cairoBusinessDate(), new Date().toISOString());
+    if (!transition.ok) return transition;
+    setPayments([...transition.payments]);
+    setPaymentAudit([...transition.audit]);
+    return {ok:true,payment:transition.payment};
+  },[trips,payments,paymentAudit,cashOpenings,vehicles,contractors]);
 
   const cancelPayment = useCallback((id: string, expectedVersion: number, reason: string): DemoPaymentResult => {
     const previous = payments.find(p => p.id === id);

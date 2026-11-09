@@ -250,3 +250,7 @@
 ## FIN-07 — numeric-sized aggregate cash balances, 9 November 2026
 - **State:** fix staged, CI and critical review pending. Stacked branch `fix/fin07-aggregate-balance-20261109` on PR #37, not main.
 - Remove only invalid aggregate bigint cap; retain per-record bigint validation; test ledger, report and export numeric-string parity. [Review](FIN07_AGGREGATE_BALANCE_REVIEW_2026-11-09.md).
+
+
+## FIN-01 / FIN-02 regression acceptance — 9 Nov 2026
+- New tests for already staged FIN-01/FIN-02 behavior, in separate stacked `test/fin01-fin02-payment-boundaries-20261109` branch on PR #40; **not yet verified**. [Review](FIN01_FIN02_REGRESSION_REVIEW_2026-11-09.md).
