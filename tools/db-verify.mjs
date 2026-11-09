@@ -75,6 +75,8 @@ const steps = [
   ['tests payments schema', 'supabase/tests/06_payments_schema_verification.sql', 'T08.1: تحقق العلاقات والدقة والصلاحيات والحركات المحفوظة'],
   ['migration 12', 'supabase/migrations/20261104200031_payment_operations.sql', 'T08.2: عمليات الدفعات مع D15/D16 والحماية المالية'],
   ['tests payment operations', 'supabase/tests/07_payment_operations_verification.sql', 'T08.2: قواعد الحساب التاريخي والعمليات المحمية'],
+  ['migration fin04', 'supabase/migrations/20261109210000_fin04_cash_opening_timeline.sql', 'FIN-04: vehicle cash opening/trip transaction timeline'],
+  ['tests fin04', 'supabase/tests/08_fin04_cash_opening_timeline_verification.sql', 'FIN-04: SQL reject earlier movements atomically'],
 ];
 
 function describe(error) {
