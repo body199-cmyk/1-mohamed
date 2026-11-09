@@ -16,7 +16,7 @@ select public.app_test_expect_error(
   $q$select public.app_op_opening_balance_create('FIN04-OPEN-INVALID',
     '{"id":"FIN04_OB_BAD","balance_type":"VEHICLE_CASH",
     "contractor_id":"K_MOHAMED","vehicle_id":"V_H48_B",
-    "start_date":"2026-11-03","signed_piastres":"0","start_mode":"TOTAL"}'::jsonb)$q$,
+    "start_date":"2026-11-03","signed_piastres":0,"start_mode":"TOTAL"}'::jsonb)$q$,
   'FIN04 rejects opening one day after existing cash work',array['22023']);
 select public.app_test_assert(
   not exists(select 1 from public.opening_balances where id='FIN04_OB_BAD')
@@ -27,7 +27,7 @@ select public.app_test_assert(
 select public.app_op_opening_balance_create('FIN04-OPEN-VALID',
   '{"id":"FIN04_OB_OK","balance_type":"VEHICLE_CASH",
   "contractor_id":"K_MOHAMED","vehicle_id":"V_H48_B",
-  "start_date":"2026-11-02","signed_piastres":"0","start_mode":"TOTAL"}'::jsonb);
+  "start_date":"2026-11-02","signed_piastres":0,"start_mode":"TOTAL"}'::jsonb);
 select public.app_test_assert(
   (select count(*) from public.opening_balances where id='FIN04_OB_OK'
     and start_date='2026-11-02')=1,
