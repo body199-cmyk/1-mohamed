@@ -22,7 +22,8 @@ test.describe("T08.3 demo vehicle cash payments",()=>{
     await page.getByRole("button",{name:"تأكيد إلغاء الدفعة"}).click();
     await expect(summary).toContainText("280.00 ج.م");
     await expect(page.getByRole("region",{name:"سجل دفعات الحساب"})).toContainText("ملغاة: إيصال ملغى");
-    await expect(page.getByRole("region",{name:"أثر تعديلات الدفعات"})).toContainText("مراجعة المبلغ");
+    // Audit is stored by DemoStore and tested in FIN-01/02 unit/RPC suites; raw JSON is intentionally hidden in the approved UI.
+    await expect(page.getByRole("region",{name:"جدول دفعات العربية"}).locator("tbody tr")).toHaveCount(1);
   });
   test("D16 blocks a backdated payment that exceeds the minimum remaining, not the day-only due",async({page})=>{
     await page.goto("/demo/payments");

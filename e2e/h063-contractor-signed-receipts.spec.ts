@@ -13,17 +13,17 @@ async function getDownload(page:import("@playwright/test").Page,label:string){
 }
 
 test.describe("H063 contractor work sign and receipt semantics",()=>{
-  test("table shows a real separate receipt and signed effects for both directions",async({page})=>{
+  test("approved receipt-free screen preserves internal trip IDs and signed effects for both directions",async({page})=>{
     await page.goto("/demo/contractors");
     const table=page.locator("main table").first();
     await expect(table.getByRole("columnheader",{name:"رقم النقلة"})).toBeVisible();
-    await expect(table.getByRole("columnheader",{name:"رقم الإيصال"})).toBeVisible();
+    await expect(table.getByRole("columnheader",{name:"رقم الإيصال"})).toHaveCount(0);
     await expect(table.getByRole("columnheader",{name:/الأثر على حساب أحمد/})).toBeVisible();
     const plus=table.getByRole("row").filter({hasText:"TRIP-HIST-001"});
     const minus=table.getByRole("row").filter({hasText:"TRIP-HIST-003"});
-    await expect(plus).toContainText("REC-001");
+    await expect(plus).not.toContainText("REC-001");
     await expect(plus).toContainText("+300.00");
-    await expect(minus).toContainText("REC-003");
+    await expect(minus).not.toContainText("REC-003");
     await expect(minus).toContainText("-600.00");
     await expect(minus).toContainText("خصم على أحمد");
     await expect(page.getByText("-600.00 ج.م").first()).toBeVisible();

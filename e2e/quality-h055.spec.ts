@@ -86,7 +86,7 @@ test.describe("H055 / T11: bounded desktop-Chromium UX quality gate", () => {
     await page.keyboard.press("Enter");
     await expect(page.locator("main#main-content")).toBeFocused();
     const menu = page.getByRole("navigation",{name:"التنقل الرئيسي"});
-    const reports = menu.getByRole("link",{name:"تقرير الشغل اليومي"});
+    const reports = menu.getByRole("link",{name:"التقرير اليومي",exact:true});
     await reports.focus();
     const outline = await reports.evaluate(el => ({
       style:getComputedStyle(el).outlineStyle,

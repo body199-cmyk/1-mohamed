@@ -59,7 +59,7 @@ test.describe("H056 offline-first design foundation with live demo data", () => 
     await page.setViewportSize({ width: 360, height: 780 });
     await page.goto("/demo/dashboard");
     await expect(page.locator("header").first()).toContainText("حسابات النقل");
-    await expect(page.locator("header").first()).toContainText("معاينة تفاعلية");
+    await expect(page.locator("header").first()).toContainText("حسابات النقل والمقاولين");
     await page.keyboard.press("Tab");
     await expect(page.getByRole("link", { name: "تخطي التنقل إلى المحتوى الرئيسي" })).toBeFocused();
     await page.getByRole("navigation", { name: "التنقل الرئيسي" }).getByRole("link", { name: "تسجيل النقلات" }).click();
