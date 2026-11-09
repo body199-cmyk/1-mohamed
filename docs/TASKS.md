@@ -245,3 +245,9 @@
 - قرار D18: شغل أحمد موجب، وشغل المقاول سالب على حساب أحمد؛ «رقم النقلة» ID داخلي مستقل عن «رقم الإيصال». الشاشة وHTML/Print/PDF/PNG/CSV/XLSX متسقة، من غير تعديل محرك الحساب أو SQL.
 - CI النهائي قبل الدمج: [42215230226](https://github.com/body199-cmyk/1-mohamed/actions/runs/42215230226) SUCCESS، 54/54 Chromium، unit/typecheck/SQL negative controls/backup/Auth HTTP/Next build. Artifact [13501365580](https://github.com/body199-cmyk/1-mohamed/actions/runs/42215230226/artifacts/13501365580) يحوي صور 360/1280 وPDF A4/PNG؛ فُحصت علامات +/− بصريًا بعد إصلاح BUG-013.
 - أخطاء CI القديمة TEST-012 وBUG-013 أُغلقت؛ التفاصيل في ISSUES/HANDOFF_LOG.
+
+
+## OPS-03 / Mohamed remediation — 9 November 2026
+- **State:** under verification (documentation-only PR, not complete until final diff and CI).
+- Main baseline `1e1dae637d9bb1c29e74b31b2180e7ddda2769b5`; historical audit and [live progress tracker](MOHAMED_REMEDIATION_PROGRESS_2026-11-09.md) are linked; #37 depends on #34, #35 and #36 have independent changes.
+- Financial ordering: FIN-01, FIN-02, FIN-03, then remaining evidence-based FIN tasks; UI-01 and additional approved mobile work after financial safety. Never merge rejected navigation/restore receipt field; maintain three independent ledgers. No code or production operations in OPS-03.

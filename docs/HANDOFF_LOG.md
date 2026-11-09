@@ -1154,3 +1154,9 @@
 - **النطاق:** تحديث توقع CSV H063 في الاختبار، تقوية اختبارات H055/H059/H060، وإضافة regression suite إلى CI. صفر تعديل في كود التطبيق أو المنطق المالي أو migrations أو Supabase/Vercel.
 - **النتيجة المحلية:** 69/70 في إحدى الدورات الكاملة؛ الفشل المحلي المتغير بيئي، بينما GitHub CI النهائي أخضر على SHA المختبر. لا نكرر الاختبارات بلا تغيير.
 - **الخطوة التالية على المشروع:** مراجعة النطاق غير المكتمل في T09 (تصدير اليومية ونقد العربية)، وحسم D07 لنسخ الأمان، وقرار خصوصية المستودع قبل أي بيانات حقيقية؛ ثم Supabase-TEST فقط، وVercel أخيرًا. لا توجد موافقة مستخدم موثقة بعد على D07 أو تحويل المستودع إلى Private.
+
+
+## OPS-03 — 9 November 2026 — live baseline and dependency review (pending CI)
+- Verified main `1e1dae637d9bb1c29e74b31b2180e7ddda2769b5`, and four open draft PRs: #34 `2535b77`, #37 `c99f57e` (six commits stacked on #34), #36 `21fb859`, #35 `3e6f871`.
+- Checked governed docs and audit report, preserved the report under docs and created [remediation tracker](MOHAMED_REMEDIATION_PROGRESS_2026-11-09.md). All four latest inspected PR workflows failed in browser regressions: classification incomplete. No tests were suppressed or claimed successful.
+- OPS-03 includes documentation only. Next: targeted financial tests and fixes in separate branches, then full exact-head CI and critical diff review. No main merge/production deployment, no customer-data changes.
