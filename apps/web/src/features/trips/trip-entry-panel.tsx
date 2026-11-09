@@ -141,7 +141,12 @@ export function TripEntryPanel() {
     if (!dateCheck.ok) {
       setValidationError("راجع تاريخ النقلة؛ يجب أن يكون صحيحًا ولا يسبق بداية حساب المقاول."); return;
     }
-    const cashCheck = validateTripCashOpening(tripDraft, cashOpenings);
+    const cashCheck = validateTripCashOpening({
+      workDate: tripDraft.workDate,
+      vehicleId: selectedVehicle.id,
+      counterpartyId: selectedContractor.id,
+      direction: tripDraft.direction!,
+    }, cashOpenings);
     if (!cashCheck.ok) {
       setValidationError(cashCheck.error);
       return;
