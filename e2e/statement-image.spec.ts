@@ -3,13 +3,14 @@ import { readFile } from "node:fs/promises";
 
 test.describe("T09.1 — download real PNG of same work statement", () => {
   test("exports actual PNG with selected period and report values", async ({ page }) => {
+    await page.clock.setFixedTime(new Date("2026-11-09T12:00:00+02:00"));
     await page.goto("/demo/contractors");
     await expect(page.getByRole("button", { name: "تنزيل صورة PNG" })).toBeVisible();
     const [download] = await Promise.all([
       page.waitForEvent("download"),
       page.getByRole("button", { name: "تنزيل صورة PNG" }).click(),
     ]);
-    expect(download.suggestedFilename()).toBe("demo-statement-2026-11-01-2026-11-30.png");
+    expect(download.suggestedFilename()).toBe("demo-statement-2026-11-01-2026-11-09.png");
     const file = await download.path();
     expect(file).toBeTruthy();
     const data = await readFile(file!);
@@ -21,6 +22,7 @@ test.describe("T09.1 — download real PNG of same work statement", () => {
 
   test("empty valid period exports PNG; invalid period prevents export", async ({ page }) => {
     await page.goto("/demo/contractors");
+    await page.getByLabel("نطاق كشف الحساب").selectOption("range");
     await page.getByLabel("من تاريخ").fill("2026-11-12");
     await page.getByLabel("إلى تاريخ").fill("2026-11-13");
     const [download] = await Promise.all([

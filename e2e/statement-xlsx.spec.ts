@@ -22,6 +22,7 @@ function entries(buffer:Buffer):Map<string,string>{
 
 test.describe("T09.3 download actual XLSX with exact Arabic source strings",()=>{
   test("exports a valid ZIP workbook with two RTL sheets and original statement values",async({page})=>{
+    await page.clock.setFixedTime(new Date("2026-11-09T12:00:00+02:00"));
     await page.goto("/demo/contractors");
     const [download]=await Promise.all([
       page.waitForEvent("download"),
