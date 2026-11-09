@@ -205,6 +205,22 @@ describe("calculateTripAmounts", () => {
     });
   });
 
+  describe("SQL BIGINT movement parity (FIN-07)", () => {
+    const base={weightTonnes:"1",contractorRateEgp:"1",vehicleRateEgp:"1",expenseEgp:"0"};
+    it("accepts exact upper boundary for an individual trip",()=>{
+      expect(calculateTripAmounts({...base,contractorRateEgp:"92233720368547758.07",vehicleRateEgp:"92233720368547758.07"})).toEqual({ok:true,contractorTotalPiastres:"9223372036854775807",vehicleTotalPiastres:"9223372036854775807"});
+    });
+    it("rejects a scaled field one piastre above SQL BIGINT",()=>{
+      expect(calculateTripAmounts({...base,contractorRateEgp:"92233720368547758.08"})).toEqual({ok:false,error:{field:"contractorRateEgp",code:"OUT_OF_RANGE"}});
+    });
+    it("rejects a single trip total above SQL BIGINT even when each input fits",()=>{
+      expect(calculateTripAmounts({...base,contractorRateEgp:"92233720368547758.07",expenseEgp:"0.01"})).toEqual({ok:false,error:{field:"contractorRateEgp",code:"OUT_OF_RANGE"}});
+    });
+    it("rejects huge digit inputs without BigInt allocation",()=>{
+      expect(calculateTripAmounts({...base,weightTonnes:"9".repeat(100000)})).toEqual({ok:false,error:{field:"weightTonnes",code:"OUT_OF_RANGE"}});
+    });
+  });
+
   describe("format validation (INVALID_FORMAT)", () => {
     it.each([
       { label: "empty string", value: "" },
