@@ -11,7 +11,7 @@ export type TripAmountsField =
   | "vehicleRateEgp"
   | "expenseEgp";
 
-export type TripAmountsErrorCode = "INVALID_FORMAT" | "EXCESS_PRECISION";
+export type TripAmountsErrorCode = "INVALID_FORMAT" | "EXCESS_PRECISION" | "OUT_OF_RANGE";
 
 export interface TripAmountsError {
   readonly field: TripAmountsField;
@@ -35,6 +35,7 @@ const WEIGHT_SCALE = 3;
 const MONEY_SCALE = 2;
 const WEIGHT_DIVISOR = 1000n;
 const HALF_WEIGHT_DIVISOR = 500n;
+const MAX_SQL_BIGINT = 9223372036854775807n;
 
 type ParseScaleResult =
   | { readonly ok: true; readonly scaledValue: bigint }
@@ -63,10 +64,11 @@ function parseScaledUnsignedDecimal(
   const paddedFraction = fractionPart.padEnd(maxFractionDigits, "0");
   const combinedDigits = integerPart + paddedFraction;
 
-  return {
-    ok: true,
-    scaledValue: BigInt(combinedDigits),
-  };
+  // SQL persists each scaled input as BIGINT; reject before conversion of huge strings.
+  if (combinedDigits.length > 256) return { ok:false, code:"OUT_OF_RANGE" };
+  const scaledValue = BigInt(combinedDigits);
+  if (scaledValue > MAX_SQL_BIGINT) return { ok:false, code:"OUT_OF_RANGE" };
+  return {ok:true,scaledValue};
 }
 
 function computeTotalPiastres(
@@ -140,9 +142,12 @@ export function calculateTripAmounts(
     expenseParsed.scaledValue
   );
 
-  return {
-    ok: true,
-    contractorTotalPiastres,
-    vehicleTotalPiastres,
-  };
+  // SQL app_trip_totals rejects out-of-range *single-trip* stored totals.
+  if (BigInt(contractorTotalPiastres) > MAX_SQL_BIGINT) {
+    return {ok:false,error:{field:"contractorRateEgp",code:"OUT_OF_RANGE"}};
+  }
+  if (BigInt(vehicleTotalPiastres) > MAX_SQL_BIGINT) {
+    return {ok:false,error:{field:"vehicleRateEgp",code:"OUT_OF_RANGE"}};
+  }
+  return { ok: true, contractorTotalPiastres, vehicleTotalPiastres };
 }

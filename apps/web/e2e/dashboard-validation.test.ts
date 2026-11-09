@@ -51,15 +51,16 @@ describe("T08.6/H051 dashboard measures separated work activity and cash payment
     expect(buildDashboardSummary(INITIAL_TRIPS,[payment("A","2026-11-05","10.1")],"2026-11-05").ok).toBe(false);
     expect(buildDashboardSummary(INITIAL_TRIPS,[payment("A","2026-11-05","9223372036854775808")],"2026-11-05").ok).toBe(false);
   });
-  it("uses BigInt exact addition beyond JavaScript safe number and protects aggregate limits",()=>{
+  it("uses BigInt exact addition beyond JavaScript safe number and preserves numeric-sized aggregates",()=>{
     const ok=buildDashboardSummary([],[
       payment("A","2026-11-05","9007199254740993"),
       payment("B","2026-11-05","2"),
     ],"2026-11-05");
     expect(ok.ok && ok.paidPiastres==="9007199254740995").toBe(true);
-    expect(buildDashboardSummary([],[
+    const large=buildDashboardSummary([],[
       payment("A","2026-11-05","9223372036854775800"),
       payment("B","2026-11-05","10"),
-    ],"2026-11-05").ok).toBe(false);
+    ],"2026-11-05");
+    expect(large.ok && large.paidPiastres==="9223372036854775810" && large.paymentCount===2).toBe(true);
   });
 });
