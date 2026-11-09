@@ -499,3 +499,7 @@
 
 ## FIN-07 — cumulative cash balance vs SQL numeric
 - Narrow change and targeted regression on PR #37. Account sum can exceed signed-64 movement domain; stored movement limits stay enforced. CI/review pending; see [review](FIN07_AGGREGATE_BALANCE_REVIEW_2026-11-09.md).
+
+
+## FIN-01 / FIN-02 — payment-date and day-end tests
+- Test-only acceptance cases for responsible cash opening, same-day work/dual payments, intermediate minimum and edits across cash accounts; code fix from #37/#34 retained, no duplicate calculation logic. Pending CI.
