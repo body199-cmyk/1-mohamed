@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEntrySession } from "../../demo/entry-session-context";
 import { buildContractorStatement } from "@ledger/contractor-statements";
 import { calculateTripAmounts } from "@ledger/accounting";
+import { validateTripCashOpening } from "./trip-cash-opening-validation";
 import { useDemoStore } from "../../demo/demo-context";
 import { TripFormFields } from "./trip-form-fields";
 import { TripHistoryPanel } from "./trip-history-panel";
@@ -19,6 +20,7 @@ export function TripEntryPanel() {
   const {
     contractors,
     vehicles,
+    cashOpenings,
     addTrip,
     addVehicle,
     addContractor,
@@ -138,6 +140,11 @@ export function TripEntryPanel() {
     });
     if (!dateCheck.ok) {
       setValidationError("راجع تاريخ النقلة؛ يجب أن يكون صحيحًا ولا يسبق بداية حساب المقاول."); return;
+    }
+    const cashCheck = validateTripCashOpening(tripDraft, cashOpenings);
+    if (!cashCheck.ok) {
+      setValidationError(cashCheck.error);
+      return;
     }
     if (!claimSubmission()) return;
     setIsSubmitting(true);
