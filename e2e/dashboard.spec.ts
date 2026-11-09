@@ -6,7 +6,7 @@ test.describe("T08.6 dashboard — daily indicators and independent payments",()
     await page.clock.setFixedTime(new Date("2026-11-05T12:00:00+02:00"));
     await page.goto("/");
     await expect(page).toHaveURL(/\/demo\/home$/);
-    await page.getByRole("link",{name:/لوحة المؤشرات/}).click();
+    await page.getByRole("navigation",{name:"التنقل الرئيسي"}).getByRole("link",{name:"لوحة المؤشرات",exact:true}).click();
     await expect(page).toHaveURL(/\/demo\/dashboard$/);
     await expect(page.getByRole("heading",{name:"الرئيسية — ملخص اليوم"})).toBeVisible();
     const metrics=page.getByRole("region",{name:"المؤشرات اليومية"});
@@ -26,7 +26,7 @@ test.describe("T08.6 dashboard — daily indicators and independent payments",()
     await page.getByLabel("المبلغ بالجنيه").fill("100");
     await page.getByRole("button",{name:"تسجيل الدفعة"}).click();
     await expect(page.getByRole("main").getByRole("status")).toContainText("تم تسجيل الدفعة");
-    await page.getByRole("link",{name:"الرئيسية"}).click();
+    await page.getByRole("navigation",{name:"التنقل الرئيسي"}).getByRole("link",{name:"لوحة المؤشرات",exact:true}).click();
     const cash=page.getByRole("region",{name:"دفعات نقد العربيات اليوم"});
     const work=page.getByRole("region",{name:"المؤشرات اليومية"});
     await expect(cash).toContainText("100.00 ج.م");

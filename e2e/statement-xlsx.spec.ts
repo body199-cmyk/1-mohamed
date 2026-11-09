@@ -22,12 +22,13 @@ function entries(buffer:Buffer):Map<string,string>{
 
 test.describe("T09.3 download actual XLSX with exact Arabic source strings",()=>{
   test("exports a valid ZIP workbook with two RTL sheets and original statement values",async({page})=>{
+    await page.clock.setFixedTime(new Date("2026-11-09T12:00:00+02:00"));
     await page.goto("/demo/contractors");
     const [download]=await Promise.all([
       page.waitForEvent("download"),
       page.getByRole("button",{name:"تنزيل Excel XLSX"}).click()
     ]);
-    expect(download.suggestedFilename()).toBe(`demo-statement-2026-11-01-${new Intl.DateTimeFormat('en-CA',{timeZone:'Africa/Cairo',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())}.xlsx`);
+    expect(download.suggestedFilename()).toBe("demo-statement-2026-11-01-2026-11-09.xlsx");
     const path=await download.path();
     expect(path).toBeTruthy();
     const zip=await readFile(path!);

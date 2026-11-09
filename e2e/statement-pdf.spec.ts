@@ -3,12 +3,13 @@ import { readFile } from "node:fs/promises";
 
 test.describe("T09.2 actual paginated PDF download",()=>{
   test("creates a real A4 PDF with byte-valid page, image and trailer",async({page})=>{
+    await page.clock.setFixedTime(new Date("2026-11-09T12:00:00+02:00"));
     await page.goto("/demo/contractors");
     const [download]=await Promise.all([
       page.waitForEvent("download"),
       page.getByRole("button",{name:"تنزيل PDF مباشر"}).click()
     ]);
-    expect(download.suggestedFilename()).toBe(`demo-statement-2026-11-01-${new Intl.DateTimeFormat('en-CA',{timeZone:'Africa/Cairo',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())}.pdf`);
+    expect(download.suggestedFilename()).toBe("demo-statement-2026-11-01-2026-11-09.pdf");
     const file=await download.path();
     expect(file).toBeTruthy();
     const pdf=await readFile(file!);
