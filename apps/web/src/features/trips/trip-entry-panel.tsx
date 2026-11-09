@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEntrySession } from "../../demo/entry-session-context";
 import { buildContractorStatement } from "@ledger/contractor-statements";
 import { calculateTripAmounts } from "@ledger/accounting";
-import { validateTripCashOpening } from "./trip-cash-opening-validation";
+import { validateTripCashOpening, commitTripOrRelease } from "./trip-cash-opening-validation";
 import { useDemoStore } from "../../demo/demo-context";
 import { TripFormFields } from "./trip-form-fields";
 import { TripHistoryPanel } from "./trip-history-panel";
@@ -154,9 +154,7 @@ export function TripEntryPanel() {
     if (!claimSubmission()) return;
     setIsSubmitting(true);
 
-    let added: ReturnType<typeof addTrip>;
-    try {
-      added = addTrip({
+    const saved = commitTripOrRelease(() => addTrip({
         workDate: tripDraft.workDate || state.sessionDate,
         counterpartyId: tripDraft.counterpartyId,
         vehicleId: tripDraft.vehicleId,
@@ -171,14 +169,13 @@ export function TripEntryPanel() {
         vehicleTotalPiastres: calc.vehicleTotalPiastres,
         receiptNumber: tripDraft.receiptNumber,
         notes: tripDraft.notes,
-      });
-
-    } catch {
-      releaseSubmission();
+      }), releaseSubmission);
+    if (!saved.ok) {
       setValidationError("تعذر حفظ النقلة. راجع البيانات وحاول مرة أخرى؛ لم يتم قفل النموذج.");
       setIsSubmitting(false);
       return;
     }
+    const added = saved.value;
     setIsSubmitting(false);
     setSuccessBanner(
       `✓ تم تسجيل النقلة بنجاح (${added.id}). يمكنك الانتقال إلى كشف الحساب لرؤية الأثر المالي فورياً.`
