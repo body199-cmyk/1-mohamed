@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { validateTripCashOpening, writeDemoTrip } from "../src/features/trips/trip-cash-opening-validation";
+import { validateTripCashOpening, writeDemoTrip, commitTripOrRelease } from "../src/features/trips/trip-cash-opening-validation";
 import { DEMO_PRIMARY_RESPONSIBLE_ID } from "../src/features/payments/cash-ledger";
 import type { DemoVehicleCashOpening, DemoTripRecord } from "../src/demo/demo-types";
 
@@ -78,4 +78,25 @@ describe("FIN-03 DemoStore.addTrip write boundary — no mutation before opening
       expect(idCount).toBe(1);
     }
   );
+});
+
+describe("FIN-03 submission lock recovery after store-level failure", () => {
+  it("releases the claimed lock, preserves draft, and retries successfully", () => {
+    const draft = { workDate: "2026-11-04", weightTonnes: "1.000" };
+    const snapshot = structuredClone(draft);
+    let locked = false;
+    let released = 0;
+    const claim = () => { if(locked) return false; locked=true; return true; };
+    const release = () => { locked=false; released++; };
+    expect(claim()).toBe(true);
+    const failed = commitTripOrRelease(() => {throw new Error("store failed after form check");},release);
+    expect(failed).toEqual({ ok:false });
+    expect(locked).toBe(false);
+    expect(released).toBe(1);
+    expect(draft).toEqual(snapshot);
+    expect(claim()).toBe(true);
+    const saved = commitTripOrRelease(() => ({...draft, workDate:"2026-11-05"}),release);
+    expect(saved).toEqual({ok:true,value:{...draft,workDate:"2026-11-05"}});
+    expect(released).toBe(1);
+  });
 });
