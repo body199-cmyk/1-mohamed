@@ -1,5 +1,10 @@
 import { expect, test } from "@playwright/test";
 
+function previewValue(preview: import("@playwright/test").Locator, heading: RegExp) {
+  return preview.locator(":scope > div").filter({ hasText: heading }).locator("strong");
+}
+
+
 test.describe("Stage 3 — cash payment preview shares the save validator", () => {
   test("Arabic-digit amounts produce the same before/after preview as the saved amount parser", async ({ page }) => {
     await page.goto("/demo/payments");
@@ -27,9 +32,9 @@ test("UI-01 shows exact 390px before/after preview for normal amount and a payme
   const amount = form.getByRole("textbox", { name: "المبلغ بالجنيه" });
   await amount.fill("100.00");
   const preview = page.getByRole("region", { name: "الرصيد بعد الدفعة" });
-  await expect(preview).toContainText("280.00");
-  await expect(preview).toContainText("100.00");
-  await expect(preview).toContainText("180.00");
+  await expect(previewValue(preview, /المتبقي قبل الدفعة/)).toHaveText("280.00 ج.م");
+  await expect(previewValue(preview, /قيمة الدفعة الجديدة/)).toHaveText("100.00 ج.م");
+  await expect(previewValue(preview, /المتبقي للعربية بعد الدفعة/)).toHaveText("180.00 ج.م");
   expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1)).toBe(false);
 
   await form.getByRole("button", { name: "تسجيل الدفعة" }).click();
@@ -37,9 +42,9 @@ test("UI-01 shows exact 390px before/after preview for normal amount and a payme
   await page.getByRole("button", { name: /تعديل الدفعة P-DEMO-/ }).click();
   await expect(amount).toHaveValue("100.00");
   await amount.fill("150.00");
-  await expect(preview).toContainText("280.00");
-  await expect(preview).toContainText("150.00");
-  await expect(preview).toContainText("130.00");
+  await expect(previewValue(preview, /المتبقي قبل الدفعة/)).toHaveText("280.00 ج.م");
+  await expect(previewValue(preview, /قيمة الدفعة الجديدة/)).toHaveText("150.00 ج.م");
+  await expect(previewValue(preview, /المتبقي للعربية بعد الدفعة/)).toHaveText("130.00 ج.م");
   await form.getByRole("textbox", { name: "سبب تعديل الدفعة" }).fill("Review amount");
   await form.getByRole("button", { name: "حفظ تعديل الدفعة" }).click();
   await expect(page.getByRole("region", { name: "ملخص حساب نقد العربية" })).toContainText("130.00");
@@ -60,11 +65,19 @@ test("UI-01 separates optimistic current preview from historical D16 acceptance"
   await date.fill("2026-11-01");
   await amount.fill("10.00");
   const preview = page.getByRole("region", { name: "الرصيد بعد الدفعة" });
-  await expect(preview).toContainText("80.00");
-  await expect(preview).toContainText("70.00");
+  await expect(previewValue(preview, /المتبقي قبل الدفعة/)).toHaveText("80.00 ج.م");
+  await expect(previewValue(preview, /قيمة الدفعة الجديدة/)).toHaveText("10.00 ج.م");
+  await expect(previewValue(preview, /المتبقي للعربية بعد الدفعة/)).toHaveText("70.00 ج.م");
+  const paymentRows = page.getByRole("region", { name: "جدول دفعات العربية" }).locator("tbody tr");
+  await expect(paymentRows).toHaveCount(1);
+  await expect(paymentRows.first()).toContainText("2026-11-02");
+  await expect(paymentRows.first()).toContainText("200.00 ج.م");
   await form.getByRole("button", { name: "تسجيل الدفعة" }).click();
   await expect(page.getByRole("main").getByRole("alert")).toContainText("D16");
   await expect(summary).toContainText("80.00");
+  await expect(paymentRows).toHaveCount(1);
+  await expect(paymentRows.first()).toContainText("2026-11-02");
+  await expect(paymentRows.first()).toContainText("200.00 ج.م");
   await amount.fill("-1");
   await expect(preview).toHaveCount(0);
   await amount.fill("0");
