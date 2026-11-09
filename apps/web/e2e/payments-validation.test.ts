@@ -193,4 +193,70 @@ describe("T08.3 cash ledger demo follows T08.2/D15/D16",()=>{
     const corrupt={...source,trips:[{...source.trips[0],vehicleTotalPiastres:"1"}]};
     expect(buildCashLedger(corrupt,"V1",DEMO_PRIMARY_RESPONSIBLE_ID,today).ok).toBe(false);
   });
+  it("FIN-01 rejects pre-opening create/edit but permits opening day on the selected cash account",()=>{
+    const source={...base,trips:[],payments:[],cashOpenings:[
+      {vehicleId:"V1",contractorId:DEMO_PRIMARY_RESPONSIBLE_ID,
+        startDate:"2026-11-04",signedPiastres:"100000"},
+      {vehicleId:"V1",contractorId:"K1",
+        startDate:"2026-11-02",signedPiastres:"20000"},
+    ]};
+    const preOpening=validateDemoPayment(source,draft("100","2026-11-03"),today);
+    expect(preOpening.ok).toBe(false);
+    if(!preOpening.ok) expect(preOpening.error).toContain("افتتاحي النقد");
+    expect(validateDemoPayment(source,draft("100","2026-11-04"),today).ok).toBe(true);
+    // The same vehicle at a DIFFERENT responsible contractor has its own opening.
+    expect(validateDemoPayment(source,{
+      ...draft("100","2026-11-03"),responsibleContractorId:"K1"
+    },today).ok).toBe(true);
+    const withPrevious={...source,payments:[payment("P-OLD","2026-11-04","50000")]};
+    expect(validateDemoPayment(withPrevious,draft("500","2026-11-04"),today,"P-OLD").ok).toBe(true);
+    expect(validateDemoPayment(withPrevious,draft("500","2026-11-03"),today,"P-OLD").ok).toBe(false);
+    expect(withPrevious.payments[0]!.paymentDate).toBe("2026-11-04");
+  });
+
+  it("FIN-02 credits all same-day work before multiple payments and evaluates the exact EOD minimum",()=>{
+    const source={...base,trips:[
+      trip("T1","2026-11-03","V1","AHMED_SUPPLIES","100"),
+      trip("T2","2026-11-03","V1","AHMED_SUPPLIES","900"),
+    ],payments:[
+      payment("P1","2026-11-03","30000"),
+      payment("P2","2026-11-03","20000"),
+    ]};
+    const ledger=buildCashLedger(source,"V1",DEMO_PRIMARY_RESPONSIBLE_ID,today);
+    expect(ledger.ok).toBe(true);
+    if(ledger.ok) {
+      expect(ledger.value.rows.map(r=>r.type)).toEqual(["WORK","WORK","PAYMENT","PAYMENT"]);
+      expect(ledger.value.balancePiastres).toBe("50000");
+    }
+    expect(validateDemoPayment(source,draft("500","2026-11-03"),today).ok).toBe(true);
+    expect(validateDemoPayment(source,draft("500.01","2026-11-03"),today).ok).toBe(false);
+  });
+
+  it("FIN-02 blocks a past payment when a later intermediate date is underfunded",()=>{
+    const source={...base,trips:[
+      trip("T1","2026-11-01","V1","AHMED_SUPPLIES","1000"),
+      trip("T2","2026-11-04","V1","AHMED_SUPPLIES","700"),
+    ],payments:[payment("P1","2026-11-03","60000")]};
+    expect(validateDemoPayment(source,draft("500","2026-11-02"),today).ok).toBe(false);
+    expect(validateDemoPayment(source,draft("400","2026-11-02"),today).ok).toBe(true);
+  });
+
+  it("FIN-02 preserves separate responsible cash accounts when a payment is edited across accounts",()=>{
+    const source={...base,trips:[
+      trip("TA","2026-11-03","V1","AHMED_SUPPLIES","500"),
+      trip("TK","2026-11-03","V1","OTHER_SUPPLIES","100"),
+    ],payments:[payment("P1","2026-11-03","30000")]};
+    const movedDraft={...draft("100","2026-11-03"),responsibleContractorId:"K1"};
+    expect(validateDemoPayment(source,movedDraft,today,"P1").ok).toBe(true);
+    const movedPayment=payment("P1","2026-11-03","10000","V1","K1");
+    const after={...source,payments:[movedPayment]};
+    const ahmed=buildCashLedger(after,"V1",DEMO_PRIMARY_RESPONSIBLE_ID,today);
+    const contractorCash=buildCashLedger(after,"V1","K1",today);
+    expect(ahmed.ok && ahmed.value.balancePiastres==="50000").toBe(true);
+    expect(contractorCash.ok && contractorCash.value.balancePiastres==="0").toBe(true);
+    // The original payment must not be duplicated or have its real date rewritten.
+    expect(after.payments).toHaveLength(1);
+    expect(after.payments[0]!.paymentDate).toBe("2026-11-03");
+  });
+
 });
