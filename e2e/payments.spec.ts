@@ -8,11 +8,10 @@ test.describe("T08.3 demo vehicle cash payments",()=>{
     await expect(summary).toContainText("280.00 ج.م");
     await page.getByLabel("تاريخ الدفع الحقيقي").fill("2026-11-02");
     await page.getByLabel("المبلغ بالجنيه").fill("100");
-    await page.getByLabel("رقم إيصال الدفعة").fill("0007");
     await page.getByRole("button",{name:"تسجيل الدفعة"}).click();
     await expect(page.getByRole("main").getByRole("status")).toContainText("تم تسجيل الدفعة");
     await expect(summary).toContainText("180.00 ج.م");
-    await expect(page.getByRole("region",{name:"سجل دفعات الحساب"})).toContainText("0007");
+    await expect(page.getByRole("region",{name:"سجل دفعات الحساب"})).toContainText("P-DEMO-");
     await page.getByRole("button",{name:/تعديل الدفعة P-DEMO-/}).click();
     await page.getByLabel("المبلغ بالجنيه").fill("150");
     await page.getByLabel("سبب تعديل الدفعة").fill("مراجعة المبلغ");
@@ -34,7 +33,7 @@ test.describe("T08.3 demo vehicle cash payments",()=>{
     await page.getByLabel("تاريخ الدفع الحقيقي").fill("2026-11-02");
     await page.getByLabel("المبلغ بالجنيه").fill("100");
     await page.getByRole("button",{name:"تسجيل الدفعة"}).click();
-    await expect(page.getByRole("main").getByRole("alert")).toContainText("D16");
+    await expect(page.getByRole("main").getByRole("alert").filter({hasText:"D16"})).toContainText("D16");
     await expect(page.getByRole("region",{name:"سجل دفعات الحساب"})).not.toContainText("100.00 ج.م");
     await expect(page.getByRole("region",{name:"ملخص حساب نقد العربية"})).toContainText("80.00 ج.م");
   });
@@ -47,7 +46,7 @@ test.describe("T08.3 demo vehicle cash payments",()=>{
     await page.getByRole("combobox",{name:"المقاول المسؤول عن الدفع"}).selectOption("PRIMARY_AHMED");
     await expect(page.getByRole("region",{name:"ملخص حساب نقد العربية"})).toContainText("280.00 ج.م");
     expect(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1)).toBe(false);
-    await page.getByRole("link",{name:"بيانات المقاولين والعربيات"}).click();
+    await page.getByRole("navigation",{name:"التنقل الرئيسي"}).getByRole("link",{name:"البيانات الأساسية"}).click();
     await page.getByRole("tab",{name:"افتتاحيات نقد العربيات"}).click();
     await expect(page.getByRole("combobox",{name:"المقاول المسؤول"})).toContainText("أحمد أبو علي (المقاول الأساسي)");
   });

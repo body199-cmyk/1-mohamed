@@ -24,7 +24,7 @@ test.describe("T08.6 dashboard — daily indicators and independent payments",()
     await page.getByLabel("المبلغ بالجنيه").fill("100");
     await page.getByRole("button",{name:"تسجيل الدفعة"}).click();
     await expect(page.getByRole("main").getByRole("status")).toContainText("تم تسجيل الدفعة");
-    await page.getByRole("link",{name:"الرئيسية"}).click();
+    await page.getByRole("navigation",{name:"التنقل الرئيسي"}).getByRole("link",{name:"الرئيسية",exact:true}).click();
     const cash=page.getByRole("region",{name:"دفعات نقد العربيات اليوم"});
     const work=page.getByRole("region",{name:"المؤشرات اليومية"});
     await expect(cash).toContainText("100.00 ج.م");
