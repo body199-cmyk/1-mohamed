@@ -1,6 +1,7 @@
 -- FIN-01/FIN-02 isolated PostgreSQL RPC acceptance, after H048 fixtures.
 -- No real Supabase connection or concurrency claims.
-set role authenticated;
+-- Keep test-owner privileges for private balance inspection; owner JWT remains enforced by RPCs.
+reset role;
 set "request.jwt.claim.role"='authenticated';
 set "request.jwt.claim.sub"='00000000-0000-0000-0000-000000000001';
 
