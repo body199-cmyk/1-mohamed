@@ -305,3 +305,9 @@
 - `e2e/h063-contractor-signed-receipts.spec.ts`, `packages/statement-export/tests/signed-presentation-h063.test.ts`: browser and package tests with actual +300/-600, REC-001/REC-003, CSV/XLSX and PDF/PNG; `artifacts/h063` saved by verify workflow.
 - `docs/H063_CONTRACTOR_SIGNS_REVIEW.md`: independent audit and user D18 request.
 - H063 final merged map: screen data joins receipt by selected contractor + trip ID in `apps/web/src/features/contractor-statements/contractor-statements-view.tsx`; signed presentation formatting is `statement-document.ts`; shared document export remains in `packages/statement-export/src/` with six-column HTML/CSV/XLSX/PNG/PDF. Final technical commit `7735761450571f755041cb02a75b30b392b9f0cb`; final CI `42215230226`.
+
+
+## FIN-03 — cash opening invariant (9 Nov 2026, staged on PR #35)
+- `apps/web/src/features/trips/trip-cash-opening-validation.ts` checks trip work date against independent opening for the trip's responsible cash account.
+- `apps/web/src/features/trips/trip-entry-panel.tsx` checks before claiming save lock. `apps/web/src/demo/demo-context.tsx::addTrip` checks again before mutation.
+- `apps/web/e2e/trip-cash-opening-validation.test.ts` and `e2e/trip-cash-opening-fin03.spec.ts` cover units and browser behavior. Validation and acceptance pending CI. See [FIN-03 review](FIN03_TRIP_CASH_OPENING_REVIEW_2026-11-09.md).

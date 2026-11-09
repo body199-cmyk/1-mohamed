@@ -25,6 +25,7 @@ import {
 
 import { normalizeMasterKey, validOpeningDate, validOpeningPiastres } from "../features/master-data/master-data-validation";
 import { buildCashLedger, validateDemoPayment, cairoBusinessDate, cashResponsibleForTrip, DEMO_PRIMARY_RESPONSIBLE_ID, type PaymentDraft } from "../features/payments/cash-ledger";
+import { writeDemoTrip } from "../features/trips/trip-cash-opening-validation";
 
 const DemoStoreContext = createContext<DemoStoreContextType | null>(null);
 
@@ -210,16 +211,14 @@ export function DemoStoreProvider({ children }: { children: React.ReactNode }) {
   },[payments]);
 
   const addTrip = useCallback(
-    (tripData: Omit<DemoTripRecord, "id" | "createdAt">): DemoTripRecord => {
-      const newTrip: DemoTripRecord = {
-        ...tripData,
-        id: `TRIP-DEMO-${tripSequence++}-${Date.now().toString().slice(-4)}`,
-        createdAt: new Date().toISOString(),
-      };
-      setTrips((prev) => [newTrip, ...prev]);
-      return newTrip;
-    },
-    []
+    (tripData: Omit<DemoTripRecord, "id" | "createdAt">): DemoTripRecord =>
+      writeDemoTrip(
+        tripData,
+        cashOpenings,
+        () => `TRIP-DEMO-${tripSequence++}-${Date.now().toString().slice(-4)}`,
+        (newTrip) => setTrips((prev) => [newTrip, ...prev])
+      ),
+    [cashOpenings]
   );
 
   const getContractorById = useCallback(

@@ -1154,3 +1154,9 @@
 - **النطاق:** تحديث توقع CSV H063 في الاختبار، تقوية اختبارات H055/H059/H060، وإضافة regression suite إلى CI. صفر تعديل في كود التطبيق أو المنطق المالي أو migrations أو Supabase/Vercel.
 - **النتيجة المحلية:** 69/70 في إحدى الدورات الكاملة؛ الفشل المحلي المتغير بيئي، بينما GitHub CI النهائي أخضر على SHA المختبر. لا نكرر الاختبارات بلا تغيير.
 - **الخطوة التالية على المشروع:** مراجعة النطاق غير المكتمل في T09 (تصدير اليومية ونقد العربية)، وحسم D07 لنسخ الأمان، وقرار خصوصية المستودع قبل أي بيانات حقيقية؛ ثم Supabase-TEST فقط، وVercel أخيرًا. لا توجد موافقة مستخدم موثقة بعد على D07 أو تحويل المستودع إلى Private.
+
+
+## FIN-03 — 9 November 2026 — cash opening guard staged, not verified
+- Based on PR #35 mobile UX branch so existing collapsible groups, recent choices, mobile cards and both save actions remain untouched.
+- Added shared validation at both UI and DemoStore write boundary plus unit/browser regressions. No real data, schema, payments, navigation or main changes.
+- [Review and gates](FIN03_TRIP_CASH_OPENING_REVIEW_2026-11-09.md): full CI and second diff review pending. Previously failing parent browser CI must be classified separately.
