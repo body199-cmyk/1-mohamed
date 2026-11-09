@@ -1154,3 +1154,8 @@
 - **النطاق:** تحديث توقع CSV H063 في الاختبار، تقوية اختبارات H055/H059/H060، وإضافة regression suite إلى CI. صفر تعديل في كود التطبيق أو المنطق المالي أو migrations أو Supabase/Vercel.
 - **النتيجة المحلية:** 69/70 في إحدى الدورات الكاملة؛ الفشل المحلي المتغير بيئي، بينما GitHub CI النهائي أخضر على SHA المختبر. لا نكرر الاختبارات بلا تغيير.
 - **الخطوة التالية على المشروع:** مراجعة النطاق غير المكتمل في T09 (تصدير اليومية ونقد العربية)، وحسم D07 لنسخ الأمان، وقرار خصوصية المستودع قبل أي بيانات حقيقية؛ ثم Supabase-TEST فقط، وVercel أخيرًا. لا توجد موافقة مستخدم موثقة بعد على D07 أو تحويل المستودع إلى Private.
+
+
+## FIN-07 — 9 November 2026 — correct cumulative monetary domain (pending)
+- Identified false rejection of totals outside signed-64 despite each stored movement being valid; SQL aggregates in numeric. Small stacked branch on PR #37 removes cumulative-only check, adds ledger and report/export regressions.
+- No SQL migration, production operations, main merge, or redefinition of financial semantics. Exact-head CI and second review required; see [review](FIN07_AGGREGATE_BALANCE_REVIEW_2026-11-09.md).
