@@ -26,7 +26,7 @@ test.describe("H063 contractor work sign and receipt semantics",()=>{
     await expect(minus).not.toContainText("REC-003");
     await expect(minus).toContainText("-600.00");
     await expect(minus).toContainText("خصم على أحمد");
-    await expect(page.getByText("-600.00 ج.م").first()).toBeVisible();
+    await expect(minus).toBeVisible();
     expect(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1)).toBe(false);
   });
 
@@ -34,16 +34,17 @@ test.describe("H063 contractor work sign and receipt semantics",()=>{
     await page.goto("/demo/contractors");
     const csv=await getDownload(page,"تنزيل CSV");
     const csvText=csv.bytes.toString("utf8");
-    for(const token of ["رقم النقلة","رقم الإيصال","TRIP-HIST-001","REC-001","REC-003","+300.00","-600.00"]){
+    for(const token of ["رقم النقلة","TRIP-HIST-001","TRIP-HIST-003","+300.00","-600.00"]){
       expect(csvText,token).toContain(token);
     }
+    expect(csvText).not.toContain('"رقم الإيصال"');
     const xlsx=await getDownload(page,"تنزيل Excel XLSX");
     expect(xlsx.bytes.subarray(0,4).toString("hex")).toBe("504b0304");
     const xlsxXml=xlsx.bytes.toString("utf8"); // current XLSX stores XML uncompressed
-    for(const token of ["رقم النقلة","رقم الإيصال","REC-001","REC-003","+300.00","-600.00"]){
+    for(const token of ["رقم النقلة","TRIP-HIST-001","TRIP-HIST-003","+300.00","-600.00"]){
       expect(xlsxXml,token).toContain(token);
     }
-    expect(xlsxXml).toContain('autoFilter ref="A1:F4"');
+    expect(xlsxXml).toContain('autoFilter ref="A1:E4"');
     expect(xlsxXml).not.toContain("<f>");
   });
 

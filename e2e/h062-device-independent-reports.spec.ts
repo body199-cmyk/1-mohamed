@@ -41,14 +41,26 @@ test.describe("H062 responsive report screens, device-independent exported paper
           await expect(page.locator("main#main-content")).toBeVisible();
           expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1),
             name + " whole-page overflow at " + width + " " + theme).toBe(false);
-          const scroller=page.locator("main").locator(tableSelector).first();
-          await expect(scroller).toBeVisible();
-          const props=await scroller.evaluate(el=>({
-            overflowX:getComputedStyle(el).overflowX,
-            scroll:el.scrollWidth,client:el.clientWidth,
-          }));
-          expect(props.overflowX,name+" table must scroll locally").toBe("auto");
-          if(width===360) expect(props.scroll,name+" table should be scrollable on phone").toBeGreaterThan(props.client);
+          if(width===360 && name==="contractors") {
+            // Approved mobile screen uses expandable cards rather than the hidden
+            // desktop table; prove the same IDs/deltas remain accessible.
+            const cards=page.locator('main div[class*="mobileMovements"] details');
+            await expect(cards).toHaveCount(3);
+            await expect(cards.first()).toBeVisible();
+            await cards.first().locator("summary").click();
+            await expect(cards.first()).toHaveAttribute("open","");
+            await expect(cards.first()).toContainText("رقم النقلة");
+            await expect(cards.first()).toContainText("TRIP-HIST-");
+          } else {
+            const scroller=page.locator("main").locator(tableSelector).first();
+            await expect(scroller).toBeVisible();
+            const props=await scroller.evaluate(el=>({
+              overflowX:getComputedStyle(el).overflowX,
+              scroll:el.scrollWidth,client:el.clientWidth,
+            }));
+            expect(props.overflowX,name+" table must scroll locally").toBe("auto");
+            if(width===360) expect(props.scroll,name+" table should be scrollable on phone").toBeGreaterThan(props.client);
+          }
           await page.screenshot({
             path:"artifacts/h062/"+name+"-"+theme+"-"+width+".png",
             fullPage:true,

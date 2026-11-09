@@ -42,7 +42,7 @@ test.describe("T08.4/5 vehicle cash report uses existing payment cash ledger",()
     await paymentForm.getByLabel("المبلغ بالجنيه").fill("25");
     await paymentForm.getByRole("button",{name:"تسجيل الدفعة"}).click();
     await expect(page.getByRole("region",{name:"ملخص حساب نقد العربية"})).toContainText("255.00 ج.م");
-    await page.goto("/demo/reports/vehicle-cash");
+    await page.getByRole("navigation",{name:"التنقل الرئيسي"}).getByRole("link",{name:"نقدية العربية",exact:true}).click();
     const summary=page.getByRole("region",{name:"ملخص كشف نقد العربية"});
     await page.getByLabel("من تاريخ كشف العربية").fill("2026-11-03");
     await page.getByLabel("إلى تاريخ كشف العربية").fill("2026-11-03");
