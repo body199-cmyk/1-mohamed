@@ -1,13 +1,10 @@
 import { expect, test } from "@playwright/test";
 import { readFile, mkdir, writeFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
+import { selectThemeViaSettings } from "./support/approved-theme";
 
 async function setTheme(page:import("@playwright/test").Page,theme:"light"|"dark"){
-  await expect(page.locator("html")).toHaveAttribute("data-theme",/^(light|dark)$/);
-  if(await page.locator("html").getAttribute("data-theme")!==theme){
-    await page.getByRole("button",{name:theme==="dark"?"تفعيل الوضع الداكن":"تفعيل الوضع الفاتح"}).click();
-  }
-  await expect(page.locator("html")).toHaveAttribute("data-theme",theme);
+  await selectThemeViaSettings(page,theme);
 }
 async function getDownload(page:import("@playwright/test").Page,label:string){
   const [d]=await Promise.all([page.waitForEvent("download"),page.getByRole("button",{name:label}).click()]);

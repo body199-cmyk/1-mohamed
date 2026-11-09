@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { selectThemeViaSettings } from "./support/approved-theme";
 
 const routes = [
   "/demo/dashboard", "/demo/trips", "/demo/contractors",
@@ -97,9 +98,9 @@ test.describe("H055 / T11: bounded desktop-Chromium UX quality gate", () => {
 
   test("demo warning text has at least WCAG AA 4.5:1 contrast in both themes", async ({ page }) => {
     await page.goto("/demo/dashboard");
-    const banner = page.getByRole("status",{name:"تنبيه النسخة التجريبية"});
     for (const expectedTheme of ["light","dark"] as const) {
-      if(expectedTheme==="dark")await page.getByRole("button",{name:"تفعيل الوضع الداكن"}).click();
+      await selectThemeViaSettings(page,expectedTheme);
+      const banner = page.getByRole("status",{name:"تنبيه النسخة التجريبية"});
       await expect(page.locator("html")).toHaveAttribute("data-theme",expectedTheme);
       // The status banner has no CSS color transition; once the root theme
       // attribute is applied, measure its final theme tokens directly.

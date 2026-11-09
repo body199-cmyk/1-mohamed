@@ -1,13 +1,15 @@
 import { expect, type Page } from "@playwright/test";
 
-/** Use the approved Settings route; the mobile bottom bar hides its theme control. */
+/** Change theme via approved Settings view, then return to the previous route. */
 export async function selectThemeViaSettings(page: Page, wanted: "light" | "dark") {
+  const previous = new URL(page.url()).pathname;
   await page.goto("/demo/settings");
-  await expect(page.getByRole("heading",{name:"الإعدادات"})).toBeVisible();
-  const html = page.locator("html");
-  await expect(html).toHaveAttribute("data-theme", /^(light|dark)$/);
-  if (await html.getAttribute("data-theme") !== wanted) {
-    await page.getByRole("button",{name:"تغيير المظهر"}).click();
-  }
-  await expect(html).toHaveAttribute("data-theme",wanted);
+  const control=page.getByRole("button",{name:"تغيير المظهر"});
+  await expect(control).toBeVisible();
+  const root=page.locator("html");
+  await expect(root).toHaveAttribute("data-theme", /^(light|dark)$/);
+  if(await root.getAttribute("data-theme")!==wanted) await control.click();
+  await expect(root).toHaveAttribute("data-theme",wanted);
+  if(previous!=="/demo/settings") await page.goto(previous);
+  await expect(page.locator("html")).toHaveAttribute("data-theme",wanted);
 }
