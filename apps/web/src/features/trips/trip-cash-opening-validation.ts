@@ -35,3 +35,22 @@ export function validateTripCashOpening(
   }
   return { ok: true };
 }
+
+/**
+ * The actual DemoStore write path. Validation must run before allocating a
+ * sequence ID or mutating state; the form guard alone cannot enforce this.
+ * The commit callback is supplied by DemoStoreProvider's state setter.
+ */
+export function writeDemoTrip(
+  trip: Omit<DemoTripRecord, "id" | "createdAt">,
+  cashOpenings: readonly DemoVehicleCashOpening[],
+  nextId: () => string,
+  commit: (record: DemoTripRecord) => void,
+  nowIso: () => string = () => new Date().toISOString()
+): DemoTripRecord {
+  const check = validateTripCashOpening(trip, cashOpenings);
+  if (!check.ok) throw new Error(check.error);
+  const record: DemoTripRecord = { ...trip, id: nextId(), createdAt: nowIso() };
+  commit(record);
+  return record;
+}
