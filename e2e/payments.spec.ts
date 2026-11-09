@@ -32,8 +32,8 @@ test.describe("T08.3 demo vehicle cash payments",()=>{
     await page.getByLabel("تاريخ الدفع الحقيقي").fill("2026-11-02");
     await page.getByLabel("المبلغ بالجنيه").fill("100");
     await page.getByRole("button",{name:"تسجيل الدفعة"}).click();
-    await expect(page.getByRole("main").getByRole("alert")).toContainText("D16");
-    await expect(page.getByRole("region",{name:"سجل دفعات الحساب"})).not.toContainText("100.00 ج.م");
+    await expect(page.getByRole("main").getByRole("alert").filter({hasText:"D16"})).toContainText("D16");
+    await expect(page.getByRole("region",{name:"جدول دفعات العربية"}).locator("tbody tr")).toHaveCount(1);
     await expect(page.getByRole("region",{name:"ملخص حساب نقد العربية"})).toContainText("80.00 ج.م");
   });
   test("cash accounts stay independent, opening of primary Ahmed available, mobile does not overflow",async({page})=>{

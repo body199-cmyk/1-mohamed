@@ -21,7 +21,7 @@ test.describe("T08.4/5 vehicle cash report uses existing payment cash ledger",()
     await page.getByLabel("المبلغ بالجنيه").fill("100");
     await page.getByRole("button",{name:"تسجيل الدفعة"}).click();
     await expect(page.getByRole("main").getByRole("status")).toContainText("تم تسجيل الدفعة");
-    await page.goto("/demo/reports/vehicle-cash");
+    await page.getByRole("navigation",{name:"التنقل الرئيسي"}).getByRole("link",{name:"نقدية العربية",exact:true}).click();
     await page.getByLabel("من تاريخ كشف العربية").fill("2026-11-03");
     await page.getByLabel("إلى تاريخ كشف العربية").fill("2026-11-05");
     const summary=page.getByRole("region",{name:"ملخص كشف نقد العربية"});
@@ -63,7 +63,7 @@ test.describe("T08.4/5 vehicle cash report uses existing payment cash ledger",()
     const modal=page.getByRole("form",{name:"أرشفة العربية"});
     await modal.getByRole("textbox",{name:"سبب التغيير"}).fill("حفظ التاريخ");
     await modal.getByRole("button",{name:"تأكيد أرشفة"}).click();
-    await page.goto("/demo/reports/vehicle-cash");
+    await page.getByRole("navigation",{name:"التنقل الرئيسي"}).getByRole("link",{name:"نقدية العربية",exact:true}).click();
     await page.getByLabel("عربية كشف النقد").selectOption("V2");
     await expect(page.getByRole("table",{name:"جدول حركات كشف العربية"})).toContainText("REC-002");
     expect(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1)).toBe(false);
