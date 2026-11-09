@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { mkdir } from "node:fs/promises";
+import { selectThemeViaSettings } from "./support/approved-theme";
 
 /** H059: screen-by-screen review evidence, not live-device or user approval. */
 const screens = [
@@ -33,11 +34,7 @@ test.describe("H059 final pre-cloud visual review matrix", () => {
         // Wait until ThemeProvider has hydrated before deciding which switch to click.
         await expect(page.locator("html")).toHaveAttribute("data-theme", /^(light|dark)$/);
     for (const theme of ["light", "dark"] as const) {
-      if (await page.locator("html").getAttribute("data-theme") !== theme) {
-        await page.getByRole("button", {
-          name: theme === "dark" ? "تفعيل الوضع الداكن" : "تفعيل الوضع الفاتح",
-        }).click();
-      }
+      await selectThemeViaSettings(page,theme);
       await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
       const active = page.getByRole("navigation", { name: "التنقل الرئيسي" })
         .locator('[aria-current="page"]');
@@ -67,11 +64,7 @@ test.describe("H059 final pre-cloud visual review matrix", () => {
         await page.goto("/demo/dashboard");
         // Wait until ThemeProvider has hydrated before deciding which switch to click.
         await expect(page.locator("html")).toHaveAttribute("data-theme", /^(light|dark)$/);
-        if (await page.locator("html").getAttribute("data-theme") !== theme) {
-          await page.getByRole("button", {
-            name: theme === "dark" ? "تفعيل الوضع الداكن" : "تفعيل الوضع الفاتح",
-          }).click();
-        }
+        await selectThemeViaSettings(page,theme);
         await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
         for (const [path,name] of screens) {
           await page.goto(path);

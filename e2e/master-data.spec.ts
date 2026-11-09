@@ -91,7 +91,7 @@ test.describe("UI-BASE-01B — safe demo mutations", () => {
     await expect(page.getByRole("heading", { name: /سجل التغييرات التجريبي \(2\)/ })).toBeVisible();
     await page.getByRole("link", { name: "تسجيل النقلات" }).click();
     await expect(page.locator('select[aria-label="المقاول الطرف الآخر"] option').filter({ hasText: "شركة النيل الجديدة" })).toHaveCount(0);
-    await page.getByRole("link", { name: "بيانات المقاولين والعربيات" }).click();
+    await page.getByRole("navigation", { name: "التنقل الرئيسي" }).getByRole("link", { name: "البيانات الأساسية", exact:true }).click();
     const archived = page.locator("article").filter({ hasText: "شركة النيل الجديدة" });
     await archived.getByRole("button", { name: "إعادة تفعيل المقاول" }).click();
     const restore = page.getByRole("form", { name: "إعادة تفعيل المقاول" });
