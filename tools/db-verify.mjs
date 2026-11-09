@@ -76,6 +76,7 @@ const steps = [
   ['migration 12', 'supabase/migrations/20261104200031_payment_operations.sql', 'T08.2: عمليات الدفعات مع D15/D16 والحماية المالية'],
   ['tests payment operations', 'supabase/tests/07_payment_operations_verification.sql', 'T08.2: قواعد الحساب التاريخي والعمليات المحمية'],
   ['tests fin01 fin02 acceptance', 'supabase/tests/08_fin01_fin02_operation_verification.sql', 'FIN-01/02: real SQL payment reassignment, audit and rollback'],
+  ['tests fin07 numeric parity', 'supabase/tests/08_fin07_numeric_boundaries_verification.sql', 'FIN-07: SQL aggregate and stored bigint limits'],
 ];
 
 function describe(error) {
