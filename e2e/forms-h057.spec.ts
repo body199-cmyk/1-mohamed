@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { mkdir } from "node:fs/promises";
+import { selectThemeViaSettings } from "./support/approved-theme";
 
 test.describe("H057 pre-cloud form polish",()=>{
   test("trip direction is a native radio group with clickable cards and full keyboard access", async({page})=>{
@@ -41,10 +42,8 @@ test.describe("H057 pre-cloud form polish",()=>{
       await page.goto(path);
       await page.screenshot({path:"artifacts/h057/"+name+"-light-360.png",fullPage:true});
     }
+    await selectThemeViaSettings(page,"dark");
     await page.goto("/demo/trips");
-    if(await page.getByRole("button",{name:"تفعيل الوضع الداكن"}).count()){
-      await page.getByRole("button",{name:"تفعيل الوضع الداكن"}).click();
-    }
     await expect(page.locator("html")).toHaveAttribute("data-theme","dark");
     for(const [path,name] of [
       ["/demo/trips","trips"],["/demo/master-data","master-data"],["/demo/payments","payments"]
