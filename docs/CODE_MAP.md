@@ -310,3 +310,7 @@
 ## FIN-07 — numeric cumulative cash balance
 - `apps/web/src/features/payments/cash-ledger.ts::buildCashLedger`: exact bigint sum, bounds only for individual persisted movements.
 - `apps/web/e2e/payments-validation.test.ts` and `vehicle-cash-report-validation.test.ts`: large aggregate and report/export roundtrip. SQL `20261104200031_payment_operations.sql` already uses numeric, unchanged.
+
+
+## FIN-01 / FIN-02 test-only regression
+- `apps/web/e2e/payments-validation.test.ts`: added date-before-opening, per-account opening, editing and D15/D16 day-end boundaries. Existing payment engine `apps/web/src/features/payments/cash-ledger.ts` and SQL `20261104200031_payment_operations.sql` unchanged by this PR.
