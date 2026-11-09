@@ -10,7 +10,7 @@ for (const scenario of [
     const opening = page.getByRole("form", { name: "افتتاحي نقد العربية" });
     await opening.getByRole("combobox", { name: "المقاول المسؤول", exact: true }).selectOption(scenario.responsible);
     await opening.getByRole("combobox", { name: "العربية للحساب النقدي" }).selectOption("V3");
-    await opening.getByRole("textbox", { name: "تاريخ افتتاحي النقد" }).fill("2026-11-05");
+    await opening.getByLabel("تاريخ افتتاحي النقد").fill("2026-11-05");
     await opening.getByRole("textbox", { name: "سبب تعديل افتتاحي النقد" }).fill("FIN-03 regression");
     await opening.getByRole("button", { name: "حفظ افتتاحي النقد التجريبي" }).click();
     await expect(opening.getByRole("status")).toContainText("حُفظ الافتتاحي");
