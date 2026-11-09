@@ -1,11 +1,14 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useEntrySession } from "../../demo/entry-session-context";
 import { buildContractorStatement } from "@ledger/contractor-statements";
 import { calculateTripAmounts } from "@ledger/accounting";
+import { validateTripCashOpening, commitTripOrRelease } from "./trip-cash-opening-validation";
 import { useDemoStore } from "../../demo/demo-context";
 import { TripFormFields } from "./trip-form-fields";
+import { TripHistoryPanel } from "./trip-history-panel";
 import { TripPreviewCard } from "./trip-preview-card";
 import { SharedDataPanel } from "./shared-data-panel";
 import { QuickAddModal } from "./quick-add-modal";
@@ -17,12 +20,14 @@ export function TripEntryPanel() {
   const {
     contractors,
     vehicles,
+    cashOpenings,
     addTrip,
     addVehicle,
     addContractor,
   } = useDemoStore();
 
-  const { state, dispatch, dirty: isDraftDirty, submitted, claimSubmission } = useEntrySession();
+  const { state, dispatch, dirty: isDraftDirty, submitted, claimSubmission, releaseSubmission } = useEntrySession();
+  const router = useRouter();
 
   const [quickAddTarget, setQuickAddTarget] = useState<"trip" | "shared">("trip");
   const [quickAddType, setQuickAddType] = useState<"vehicle" | "contractor" | null>(null);
@@ -73,6 +78,10 @@ export function TripEntryPanel() {
     setValidationError(null);
     if (submitted) return;
 
+    if (!tripDraft.workDate) {
+      setValidationError("يرجى اختيار تاريخ النقلة.");
+      return;
+    }
     if (!tripDraft.counterpartyId) {
       setValidationError("يرجى اختيار المقاول الطرف الآخر.");
       return;
@@ -132,15 +141,24 @@ export function TripEntryPanel() {
     if (!dateCheck.ok) {
       setValidationError("راجع تاريخ النقلة؛ يجب أن يكون صحيحًا ولا يسبق بداية حساب المقاول."); return;
     }
+    const cashCheck = validateTripCashOpening({
+      workDate: tripDraft.workDate,
+      vehicleId: selectedVehicle.id,
+      counterpartyId: selectedContractor.id,
+      direction: tripDraft.direction!,
+    }, cashOpenings);
+    if (!cashCheck.ok) {
+      setValidationError(cashCheck.error);
+      return;
+    }
     if (!claimSubmission()) return;
     setIsSubmitting(true);
 
-    try {
-      const added = addTrip({
+    const saved = commitTripOrRelease(() => addTrip({
         workDate: tripDraft.workDate || state.sessionDate,
-        counterpartyId: tripDraft.counterpartyId,
-        vehicleId: tripDraft.vehicleId,
-        direction: tripDraft.direction,
+        counterpartyId: selectedContractor.id,
+        vehicleId: selectedVehicle.id,
+        direction: tripDraft.direction!,
         origin: tripDraft.origin,
         destination: tripDraft.destination,
         weightTonnes: tripDraft.weightTonnes,
@@ -151,17 +169,24 @@ export function TripEntryPanel() {
         vehicleTotalPiastres: calc.vehicleTotalPiastres,
         receiptNumber: tripDraft.receiptNumber,
         notes: tripDraft.notes,
-      });
-
-      setSuccessBanner(
-        `✓ تم تسجيل النقلة بنجاح (${added.id}). يمكنك الانتقال إلى كشف الحساب لرؤية الأثر المالي فورياً.`
-      );
-
-      // Reset trip draft to ready next trip
-      // Keep the submitted draft visible until an explicit new-trip request.
-    } finally {
+      }), releaseSubmission);
+    if (!saved.ok) {
+      setValidationError("تعذر حفظ النقلة. راجع البيانات وحاول مرة أخرى؛ لم يتم قفل النموذج.");
       setIsSubmitting(false);
+      return;
     }
+    const added = saved.value;
+    setIsSubmitting(false);
+    setSuccessBanner(
+      `✓ تم تسجيل النقلة بنجاح (${added.id}). يمكنك الانتقال إلى كشف الحساب لرؤية الأثر المالي فورياً.`
+    );
+    const submitter = (e.nativeEvent as SubmitEvent).submitter as HTMLButtonElement | null;
+    const mode = submitter?.value === "exit" ? "exit" : "new";
+    // Reset the entry session on both successful submit paths. The provider
+    // lives in the root layout, so leaving the page without releasing the
+    // submission lock would leave the form disabled when the user returns.
+    dispatch({ type: "START_NEW_TRIP" });
+    if (mode === "exit") router.push("/demo/home");
   };
 
   return (
@@ -224,7 +249,7 @@ export function TripEntryPanel() {
               </div>
             )}
 
-            <form onSubmit={handleSubmitTrip}>
+            <form onSubmit={handleSubmitTrip} noValidate>
               <fieldset disabled={submitted} style={{ border: 0, minWidth: 0 }}>
               <TripFormFields
                 tripDraft={tripDraft}
@@ -242,8 +267,18 @@ export function TripEntryPanel() {
                   type="submit"
                   disabled={isSubmitting || submitted}
                   className={styles.btnPrimary}
+                  value="new"
                 >
-                  {isSubmitting ? "جاري الإضافة..." : "💾 إضافة للتجربة"}
+                  {isSubmitting ? "جاري الإضافة..." : "💾 حفظ وإضافة نقلة جديدة"}
+                </button>
+
+                <button
+                  type="submit"
+                  value="exit"
+                  disabled={isSubmitting || submitted}
+                  className={styles.btnSecondary}
+                >
+                  حفظ وخروج
                 </button>
 
                 <button
@@ -271,6 +306,8 @@ export function TripEntryPanel() {
           />
         </aside>
       </div>
+
+      <TripHistoryPanel />
 
       {/* Modals */}
       <QuickAddModal key={`${quickAddType}-${String(quickAddType !== null)}`}
