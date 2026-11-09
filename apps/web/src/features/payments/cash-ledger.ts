@@ -136,11 +136,8 @@ export function buildCashLedger(
   const rows: CashLedgerRow[] = [];
   for (const movement of movements) {
     balance += movement.amount;
-    // Keep cumulative balances within the same signed-64-bit monetary domain
-    // enforced for individual payments and opening balances.
-    if (balance > MAX_PIASTRES || balance < -MAX_PIASTRES) {
-      return { ok: false, error: "رصيد الحساب التراكمي تجاوز الحد المالي المسموح؛ تم إيقاف التقرير والحفظ." };
-    }
+    // Account totals may exceed a single SQL bigint movement. SQL aggregates
+    // in numeric; keep exact bigint arithmetic for the full ledger projection.
     rows.push({ date: movement.date, id: movement.id, type: movement.type,
       amountPiastres: movement.amount.toString(), balancePiastres: balance.toString(),
       label: movement.label });

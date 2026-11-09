@@ -18,6 +18,10 @@ describe("UI-BASE-01B cash and identity validation", () => {
     expect(parseOpeningEgp("92233720368547758.08","VEHICLE")).toBeNull();
     expect(parseOpeningEgp("92233720368547758.07","VEHICLE")).toBe("9223372036854775807");
     expect(validOpeningPiastres("-9223372036854775807")).toBe(true);
+    expect(validOpeningPiastres("-9223372036854775808")).toBe(true);
+    expect(validOpeningPiastres("-9223372036854775809")).toBe(false);
+    expect(parseOpeningEgp("92233720368547758.08","CONTRACTOR")).toBe("-9223372036854775808");
+    expect(parseOpeningEgp("92233720368547758.09","CONTRACTOR")).toBeNull();
     expect(validOpeningPiastres("9223372036854775808")).toBe(false);
   });
   it("validates real calendar days including leap years", () => {

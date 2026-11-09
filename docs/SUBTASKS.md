@@ -495,3 +495,7 @@
 - All renderers: HTML print/PDF/PNG/CSV/XLSX 6 columns (trip ID/date/receipt/direction/signed effect/running). Export totals: Ahmed + and contractor - with zero neutral. Multi-page PDFs preserve page count and rows.
 - E2E visual 360-dark/1280-light with PNG/PDF saved, CSV/XLSX text/receipt tests, PDF/PNG cross-device hashes, package unit; review CI and actual PDF. Merge only success on exact SHA; user acceptance separate.
 - **الحالة النهائية:** PR #26 merged to `main` at `7735761450571f755041cb02a75b30b392b9f0cb`; final CI on exact PR head `29ea160a42b671ceaf1259422371434095337930`, run `42215230226` SUCCESS (**54/54 Chromium**) plus package/typecheck/SQL/3 negative controls/backup/Auth HTTP/build. Artifact `13501365580` includes real 360-dark/1280-light captures and downloaded A4 PDF/1440 PNG; visual inspection confirmed leading +/− in summary and detail rows, separate REC receipt IDs, no clipped pages. TEST-012 and BUG-013 closed. User visual acceptance and physical phone test remain distinct from technical merge.
+
+
+## FIN-07 — cumulative cash balance vs SQL numeric
+- Narrow change and targeted regression on PR #37. Account sum can exceed signed-64 movement domain; stored movement limits stay enforced. CI/review pending; see [review](FIN07_AGGREGATE_BALANCE_REVIEW_2026-11-09.md).

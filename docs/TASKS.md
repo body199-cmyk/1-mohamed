@@ -245,3 +245,8 @@
 - قرار D18: شغل أحمد موجب، وشغل المقاول سالب على حساب أحمد؛ «رقم النقلة» ID داخلي مستقل عن «رقم الإيصال». الشاشة وHTML/Print/PDF/PNG/CSV/XLSX متسقة، من غير تعديل محرك الحساب أو SQL.
 - CI النهائي قبل الدمج: [42215230226](https://github.com/body199-cmyk/1-mohamed/actions/runs/42215230226) SUCCESS، 54/54 Chromium، unit/typecheck/SQL negative controls/backup/Auth HTTP/Next build. Artifact [13501365580](https://github.com/body199-cmyk/1-mohamed/actions/runs/42215230226/artifacts/13501365580) يحوي صور 360/1280 وPDF A4/PNG؛ فُحصت علامات +/− بصريًا بعد إصلاح BUG-013.
 - أخطاء CI القديمة TEST-012 وBUG-013 أُغلقت؛ التفاصيل في ISSUES/HANDOFF_LOG.
+
+
+## FIN-07 — numeric-sized aggregate cash balances, 9 November 2026
+- **State:** fix staged, CI and critical review pending. Stacked branch `fix/fin07-aggregate-balance-20261109` on PR #37, not main.
+- Remove only invalid aggregate bigint cap; retain per-record bigint validation; test ledger, report and export numeric-string parity. [Review](FIN07_AGGREGATE_BALANCE_REVIEW_2026-11-09.md).

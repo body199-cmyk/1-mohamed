@@ -148,6 +148,31 @@ describe("T08.4/5 vehicle cash statement is a strict projection of cash-ledger",
     expect(document.rows.map(row=>row[6])).toEqual(["230.00 ج.م","330.00 ج.م"]);
   });
 
+  it("FIN-07 preserves numeric-sized aggregate balances through cash reports and exports",()=>{
+    const max="9223372036854775807";
+    const oversizedAggregate={
+      trips:[work("T-LARGE","2026-11-03","AHMED_SUPPLIES","1")],
+      payments:[],
+      cashOpenings:[{...opening,signedPiastres:max}]
+    };
+    const r=buildVehicleCashReport(oversizedAggregate,{
+      vehicleId:"V1",responsibleContractorId:DEMO_PRIMARY_RESPONSIBLE_ID,
+      from:"2026-11-01",to:"2026-11-05"
+    });
+    expect(r.ok).toBe(true);
+    if(!r.ok)return;
+    expect(r.value.openingPiastres).toBe(max);
+    expect(r.value.workPiastres).toBe("100");
+    expect(r.value.closingPiastres).toBe("9223372036854775907");
+    expect(r.value.rows[0]?.balancePiastres).toBe(r.value.closingPiastres);
+    const document=toVehicleCashOperationalReport(r.value,{
+      vehicleLabel:"V1",responsibleName:"أحمد",
+      tripLookup:new Map(oversizedAggregate.trips.map(t=>[t.id,t]))
+    });
+    expect(document.summarySections[0]!.metrics.map(metric=>metric.value))
+      .toContain("92233720368547759.07 ج.م");
+    expect(document.rows[0]?.[6]).toBe("92233720368547759.07 ج.م");
+  });
   it("rejects reversed, malformed and pre-opening periods",()=>{
     expect(report("2026-11-06","2026-11-05").ok).toBe(false);
     expect(report("2026-02-30","2026-11-05").ok).toBe(false);

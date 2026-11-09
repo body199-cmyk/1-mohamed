@@ -137,16 +137,29 @@ describe("T08.3 cash ledger demo follows T08.2/D15/D16",()=>{
       "V1","K1",today);
     expect(result).toEqual({ok:false,error:"اتجاه نقلة غير صالح في حساب العربية؛ تم إيقاف التقرير والحفظ."});
   });
-  it("fails closed when a valid opening plus work or payment exceeds signed 64-bit cumulative balance",()=>{
+  it("FIN-07 retains exact cumulative cash balances outside the per-movement bigint range",()=>{
     const max="9223372036854775807";
+    // Every stored opening and individual movement remains valid SQL bigint.
+    // PostgreSQL aggregate cash balance is NUMERIC, so their SUM is not bigint-bound.
     const positive={...base,trips:[trip("OVER-POS","2026-11-03","V1","AHMED_SUPPLIES","1")],
       payments:[],cashOpenings:[{vehicleId:"V1",contractorId:DEMO_PRIMARY_RESPONSIBLE_ID,
         startDate:"2026-11-01",signedPiastres:max}]};
-    expect(buildCashLedger(positive,"V1",DEMO_PRIMARY_RESPONSIBLE_ID,today).ok).toBe(false);
-    const negative={...base,trips:[],payments:[payment("OVER-NEG","2026-11-03","1")],
+    const increased=buildCashLedger(positive,"V1",DEMO_PRIMARY_RESPONSIBLE_ID,today);
+    expect(increased.ok).toBe(true);
+    if(increased.ok) {
+      expect(increased.value.openingPiastres).toBe(max);
+      expect(increased.value.balancePiastres).toBe("9223372036854775907");
+      expect(increased.value.rows.map(r=>r.balancePiastres)).toEqual(["9223372036854775907"]);
+    }
+    const negative={...base,trips:[],payments:[payment("OVER-NEG","2026-11-03","2")],
       cashOpenings:[{vehicleId:"V1",contractorId:DEMO_PRIMARY_RESPONSIBLE_ID,
         startDate:"2026-11-01",signedPiastres:"-"+max}]};
-    expect(buildCashLedger(negative,"V1",DEMO_PRIMARY_RESPONSIBLE_ID,today).ok).toBe(false);
+    const decreased=buildCashLedger(negative,"V1",DEMO_PRIMARY_RESPONSIBLE_ID,today);
+    expect(decreased.ok).toBe(true);
+    if(decreased.ok) {
+      expect(decreased.value.balancePiastres).toBe("-9223372036854775809");
+      expect(decreased.value.rows[0]?.amountPiastres).toBe("-2");
+    }
   });
   it("D16 rejects a payment that creates an intermediate deficit even though the final balance stays positive",()=>{
     const source={...base,trips:[
