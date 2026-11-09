@@ -1,0 +1,8 @@
+# FIN-05 — Exact period opening and closing, distinct from current cash
+
+- Prior SQL `app_op_payments_read` returned `period_opening_piastres=app_payment_cash_balance(from-1)`. On the actual cash opening date that produced **0** instead of the opening seed; meanwhile the TypeScript statement used the seed as its period opening.
+- Additive `create or replace` keeps the legacy `cash_balance_piastres` meaning (cash as of Cairo today), adds explicitly named `current_cash_balance_piastres` and `period_closing_piastres` (cash as of chosen `to`), and adds cash opening only if its start date equals report `from`. No duplicate opening on later periods, and no change to a payment's actual date.
+- A requested `date_from` earlier than the account's active cash opening is rejected like the TypeScript statement; unfiltered payment-list calls remain compatible.
+- New isolated SQL suite covers same-day opening, later period with payment, earlier period without opening, independent responsible account and historical versus current balance; wired into `tools/db-verify.mjs`.
+- **Not a complete frontend read integration:** the current UI uses DemoStore, not this SQL RPC. Real Supabase Auth, client mappings and true session concurrency are untested. Any deployment must use normal migrations, never edit historic rows; no production or main changes here.
+- Full exact-head CI required, with FIN-04 parent dependency and critical review.
