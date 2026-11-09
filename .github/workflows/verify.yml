@@ -37,6 +37,8 @@ jobs:
           npm run db:verify:negative-c
       - name: Check exact cash-opening validation (unit tests)
         run: npx vitest run apps/web/e2e/master-data-validation.test.ts
+      - name: FIN-03 verify cash opening and trip write boundary (Vitest)
+        run: npx vitest run apps/web/e2e/trip-cash-opening-validation.test.ts
       - name: Check daily work report against original accounting engine
         run: npx vitest run apps/web/e2e/daily-work-validation.test.ts
       - name: Check D16 demo payment ledger and isolated accounts
