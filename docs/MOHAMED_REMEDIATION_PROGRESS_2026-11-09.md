@@ -59,3 +59,11 @@ Verified that the approved 22-decision register is unchanged across main, #34, #
 - Browser tests use CI Chromium simulation at specified widths; **no real Android/iOS device tested**.
 - No real Supabase Auth/PostgREST, concurrency, persistence, real payments or deployments exercised here.
 - Update this ledger when CI runs complete, including fail step classification and next code SHA. Preserve historical notes.
+
+
+### UI-01 and current verified CI milestones
+- [UI-01 #42](https://github.com/body199-cmyk/1-mohamed/pull/42), head `554d3404ce09b2b64ee78eb02d8886f2cf5728a4`, test-only stack on #36. Existing parser code in #36 already fixed preview parsing; this PR adds Chromium 390px, 100.00 → edit-150.00 before/after consistency, and historical D16 rejection despite optimistic current preview. [CI 42564422620](https://github.com/body199-cmyk/1-mohamed/actions/runs/42564422620) ongoing when reviewed. No visual or navigation redesign.
+- **FIN-03 #39**: exact-head [CI 42563071780](https://github.com/body199-cmyk/1-mohamed/actions/runs/42563071780) confirmed success in the stage-2 trip-entry browser step **including the FIN-03 new E2E test**, plus isolated PostgreSQL verification and upstream build. Full suite still in progress at this checkpoint, so remain Draft.
+- **FIN-07 #40 / FIN-01/02 #41**: exact-head runs verified through isolated PostgreSQL, typecheck, build and HTTP smoke (all completed successfully). Both were still in large master-data Chromium checks at checkpoint; do not claim a full green run.
+- **OPS-03 #38**: second run after tracker update [42563885985](https://github.com/body199-cmyk/1-mohamed/actions/runs/42563885985) failed at legacy auth-smoke navigation expectation after earlier checks passed, consistent with first run. Do not revert approved `/demo/home`.
+- Existing parent #35 browser logs show dated export-name expectations (`2026-11-30` expected vs an actual narrower report range), hidden/renamed controls, and UI timeouts; classify each before changing a test. A discrepancy in financial summary or exported rows must still be treated as a possible product defect, not automatically stale.
