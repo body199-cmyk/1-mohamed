@@ -75,6 +75,7 @@ const steps = [
   ['tests payments schema', 'supabase/tests/06_payments_schema_verification.sql', 'T08.1: تحقق العلاقات والدقة والصلاحيات والحركات المحفوظة'],
   ['migration 12', 'supabase/migrations/20261104200031_payment_operations.sql', 'T08.2: عمليات الدفعات مع D15/D16 والحماية المالية'],
   ['tests payment operations', 'supabase/tests/07_payment_operations_verification.sql', 'T08.2: قواعد الحساب التاريخي والعمليات المحمية'],
+  ['tests fin01 fin02 acceptance', 'supabase/tests/08_fin01_fin02_operation_verification.sql', 'FIN-01/02: real SQL payment reassignment, audit and rollback'],
 ];
 
 function describe(error) {
