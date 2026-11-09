@@ -54,3 +54,16 @@ export function writeDemoTrip(
   commit(record);
   return record;
 }
+
+/** The save action must release its submission lock on a write-layer failure. */
+export function commitTripOrRelease<T>(
+  commit: () => T,
+  releaseSubmission: () => void
+): { readonly ok: true; readonly value: T } | { readonly ok: false } {
+  try {
+    return { ok: true, value: commit() };
+  } catch {
+    releaseSubmission();
+    return { ok: false };
+  }
+}
