@@ -51,6 +51,27 @@ async function printHtml(page: Page, title: string): Promise<string> {
   return html;
 }
 
+function expectTokens(actual: string, tokens: readonly string[], label: string): void {
+  for (const token of tokens) {
+    expect.soft(actual, label + " should contain " + token).toContain(token);
+  }
+}
+
+function expectTokenCount(actual: string, token: string, count: number, label: string): void {
+  expect.soft(actual.split(token).length - 1, label + " occurrence count for " + token).toBe(count);
+}
+
+function expectDetailRowCount(html: string, count: number, label: string): void {
+  const tableStart = html.indexOf('<table class="details-table"');
+  const bodyStart = html.indexOf("<tbody>", tableStart);
+  const bodyEnd = html.indexOf("</tbody>", bodyStart);
+  expect.soft(tableStart >= 0 && bodyStart >= 0 && bodyEnd >= 0, label + " details table").toBe(true);
+  if (bodyStart >= 0 && bodyEnd >= 0) {
+    const body = html.slice(bodyStart + "<tbody>".length, bodyEnd);
+    expect.soft((body.match(/<tr>/g) ?? []).length, label + " detail rows").toBe(count);
+  }
+}
+
 test.describe("H065 daily and vehicle cash exports", () => {
   test("all five outputs are complete and device/theme independent for both reports", async ({ page }) => {
     test.setTimeout(240_000);
@@ -62,13 +83,23 @@ test.describe("H065 daily and vehicle cash exports", () => {
         path: "/demo/reports/daily",
         title: "تقرير الشغل اليومي",
         slug: "daily-work-2026-11-05-all-contractors-all-vehicles",
-        expectedCsv: "REC-002",
+        periodTokens: ["2026-11-05"],
+        movementTokens: ["TRIP-HIST-002", "محجر السويس", "العاصمة الإدارية", "2.000", "1000.00 ج.م", "900.00 ج.م"],
+        summaryTokens: ["عدد النقلات", "1", "إجمالي الوزن", "2.000 طن", "قيمة شغل المقاول", "1000.00 ج.م", "مستحق العربيات", "900.00 ج.م"],
+        movementKey: "TRIP-HIST-002",
+        receiptToken: "REC-002",
+        expectedDetailRows: 1,
       },
       {
         path: "/demo/reports/vehicle-cash",
         title: "كشف حساب نقد العربية",
         slug: "vehicle-cash-V1-PRIMARY_AHMED-2026-11-01-2026-11-30",
-        expectedCsv: "REC-001",
+        periodTokens: ["2026-11-01", "2026-11-30"],
+        movementTokens: ["2026-11-02", "مستحق نقلة", "محجر السويس", "العاصمة الإدارية", "أحمد جاب العربية", "280.00 ج.م"],
+        summaryTokens: ["الرصيد السابق للفترة", "0.00 ج.م", "مستحق شغل العربية", "280.00 ج.م", "الدفعات خلال الفترة", "0.00 ج.م", "المتبقي آخر الفترة", "280.00 ج.م", "عدد النقلات", "1", "عدد الدفعات السارية", "0"],
+        movementKey: "2026-11-02",
+        receiptToken: "REC-001",
+        expectedDetailRows: 1,
       },
     ] as const;
 
@@ -84,6 +115,11 @@ test.describe("H065 daily and vehicle cash exports", () => {
         await expect(page.getByRole("region", { name: "تصدير التقرير" })).toBeVisible();
 
         const html = await printHtml(page, report.title);
+        const expectedContent = [...report.periodTokens, ...report.movementTokens, ...report.summaryTokens];
+        expectTokens(html, expectedContent, report.title + " HTML/Print");
+        expect.soft(html, report.title + " HTML/Print must not expose receipt metadata").not.toContain(report.receiptToken);
+        expectTokenCount(html, report.movementKey, 1, report.title + " HTML/Print movement");
+        expectDetailRowCount(html, report.expectedDetailRows, report.title + " HTML/Print");
         const outputs = [];
         for (const [label, extension] of EXPORTS) {
           const file = await download(page, label);
@@ -96,11 +132,16 @@ test.describe("H065 daily and vehicle cash exports", () => {
             expect(file.bytes.toString("latin1")).toContain("/MediaBox [0 0 595.28 841.89]");
           } else if (extension === "csv") {
             const csv = file.bytes.toString("utf8");
-            expect(csv.startsWith("\uFEFF")).toBe(true);
-            expect(csv).toContain(report.title);
-            expect(csv).toContain(report.expectedCsv);
+            expect.soft(csv.startsWith("\uFEFF")).toBe(true);
+            expectTokens(csv, [report.title, ...expectedContent], report.title + " CSV");
+            expect.soft(csv, report.title + " CSV must not expose receipt metadata").not.toContain(report.receiptToken);
+            expectTokenCount(csv, report.movementKey, 1, report.title + " CSV movement");
           } else {
             expect(file.bytes.subarray(0, 4).toString()).toBe("PK\u0003\u0004");
+            const xlsxXml = file.bytes.toString("utf8");
+            expectTokens(xlsxXml, [report.title, ...expectedContent], report.title + " XLSX");
+            expect.soft(xlsxXml, report.title + " XLSX must not expose receipt metadata").not.toContain(report.receiptToken);
+            expectTokenCount(xlsxXml, report.movementKey, 1, report.title + " XLSX movement");
           }
           outputs.push(file);
           if (width === 360) {
@@ -145,15 +186,16 @@ test.describe("H065 daily and vehicle cash exports", () => {
     await expect(table).toContainText("-100.00 ج.م");
 
     const html = await printHtml(page, "كشف حساب نقد العربية");
-    expect(html).toContain("-100.00 ج.م");
+    expectTokens(html, ["2026-11-02", "2026-11-03", "مستحق نقلة", "دفعة نقدية", "280.00 ج.م", "-100.00 ج.م", "180.00 ج.م"], "negative-payment HTML/Print");
     await writeFile("artifacts/h065/vehicle-cash-negative-payment.html", html, "utf8");
 
     const csv = await download(page, "تنزيل CSV");
-    expect(csv.bytes.toString("utf8")).toContain("'-100.00 ج.م");
+    expectTokens(csv.bytes.toString("utf8"), ["2026-11-02", "2026-11-03", "مستحق نقلة", "دفعة نقدية", "280.00 ج.م", "'-100.00 ج.م", "180.00 ج.م"], "negative-payment CSV");
     await writeFile("artifacts/h065/vehicle-cash-negative-payment.csv", csv.bytes);
 
     const xlsx = await download(page, "تنزيل Excel XLSX");
     expect(xlsx.bytes.subarray(0, 4).toString()).toBe("PK\u0003\u0004");
+    expectTokens(xlsx.bytes.toString("utf8"), ["2026-11-02", "2026-11-03", "مستحق نقلة", "دفعة نقدية", "280.00 ج.م", "-100.00 ج.م", "180.00 ج.م"], "negative-payment XLSX");
     await writeFile("artifacts/h065/vehicle-cash-negative-payment.xlsx", xlsx.bytes);
 
     const png = await download(page, "تنزيل صورة PNG");
