@@ -192,20 +192,28 @@ test.describe("H065 daily and vehicle cash exports", () => {
       .getByRole("link",{name:"نقدية العربية",exact:true}).click();
     await expect(page.getByRole("heading", { name: "كشف حساب نقد العربية" })).toBeVisible();
     const table = page.getByRole("table", { name: "جدول حركات كشف العربية" });
-    await expect(table).not.toContainText("000012");
-    await expect(table).toContainText("-100.00 ج.م");
+    await expect.soft(table.locator("tbody tr"), "cash ledger must retain both work and payment movements").toHaveCount(2);
+    await expect.soft(table, "cash ledger must not expose the payment receipt number").not.toContainText("000012");
+    await expect.soft(table).toContainText("مستحق نقلة");
+    await expect.soft(table).toContainText("دفعة نقدية");
+    await expect.soft(table).toContainText("-100.00 ج.م");
 
     const html = await printHtml(page, "كشف حساب نقد العربية");
-    expectTokens(html, ["2026-11-02", "2026-11-03", "مستحق نقلة", "دفعة نقدية", "280.00 ج.م", "-100.00 ج.م", "180.00 ج.م"], "negative-payment HTML/Print");
+    expectTokens(html, ["2026-11-01", "2026-11-30", "2026-11-02", "2026-11-03", "مستحق نقلة", "دفعة نقدية", "محجر السويس", "العاصمة الإدارية", "أحمد جاب العربية", "280.00 ج.م", "-100.00 ج.م", "180.00 ج.م"], "negative-payment HTML/Print");
+    expect.soft(html, "negative-payment HTML/Print must not expose payment receipt metadata").not.toContain("000012");
     await writeFile("artifacts/h065/vehicle-cash-negative-payment.html", html, "utf8");
 
     const csv = await download(page, "تنزيل CSV");
-    expectTokens(csv.bytes.toString("utf8"), ["2026-11-02", "2026-11-03", "مستحق نقلة", "دفعة نقدية", "280.00 ج.م", "'-100.00 ج.م", "180.00 ج.م"], "negative-payment CSV");
+    const negativeCsv = csv.bytes.toString("utf8");
+    expectTokens(negativeCsv, ["2026-11-01", "2026-11-30", "2026-11-02", "2026-11-03", "مستحق نقلة", "دفعة نقدية", "محجر السويس", "العاصمة الإدارية", "أحمد جاب العربية", "280.00 ج.م", "'-100.00 ج.م", "180.00 ج.م"], "negative-payment CSV");
+    expect.soft(negativeCsv, "negative-payment CSV must not expose payment receipt metadata").not.toContain("000012");
     await writeFile("artifacts/h065/vehicle-cash-negative-payment.csv", csv.bytes);
 
     const xlsx = await download(page, "تنزيل Excel XLSX");
     expect(xlsx.bytes.subarray(0, 4).toString()).toBe("PK\u0003\u0004");
-    expectTokens(xlsx.bytes.toString("utf8"), ["2026-11-02", "2026-11-03", "مستحق نقلة", "دفعة نقدية", "280.00 ج.م", "-100.00 ج.م", "180.00 ج.م"], "negative-payment XLSX");
+    const negativeXlsx = xlsx.bytes.toString("utf8");
+    expectTokens(negativeXlsx, ["2026-11-01", "2026-11-30", "2026-11-02", "2026-11-03", "مستحق نقلة", "دفعة نقدية", "محجر السويس", "العاصمة الإدارية", "أحمد جاب العربية", "280.00 ج.م", "-100.00 ج.م", "180.00 ج.م"], "negative-payment XLSX");
+    expect.soft(negativeXlsx, "negative-payment XLSX must not expose payment receipt metadata").not.toContain("000012");
     await writeFile("artifacts/h065/vehicle-cash-negative-payment.xlsx", xlsx.bytes);
 
     const png = await download(page, "تنزيل صورة PNG");
