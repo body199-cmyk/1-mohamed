@@ -53,7 +53,9 @@ test.describe("H062 responsive report screens, device-independent exported paper
             await expect(cards.first()).toHaveAttribute("open","");
             await expect(cards.first()).toContainText("رقم النقلة");
             for (const tripId of expectedTripIds) {
-              await expect(cards).toContainText(tripId);
+              const matchingCard = cards.filter({ hasText: tripId });
+              await expect(matchingCard).toHaveCount(1);
+              await expect(matchingCard).toContainText(tripId);
             }
           } else {
             const scroller=page.locator("main").locator(tableSelector).first();
