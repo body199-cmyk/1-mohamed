@@ -24,6 +24,7 @@ function contrast(foreground: string, background: string): number {
 }
 
 test.describe("H061 Tabler-style operational entry and payment screens", () => {
+  test.describe.configure({ retries: 0 });
   test("three routes retain right-sidebar/compact-nav layouts and capture 12 light/dark screenshots",async({page})=>{
     test.setTimeout(120_000);
     await mkdir("artifacts/h061",{recursive:true});
