@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { mkdir } from "node:fs/promises";
-import { selectThemeViaSettings } from "./support/approved-theme";
+import { selectThemeViaSettings, waitForElementVisualStability } from "./support/approved-theme";
 
 /** H061: only appearance changes; existing payment, trip and master-data contracts stay live. */
 const routes = [
@@ -63,6 +63,7 @@ test.describe("H061 Tabler-style operational entry and payment screens", () => {
           ? page.locator('main button[class*="btnPrimary"]').first()
           : page.locator('main button[class*="_primary_"]').first();
         await expect(button).toBeVisible();
+        await waitForElementVisualStability(button);
         const colors=await button.evaluate(el=>({
           fg:getComputedStyle(el).color,bg:getComputedStyle(el).backgroundColor,
         }));
@@ -71,6 +72,7 @@ test.describe("H061 Tabler-style operational entry and payment screens", () => {
         if(path==="/demo/master-data") {
           const tab = page.locator('[role="tab"][aria-selected="true"]');
           await expect(tab).toHaveCount(1);
+          await waitForElementVisualStability(tab);
           const tabColors=await tab.evaluate(el=>({
             fg:getComputedStyle(el).color,bg:getComputedStyle(el).backgroundColor,
           }));
