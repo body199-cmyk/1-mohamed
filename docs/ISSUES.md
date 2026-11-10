@@ -152,3 +152,35 @@
 - **forms-h057:** فشل Target crashed الذي ظهر محليًا لم يتكرر في GitHub CI؛ لا دليل على عيب في التطبيق. لا نُخفيه من السجل التاريخي، لكنه لا يمنع خط الأساس بعد نجاح CI.
 - **Final evidence:** PR #28 merged at `433658bfc32a411dbfbbd2640a6d564f3577a1e4`; exact tested head `1e533d6f0a9c0c84aecd1299a2accf15e4f0bfdb`; run `42314459722` SUCCESS (55 + 9 browser tests and all remaining workflow checks).
 - **Status: CLOSED.** Test-only/CI/documentation correction; no application source, accounting, SQL, Auth, or persistence changes.
+
+
+## SYNC-02 / TEST-014 — H062 mobile-card count disagrees with fixed demo date (10 Nov 2026)
+
+- Evidence: PR #44 Actions run 42570988152 fails after expecting three mobile movement cards. The H062 test fixes the clock at 2026-11-05, while the third seeded trip TRIP-HIST-003 has workDate 2026-11-06. The report's upper date is today, so that trip is correctly excluded.
+- Classification: deterministic E2E fixture/expectation mismatch; no evidence of a missing application row.
+- Required correction: if the test intends to show all three trips, fix the clock for this layout case to 2026-11-07; otherwise expect two. Keep the other export-byte tests' date fixtures deliberate.
+
+## SYNC-02 / TEST-015 — H061 selected-tab contrast measurement is flaky (10 Nov 2026)
+
+- Evidence: PR #44 run 42570988152 recorded 3.241:1 on the first attempt against the 4.5:1 threshold; the retry passed. The approved-theme helper waits for the data-theme attribute but does not wait for visual stabilization before measuring computed colors.
+- Required correction: wait for the theme/visual state to settle and rerun the contrast assertion. Do not reduce the 4.5:1 threshold. If the stable computed colors remain below 4.5:1, then correct the actual token/style.
+
+## SYNC-02 / TEST-016 — H065 CSV tests still expect receipt numbers (10 Nov 2026)
+
+- Evidence: H065 spec on integration branch still expects REC-002 and REC-001 in daily-work and vehicle-cash CSV output. PR #43 run 42569780673 already failed when REC-002 was absent. The approved closeout plan linked to PR #34 removes receipt numbers from visible report outputs while retaining receiptNumber in source records. The H065 step was skipped in PR #44 after the earlier E2E failure.
+- Required correction: assert the receipt-free export contract (and preserve trip IDs/route data); do not restore receipt fields or delete source receipt data. Rerun the full H065 suite on the exact integration head.
+
+## SYNC-02 / TEST-017 — FIN-04 SQL suite does not test a prior payment (10 Nov 2026)
+
+- Evidence: FIN-04 migration guards both trips and payments before the opening date, but 08_fin04_cash_opening_timeline_verification.sql only exercises prior-trip cases.
+- Required correction: add a payment dated before the proposed opening date and prove the opening is rejected; keep the trip case and add a real PostgreSQL two-session concurrency check in staging before any production use.
+
+## SYNC-02 / UX-014 — Contractor statement stage3 is not full D18–D22 completion (10 Nov 2026)
+
+- Evidence: stage3 adds search, direction/origin/destination filters, date/vehicle/destination grouping and a filtered work subtotal. It has no pricing-mode filter or pricingMode in DemoTripRecord; the statement engine receives work movements only and no contractor payments/settlements; exports are not updated with the daily grouping.
+- Required correction: do not label the current work-only subtotal as final net account after settlements. Resolve the daily-vs-trip data model and settlement scope, or explicitly defer them before marking D18–D22 complete.
+
+## SYNC-02 / DOC-014 — H063 receipt-column wording is superseded (10 Nov 2026)
+
+- Evidence: main DECISIONS D18 and older H063 notes describe a separate visible receipt column; the later user-approved closeout plan linked to PR #34 removes receipt numbers from report outputs while retaining the source record field.
+- Required correction: the supersession note has been added to DECISIONS.md in the SYNC-02 documentation branch. Update the older H063 review document when stage3 is ported; do not delete receipt data.
