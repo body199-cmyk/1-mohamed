@@ -305,3 +305,14 @@
 - `e2e/h063-contractor-signed-receipts.spec.ts`, `packages/statement-export/tests/signed-presentation-h063.test.ts`: browser and package tests with actual +300/-600, REC-001/REC-003, CSV/XLSX and PDF/PNG; `artifacts/h063` saved by verify workflow.
 - `docs/H063_CONTRACTOR_SIGNS_REVIEW.md`: independent audit and user D18 request.
 - H063 final merged map: screen data joins receipt by selected contractor + trip ID in `apps/web/src/features/contractor-statements/contractor-statements-view.tsx`; signed presentation formatting is `statement-document.ts`; shared document export remains in `packages/statement-export/src/` with six-column HTML/CSV/XLSX/PNG/PDF. Final technical commit `7735761450571f755041cb02a75b30b392b9f0cb`; final CI `42215230226`.
+
+
+### H065 — T09.4 / daily-work and vehicle-cash exports
+
+- UI export actions: apps/web/src/features/reports/report-export-actions.tsx.
+- Presentation-only document builders: apps/web/src/features/reports/report-export-documents.ts.
+- The shared renderers are under packages/statement-export/src/; the daily-work and vehicle-cash views consume the same report export actions.
+- Browser regression coverage: e2e/h065-daily-vehicle-report-exports.spec.ts.
+- PR #30 merged the five output formats (HTML/Print, PDF, PNG, CSV, XLSX) for daily-work and vehicle-cash reports; CI 42318569754 SUCCESS.
+- A native PNG share action is also available with download fallback.
+- Scope remains DemoStore/offline preview; this does not establish persistent Supabase data or production deployment.
