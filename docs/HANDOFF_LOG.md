@@ -1167,4 +1167,4 @@
 - Contractor stage3 remains a no-PR branch with five unique files relative to the integration base. It adds screen filters and daily grouping but lacks pricing-mode/daily-work modeling and contractor settlement inputs; it is not a complete D18–D22 closeout.
 - Documentation updates in this branch: SYNC-02 report, STATUS, TASKS, SUBTASKS, CODE_MAP, ISSUES, and D18 supersession note. Each file update was committed and fetched back for verification.
 - **Next action:** stabilize #44 E2E tests on a small branch from the exact integration head, then run full CI on that SHA. Do not merge #44, FIN-04/05, or stage3 until their listed gates pass.
-- Report: docs/SYNC_02_BRANCH_INVENTORY_AND_MERGE_PLAN_2026-11-10.md. PR link to be added after the documentation PR is opened.
+- Report: docs/SYNC_02_BRANCH_INVENTORY_AND_MERGE_PLAN_2026-11-10.md. Documentation PR #47 is open as Draft: https://github.com/body199-cmyk/1-mohamed/pull/47.
