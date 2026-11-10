@@ -13,6 +13,8 @@ async function setTheme(page: import("@playwright/test").Page, theme: "light"|"d
   await selectThemeViaSettings(page,theme);
 }
 
+const expectedTripIds = ["TRIP-HIST-001", "TRIP-HIST-002", "TRIP-HIST-003"] as const;
+
 async function downloadReport(page: import("@playwright/test").Page, label: string) {
   const [download] = await Promise.all([
     page.waitForEvent("download"),
@@ -28,7 +30,7 @@ async function downloadReport(page: import("@playwright/test").Page, label: stri
 test.describe("H062 responsive report screens, device-independent exported papers", () => {
   test("captures 18 light/dark report layouts at 360/768/1280 without losing rows", async({page}) => {
     test.setTimeout(180_000);
-    await page.clock.setFixedTime(new Date("2026-11-05T12:00:00+02:00"));
+    await page.clock.setFixedTime(new Date("2026-11-07T12:00:00+02:00"));
     await mkdir("artifacts/h062",{recursive:true});
     for(const width of [360,768,1280] as const) {
       await page.setViewportSize({width,height:760});
@@ -50,7 +52,9 @@ test.describe("H062 responsive report screens, device-independent exported paper
             await cards.first().locator("summary").click();
             await expect(cards.first()).toHaveAttribute("open","");
             await expect(cards.first()).toContainText("رقم النقلة");
-            await expect(cards.first()).toContainText("TRIP-HIST-");
+            for (const tripId of expectedTripIds) {
+              await expect(cards).toContainText(tripId);
+            }
           } else {
             const scroller=page.locator("main").locator(tableSelector).first();
             await expect(scroller).toBeVisible();
@@ -72,7 +76,7 @@ test.describe("H062 responsive report screens, device-independent exported paper
 
   test("PNG and direct A4 PDF bytes are identical on phone-light and desktop-dark",async({page})=>{
     test.setTimeout(120_000);
-    await page.clock.setFixedTime(new Date("2026-11-05T12:00:00+02:00"));
+    await page.clock.setFixedTime(new Date("2026-11-07T12:00:00+02:00"));
     const results=[];
     for(const [width,theme] of [[360,"light"],[1280,"dark"]] as const) {
       await page.setViewportSize({width,height:780});
@@ -102,7 +106,7 @@ test.describe("H062 responsive report screens, device-independent exported paper
 
   test("CSV and RTL Excel workbook bytes are identical on phone-dark and desktop-light",async({page})=>{
     test.setTimeout(100_000);
-    await page.clock.setFixedTime(new Date("2026-11-05T12:00:00+02:00"));
+    await page.clock.setFixedTime(new Date("2026-11-07T12:00:00+02:00"));
     const results=[];
     for(const [width,theme] of [[360,"dark"],[1280,"light"]] as const) {
       await page.setViewportSize({width,height:780});
