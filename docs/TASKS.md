@@ -1,4 +1,4 @@
-> **تحديث SYNC-02 — ١٠ نوفمبر ٢٠٢٦:** main=1e1dae637d9b؛ 51 فرعًا، 14 PR مفتوحًا وكلها Draft. PR #44 يحتاج إصلاح H062/H061/H065 ثم CI كامل؛ FIN-04 #45 وFIN-05 #46 خارج main؛ stage3 بلا PR. لا دمج أو نشر في هذه المراجعة. التقرير: docs/SYNC_02_BRANCH_INVENTORY_AND_MERGE_PLAN_2026-11-10.md.
+> **تحديث SYNC-02 — ١٠ نوفمبر ٢٠٢٦:** main=1e1dae637d9b؛ 51 فرعًا، 14 PR مفتوحًا وكلها Draft. PR #44 يحتاج إصلاح H062/H061/H065 ثم CI كامل؛ FIN-04 #45 وFIN-05 #46 خارج main؛ stage3 بلا PR. لا دمج أو نشر في هذه المراجعة. التقرير: docs/SYNC_02_BRANCH_INVENTORY_AND_MERGE_PLAN_2026-11-10.md؛ PR #47 Draft: https://github.com/body199-cmyk/1-mohamed/pull/47.
 >
 # المهام
 
