@@ -38,7 +38,7 @@
 
 ## 3. نتائج H061
 
-**<badge>PASS</badge>**
+****PASS****
 
 - أضيف \`waitForElementVisualStability(locator)\` إلى \`approved-theme.ts\`.
 - ينتظر helper إطارًا حتى تُحتسب تغييرات الستايل، ثم ينتظر انتهاء انتقالات CSS المحدودة على العنصر، ثم يقرأ اللون والخلفية والحدود عبر إطارين متتاليين.
@@ -54,7 +54,7 @@
 
 ## 4. نتائج H062
 
-**<badge>PASS</badge>**
+****PASS****
 
 - بيانات النقلات التجريبية: \`TRIP-HIST-001\` في 2 نوفمبر، و\`TRIP-HIST-002\` في 5 نوفمبر، و\`TRIP-HIST-003\` في 6 نوفمبر.
 - التاريخ الموحد للاختبار أصبح 6 نوفمبر، لا 5 ولا 7: يضم النقلات الثلاث في كشف المقاول، ويجعل تقرير الشغل اليومي يعرض حركة فعلية في اليوم نفسه.
@@ -69,7 +69,7 @@
 
 ## 5. تحديث H065 مع الحفاظ على الاختبارات المالية
 
-**<badge color="warning">NOT EXECUTED IN CI</badge>**
+****NOT EXECUTED IN CI****
 
 تم تحديث \`e2e/h065-daily-vehicle-report-exports.spec.ts\`، لكن خطوة H065 لم تبدأ في GitHub Actions بسبب فشل الخطوة السابقة. لذلك لا توجد نتيجة runtime لـH065 ولا artifact باسم \`h065-daily-vehicle-cash-five-exports\`.
 
