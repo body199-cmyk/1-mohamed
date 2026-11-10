@@ -114,6 +114,16 @@ test.describe("H065 daily and vehicle cash exports", () => {
         await expect(page.getByRole("heading", { name: report.title })).toBeVisible();
         await expect(page.getByRole("region", { name: "تصدير التقرير" })).toBeVisible();
 
+        if (width === 360) {
+          const movementTable = report.path === "/demo/reports/daily"
+            ? page.getByRole("table", { name: "نقلات اليوم" })
+            : page.getByRole("table", { name: "جدول حركات كشف العربية" });
+          await expect.soft(movementTable.locator("tbody tr"), report.title + " UI movement rows").toHaveCount(report.expectedDetailRows);
+          await expect.soft(movementTable, report.title + " UI must not expose receipt metadata").not.toContainText(report.receiptToken);
+          await expect.soft(movementTable).toContainText(report.movementKey);
+          await expect.soft(movementTable).toContainText(report.movementTokens[report.movementTokens.length - 1]!);
+        }
+
         const html = await printHtml(page, report.title);
         const expectedContent = [...report.periodTokens, ...report.movementTokens, ...report.summaryTokens];
         expectTokens(html, expectedContent, report.title + " HTML/Print");
