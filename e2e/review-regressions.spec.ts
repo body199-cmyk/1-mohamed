@@ -49,13 +49,16 @@ test("المسودة تبقى بين الشاشتين والإضافة الوا�
 
 test("تغيير الطريق وحده يستلزم تأكيدًا قبل استبدال المسودة", async ({ page }) => {
   await page.goto("/demo/trips");
-  await page.getByLabel("مكان التحميل", { exact: true }).fill("السويس");
-  await expect(page.getByLabel("مكان التحميل", { exact: true })).toHaveValue("السويس");
+  await page.getByText("٣. المسار والمصاريف والملاحظات (اختياري)", { exact: true }).click();
+  const origin = page.getByLabel("مكان التحميل", { exact: true });
+  await expect(origin).toBeVisible();
+  await origin.fill("السويس");
+  await expect(origin).toHaveValue("السويس");
   await page.getByRole("button", { name: "إعادة ضبط النقلة", exact: true }).click();
   const replaceDialog = page.getByRole("dialog", { name: "تأكيد استبدال المسودة", exact: true });
   await expect(replaceDialog).toBeVisible();
   await replaceDialog.getByRole("button", { name: "إلغاء والعودة للمسودة", exact: true }).click();
-  await expect(page.getByLabel("مكان التحميل", { exact: true })).toHaveValue("السويس");
+  await expect(origin).toHaveValue("السويس");
 });
 
 test("رفض الوزن الصفري والفاصلة الملتبسة وتاريخ ما قبل الحساب", async ({ page }) => {
