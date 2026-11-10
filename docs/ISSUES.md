@@ -152,3 +152,6 @@
 - **forms-h057:** فشل Target crashed الذي ظهر محليًا لم يتكرر في GitHub CI؛ لا دليل على عيب في التطبيق. لا نُخفيه من السجل التاريخي، لكنه لا يمنع خط الأساس بعد نجاح CI.
 - **Final evidence:** PR #28 merged at `433658bfc32a411dbfbbd2640a6d564f3577a1e4`; exact tested head `1e533d6f0a9c0c84aecd1299a2accf15e4f0bfdb`; run `42314459722` SUCCESS (55 + 9 browser tests and all remaining workflow checks).
 - **Status: CLOSED.** Test-only/CI/documentation correction; no application source, accounting, SQL, Auth, or persistence changes.
+
+## ENV-SYNC-01 — ١٠ نوفمبر ٢٠٢٦ — مفتوح
+بعد fast-forward إلى 1e1dae6 فشل check عند web typecheck لغياب @supabase/ssr محليًا (TS2307). تصنيف أولي: عدم مزامنة الاعتماديات المحلية، وليس عيبًا مثبتًا في كود التطبيق. شرط الإغلاق: npm ci من القفل ثم check وbuild ناجحان، وتصنيف أي فشل متبقٍ. [الدليل والتكليف](SYNC_01_REVIEW_2026-11-10.md).
