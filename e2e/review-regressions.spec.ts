@@ -147,19 +147,19 @@ test("التصدير يطابق الفترة المعروضة ويدعم الع�
 });
 
 for (const width of [390, 768, 1440]) {
-  test(\`الواجهتان بلا أخطاء متصفح أو تجاوز عرض \${width}\`, async ({ page }) => {
+  test(`الواجهتان بلا أخطاء متصفح أو تجاوز عرض ${width}`, async ({ page }) => {
     const errors: string[] = [];
     page.on("pageerror", error => errors.push(error.message));
     page.on("console", message => { if (message.type() === "error") errors.push(message.text()); });
     await page.setViewportSize({ width, height: 900 });
     for (const route of ["trips", "contractors"]) {
-      await page.goto(\`/demo/\${route}\`);
+      await page.goto(`/demo/${route}`);
       await page.evaluate(() => document.fonts.ready);
       for (const mode of ["light", "dark"]) {
         await selectThemeViaSettings(page, mode as "light"|"dark");
         const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
         expect(overflow).toBe(false);
-        await page.screenshot({ path: \`apps/web/e2e/screenshots/review-\${route}-\${width}-\${mode}.png\`, fullPage: true });
+        await page.screenshot({ path: `apps/web/e2e/screenshots/review-${route}-${width}-${mode}.png`, fullPage: true });
       }
       await selectThemeViaSettings(page,"light");
     }
