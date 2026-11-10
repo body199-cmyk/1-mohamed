@@ -1154,3 +1154,17 @@
 - **النطاق:** تحديث توقع CSV H063 في الاختبار، تقوية اختبارات H055/H059/H060، وإضافة regression suite إلى CI. صفر تعديل في كود التطبيق أو المنطق المالي أو migrations أو Supabase/Vercel.
 - **النتيجة المحلية:** 69/70 في إحدى الدورات الكاملة؛ الفشل المحلي المتغير بيئي، بينما GitHub CI النهائي أخضر على SHA المختبر. لا نكرر الاختبارات بلا تغيير.
 - **الخطوة التالية على المشروع:** مراجعة النطاق غير المكتمل في T09 (تصدير اليومية ونقد العربية)، وحسم D07 لنسخ الأمان، وقرار خصوصية المستودع قبل أي بيانات حقيقية؛ ثم Supabase-TEST فقط، وVercel أخيرًا. لا توجد موافقة مستخدم موثقة بعد على D07 أو تحويل المستودع إلى Private.
+
+
+## SYNC-02 — GitHub inventory and merge plan — 10 November 2026
+
+- Reviewed AGENTS.md and docs/SYNC_01_REVIEW_2026-11-10.md, then inspected the current main, all 51 branch heads, all 14 open PRs, exact-head Vercel statuses, and the latest PR-triggered Actions runs.
+- Main snapshot: 1e1dae637d9bb1c29e74b31b2180e7ddda2769b5. No application code, migrations, deployment settings, Supabase data, or production state changed.
+- PR #30/H065 is merged and its CI 42318569754 passed; daily-work and vehicle-cash exports now support five output formats. The old H064 status/task statements saying these reports are screen-only are historical and were corrected in this documentation branch.
+- PR #44 integration head 337909f3c9f37fc738a10e3a8d9357fa66ccbeb9 has 102 commits ahead / 76 changed files. Its latest Actions run 42570988152 has 54 passed, one H062 fixture failure, and one flaky H061 contrast result; H065 was skipped.
+- H062 mismatch traced to a fixed test date of 5 Nov versus third seed trip on 6 Nov. H061 contrast measurement needs stable theme rendering before measuring. H065 still has stale receipt-number CSV expectations.
+- FIN-04 #45 and FIN-05 #46 remain outside main. Their db-verify changes overlap #44; all verifier steps must be unioned. FIN-04 SQL suite lacks a prior-payment test. FIN-05 RPC response fields have no current DemoStore UI consumer.
+- Contractor stage3 remains a no-PR branch with five unique files relative to the integration base. It adds screen filters and daily grouping but lacks pricing-mode/daily-work modeling and contractor settlement inputs; it is not a complete D18–D22 closeout.
+- Documentation updates in this branch: SYNC-02 report, STATUS, TASKS, SUBTASKS, CODE_MAP, ISSUES, and D18 supersession note. Each file update was committed and fetched back for verification.
+- **Next action:** stabilize #44 E2E tests on a small branch from the exact integration head, then run full CI on that SHA. Do not merge #44, FIN-04/05, or stage3 until their listed gates pass.
+- Report: docs/SYNC_02_BRANCH_INVENTORY_AND_MERGE_PLAN_2026-11-10.md. PR link to be added after the documentation PR is opened.
