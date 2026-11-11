@@ -60,6 +60,7 @@ export function StatementSummaryCard({
               className={`${styles.beneficiaryBadge} ${beneficiaryBadgeClass}`}
             >
               <span>{beneficiaryIcon}</span>
+              <span>{beneficiaryText}</span>
               <ContractorMoney value={statement.closingBalancePiastres} />
             </span>
           </div>
