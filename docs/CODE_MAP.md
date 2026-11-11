@@ -314,3 +314,11 @@
 
 ## FIN-01 / FIN-02 test-only regression
 - `apps/web/e2e/payments-validation.test.ts`: added date-before-opening, per-account opening, editing and D15/D16 day-end boundaries. Existing payment engine `apps/web/src/features/payments/cash-ledger.ts` and SQL `20261104200031_payment_operations.sql` unchanged by this PR.
+
+
+## FIN-INTEGRATE-01 — FIN-04 + FIN-05 (11 November 2026)
+- `supabase/migrations/20261109210000_fin04_cash_opening_timeline.sql`: guard `app_guard_cash_opening_timeline()` on `opening_balances` (VEHICLE_CASH, not cancelled) takes the shared `app_lock_trip_accounts` advisory lock and rejects any uncancelled trip **or payment** of the same (vehicle, responsible contractor) dated before the proposed start; guard `app_guard_trip_cash_opening_start()` on `trips` re-checks after the trip RPC lock so a trip cannot precede an accepted opening start; both security definer with execute revoked.
+- `supabase/tests/09_fin04_cash_opening_timeline_verification.sql`: isolated `V_F4_A`/`V_F4_B` suites — trip blocks later opening (no row/audit/idempotency remnants), first-work-day opening accepted, direct pre-opening trip insert fails closed pre-RLS, active payment blocks opening after the funding trip is cancelled, same-day boundary accepted, other responsible account independent.
+- `supabase/migrations/20261109210010_fin05_payment_period_opening.sql`: `app_op_payments_read` re-created additively — `current_cash_balance_piastres` (Cairo today), `period_closing_piastres` (as of `date_to`), `period_opening_piastres` adds the seed only when the opening starts on the report `from` day, and an explicit `date_from` earlier than the account opening is rejected (22023). Legacy `cash_balance_piastres` meaning retained; no historical payment rows touched.
+- `supabase/tests/10_fin05_payment_period_opening_verification.sql`: isolated `V_F5_A`/`V_F5_B` suites computing every expectation from the documented scenario (opening-day seed once, later-period carry, historical closing vs current, no-opening account, legacy unfiltered read, separate responsible accounts, pre-opening rejection).
+- `tools/db-verify.mjs`: 4 appended steps after FIN-07; no existing check removed. Suites named 09/10 to avoid the duplicate `08_` prefix; both end with `reset role` so the merged step order cannot leak the session role into the next migration.

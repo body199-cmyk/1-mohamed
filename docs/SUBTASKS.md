@@ -503,3 +503,9 @@
 
 ## FIN-01 / FIN-02 — payment-date and day-end tests
 - Test-only acceptance cases for responsible cash opening, same-day work/dual payments, intermediate minimum and edits across cash accounts; code fix from #37/#34 retained, no duplicate calculation logic. Pending CI.
+
+
+## FIN-INTEGRATE-01 — FIN-04 + FIN-05 package (11 November 2026)
+- Branch `codex/fin04-fin05-integration` from merged-main `605656e`. New files only: `20261109210000_fin04_cash_opening_timeline.sql` (two guards), `20261109210010_fin05_payment_period_opening.sql` (`create or replace app_op_payments_read`), isolated suites `09_fin04_*` and `10_fin05_*` on dedicated vehicles, and 4 appended `db-verify.mjs` steps. No edit to previously applied migrations, no UI/calculator changes, no merge of PR #45/#46 from their old bases.
+- Suites rebuilt on dedicated fixtures because merged FIN-01/02 and FIN-07 suites changed the shared `V_H48_A/B` balances; expectations derived from explicit scenarios. `reset role` added at suite ends to keep the merged step order working.
+- Verification: local full run green (SQL, 3 negative controls, check, Vitest, backup, build, auth, 2 relevant Playwright suites). Pending: independent critical review, PR, CI on final head; PGlite cannot prove two-session concurrency. [Report](../docs/FIN_INTEGRATE_01_REPORT.md).

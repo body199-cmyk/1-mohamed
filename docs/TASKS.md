@@ -261,3 +261,10 @@
 - **FIN-07 semantic approval remains OPEN for the coordinator:** the removal of the aggregate-only bigint cap is implemented and CI-verified, but no approval is recorded on anyone's behalf here.
 - `apps/web/e2e/cash-movement-label-validation.test.ts` was NOT wired into any automated check; a dedicated Vitest step is added to `verify.yml` in this commit without changing any other check. Final CI on this new head governs the handoff.
 - PR #44 remains Draft review-only; the merge decision belongs to the coordinator. Still outside the package: FIN-04/05/06, FIN-08, FIN-09 (owner decision), FIN-10/11, the stage-3 contractor statement branch, physical Android/iOS devices and real Supabase concurrency.
+
+
+## FIN-INTEGRATE-01 — FIN-04 + FIN-05 as one package, 11 November 2026
+- **State:** implemented on branch `codex/fin04-fin05-integration` from merged-main `605656e3e061d5c30c71b5c13a07db6c7dfd3a89` (PR #44 merge confirmed; FIN-07 approved technically within that scope). Supersedes the Draft status above historically; this task is in verification, not merged.
+- Carries PR #45/#46 work onto a fresh branch: FIN-04 timeline guards (uncancelled trip **or payment** before a proposed vehicle-cash opening rejects it atomically; a trip before an accepted opening start is rejected by trigger before RLS), FIN-05 exact period opening/closing distinct from current cash with the opening seed counted once on its own day.
+- Test suites rebuilt on dedicated fixtures (`V_F4_*`, `V_F5_*`) because the old FIN-05 expectations for `V_H48_A/B` were invalidated by the merged FIN-01/02 and FIN-07 suites — expectations computed from explicit scenarios, no numbers swapped, no checks dropped. Session-role leak fixed (`reset role`) so the merged step order works.
+- Local verification passed: full `db-verify` (26 steps) + 3 negative controls + `npm run check` (199) + Vitest suites (59) + backup (12) + build + auth boundary + Playwright (18). Remaining: fresh critical review, PR, CI on final head. PGlite single-connection limitation documented; no production or real Supabase concurrency claims. [Report](FIN_INTEGRATE_01_REPORT.md).
