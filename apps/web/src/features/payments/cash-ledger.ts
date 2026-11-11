@@ -67,10 +67,12 @@ export function buildCashLedger(
   }
   let balance = 0n;
   try {
+    // The approved signed-bigint validator is the single source of truth for
+    // openings, including the SQL minimum -(2^63): rejecting it here made a
+    // successfully stored opening unreadable (BUG-015).
     const openingText = opening?.signedPiastres ?? "0";
     if (!validOpeningPiastres(openingText)) throw new Error("invalid opening encoding");
     balance = BigInt(openingText);
-    if (balance > MAX_PIASTRES || balance < -MAX_PIASTRES) throw new Error("opening overflow");
   } catch {
     return { ok: false, error: "رصيد افتتاحي نقدي غير صالح." };
   }

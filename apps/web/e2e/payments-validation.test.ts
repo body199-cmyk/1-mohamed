@@ -73,6 +73,33 @@ describe("T08.3 cash ledger demo follows T08.2/D15/D16",()=>{
       expect(buildCashLedger(source,"V1",DEMO_PRIMARY_RESPONSIBLE_ID,today).ok).toBe(false);
     }
   });
+  it("BUG-015 accepts the SQL minimum opening -(2^63) and rejects one piastre below it",()=>{
+    const min="-9223372036854775808";
+    const source={...base,trips:[],payments:[],cashOpenings:[{
+      vehicleId:"V1",contractorId:DEMO_PRIMARY_RESPONSIBLE_ID,
+      startDate:"2026-11-01",signedPiastres:min
+    }]};
+    // The approved validator and the SQL layer both accept this extreme, so the
+    // cash report must read it back instead of failing the whole ledger.
+    const accepted=buildCashLedger(source,"V1",DEMO_PRIMARY_RESPONSIBLE_ID,today);
+    expect(accepted.ok).toBe(true);
+    if(accepted.ok){
+      expect(accepted.value.openingPiastres).toBe(min);
+      expect(accepted.value.balancePiastres).toBe(min);
+      expect(accepted.value.rows).toHaveLength(0);
+    }
+    // One piastre below the SQL minimum is not a valid stored opening anywhere.
+    const below={...source,cashOpenings:[{vehicleId:"V1",
+      contractorId:DEMO_PRIMARY_RESPONSIBLE_ID,
+      startDate:"2026-11-01",signedPiastres:"-9223372036854775809"}]};
+    const rejected=buildCashLedger(below,"V1",DEMO_PRIMARY_RESPONSIBLE_ID,today);
+    expect(rejected).toEqual({ok:false,error:"رصيد افتتاحي نقدي غير صالح."});
+    // Positive extreme stays accepted; per-movement limits are unchanged.
+    const positive={...source,cashOpenings:[{vehicleId:"V1",
+      contractorId:DEMO_PRIMARY_RESPONSIBLE_ID,
+      startDate:"2026-11-01",signedPiastres:"9223372036854775807"}]};
+    expect(buildCashLedger(positive,"V1",DEMO_PRIMARY_RESPONSIBLE_ID,today).ok).toBe(true);
+  });
   it("rejects an individual work movement above signed 64-bit even if a negative opening would offset it",()=>{
     const max="9223372036854775807";
     const oversized={...trip("OVER-MOVEMENT","2026-11-03","V1","AHMED_SUPPLIES","1"),
