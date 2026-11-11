@@ -1,3 +1,4 @@
+import { ContractorMoney } from "../contractor-statements/contractor-money";
 import React from "react";
 import type { WorkDirection } from "@ledger/trip-entry";
 import {
@@ -114,7 +115,7 @@ export function TripPreviewCard({
               قيمة شغل المقاول:
             </span>
             <span style={{ fontSize: "1.2rem", fontWeight: 700, color: "var(--color-primary)" }}>
-              {contractorTotalStr} ج.م
+              {direction ? <ContractorMoney value={(direction === "OTHER_SUPPLIES" ? -BigInt(calcResult.contractorTotalPiastres) : BigInt(calcResult.contractorTotalPiastres)).toString()} /> : `${contractorTotalStr} ج.م`}
             </span>
           </div>
 
