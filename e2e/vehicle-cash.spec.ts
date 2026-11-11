@@ -1,19 +1,22 @@
 import { expect, test } from "@playwright/test";
 
 test.describe("T08.4/5 vehicle cash report uses existing payment cash ledger",()=>{
-  test("shows the correct contractor-owner cash, date range and receipt without work difference",async({page})=>{
+  test("shows the correct contractor-owner cash, date range and movement identifier without work difference",async({page})=>{
     await page.goto("/demo/reports/vehicle-cash");
     await expect(page.getByRole("heading",{name:"كشف حساب نقد العربية"})).toBeVisible();
     const summary=page.getByRole("region",{name:"ملخص كشف نقد العربية"});
     await expect(summary).toContainText("280.00 ج.م");
     await expect(summary).toContainText("0.00 ج.م");
-    await expect(page.getByRole("table",{name:"جدول حركات كشف العربية"})).toContainText("REC-001");
+    // CASH-LABEL-01: the description shows the movement identifier, not the receipt number.
+    await expect(page.getByRole("table",{name:"جدول حركات كشف العربية"})).toContainText("TRIP-HIST-001");
+    await expect(page.getByRole("table",{name:"جدول حركات كشف العربية"})).not.toContainText("REC-001");
     await expect(page.getByRole("table",{name:"جدول حركات كشف العربية"})).not.toContainText("REC-002");
     await page.getByLabel("مسؤول النقد في الكشف").selectOption("K1");
     await expect(page.getByRole("region",{name:"ملخص كشف نقد العربية"})).toContainText("0.00 ج.م");
     await page.getByLabel("عربية كشف النقد").selectOption("V3");
     await expect(page.getByRole("region",{name:"ملخص كشف نقد العربية"})).toContainText("525.00 ج.م");
-    await expect(page.getByRole("table",{name:"جدول حركات كشف العربية"})).toContainText("REC-003");
+    await expect(page.getByRole("table",{name:"جدول حركات كشف العربية"})).toContainText("TRIP-HIST-003");
+    await expect(page.getByRole("table",{name:"جدول حركات كشف العربية"})).not.toContainText("REC-003");
   });
   test("payment uses real payment date and carries balance to next period without counting it twice",async({page})=>{
     await page.goto("/demo/payments");
@@ -65,7 +68,8 @@ test.describe("T08.4/5 vehicle cash report uses existing payment cash ledger",()
     await modal.getByRole("button",{name:"تأكيد أرشفة"}).click();
     await page.getByRole("navigation",{name:"التنقل الرئيسي"}).getByRole("link",{name:"نقدية العربية",exact:true}).click();
     await page.getByLabel("عربية كشف النقد").selectOption("V2");
-    await expect(page.getByRole("table",{name:"جدول حركات كشف العربية"})).toContainText("REC-002");
+    await expect(page.getByRole("table",{name:"جدول حركات كشف العربية"})).toContainText("TRIP-HIST-002");
+    await expect(page.getByRole("table",{name:"جدول حركات كشف العربية"})).not.toContainText("REC-002");
     expect(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1)).toBe(false);
   });
 });

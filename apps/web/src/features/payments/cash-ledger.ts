@@ -103,7 +103,7 @@ export function buildCashLedger(
       return { ok: false, error: "قيمة مستحق النقلة تجاوزت الحد المالي المسموح؛ تم إيقاف التقرير والحفظ." };
     }
     movements.push({ date: trip.workDate, id: trip.id, type: "WORK",
-      amount: workAmount, label: "مستحق نقلة " + (trip.receiptNumber || trip.id),
+      amount: workAmount, label: "مستحق نقلة " + trip.id,
       createdAt: trip.createdAt });
   }
   for (const payment of source.payments) {
@@ -127,7 +127,7 @@ export function buildCashLedger(
       return { ok: false, error: "مبلغ دفعة محفوظة غير صالح." };
     }
     movements.push({ date: payment.paymentDate, id: payment.id, type: "PAYMENT",
-      amount: -amount, label: "دفعة " + (payment.receiptNumber || payment.id),
+      amount: -amount, label: "دفعة " + payment.id,
       createdAt: payment.createdAt });
   }
   movements.sort((a, b) => a.date.localeCompare(b.date) ||
