@@ -152,3 +152,19 @@
 - **forms-h057:** فشل Target crashed الذي ظهر محليًا لم يتكرر في GitHub CI؛ لا دليل على عيب في التطبيق. لا نُخفيه من السجل التاريخي، لكنه لا يمنع خط الأساس بعد نجاح CI.
 - **Final evidence:** PR #28 merged at `433658bfc32a411dbfbbd2640a6d564f3577a1e4`; exact tested head `1e533d6f0a9c0c84aecd1299a2accf15e4f0bfdb`; run `42314459722` SUCCESS (55 + 9 browser tests and all remaining workflow checks).
 - **Status: CLOSED.** Test-only/CI/documentation correction; no application source, accounting, SQL, Auth, or persistence changes.
+
+
+## H065 / BUG-014 — وصف حركة كشف نقد العربية يسرّب رقم الإيصال بدل معرّف الحركة (١١ نوفمبر ٢٠٢٦)
+
+- **العيب:** وصف حركة النقلة في `buildCashLedger` كان يُبنى من `trip.receiptNumber || trip.id`، ووصف الدفعة بنفس النمط `payment.receiptNumber || payment.id`، فيظهر رقم الإيصال في شاشة كشف نقد العربية وفي التصديرات الخمس (HTML/Print وPDF وPNG وCSV وXLSX) رغم قرار إخفاء الإيصال من وصف الحركة (H065). الدليل الأول من CI #42881454697: نص الجدول `مستحق نقلة REC-001`.
+- **السبب:** السطران 106 و130 في `apps/web/src/features/payments/cash-ledger.ts` بنايا الوصف من `receiptNumber` بدل معرّف الحركة، والشاشة والتصديرات يمرران `row.label` كما هو.
+- **الإصلاح (CASH-LABEL-01):** الوصف يعتمد `trip.id` و`payment.id` فقط؛ بيانات `receiptNumber` الأصلية لم تُحذف أو تُغيّر في أي سجل، ولا تغيير في المبالغ أو الأرصدة أو التواريخ أو ترتيب الحركات. أُضيف اختبار مستقل `apps/web/e2e/cash-movement-label-validation.test.ts` (نقلة ودفعة لهما إيصالان + حالة إيصال فارغ)، وصُحّحت تأكيدات كانت تُثبّت السلوك المعيب في `vehicle-cash-report-validation.test.ts` و`e2e/vehicle-cash.spec.ts` بشرط ظهور معرّف الحركة وغياب الإيصال.
+- **المتابعة خارج النطاق:** `apps/web/src/features/dashboard-view.tsx` (سطران 82 و96) لا يزالان يعرضان `receiptNumber || id` في شاشة الرئيسية؛ خارج نطاق كشف نقد العربية ويحتاج قرارًا منفصلًا.
+
+
+## BUG-015 — اختلاف مدقق الافتتاحي بين الكتابة والقراءة يُبطل قراءة الحد الأدنى لـbigint الموقّع (١١ نوفمبر ٢٠٢٦)
+
+- **العيب:** على رأس PR #44 عند `4bd06635c61b7d09c2bdbd40dcf3eb3bccd209e8`، `validOpeningPiastres` (المدقق المعتمد) و`parseOpeningEgp` يقبلان ويخزنان الافتتاحي `-9223372036854775808` (الحد الأدنى لـbigint الموقّع في SQL، ومثبت مخزنًا في `08_fin07_numeric_boundaries_verification.sql`)، لكن `buildCashLedger` في `apps/web/src/features/payments/cash-ledger.ts:73` كان يرفضه بفحص نطاق زائد `balance < -MAX_PIASTRES` ⇒ كشف نقد الحساب كله يفشل بـ«رصيد افتتاحي نقدي غير صالح.» لافتتاحي مُخزَّن بنجاح. **إعادة إنتاج:** افتتاحي نقد `(V1، أحمد)` بقيمة `-9223372036854775808` ⇒ أي `buildCashLedger`/تقرير نقد/حفظ دفعة على هذا الحساب يفشل.
+- **السبب:** تحقق مكرر للنطاق في مسار القراءة لا يطابق المدقق المعتمد في مسار الكتابة؛ الحد الأدنى الصحيح `-(2^63)` وليس `-MAX_PIASTRES`.
+- **الإصلاح:** حذف سطر الفحص الزائد فقط؛ `validOpeningPiastres` هو مصدر الحقيقة الوحيد لصحة الافتتاحي (نطاق bigint الموقّع كاملًا بما فيه `-(MAX+1)`). **حدود الحركات والمبالغ والمدفوعات لم تتغير** (`MAX_PIASTRES` باقٍ على سطور 25/104/127)، ولا تغيير في الحساب أو SQL أو migrations.
+- **الاختبار المانع للعودة:** حالة `BUG-015` في `apps/web/e2e/payments-validation.test.ts` (ملف موصول بـCI في خطوة «Check D16 demo payment ledger and isolated accounts»): قبول الحد الأدنى `-(2^63)` في الكشف مع أرصدته، رفض `-9223372036854775809` بقرش أقل بنفس رسالة الخطأ، وبقاء الحد الموجب الأقصى مقبولًا. 20/20 PASS محليًا قبل الرفع.

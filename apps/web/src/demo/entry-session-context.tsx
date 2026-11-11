@@ -2,9 +2,10 @@
 
 import { createContext, useContext, useRef, useState, type ReactNode } from "react";
 import { createEntryState, reduceEntry, type EntryAction, type TripDraft } from "@ledger/trip-entry";
+import { cairoBusinessDate } from "../features/payments/cash-ledger";
 
 function useEntrySessionState() {
-  const [state, setState] = useState(() => createEntryState("2026-11-04"));
+  const [state, setState] = useState(() => createEntryState(cairoBusinessDate()));
   const [baseline, setBaseline] = useState<TripDraft>(state.tripDraft);
   const [submitted, setSubmitted] = useState(false);
   const submissionLock = useRef(false);
@@ -30,7 +31,11 @@ function useEntrySessionState() {
     setSubmitted(true);
     return true;
   };
-  return { state, dispatch, dirty, submitted, claimSubmission };
+  const releaseSubmission = () => {
+    submissionLock.current = false;
+    setSubmitted(false);
+  };
+  return { state, dispatch, dirty, submitted, claimSubmission, releaseSubmission };
 }
 
 const EntrySessionContext = createContext<ReturnType<typeof useEntrySessionState> | null>(null);

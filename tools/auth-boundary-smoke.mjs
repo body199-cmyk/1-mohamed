@@ -37,7 +37,7 @@ for (const path of ["/demo/dashboard", "/demo/trips", "/demo/contractors", "/dem
 }
 const root = await request("/");
 assert.equal(root.status, 307, "Public root should retain its existing demo redirect");
-assert.equal(new URL(root.headers.get("location"), base).pathname, "/demo/dashboard");
+assert.equal(new URL(root.headers.get("location"), base).pathname, "/demo/home");
 
 const masterHtml = await (await request("/demo/master-data")).text();
 assert.match(masterHtml, /بيانات المقاولين والعربيات/);

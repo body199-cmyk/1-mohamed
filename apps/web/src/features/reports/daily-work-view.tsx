@@ -93,7 +93,7 @@ export function DailyWorkView() {
         : "تم إيقاف عرض المجاميع: بيانات نقلة غير متطابقة مع محرك الحساب" +
           (report.tripId ? " (" + report.tripId + ")." : ".")}
     </p> : <>
-      {exportDocument && <ReportExportActions document={exportDocument} fileNameBase={"daily-work-" + workDate} />}
+      {exportDocument && <ReportExportActions document={exportDocument} fileNameBase={"daily-work-" + workDate + "-" + (contractorId || "all-contractors") + "-" + (vehicleId || "all-vehicles")} />}
       <div className={styles.stats}>
         <TotalCard label="إجمالي اليوم المحدد" totals={report.totals} />
         <TotalCard label="شغل أحمد للطرف الآخر" totals={report.ahmedSupplies} />
@@ -114,7 +114,6 @@ export function DailyWorkView() {
               <th scope="col">الوزن (طن)</th>
               <th scope="col">قيمة شغل المقاول</th>
               <th scope="col">مستحق العربية</th>
-              <th scope="col">رقم الإيصال</th>
             </tr></thead>
             <tbody>{report.rows.map(t => <tr key={t.id}>
               <th scope="row">{t.id}</th>
@@ -125,7 +124,6 @@ export function DailyWorkView() {
               <td>{t.weightTonnes}</td>
               <td>{egp(t.contractorTotalPiastres)}</td>
               <td>{egp(t.vehicleTotalPiastres)}</td>
-              <td>{t.receiptNumber || "—"}</td>
             </tr>)}</tbody>
           </table>
         </div>

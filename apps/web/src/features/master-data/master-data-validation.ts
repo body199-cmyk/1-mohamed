@@ -13,7 +13,8 @@ export function parseOpeningEgp(raw: string, direction: "VEHICLE" | "CONTRACTOR"
   if (value.length > 20 || !/^(0|[1-9][0-9]*)(\.[0-9]{1,2})?$/.test(value)) return null;
   const [whole, fraction = ""] = value.split(".");
   const piastres = BigInt(whole) * 100n + BigInt(fraction.padEnd(2, "0"));
-  if (piastres > MAX_DB_BIGINT) return null;
+  // Signed SQL BIGINT permits one additional unit on the negative side.
+  if (piastres > (direction === "CONTRACTOR" ? MAX_DB_BIGINT + 1n : MAX_DB_BIGINT)) return null;
   const signed = direction === "CONTRACTOR" ? -piastres : piastres;
   return signed.toString();
 }
@@ -21,7 +22,7 @@ export function parseOpeningEgp(raw: string, direction: "VEHICLE" | "CONTRACTOR"
 export function validOpeningPiastres(raw: string): boolean {
   if (raw.length > 20 || !/^(0|[1-9][0-9]*|-[1-9][0-9]*)$/.test(raw)) return false;
   const value = BigInt(raw);
-  return value <= MAX_DB_BIGINT && value >= -MAX_DB_BIGINT;
+  return value <= MAX_DB_BIGINT && value >= -(MAX_DB_BIGINT + 1n);
 }
 
 /** Calendar date with no timezone conversion (business dates are local dates). */

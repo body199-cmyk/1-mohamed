@@ -18,6 +18,11 @@ export function StatementSummaryCard({
     statement.counterpartyWorkPiastres
   );
   const closingFormatted = formatEgpFromPiastres(statement.closingBalancePiastres);
+  const closingAbsoluteFormatted = formatEgpFromPiastres(
+    BigInt(statement.closingBalancePiastres) < 0n
+      ? (-BigInt(statement.closingBalancePiastres)).toString()
+      : statement.closingBalancePiastres
+  );
 
   const openingAmount = openingFormatted.ok ? openingFormatted.amount : "0.00";
   const ahmedAmount = ahmedWorkFormatted.ok ? ahmedWorkFormatted.amount : "0.00";
@@ -25,6 +30,7 @@ export function StatementSummaryCard({
     ? counterpartyWorkFormatted.amount
     : "0.00";
   const closingAmount = closingFormatted.ok ? closingFormatted.amount : "0.00";
+  const closingAbsoluteAmount = closingAbsoluteFormatted.ok ? closingAbsoluteFormatted.amount : "0.00";
 
   // Beneficiary badge presentation
   let beneficiaryBadgeClass = styles.badgeBalanced;
@@ -33,11 +39,11 @@ export function StatementSummaryCard({
 
   if (statement.beneficiary === "AHMED") {
     beneficiaryBadgeClass = styles.badgeAhmed;
-    beneficiaryText = `صافي الرصيد لصالح أحمد (+${closingAmount} ج.م)`;
+    beneficiaryText = `صافي الرصيد لصالح أحمد (${closingAbsoluteAmount} ج.م)`;
     beneficiaryIcon = "🟢";
   } else if (statement.beneficiary === "COUNTERPARTY") {
     beneficiaryBadgeClass = styles.badgeCounterparty;
-    beneficiaryText = `صافي الرصيد لصالح المقاول (${contractorName}: ${closingAmount} ج.م)`;
+    beneficiaryText = `صافي الرصيد لصالح المقاول (${contractorName}: ${closingAbsoluteAmount} ج.م)`;
     beneficiaryIcon = "🟡";
   }
 
@@ -71,7 +77,7 @@ export function StatementSummaryCard({
       <div style={{textAlign:"center",color:"var(--text-muted)",marginBottom:12,fontWeight:700}}>فرق الشغل = شغل أحمد − شغل المقاول، ثم يُحتسب الرصيد المرحّل للوصول إلى الصافي النهائي.</div>
       <div role="status" style={{background:"#175CD3",color:"#fff",borderRadius:16,padding:"24px",marginBottom:18,textAlign:"center"}}>
         <div style={{fontSize:14,opacity:.9}}>صافي المستحق النهائي حتى {statement.period.to}</div>
-        <div style={{fontSize:"clamp(2rem,5vw,3rem)",fontWeight:900,marginTop:8}}>{closingAmount} ج.م</div>
+        <div style={{fontSize:"clamp(2rem,5vw,3rem)",fontWeight:900,marginTop:8}}>{closingAbsoluteAmount} ج.م</div>
         <div style={{fontSize:"clamp(1.1rem,3vw,1.6rem)",fontWeight:800,marginTop:8}}>
           {statement.beneficiary === "AHMED" ? `أحمد أبو علي له عند المقاول ${contractorName}` :
            statement.beneficiary === "COUNTERPARTY" ? `المقاول ${contractorName} له عند أحمد أبو علي` :
@@ -80,7 +86,9 @@ export function StatementSummaryCard({
         <div style={{fontSize:13,opacity:.9,marginTop:12}}>يشمل الرصيد المرحّل من قبل الفترة والشغل المسجل خلالها. دفعات العربيات النقدية مستقلة عن فرق شغل المقاولين.</div>
       </div>
 
-      <div className={styles.summaryGrid}>
+      <details className={styles.summaryBreakdown}>
+        <summary>عرض تفاصيل الرصيد الافتتاحي وشغل الطرفين والرصيد الختامي</summary>
+        <div className={styles.summaryGrid}>
         {/* Metric 1: Opening Balance */}
         <div className={styles.metricBox}>
           <span className={styles.metricLabel}>الرصيد الافتتاحي قبل الفترة</span>
@@ -132,7 +140,8 @@ export function StatementSummaryCard({
             {statement.beneficiary === "BALANCED" && "لا توجد مستحقات معلقة"}
           </span>
         </div>
-      </div>
+        </div>
+      </details>
     </div>
   );
 }

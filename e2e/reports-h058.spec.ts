@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { mkdir } from "node:fs/promises";
+import { selectThemeViaSettings } from "./support/approved-theme";
 
 const reports = [
   ["/demo/contractors","contractor"],
@@ -24,7 +25,10 @@ test.describe("H058 pre-cloud reports and export visual polish",()=>{
     await page.setViewportSize({width:360,height:760});
     await page.goto("/demo/contractors");
     const actions=page.getByRole("region",{name:"تصدير كشف الحساب"});
-    await expect(actions.getByRole("button")).toHaveCount(5);
+    for(const name of ["طباعة / حفظ PDF","تنزيل PDF مباشر","تنزيل صورة PNG","تنزيل CSV","تنزيل Excel XLSX"]) {
+      await expect(actions.getByRole("button",{name,exact:true})).toHaveCount(1);
+    }
+    await expect(actions.getByRole("button",{name:"مشاركة صورة الكشف مباشرة"})).toHaveCount(1);
     const pdf=actions.getByRole("button",{name:"تنزيل PDF مباشر"});
     const xlsx=actions.getByRole("button",{name:"تنزيل Excel XLSX"});
     await expect(pdf).toBeVisible();
@@ -48,8 +52,8 @@ test.describe("H058 pre-cloud reports and export visual polish",()=>{
       await page.goto(path);
       await page.screenshot({path:"artifacts/h058/"+name+"-light-360.png",fullPage:true});
     }
+    await selectThemeViaSettings(page,"dark");
     await page.goto("/demo/contractors");
-    if(await page.getByRole("button",{name:"تفعيل الوضع الداكن"}).count())await page.getByRole("button",{name:"تفعيل الوضع الداكن"}).click();
     await expect(page.locator("html")).toHaveAttribute("data-theme","dark");
     for(const [path,name] of reports){
       await page.goto(path);

@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { mkdir } from "node:fs/promises";
+import { selectThemeViaSettings, waitForElementVisualStability } from "./support/approved-theme";
 
 /** H061: only appearance changes; existing payment, trip and master-data contracts stay live. */
 const routes = [
@@ -23,6 +24,7 @@ function contrast(foreground: string, background: string): number {
 }
 
 test.describe("H061 Tabler-style operational entry and payment screens", () => {
+  test.describe.configure({ retries: 0 });
   test("three routes retain right-sidebar/compact-nav layouts and capture 12 light/dark screenshots",async({page})=>{
     test.setTimeout(120_000);
     await mkdir("artifacts/h061",{recursive:true});
@@ -30,11 +32,7 @@ test.describe("H061 Tabler-style operational entry and payment screens", () => {
       await page.setViewportSize({width,height:780});
       for (const theme of ["light","dark"] as const) {
         await page.goto("/demo/trips");
-        // Wait until ThemeProvider has hydrated before deciding which switch to click.
-        await expect(page.locator("html")).toHaveAttribute("data-theme", /^(light|dark)$/);
-        if (await page.locator("html").getAttribute("data-theme") !== theme) {
-          await page.getByRole("button",{name:theme==="dark"?"تفعيل الوضع الداكن":"تفعيل الوضع الفاتح"}).click();
-        }
+        await selectThemeViaSettings(page,theme);
         await expect(page.locator("html")).toHaveAttribute("data-theme",theme);
         for (const [path,name] of routes) {
           await page.goto(path);
@@ -57,11 +55,7 @@ test.describe("H061 Tabler-style operational entry and payment screens", () => {
     await page.setViewportSize({width:360,height:780});
     for (const theme of ["light","dark"] as const) {
       await page.goto("/demo/trips");
-        // Wait until ThemeProvider has hydrated before deciding which switch to click.
-        await expect(page.locator("html")).toHaveAttribute("data-theme", /^(light|dark)$/);
-      if (await page.locator("html").getAttribute("data-theme") !== theme) {
-        await page.getByRole("button",{name:theme==="dark"?"تفعيل الوضع الداكن":"تفعيل الوضع الفاتح"}).click();
-      }
+      await selectThemeViaSettings(page,theme);
       for(const [path] of routes) {
         await page.goto(path);
         // A route navigation can server-render before ThemeProvider rehydrates.
@@ -70,6 +64,7 @@ test.describe("H061 Tabler-style operational entry and payment screens", () => {
           ? page.locator('main button[class*="btnPrimary"]').first()
           : page.locator('main button[class*="_primary_"]').first();
         await expect(button).toBeVisible();
+        await waitForElementVisualStability(button);
         const colors=await button.evaluate(el=>({
           fg:getComputedStyle(el).color,bg:getComputedStyle(el).backgroundColor,
         }));
@@ -78,6 +73,7 @@ test.describe("H061 Tabler-style operational entry and payment screens", () => {
         if(path==="/demo/master-data") {
           const tab = page.locator('[role="tab"][aria-selected="true"]');
           await expect(tab).toHaveCount(1);
+          await waitForElementVisualStability(tab);
           const tabColors=await tab.evaluate(el=>({
             fg:getComputedStyle(el).color,bg:getComputedStyle(el).backgroundColor,
           }));

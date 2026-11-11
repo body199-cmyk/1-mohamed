@@ -6,7 +6,7 @@ import { useDemoStore } from "../../demo/demo-context";
 import type { DemoPayment } from "../../demo/demo-types";
 import {
   DEMO_PRIMARY_RESPONSIBLE_ID, cairoBusinessDate, cashResponsibleForTrip,
-  buildCashLedger, type PaymentDraft,
+  buildCashLedger, parsePaymentEgp, type PaymentDraft,
 } from "./cash-ledger";
 import styles from "./payments.module.css";
 
@@ -56,8 +56,11 @@ export function PaymentsView() {
     vehicleId,responsibleId,today),[trips,payments,cashOpenings,vehicleId,responsibleId,today]);
 
   const draftPreview = useMemo(() => {
-    if (!ledger.ok || !/^\\d+(?:\\.\\d{1,2})?$/.test(draft.amountEgp.trim())) return null;
-    const amount = BigInt(draft.amountEgp.split(".")[0]) * 100n + BigInt((draft.amountEgp.split(".")[1] ?? "").padEnd(2,"0"));
+    if (!ledger.ok) return null;
+    // Use the same canonical amount parser for preview and save.
+    const parsed = parsePaymentEgp(draft.amountEgp);
+    if (!parsed) return null;
+    const amount = BigInt(parsed);
     const oldAmount = editId ? BigInt(payments.find(p => p.id === editId)?.amountPiastres ?? "0") : 0n;
     const remaining = BigInt(ledger.value.balancePiastres) + oldAmount - amount;
     return { before: BigInt(ledger.value.balancePiastres) + oldAmount, amount, after: remaining };

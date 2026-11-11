@@ -1,5 +1,23 @@
 import { test, expect, type Page } from "@playwright/test";
 import { readFile } from "node:fs/promises";
+import { selectThemeViaSettings } from "./support/approved-theme";
+
+function tripSubmitButton(page: Page) {
+  return page.getByRole("button", { name: "💾 حفظ وإضافة نقلة جديدة", exact: true });
+}
+
+function quickAddDialog(page: Page) {
+  return page.getByRole("dialog", { name: "إضافة سجل جديد", exact: true });
+}
+
+async function statementMovementCount(page: Page) {
+  const countLabel = page.getByText(/\(\d+ نقلة\)/);
+  await expect(countLabel).toHaveCount(1);
+  const text = await countLabel.textContent();
+  const match = text?.match(/\((\d+) نقلة\)/);
+  if (!match) throw new Error("تعذر قراءة عدد النقلات من ملخص الفترة المعروض.");
+  return Number(match[1]);
+}
 
 async function fillTrip(page: Page) {
   await page.goto("/demo/trips");
@@ -13,68 +31,90 @@ async function fillTrip(page: Page) {
 test("المسودة تبقى بين الشاشتين والإضافة الواحدة لا تتكرر", async ({ page }) => {
   await fillTrip(page);
   await page.locator('a[href="/demo/contractors"]').click();
+  const beforeMovementCount = await statementMovementCount(page);
   await page.locator('a[href="/demo/trips"]').click();
   await expect(page.getByLabel("الوزن بالطن", { exact: true })).toHaveValue("10");
-  const submit = page.getByRole("button", { name: "إضافة للتجربة" });
+
+  const submit = tripSubmitButton(page);
   await submit.dblclick();
-  await expect(submit).toBeDisabled();
-  await expect(page.getByLabel("الوزن بالطن", { exact: true })).toHaveValue("10");
+  await expect(page.getByRole("status").filter({ hasText: "تم تسجيل النقلة بنجاح" })).toBeVisible();
+  await expect(page.getByLabel("الوزن بالطن", { exact: true })).toHaveValue("");
+  await expect(submit).toBeEnabled();
+
   await page.locator('a[href="/demo/contractors"]').click();
-  await expect(page.getByText("صافي الرصيد لصالح أحمد (+1300.00 ج.م)", { exact: true })).toBeVisible();
+  const afterMovementCount = await statementMovementCount(page);
+  expect(afterMovementCount).toBe(beforeMovementCount + 1);
+  await expect(page.getByText("صافي الرصيد لصالح أحمد (1300.00 ج.م)", { exact: true })).toBeVisible();
 });
 
 test("تغيير الطريق وحده يستلزم تأكيدًا قبل استبدال المسودة", async ({ page }) => {
   await page.goto("/demo/trips");
-  await page.getByLabel("مكان التحميل", { exact: true }).fill("السويس");
-  await page.getByRole("button", { name: "+ نقلة جديدة", exact: true }).click();
-  await expect(page.getByRole("dialog")).toBeVisible();
-  await page.getByRole("button", { name: "إلغاء والعودة للمسودة" }).click();
-  await expect(page.getByLabel("مكان التحميل", { exact: true })).toHaveValue("السويس");
+  await page.getByText("٣. المسار والمصاريف والملاحظات (اختياري)", { exact: true }).click();
+  const origin = page.getByLabel("مكان التحميل", { exact: true });
+  await expect(origin).toBeVisible();
+  await origin.fill("السويس");
+  await expect(origin).toHaveValue("السويس");
+  await page.getByRole("button", { name: "إعادة ضبط النقلة", exact: true }).click();
+  const replaceDialog = page.getByRole("dialog", { name: "تأكيد استبدال المسودة", exact: true });
+  await expect(replaceDialog).toBeVisible();
+  await replaceDialog.getByRole("button", { name: "إلغاء والعودة للمسودة", exact: true }).click();
+  await expect(origin).toHaveValue("السويس");
 });
 
 test("رفض الوزن الصفري والفاصلة الملتبسة وتاريخ ما قبل الحساب", async ({ page }) => {
   await fillTrip(page);
+  const submit = tripSubmitButton(page);
   await page.getByLabel("الوزن بالطن", { exact: true }).fill("0.000");
-  await page.getByRole("button", { name: "إضافة للتجربة" }).click();
+  await submit.click();
   await expect(page.getByRole("main").getByRole("alert")).toContainText("أكبر من صفر");
   await page.getByLabel("الوزن بالطن", { exact: true }).fill("1,000");
-  await page.getByRole("button", { name: "إضافة للتجربة" }).click();
-  await expect(page.getByRole("main").getByRole("alert").first()).toContainText("صيغة");
+  await submit.click();
+  await expect(page.getByRole("main").getByRole("alert").filter({ hasText: "صيغة" })).toContainText("صيغة");
   await page.getByLabel("الوزن بالطن", { exact: true }).fill("١٠٫٥");
   await page.getByLabel("تاريخ النقلة", { exact: true }).fill("2026-10-31");
-  await page.getByRole("button", { name: "إضافة للتجربة" }).click();
+  await submit.click();
   await expect(page.getByRole("main").getByRole("alert")).toContainText("لا يسبق");
 });
 
 test("الرصيد الافتتاحي العربي دقيق والمبلغ غير الصالح لا يتحول إلى صفر", async ({ page }) => {
   await page.goto("/demo/trips");
   await page.getByRole("button", { name: "+ مقاول جديد", exact: true }).click();
-  await page.getByLabel("اسم المقاول", { exact: true }).fill("اختبار الرصيد");
-  await page.getByLabel("حالة الرصيد الافتتاحي").selectOption("AHMED");
-  await page.getByLabel("مبلغ الرصيد الافتتاحي").fill("1,000");
-  await page.getByRole("button", { name: "حفظ وإضافة" }).click();
-  await expect(page.getByRole("dialog").getByRole("alert")).toBeVisible();
-  await page.getByLabel("مبلغ الرصيد الافتتاحي").fill("٢٥٫٥٠");
-  await page.getByRole("button", { name: "حفظ وإضافة" }).click();
+  const dialog = quickAddDialog(page);
+  await expect(dialog.getByRole("heading", { name: "➕ إضافة مقاول سريع", exact: true })).toBeVisible();
+  await dialog.getByLabel("اسم المقاول", { exact: true }).fill("اختبار الرصيد");
+  await dialog.getByLabel("حالة الرصيد الافتتاحي").selectOption("AHMED");
+  await dialog.getByLabel("مبلغ الرصيد الافتتاحي").fill("1,000");
+  await dialog.getByRole("button", { name: "حفظ وإضافة", exact: true }).click();
+  await expect(dialog.getByRole("alert")).toBeVisible();
+  await dialog.getByLabel("مبلغ الرصيد الافتتاحي").fill("٢٥٫٥٠");
+  await dialog.getByRole("button", { name: "حفظ وإضافة", exact: true }).click();
+  await expect(dialog).toHaveCount(0);
   await page.locator('a[href="/demo/contractors"]').click();
   await page.getByLabel("اختر المقاول").selectOption({ label: "اختبار الرصيد (K4)" });
-  await expect(page.getByText("صافي الرصيد لصالح أحمد (+25.50 ج.م)", { exact: true })).toBeVisible();
+  await expect(page.getByText("صافي الرصيد لصالح أحمد (25.50 ج.م)", { exact: true })).toBeVisible();
 });
 
 test("الإضافة من المشترك لا تغير مقاول النقلة والبحث والإغلاق يحفظان المسودة", async ({ page }) => {
   await fillTrip(page);
   await page.getByLabel("بحث عن عربية", { exact: true }).fill("غير موجود");
   await expect(page.getByLabel("السيارة المنفذة", { exact: true })).toHaveValue("V1");
-  await page.getByRole("button", { name: "تعديل المشترك" }).click();
-  await page.getByRole("button", { name: "+ مقاول جديد", exact: true }).first().click();
-  await page.getByLabel("اسم المقاول", { exact: true }).fill("مقاول مشترك جديد");
-  await page.getByRole("button", { name: "حفظ وإضافة" }).click();
+
+  const sharedPanel = page.getByRole("heading", { name: /البيانات المشتركة/ }).locator("xpath=../../..");
+  await sharedPanel.getByRole("button", { name: /تعديل المشترك/ }).click();
+  await sharedPanel.getByRole("button", { name: "+ مقاول جديد", exact: true }).click();
+  const dialog = quickAddDialog(page);
+  await expect(dialog.getByRole("heading", { name: "➕ إضافة مقاول سريع", exact: true })).toBeVisible();
+  await dialog.getByLabel("اسم المقاول", { exact: true }).fill("مقاول مشترك جديد");
+  await dialog.getByRole("button", { name: "حفظ وإضافة", exact: true }).click();
+  await expect(dialog).toHaveCount(0);
   await expect(page.getByLabel("المقاول المشترك", { exact: true })).toHaveValue("K4");
   await expect(page.getByLabel("المقاول الطرف الآخر", { exact: true })).toHaveValue("K1");
+
   const addVehicle = page.getByRole("button", { name: "+ سيارة جديدة", exact: true });
   await addVehicle.click();
+  await expect(quickAddDialog(page)).toBeVisible();
   await page.keyboard.press("Escape");
-  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await expect(quickAddDialog(page)).toHaveCount(0);
   await expect(addVehicle).toBeFocused();
   await expect(page.getByLabel("الوزن بالطن", { exact: true })).toHaveValue("10");
 });
@@ -83,6 +123,7 @@ test("التصدير يطابق الفترة المعروضة ويدعم الع�
   // The OS print dialog is the boundary; inspect its actual HTML input instead.
   await context.addInitScript(() => { window.print = () => {}; });
   await page.goto("/demo/contractors");
+  await page.getByLabel("نطاق كشف الحساب").selectOption("range");
   await page.getByLabel("من تاريخ").fill("2026-11-05");
   await page.getByLabel("إلى تاريخ").fill("2026-11-06");
   const downloadEvent = page.waitForEvent("download");
@@ -118,12 +159,12 @@ for (const width of [390, 768, 1440]) {
       await page.goto(`/demo/${route}`);
       await page.evaluate(() => document.fonts.ready);
       for (const mode of ["light", "dark"]) {
-        if (mode === "dark") await page.getByRole("button", { name: "تفعيل الوضع الداكن" }).click();
+        await selectThemeViaSettings(page, mode as "light"|"dark");
         const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
         expect(overflow).toBe(false);
         await page.screenshot({ path: `apps/web/e2e/screenshots/review-${route}-${width}-${mode}.png`, fullPage: true });
       }
-      await page.getByRole("button", { name: "تفعيل الوضع الفاتح" }).click();
+      await selectThemeViaSettings(page,"light");
     }
     expect(errors).toEqual([]);
   });

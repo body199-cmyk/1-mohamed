@@ -42,9 +42,6 @@ export function buildDashboardSummary(
       return { ok: false, error: "مبلغ دفعة خارج الحد المالي المدعوم." };
     }
     paid += amount;
-    if (paid > MAX_DB_BIGINT) {
-      return { ok: false, error: "إجمالي دفعات اليوم يتجاوز الحد المالي المدعوم." };
-    }
   }
   return { ok: true, work, paymentCount: paidToday.length, paidPiastres: paid.toString(), date };
 }

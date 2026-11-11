@@ -78,7 +78,7 @@ export function VehicleCashView() {
     </section>
 
     {!result.ok ? <p className={styles.error} role="alert">{result.error}</p> : <>
-      {exportDocument && <ReportExportActions document={exportDocument} fileNameBase={"vehicle-cash-" + from + "-" + to} />}
+      {exportDocument && <ReportExportActions document={exportDocument} fileNameBase={"vehicle-cash-" + vehicleId + "-" + responsibleId + "-" + from + "-" + to} />}
       <section className={styles.summary} aria-label="ملخص كشف نقد العربية">
         <div><span>الرصيد السابق للفترة</span><strong>{egp(result.value.openingPiastres)}</strong></div>
         <div><span>مستحق شغل العربية خلال الفترة</span><strong>{egp(result.value.workPiastres)}</strong></div>

@@ -3,12 +3,13 @@ import { readFile } from "node:fs/promises";
 
 test.describe("T09.2 actual paginated PDF download",()=>{
   test("creates a real A4 PDF with byte-valid page, image and trailer",async({page})=>{
+    await page.clock.setFixedTime(new Date("2026-11-09T12:00:00+02:00"));
     await page.goto("/demo/contractors");
     const [download]=await Promise.all([
       page.waitForEvent("download"),
       page.getByRole("button",{name:"تنزيل PDF مباشر"}).click()
     ]);
-    expect(download.suggestedFilename()).toBe("demo-statement-2026-11-01-2026-11-30.pdf");
+    expect(download.suggestedFilename()).toBe("demo-statement-2026-11-01-2026-11-09.pdf");
     const file=await download.path();
     expect(file).toBeTruthy();
     const pdf=await readFile(file!);
@@ -25,6 +26,7 @@ test.describe("T09.2 actual paginated PDF download",()=>{
   });
   test("valid empty period exports a PDF, invalid range disables export",async({page})=>{
     await page.goto("/demo/contractors");
+    await page.getByLabel("نطاق كشف الحساب").selectOption("range");
     await page.getByLabel("من تاريخ").fill("2026-11-12");
     await page.getByLabel("إلى تاريخ").fill("2026-11-13");
     const [download]=await Promise.all([

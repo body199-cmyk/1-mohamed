@@ -3,7 +3,7 @@ import type {
   DemoContractor, DemoVehicle, DemoVehicleCashOpening, DemoTripRecord, DemoPayment,
 } from "../../demo/demo-types";
 import { normalizeArabicNumbers } from "../trips/arabic-number-normalizer";
-import { validOpeningDate } from "../master-data/master-data-validation";
+import { validOpeningDate, validOpeningPiastres } from "../master-data/master-data-validation";
 
 /** The primary Ahmed account is not a counterparty entry in DemoStore. */
 export const DEMO_PRIMARY_RESPONSIBLE_ID = "PRIMARY_AHMED";
@@ -67,15 +67,30 @@ export function buildCashLedger(
   }
   let balance = 0n;
   try {
-    balance = BigInt(opening?.signedPiastres ?? "0");
-    if (balance > MAX_PIASTRES || balance < -MAX_PIASTRES) throw new Error("opening overflow");
+    // The approved signed-bigint validator is the single source of truth for
+    // openings, including the SQL minimum -(2^63): rejecting it here made a
+    // successfully stored opening unreadable (BUG-015).
+    const openingText = opening?.signedPiastres ?? "0";
+    if (!validOpeningPiastres(openingText)) throw new Error("invalid opening encoding");
+    balance = BigInt(openingText);
   } catch {
     return { ok: false, error: "رصيد افتتاحي نقدي غير صالح." };
   }
   const movements: { date: string; id: string; type: "WORK" | "PAYMENT"; amount: bigint; label: string; createdAt: string }[] = [];
   for (const trip of source.trips) {
-    if (trip.vehicleId !== vehicleId || cashResponsibleForTrip(trip) !== responsibleId) continue;
-    if (!validOpeningDate(trip.workDate) || (opening && trip.workDate < opening.startDate)) {
+    if (trip.vehicleId !== vehicleId) continue;
+    if (!validOpeningDate(trip.workDate)) {
+      return { ok: false, error: "توجد نقلة بتاريخ غير صالح في حساب العربية؛ راجع البيانات." };
+    }
+    // Historical projections are isolated from future movements. Date/opening
+    // consistency is checked above, but future trip amounts cannot alter an
+    // earlier report or prevent an otherwise valid historical payment.
+    if (trip.workDate > asOf) continue;
+    if (trip.direction !== "AHMED_SUPPLIES" && trip.direction !== "OTHER_SUPPLIES") {
+      return { ok: false, error: "اتجاه نقلة غير صالح في حساب العربية؛ تم إيقاف التقرير والحفظ." };
+    }
+    if (cashResponsibleForTrip(trip) !== responsibleId) continue;
+    if (opening && trip.workDate < opening.startDate) {
       return { ok: false, error: "توجد نقلة بتاريخ يسبق بداية افتتاحي النقد؛ راجع الحساب." };
     }
     const result = calculateTripAmounts({
@@ -85,11 +100,13 @@ export function buildCashLedger(
     if (!result.ok || result.vehicleTotalPiastres !== trip.vehicleTotalPiastres) {
       return { ok: false, error: "مستحق نقلة لا يطابق محرك الحساب؛ تم إيقاف دفعات هذا الحساب." };
     }
-    if (trip.workDate <= asOf) {
-      movements.push({ date: trip.workDate, id: trip.id, type: "WORK",
-        amount: BigInt(trip.vehicleTotalPiastres), label: "مستحق نقلة " + (trip.receiptNumber || trip.id),
-        createdAt: trip.createdAt });
+    const workAmount = BigInt(result.vehicleTotalPiastres);
+    if (workAmount > MAX_PIASTRES) {
+      return { ok: false, error: "قيمة مستحق النقلة تجاوزت الحد المالي المسموح؛ تم إيقاف التقرير والحفظ." };
     }
+    movements.push({ date: trip.workDate, id: trip.id, type: "WORK",
+      amount: workAmount, label: "مستحق نقلة " + trip.id,
+      createdAt: trip.createdAt });
   }
   for (const payment of source.payments) {
     if (payment.vehicleId !== vehicleId || payment.responsibleContractorId !== responsibleId
@@ -103,13 +120,16 @@ export function buildCashLedger(
     if (payment.paymentDate > asOf) continue;
     let amount: bigint;
     try {
+      if (payment.amountPiastres.length > 19 || !/^[1-9][0-9]*$/.test(payment.amountPiastres)) {
+        throw new Error("non-canonical payment encoding");
+      }
       amount = BigInt(payment.amountPiastres);
       if (amount <= 0n || amount > MAX_PIASTRES) throw new Error("payment bounds");
     } catch {
       return { ok: false, error: "مبلغ دفعة محفوظة غير صالح." };
     }
     movements.push({ date: payment.paymentDate, id: payment.id, type: "PAYMENT",
-      amount: -amount, label: "دفعة " + (payment.receiptNumber || payment.id),
+      amount: -amount, label: "دفعة " + payment.id,
       createdAt: payment.createdAt });
   }
   movements.sort((a, b) => a.date.localeCompare(b.date) ||
@@ -118,6 +138,8 @@ export function buildCashLedger(
   const rows: CashLedgerRow[] = [];
   for (const movement of movements) {
     balance += movement.amount;
+    // Account totals may exceed a single SQL bigint movement. SQL aggregates
+    // in numeric; keep exact bigint arithmetic for the full ledger projection.
     rows.push({ date: movement.date, id: movement.id, type: movement.type,
       amountPiastres: movement.amount.toString(), balancePiastres: balance.toString(),
       label: movement.label });
@@ -150,6 +172,12 @@ export function validateDemoPayment(
   if (!validOpeningDate(draft.paymentDate) || draft.paymentDate > asOf) {
     return { ok: false, error: "تاريخ الدفعة يجب أن يكون صحيحًا ولا يتجاوز تاريخ اليوم بالقاهرة." };
   }
+  const cashOpening = source.cashOpenings.find(o =>
+    o.vehicleId === draft.vehicleId && o.contractorId === draft.responsibleContractorId
+  );
+  if (cashOpening && (!validOpeningDate(cashOpening.startDate) || draft.paymentDate < cashOpening.startDate)) {
+    return { ok: false, error: "تاريخ الدفعة يسبق تاريخ افتتاحي النقد لهذا الحساب أو أن تاريخ الافتتاحي غير صالح." };
+  }
   const amountText = parsePaymentEgp(draft.amountEgp);
   if (!amountText) return { ok: false, error: "مبلغ الدفعة يجب أن يكون موجبًا، وبحد أقصى رقمين للقروش." };
   if (draft.linkedTripId) {
@@ -168,7 +196,11 @@ export function validateDemoPayment(
       + base.value.rows.filter(r => r.date === draft.paymentDate && r.type === "WORK")
         .reduce((sum,r) => sum+BigInt(r.amountPiastres),0n)
     ) },
-    ...base.value.rows.filter(r => r.date >= draft.paymentDate)
+    // Same-day work is already credited in the first candidate above (D15).
+    // Include same-day payments after that point, plus every later movement;
+    // do not re-introduce intermediate same-day WORK balances into D16's minimum.
+    ...base.value.rows.filter(r => r.date > draft.paymentDate ||
+      (r.date === draft.paymentDate && r.type === "PAYMENT"))
       .map(r => ({ date:r.date, balance:BigInt(r.balancePiastres) })),
     { date:asOf, balance:BigInt(base.value.balancePiastres) },
   ];

@@ -60,7 +60,7 @@ function renderSheet(
   return XML_START + '<worksheet xmlns="' + SHEET_NS + '">' + sheetView +
     '<sheetFormatPr defaultRowHeight="22"/><cols>' + columns + '</cols>' +
     '<sheetData>' + rowXml + '</sheetData>' +
-    (freezeFirstRow ? '<autoFilter ref="A1:F' + rows.length + '"/>' : '') +
+    (freezeFirstRow ? '<autoFilter ref="A1:E' + rows.length + '"/>' : '') +
     '<pageSetup orientation="landscape" paperSize="9"/></worksheet>';
 }
 
@@ -89,13 +89,13 @@ export function createStatementXlsxParts(doc: ContractorStatementDocument): read
   ];
 
   const detailsRows = [
-    ["رقم النقلة", "التاريخ", "رقم الإيصال", "اتجاه الشغل", "الأثر على حساب أحمد (+/−)", "الرصيد بعد الحركة"],
+    ["رقم النقلة", "التاريخ", "اتجاه الشغل", "الأثر على حساب أحمد (+/−)", "الرصيد بعد الحركة"],
     ...(doc.rows.length ? doc.rows.map(r => [
-      r.reference, r.workDate, r.receiptNumber?.trim() || "—", r.directionText, r.amountText, r.runningBalanceText
-    ]) : [["لا توجد حركات خلال الفترة", "", "", "", "", ""]]),
+      r.reference, r.workDate, r.directionText, r.amountText, r.runningBalanceText
+    ]) : [["لا توجد حركات خلال الفترة", "", "", "", ""]]),
   ];
   const summaryXml = renderSheet(summaryRows,[31,65],[1,8],false);
-  const detailsXml = renderSheet(detailsRows,[29,20,23,54,30,32],[1],true);
+  const detailsXml = renderSheet(detailsRows,[29,20,54,30,32],[1],true);
 
   const workbook = XML_START + '<workbook xmlns="' + SHEET_NS + '" xmlns:r="' + REL_NS + '">' +
     '<bookViews><workbookView/></bookViews><sheets>' +

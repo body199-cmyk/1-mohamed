@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import type { TripDraft, EntryAction } from "@ledger/trip-entry";
 import type { DemoContractor, DemoVehicle } from "../../demo/demo-types";
 import { normalizeArabicNumbers } from "./arabic-number-normalizer";
@@ -23,8 +23,40 @@ export function TripFormFields({
 }: TripFormFieldsProps) {
   const [vehicleSearch, setVehicleSearch] = useState("");
   const [contractorSearch, setContractorSearch] = useState("");
+  const [recentContractors, setRecentContractors] = useState<string[]>([]);
+  const [recentVehicles, setRecentVehicles] = useState<string[]>([]);
+  const [contractorSheetOpen, setContractorSheetOpen] = useState(false);
+  const [vehicleSheetOpen, setVehicleSheetOpen] = useState(false);
+  const contractorDialogRef = useRef<HTMLDialogElement>(null);
+  const vehicleDialogRef = useRef<HTMLDialogElement>(null);
+  const remember = (ids: string[], id: string) => [id, ...ids.filter(item => item !== id)].slice(0, 3);
+  const selectedContractor = contractors.find(item => item.id === tripDraft.counterpartyId);
+  const selectedVehicle = vehicles.find(item => item.id === tripDraft.vehicleId);
+  const contractorQuery = contractorSearch.trim().toLocaleLowerCase("ar");
+  const vehicleQuery = vehicleSearch.trim().toLocaleLowerCase("ar");
+  const filteredContractors = contractors.filter(item =>
+    (item.id === tripDraft.counterpartyId || !item.isArchived) &&
+    (item.id === tripDraft.counterpartyId || (item.name + " " + item.id).toLocaleLowerCase("ar").includes(contractorQuery))
+  );
+  const filteredVehicles = vehicles.filter(item =>
+    (item.id === tripDraft.vehicleId || !item.isArchived) &&
+    (item.id === tripDraft.vehicleId || (item.plateNumber + " " + item.driverName + " " + item.id).toLocaleLowerCase("ar").includes(vehicleQuery))
+  );
+  useEffect(() => {
+    const dialog = contractorDialogRef.current;
+    if (!dialog) return;
+    if (contractorSheetOpen && !dialog.open) dialog.showModal();
+    else if (!contractorSheetOpen && dialog.open) dialog.close();
+  }, [contractorSheetOpen]);
+  useEffect(() => {
+    const dialog = vehicleDialogRef.current;
+    if (!dialog) return;
+    if (vehicleSheetOpen && !dialog.open) dialog.showModal();
+    else if (!vehicleSheetOpen && dialog.open) dialog.close();
+  }, [vehicleSheetOpen]);
   return (
     <div className={styles.formGrid}>
+      <details className={styles.formSection} open><summary>١. بيانات النقلة والمقاول واتجاه الشغل</summary><div className={styles.formGrid}>
       {/* Work Date */}
       <div className={styles.formGroup}>
         <label className={styles.label}>
@@ -59,23 +91,55 @@ export function TripFormFields({
             + مقاول جديد
           </button>
         </div>
-        <input type="search" aria-label="بحث عن مقاول" placeholder="ابحث باسم المقاول" className={styles.input} value={contractorSearch} onChange={e => setContractorSearch(e.target.value)} />
-        <select aria-label="المقاول الطرف الآخر" value={tripDraft.counterpartyId ?? ""}
-          onChange={(e) =>
-            dispatch({
-              type: "EDIT_TRIP_COUNTERPARTY",
-              counterpartyId: e.target.value ? e.target.value : null,
-            })
-          }
-          className={styles.select}
-        >
-          <option value="">-- اختر المقاول --</option>
-          {contractors.filter(c => (c.id === tripDraft.counterpartyId || !c.isArchived) && (c.id === tripDraft.counterpartyId || c.name.includes(contractorSearch.trim()))).map((c) => (
-            <option key={c.id} value={c.id} disabled={c.isArchived}>
-              {c.name} ({c.id}){c.isArchived ? " — مؤرشف" : ""}
-            </option>
-          ))}
-        </select>
+        <div className={styles.desktopChoiceControls}>
+          <input type="search" aria-label="بحث عن مقاول" placeholder="ابحث باسم المقاول" className={styles.input} value={contractorSearch} onChange={e => setContractorSearch(e.target.value)} />
+          {recentContractors.length > 0 && <div className={styles.recentChoices} aria-label="المقاولون المستخدمون مؤخرًا">{recentContractors.map(id => { const item = contractors.find(entry => entry.id === id && !entry.isArchived); return item ? <button type="button" className={styles.quickActionBtn} key={id} onClick={() => dispatch({ type: "EDIT_TRIP_COUNTERPARTY", counterpartyId: id })}>{item.name}</button> : null; })}</div>}
+          <select aria-label="المقاول الطرف الآخر" value={tripDraft.counterpartyId ?? ""}
+            onChange={(e) => {
+              const id = e.target.value;
+              dispatch({ type: "EDIT_TRIP_COUNTERPARTY", counterpartyId: id || null });
+              if (id) setRecentContractors(previous => remember(previous, id));
+            }}
+            className={styles.select}
+          >
+            <option value="">-- اختر المقاول --</option>
+            {filteredContractors.map(item => (
+              <option key={item.id} value={item.id} disabled={item.isArchived}>
+                {item.name} ({item.id}){item.isArchived ? " — مؤرشف" : ""}
+              </option>
+            ))}
+          </select>
+        </div>
+        <button type="button" className={styles.mobileChoiceTrigger}
+          aria-label="اختيار المقاول الطرف الآخر" aria-haspopup="dialog" aria-expanded={contractorSheetOpen}
+          onClick={() => setContractorSheetOpen(true)}>
+          {selectedContractor ? selectedContractor.name + " (" + selectedContractor.id + ")" : "اختر المقاول"}
+        </button>
+        <dialog ref={contractorDialogRef} className={styles.choiceDialog}
+          aria-labelledby="contractor-choice-title"
+          onClose={() => setContractorSheetOpen(false)}
+          onCancel={event => { event.preventDefault(); setContractorSheetOpen(false); }}
+          onClick={event => { if (event.target === event.currentTarget) setContractorSheetOpen(false); }}>
+          <div className={styles.choiceSheetHeader}>
+            <h3 id="contractor-choice-title">اختيار المقاول الطرف الآخر</h3>
+            <button type="button" aria-label="إغلاق اختيار المقاول" onClick={() => setContractorSheetOpen(false)}>إغلاق</button>
+          </div>
+          <input type="search" aria-label="بحث عن مقاول داخل القائمة" autoFocus className={styles.input}
+            placeholder="ابحث باسم المقاول أو الكود" value={contractorSearch} onChange={event => setContractorSearch(event.target.value)}
+            onKeyDown={event => { if (event.key === "Escape") { event.preventDefault(); setContractorSheetOpen(false); } }} />
+          {recentContractors.length > 0 && <div className={styles.sheetRecent} role="group" aria-label="المقاولون المستخدمون مؤخرًا">
+            <strong>المستخدمون مؤخرًا</strong>
+            <div>{recentContractors.map(id => { const item = contractors.find(entry => entry.id === id && !entry.isArchived); return item ? <button type="button" key={id} onClick={() => { dispatch({ type: "EDIT_TRIP_COUNTERPARTY", counterpartyId: id }); setRecentContractors(previous => remember(previous, id)); setContractorSheetOpen(false); }}>{item.name}</button> : null; })}</div>
+          </div>}
+          <div className={styles.choiceList} role="group" aria-label="كل المقاولين">
+            {filteredContractors.map(item => <button type="button" key={item.id} disabled={item.isArchived}
+              aria-pressed={tripDraft.counterpartyId === item.id}
+              onClick={() => { dispatch({ type: "EDIT_TRIP_COUNTERPARTY", counterpartyId: item.id }); setRecentContractors(previous => remember(previous, item.id)); setContractorSheetOpen(false); }}>
+              <span>{item.name}</span><small>{item.id}{item.isArchived ? " — مؤرشف" : ""}</small>
+            </button>)}
+            {filteredContractors.length === 0 && <p>لا توجد نتائج مطابقة.</p>}
+          </div>
+        </dialog>
       </div>
 
       {/* Native radios inside labels; full card click and keyboard support. */}
@@ -103,6 +167,8 @@ export function TripFormFields({
         </div>
       </div>
 
+      </div></details>
+      <details className={styles.formSection} open><summary>٢. العربية والوزن والأسعار</summary><div className={styles.formGrid}>
       {/* Vehicle */}
       <div className={styles.formGroup}>
         <div className={styles.labelRow}>
@@ -117,23 +183,55 @@ export function TripFormFields({
             + سيارة جديدة
           </button>
         </div>
-        <input type="search" aria-label="بحث عن عربية" placeholder="ابحث برقم العربية أو السائق" className={styles.input} value={vehicleSearch} onChange={e => setVehicleSearch(e.target.value)} />
-        <select aria-label="السيارة المنفذة" value={tripDraft.vehicleId ?? ""}
-          onChange={(e) =>
-            dispatch({
-              type: "EDIT_TRIP_VEHICLE",
-              vehicleId: e.target.value ? e.target.value : null,
-            })
-          }
-          className={styles.select}
-        >
-          <option value="">-- اختر السيارة --</option>
-          {vehicles.filter(v => (v.id === tripDraft.vehicleId || !v.isArchived) && (v.id === tripDraft.vehicleId || `${v.plateNumber} ${v.driverName}`.includes(vehicleSearch.trim()))).map((v) => (
-            <option key={v.id} value={v.id} disabled={v.isArchived}>
-              {v.plateNumber} ({v.driverName}){v.isArchived ? " — مؤرشفة" : ""}
-            </option>
-          ))}
-        </select>
+        <div className={styles.desktopChoiceControls}>
+          <input type="search" aria-label="بحث عن عربية" placeholder="ابحث برقم العربية أو السائق" className={styles.input} value={vehicleSearch} onChange={e => setVehicleSearch(e.target.value)} />
+          {recentVehicles.length > 0 && <div className={styles.recentChoices} aria-label="العربيات المستخدمة مؤخرًا">{recentVehicles.map(id => { const item = vehicles.find(entry => entry.id === id && !entry.isArchived); return item ? <button type="button" className={styles.quickActionBtn} key={id} onClick={() => dispatch({ type: "EDIT_TRIP_VEHICLE", vehicleId: id })}>{item.plateNumber}</button> : null; })}</div>}
+          <select aria-label="السيارة المنفذة" value={tripDraft.vehicleId ?? ""}
+            onChange={(e) => {
+              const id = e.target.value;
+              dispatch({ type: "EDIT_TRIP_VEHICLE", vehicleId: id || null });
+              if (id) setRecentVehicles(previous => remember(previous, id));
+            }}
+            className={styles.select}
+          >
+            <option value="">-- اختر السيارة --</option>
+            {filteredVehicles.map(item => (
+              <option key={item.id} value={item.id} disabled={item.isArchived}>
+                {item.plateNumber} ({item.driverName}){item.isArchived ? " — مؤرشفة" : ""}
+              </option>
+            ))}
+          </select>
+        </div>
+        <button type="button" className={styles.mobileChoiceTrigger}
+          aria-label="اختيار السيارة المنفذة" aria-haspopup="dialog" aria-expanded={vehicleSheetOpen}
+          onClick={() => setVehicleSheetOpen(true)}>
+          {selectedVehicle ? selectedVehicle.plateNumber + " (" + selectedVehicle.driverName + ")" : "اختر السيارة"}
+        </button>
+        <dialog ref={vehicleDialogRef} className={styles.choiceDialog}
+          aria-labelledby="vehicle-choice-title"
+          onClose={() => setVehicleSheetOpen(false)}
+          onCancel={event => { event.preventDefault(); setVehicleSheetOpen(false); }}
+          onClick={event => { if (event.target === event.currentTarget) setVehicleSheetOpen(false); }}>
+          <div className={styles.choiceSheetHeader}>
+            <h3 id="vehicle-choice-title">اختيار السيارة المنفذة</h3>
+            <button type="button" aria-label="إغلاق اختيار العربية" onClick={() => setVehicleSheetOpen(false)}>إغلاق</button>
+          </div>
+          <input type="search" aria-label="بحث عن عربية داخل القائمة" autoFocus className={styles.input}
+            placeholder="ابحث برقم العربية أو السائق أو الكود" value={vehicleSearch} onChange={event => setVehicleSearch(event.target.value)}
+            onKeyDown={event => { if (event.key === "Escape") { event.preventDefault(); setVehicleSheetOpen(false); } }} />
+          {recentVehicles.length > 0 && <div className={styles.sheetRecent} role="group" aria-label="العربيات المستخدمة مؤخرًا">
+            <strong>المستخدمون مؤخرًا</strong>
+            <div>{recentVehicles.map(id => { const item = vehicles.find(entry => entry.id === id && !entry.isArchived); return item ? <button type="button" key={id} onClick={() => { dispatch({ type: "EDIT_TRIP_VEHICLE", vehicleId: id }); setRecentVehicles(previous => remember(previous, id)); setVehicleSheetOpen(false); }}>{item.plateNumber}</button> : null; })}</div>
+          </div>}
+          <div className={styles.choiceList} role="group" aria-label="كل العربيات">
+            {filteredVehicles.map(item => <button type="button" key={item.id} disabled={item.isArchived}
+              aria-pressed={tripDraft.vehicleId === item.id}
+              onClick={() => { dispatch({ type: "EDIT_TRIP_VEHICLE", vehicleId: item.id }); setRecentVehicles(previous => remember(previous, item.id)); setVehicleSheetOpen(false); }}>
+              <span>{item.plateNumber}</span><small>{item.driverName}{item.isArchived ? " — مؤرشفة" : ""}</small>
+            </button>)}
+            {filteredVehicles.length === 0 && <p>لا توجد نتائج مطابقة.</p>}
+          </div>
+        </dialog>
       </div>
 
       {/* Weight */}
@@ -217,6 +315,8 @@ export function TripFormFields({
         />
       </div>
 
+      </div></details>
+      <details className={styles.formSection}><summary>٣. المسار والمصاريف والملاحظات (اختياري)</summary><div className={styles.formGrid}>
       {/* Locations */}
       <div className={styles.formGroup}>
         <label className={styles.label}>مكان التحميل</label>
@@ -288,6 +388,7 @@ export function TripFormFields({
           className={styles.textarea}
         />
       </div>
+      </div></details>
     </div>
   );
 }
