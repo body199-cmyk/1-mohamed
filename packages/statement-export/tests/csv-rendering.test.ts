@@ -106,7 +106,7 @@ describe("EXPORT-01 renderContractorStatementCsv", () => {
 
     const body = csv.slice(1);
     const rawLines = body.split("\r\n");
-    expect(rawLines.length).toBe(17);
+    expect(rawLines.length).toBe(18);
 
     // Non-empty lines must have every cell enclosed in double quotes
     for (const line of rawLines) {
@@ -124,6 +124,7 @@ describe("EXPORT-01 renderContractorStatementCsv", () => {
     expect(records).toEqual([
       ["اسم المنشأة", "مكتب أحمد أبو علي للنقل"],
       ["نوع التقرير", "كشف شغل مقاول"],
+      ["هوية الحساب", "'+ لأحمد، − على أحمد، 0 متعادل"],
       ["المقاول", "شركة النيل للمقاولات"],
       ["من تاريخ", "2026-11-01"],
       ["إلى تاريخ", "2026-11-10"],
@@ -173,7 +174,7 @@ describe("EXPORT-01 renderContractorStatementCsv", () => {
       "اسم المنشأة",
       'شركة "الأمل"، للنقل\nفرع دمياط',
     ]);
-    expect(records[2]).toEqual([
+    expect(records[3]).toEqual([
       "المقاول",
       'مقاول "أ"، قسم (1)\r\nملاحظة داخلية',
     ]);
@@ -208,7 +209,7 @@ describe("EXPORT-01 renderContractorStatementCsv", () => {
         })
       );
       const records = parseCsvRecords(csv);
-      expect(records[2]?.[1]).toBe(testCase.expected);
+      expect(records[3]?.[1]).toBe(testCase.expected);
     }
   });
 
@@ -233,8 +234,8 @@ describe("EXPORT-01 renderContractorStatementCsv", () => {
     const records = parseCsvRecords(csv);
 
     expect(frozenEmptyDoc.rows.length).toBe(0);
-    expect(records.length).toBe(15);
-    expect(records[14]).toEqual([
+    expect(records.length).toBe(16);
+    expect(records[15]).toEqual([
       "رقم النقلة",
       "التاريخ",
       "اتجاه الشغل",

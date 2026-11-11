@@ -121,12 +121,12 @@ export function TripPreviewCard({
           <div style={{ marginTop: "6px", fontSize: "0.82rem" }}>
             {direction === "AHMED_SUPPLIES" && (
               <span style={{ color: "var(--color-success)", fontWeight: 600 }}>
-                ✓ شغل أحمد: المقاول مدين لأحمد بهذا المبلغ ({contractorTotalStr} ج.م)
+                ✓ شغل أحمد: المقاول مدين لأحمد بهذا المبلغ (+{contractorTotalStr} ج.م)
               </span>
             )}
             {direction === "OTHER_SUPPLIES" && (
-              <span style={{ color: "var(--color-warning)", fontWeight: 600 }}>
-                ✓ شغل المقاول: أحمد مدين للمقاول بهذا المبلغ ({contractorTotalStr} ج.م)
+              <span style={{ color: "var(--color-danger)", fontWeight: 600 }}>
+                ✓ شغل المقاول: أحمد مدين للمقاول بهذا المبلغ (-{contractorTotalStr} ج.م)
               </span>
             )}
             {!direction && (

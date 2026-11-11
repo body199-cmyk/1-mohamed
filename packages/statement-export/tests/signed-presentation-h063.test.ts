@@ -88,7 +88,7 @@ describe("H063 signed contractor statements from Ahmed's perspective",()=>{
     // summary too, not visually moved after the amount by bidi currency glyphs.
     expect(calls).toContain("+300.00");
     expect(calls).toContain("-600.00");
-    expect(calls).toContain("شغل المقاول خلال الفترة (ج.م)");
+    expect(calls).toContain("شغل المقاول خلال الفترة (ج.م) — على أحمد");
     const long=sample(35);
     const pages=paginateStatementForPdf(long);
     expect(pages.map(p=>p.rows.length)).toEqual([17,17,1]);

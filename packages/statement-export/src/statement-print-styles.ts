@@ -205,7 +205,7 @@ export const STATEMENT_PRINT_STYLES = `
   }
 
   .signed-negative {
-    color: #a34a20;
+    color: #b42318;
     font-weight: 700;
   }
 

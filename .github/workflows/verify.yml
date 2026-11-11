@@ -41,6 +41,8 @@ jobs:
         run: npx vitest run apps/web/e2e/trip-cash-opening-validation.test.ts
       - name: Check daily work report against original accounting engine
         run: npx vitest run apps/web/e2e/daily-work-validation.test.ts
+      - name: Check visible contractor opening balance
+        run: npx vitest run apps/web/e2e/statement-opening-summary.test.tsx
       - name: Check D16 demo payment ledger and isolated accounts
         run: npx vitest run apps/web/e2e/payments-validation.test.ts
       - name: FIN-01 FIN-02 verify audited payment edit operation

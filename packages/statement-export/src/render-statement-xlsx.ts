@@ -1,3 +1,4 @@
+import { contractorTone } from "./contractor-tone";
 import type { ContractorStatementDocument } from "./document-types";
 
 /**
@@ -45,9 +46,10 @@ function renderSheet(
   const rowXml = rows.map((values,ri) => {
     const rowId = ri + 1;
     const header = headerRows.includes(rowId);
+    const financialColumn = (i: number) => freezeFirstRow ? i >= 3 : i === 1 && rowId >= 9 && rowId <= 12;
     const cells = values.map((text,i) =>
       '<c r="' + columnLetter(i) + rowId + '" t="inlineStr"' +
-      (header ? ' s="1"' : '') + '><is><t xml:space="preserve">' +
+      (header ? ' s="1"' : financialColumn(i) && contractorTone(text).label ? ' s="' + (contractorTone(text).label === "لأحمد" ? 2 : contractorTone(text).label === "على أحمد" ? 3 : 4) + '"' : '') + '><is><t xml:space="preserve">' +
       escapeXlsxText(text) + '</t></is></c>'
     ).join("");
     return '<row r="' + rowId + '" ht="' + (header ? "27" : "22") +
@@ -85,6 +87,7 @@ export function createStatementXlsxParts(doc: ContractorStatementDocument): read
     ["عدد الحركات", doc.summary.movementCountText],
     [],
     ["ملاحظة", "فرق الشغل فقط؛ لا تشمل هذه الأرقام النقد المسدد للعربيات أو أرصدتها المستقلة."],
+    ["هوية الحساب", "+ لأحمد (أخضر)، − على أحمد (أحمر)، 0 متعادل (رمادي)"],
     ["دقة الأرقام", "القيم المالية والمراجع محفوظة كنص للعرض الحرفي دون تقريب Excel أو إزالة الأصفار البادئة."],
   ];
 
@@ -103,14 +106,14 @@ export function createStatementXlsxParts(doc: ContractorStatementDocument): read
     '<sheet name="تفاصيل الحركات" sheetId="2" r:id="rId2"/>' +
     '</sheets></workbook>';
   const styles = XML_START + '<styleSheet xmlns="' + SHEET_NS + '">' +
-    '<fonts count="2"><font><sz val="11"/><name val="Cairo"/></font>' +
-    '<font><b/><color rgb="FFFFFFFF"/><sz val="11"/><name val="Cairo"/></font></fonts>' +
+    '<fonts count="5"><font><sz val="11"/><name val="Cairo"/></font>' +
+    '<font><b/><color rgb="FFFFFFFF"/><sz val="11"/><name val="Cairo"/></font><font><color rgb="FF116744"/><sz val="11"/><name val="Cairo"/></font><font><color rgb="FFB42318"/><sz val="11"/><name val="Cairo"/></font><font><color rgb="FF475569"/><sz val="11"/><name val="Cairo"/></font></fonts>' +
     '<fills count="2"><fill><patternFill patternType="none"/></fill>' +
     '<fill><patternFill patternType="solid"><fgColor rgb="FF206BC4"/><bgColor indexed="64"/></patternFill></fill></fills>' +
     '<borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders>' +
     '<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>' +
-    '<cellXfs count="2"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>' +
-    '<xf numFmtId="0" fontId="1" fillId="1" borderId="0" xfId="0" applyFont="1" applyFill="1"/></cellXfs>' +
+    '<cellXfs count="5"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>' +
+    '<xf numFmtId="0" fontId="1" fillId="1" borderId="0" xfId="0" applyFont="1" applyFill="1"/><xf numFmtId="0" fontId="2" fillId="0" borderId="0" xfId="0" applyFont="1"/><xf numFmtId="0" fontId="3" fillId="0" borderId="0" xfId="0" applyFont="1"/><xf numFmtId="0" fontId="4" fillId="0" borderId="0" xfId="0" applyFont="1"/></cellXfs>' +
     '<cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>';
   const contentTypes = XML_START +
     '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">' +
