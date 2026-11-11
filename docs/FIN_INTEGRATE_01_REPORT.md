@@ -8,7 +8,7 @@
 |---|---|
 | `supabase/migrations/20261109210000_fin04_cash_opening_timeline.sql` | جديد، منقول من PR #46 كما هو (حارسان: افتتاحي نقلة/دفعة أسبق + نقلة قبل بداية الافتتاحي، security definer + revoke) |
 | `supabase/tests/09_fin04_cash_opening_timeline_verification.sql` | جديد، مُعاد بناؤه على حسابات مخصصة `V_F4_A`/`V_F4_B` (مسمّى 09 بدل 08 في PR #46 لتفادي تكرار الرقم مع ملفي 08 الحاليين) |
-| `supabase/migrations/20261109210010_fin05_payment_period_opening.sql` | جديد، منقول من PR #46 كما هو (`create or replace app_op_payments_read`) |
+| `supabase/migrations/20261109210010_fin05_payment_period_opening.sql` | جديد، منقول من PR #46 مع دلتا واحدة من المراجعة النقدية: شرط الحارس `v_payload ? 'date_from'` أصبح `v_payload->>'date_from' is not null` حتى لا يُعامل `{"date_from":null}` كفترة صريحة (انظر مراجعة التكامل أدناه) |
 | `supabase/tests/10_fin05_payment_period_opening_verification.sql` | جديد، مُعاد بناؤه على حسابات مخصصة `V_F5_A`/`V_F5_B` وسيناريو صريح (مسمّى 10 بدل 09) |
 | `tools/db-verify.mjs` | إضافة ٤ خطوات فقط بعد FIN-07؛ لم يُستبدل ولا سقط أي فحص (FIN-01/02 وFIN-07 وكل ما قبلها باقية) |
 | `docs/FIN04_CASH_OPENING_TIMELINE_REVIEW_2026-11-09.md` و `docs/FIN05_PAYMENT_PERIOD_OPENING_REVIEW_2026-11-09.md` | منقولان من PR #46 |
@@ -44,6 +44,22 @@
 - Supabase Auth/PostgREST الفعلي (البيئة المعزولة تحاكيه فقط)، واختبار أجهزة Android/iOS.
 - بقية جناحات Chromium الكاملة والأدوات الأخرى ستُغطى بـCI على رأس الـPR النهائي؛ لم يُشغَّل محليًا كل جناح Playwright، بل الجناحان الأكثر صلة.
 - لا دمج ولا نشر ولا اتصال ببيانات إنتاج في هذه المهمة.
+
+## المراجعة النقدية الثانية (توجيه ٥ نوفمبر) — إصلاحات إضافية
+مراجعة مستقلة بمرور ثانٍ على كامل الفروق (الماسح: نفس المساعد، جلسة فرعية منفصلة؛ لا يُدّعى استقلال شخص ثانٍ). النتيجة: صفر Critical/Important، وأربعة Minors. ما عولج في النطاق:
+
+1. **Minor #1 — `{"date_from":null}` يُرفض غلط:** شرط الحارس في `app_op_payments_read` كان `v_payload ? 'date_from'`، وهذا يعدّ المفتاح موجودًا حتى لو قيمته JSON null فتُرفض القراءة القديمة بـ22023. عولج بـTDD كاملًا:
+   - **RED مثبت:** أُضيف اختبار في suite 10 يطلب `status=OK` لنداء `{"date_from":null}`، وشغّل `node tools/db-verify.mjs` → فشل `tests fin05` بالرسالة المتوقعة `Payment report starts before vehicle cash opening | sqlstate=22023` (لوج: `%TEMP%\opencode\dbverify_red4.log`).
+   - **GREEN مثبت:** بعد تغيير الشرط إلى `v_payload->>'date_from' is not null` → **ALL STEPS PASSED** (٢٦ خطوة) + الضوابط السلبية الثلاثة PASSED (لوج: `dbverify_green1.log`، `neg_a/b/c.log`).
+2. **Minor #2 — توكيد شبه حتمي في suite 10:** المقارنة `cash_balance_piastres = current_cash_balance_piastres` كانت مقارنة حقلين تحسبهما الدالة بنفس التعبير؛ استُبدلت بتوكيد صريح `= '120000'` لكل حقل.
+3. **Minor #4 — تعليق suite 09:** صيغ التعليق عند اختبار الإدراج المباشر ليقول بدقة إنه يغطي **فرع BEFORE INSERT** فقط للتريجر، وأن فرع UPDATE (إعادة تأريخ/إلغاء إلغاء نقلة داخل نافذة ما قبل الافتتاحي) **غير مغطى** في هذا الجناح.
+
+ما أُجّل (Minors خارج نطاق التكامل، مسجلة للمنسق):
+- **Minor #3 — خطأ 23505 الخام عند افتتاحيين نشطين لنفس الحساب:** الـRPC نفسه قد يرمي خطأ تفرد خام (`idx_opening_vehicle_account_active`) حين لا تتوسطه حركات؛ سلوك قديم سابق للدمج في مسار الافتتاحيات، يحتاج قرارًا على رسالة الخطأ — خارج نطاق نقل FIN-04/05.
+- **Minor #4 (الجزء المتبقي):** تغطية فرع UPDATE في `app_guard_trip_cash_opening_start` غير موجودة في أي جناح حاليًا؛ التعليق يوثق الفجوة بدل ادعائها، وإضافة اختبارها تحتاج سيناريو إعادة تأريخ كامل خارج نطاق التكليف.
+
+## إعادة التشغيل بعد التعديلات
+- `node tools/db-verify.mjs` بعد إصلاح Minors #2/#4 → **ALL STEPS PASSED** (٢٦ خطوة، نفس الحالة النهائية) — أحدث commit قبل الرفع.
 
 ## العوائق والقرار التالي
 - PR #45 و#46 يبقيان مفتوحين لعالِم المنسق بعد قبول هذا البديل؛ لا force push ولا دمج منهما هنا.

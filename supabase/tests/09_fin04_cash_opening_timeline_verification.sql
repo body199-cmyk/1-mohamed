@@ -49,8 +49,11 @@ select public.app_test_assert(
     and start_date='2026-11-02')=1,
   'FIN04 accepts account opening on first work day');
 
--- Exercises the second guard *after* the account lock on a direct isolated
--- trip write; SQL must fail closed even outside the form/pre-lock resolver.
+-- Exercises the second guard's BEFORE INSERT branch directly on an isolated
+-- trip write, after the account lock; SQL must fail closed even outside the
+-- form/pre-lock resolver. The same trigger's UPDATE branch (re-dating or
+-- un-cancelling a trip into the pre-opening window) is NOT exercised by this
+-- suite and remains a documented gap, deferred with the integration review.
 select public.app_test_expect_error(
   $q$insert into public.trips(
     id,vehicle_id,counterparty_contractor_id,responsible_contractor_id,

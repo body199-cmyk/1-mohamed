@@ -55,7 +55,7 @@ begin
  perform public.app_test_assert(
    v->>'period_opening_piastres'='100000'
    and v->>'period_closing_piastres'='100000'
-   and v->>'cash_balance_piastres'=v->>'current_cash_balance_piastres'
+   and v->>'cash_balance_piastres'='120000'
    and v->>'current_cash_balance_piastres'='120000',
    'FIN05 exact cash opening day is 1000; period closing differs from current balance');
 
@@ -87,6 +87,13 @@ begin
  perform public.app_test_assert(v->>'status'='OK'
    and v->>'cash_balance_piastres'='120000',
    'FIN05 unfiltered legacy payment list remains usable');
+
+ -- Legacy compatibility: an explicit JSON null date_from is not an explicit
+ -- period; it must keep the unfiltered legacy read behaviour.
+ v:=public.app_op_payments_read('{"vehicle_id":"V_F5_A",
+   "responsible_contractor_id":"K_AHMED","date_from":null}'::jsonb);
+ perform public.app_test_assert(v->>'status'='OK',
+   'FIN05 explicit JSON null date_from stays legacy unfiltered read');
 
  -- Distinct responsible contractor account stays separate.
  v:=public.app_op_payments_read('{"vehicle_id":"V_F5_B",

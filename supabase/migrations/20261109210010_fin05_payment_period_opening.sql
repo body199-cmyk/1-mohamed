@@ -28,7 +28,7 @@ begin
     if v_from>v_to then raise exception 'Invalid payment date range' using errcode='22023'; end if;
     -- Explicit report periods start on/after their account opening.
     -- Keep the legacy unfiltered payment-list lookup working.
-    if v_payload ? 'date_from' and exists (
+    if v_payload->>'date_from' is not null and exists (
       select 1 from public.opening_balances o
        where o.balance_type='VEHICLE_CASH' and not o.is_cancelled
          and o.vehicle_id=v_vehicle and o.contractor_id=v_responsible
