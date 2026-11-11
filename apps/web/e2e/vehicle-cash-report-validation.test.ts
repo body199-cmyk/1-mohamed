@@ -73,12 +73,19 @@ describe("T08.4/5 vehicle cash statement is a strict projection of cash-ledger",
     expect(r.value.closingPiastres).toBe("60000");
     expect(r.value.rows.map(x=>x.id)).toEqual(["TR-3"]);
   });
-  it("keeps previous balance across an empty interval and includes receipts as text",()=>{
+  it("keeps previous balance across an empty interval and describes movements by identifier without receipt text",()=>{
     const r=report("2026-11-05","2026-11-05");
     expect(r.ok && r.value.rows.length===0 && r.value.openingPiastres==="33000"
       && r.value.closingPiastres==="33000").toBe(true);
     const history=report("2026-11-02","2026-11-02");
-    expect(history.ok && history.value.rows[0]?.label.includes("TR-1-0007")).toBe(true);
+    // CASH-LABEL-01: the description shows the movement identifier; the trip
+    // receipt number must not leak into the label while the data stays intact.
+    expect(history.ok).toBe(true);
+    if(!history.ok)return;
+    expect(history.value.rows[0]?.id).toBe("TR-1");
+    expect(history.value.rows[0]?.label).toBe("مستحق نقلة TR-1");
+    expect(history.value.rows[0]?.label).not.toContain("TR-1-0007");
+    expect(source.trips[0]?.receiptNumber).toBe("TR-1-0007");
   });
 
   it("ignores a corrupt future trip in a historical report but fails closed once it enters the report period",()=>{
