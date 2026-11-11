@@ -77,6 +77,8 @@ const steps = [
   ['tests payment operations', 'supabase/tests/07_payment_operations_verification.sql', 'T08.2: قواعد الحساب التاريخي والعمليات المحمية'],
   ['tests fin01 fin02 acceptance', 'supabase/tests/08_fin01_fin02_operation_verification.sql', 'FIN-01/02: real SQL payment reassignment, audit and rollback'],
   ['tests fin07 numeric parity', 'supabase/tests/08_fin07_numeric_boundaries_verification.sql', 'FIN-07: SQL aggregate and stored bigint limits'],
+  ['migration fin04', 'supabase/migrations/20261109210000_fin04_cash_opening_timeline.sql', 'FIN-04: vehicle cash opening/trip transaction timeline'],
+  ['tests fin04', 'supabase/tests/09_fin04_cash_opening_timeline_verification.sql', 'FIN-04: SQL reject earlier trip or payment atomically'],
 ];
 
 function describe(error) {
