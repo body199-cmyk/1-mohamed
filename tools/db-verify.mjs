@@ -79,6 +79,8 @@ const steps = [
   ['tests fin07 numeric parity', 'supabase/tests/08_fin07_numeric_boundaries_verification.sql', 'FIN-07: SQL aggregate and stored bigint limits'],
   ['migration fin04', 'supabase/migrations/20261109210000_fin04_cash_opening_timeline.sql', 'FIN-04: vehicle cash opening/trip transaction timeline'],
   ['tests fin04', 'supabase/tests/09_fin04_cash_opening_timeline_verification.sql', 'FIN-04: SQL reject earlier trip or payment atomically'],
+  ['migration fin05', 'supabase/migrations/20261109210010_fin05_payment_period_opening.sql', 'FIN-05: period opening and closing semantics'],
+  ['tests fin05', 'supabase/tests/10_fin05_payment_period_opening_verification.sql', 'FIN-05: opening day, historical cutoff and independent current balance'],
 ];
 
 function describe(error) {
