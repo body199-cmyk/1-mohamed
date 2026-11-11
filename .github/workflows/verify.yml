@@ -45,6 +45,8 @@ jobs:
         run: npx vitest run apps/web/e2e/payments-validation.test.ts
       - name: FIN-01 FIN-02 verify audited payment edit operation
         run: npx vitest run apps/web/e2e/payment-operations-validation.test.ts
+      - name: CASH-LABEL-01 verify cash movement identifiers (Vitest)
+        run: npx vitest run apps/web/e2e/cash-movement-label-validation.test.ts
       - name: Validate vehicle cash report against existing ledger
         run: npx vitest run apps/web/e2e/vehicle-cash-report-validation.test.ts
       - name: Verify dashboard shows work and payments separately

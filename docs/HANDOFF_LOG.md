@@ -1164,3 +1164,10 @@
 ## FIN-01 / FIN-02 — 9 November 2026 — independent regression cases
 - Confirmed fixes already staged in PR #37 and #34; extended test coverage rather than replicating source changes. Four new cases span pre-opening create/edit, day-end work-before-payments, intermediate day minimum and account isolation.
 - CI pending; proof and caveats in [review](FIN01_FIN02_REGRESSION_REVIEW_2026-11-09.md). No main merge or production actions.
+
+
+## PR44-READY — 11 November 2026 — wire CASH-LABEL-01 test into CI and record verification
+- **Scope:** `.github/workflows/verify.yml` gains one step running `apps/web/e2e/cash-movement-label-validation.test.ts` (previously existed but ran in no automated check: absent from verify.yml, `apps/web` has no `test` script). No other check changed; no application, accounting, SQL, or migration code touched.
+- **Verification recorded:** integration CI on exact head `caac3149a26b109405bcf93ad20524eae234c99e` (post PR #50) run [42968906337](https://github.com/body199-cmyk/1-mohamed/actions/runs/42968906337) SUCCESS with all suites. Independent readiness review found no code-level merge blocker; verdict was "needs verification", resolved here by wiring the test and updating STATUS/TASKS.
+- **Open items (not decided here):** FIN-07 aggregate-domain semantics still need explicit coordinator approval; PR #44 stays Draft review-only; merge is the coordinator's. Outside the package: FIN-04/05/06, FIN-08, FIN-09 (owner decision), FIN-10/11, stage-3 contractor statement branch, physical devices, real Supabase concurrency.
+- **Final evidence:** CI on this commit's SHA is the governing run for this handoff; the run link is recorded in the coordination message and in the readiness report addendum on branch `docs/pr44-merge-readiness-review-20261111`.
