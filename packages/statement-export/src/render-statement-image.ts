@@ -1,3 +1,4 @@
+import { contractorTone } from "./contractor-tone";
 import type { ContractorStatementDocument, ContractorStatementRow } from "./document-types";
 
 /**
@@ -102,10 +103,10 @@ export function paintStatementImage(
     const hasCurrency = metric.value.endsWith(" ج.م");
     const displayValue = hasCurrency ?
       metric.value.slice(0, -" ج.م".length) : metric.value;
-    write(ctx, metric.label + (hasCurrency ? " (ج.م)" : ""), x + 386, y + 39,
+    write(ctx, metric.label + (hasCurrency ? " (ج.م) — " + contractorTone(metric.value).label : ""), x + 386, y + 39,
       { size: 19, color: MUTED, maxWidth: 370 });
     write(ctx, displayValue, x + 386, y + 82,
-      { size: 25, bold: true, maxWidth: 370, ltr: hasCurrency });
+      { color: contractorTone(metric.value).color, size: 25, bold: true, maxWidth: 370, ltr: hasCurrency });
   }
 
   write(ctx, "تفاصيل الحركات", right, 647, { size: 29, bold: true });
@@ -142,15 +143,14 @@ export function paintStatementImage(
       write(ctx, cell, cellRight - 15, y + 39, {
         size: 20, maxWidth: widths[column]! - 28,
         ltr: column === 0 || column === 1 || column === 3 || column === 4,
-        color: column === 3 && cell.startsWith("-") ? "#a34a20" :
-          column === 4 && cell.startsWith("+") ? "#116744" : NAVY,
+        color: column >= 3 ? contractorTone(cell).color : NAVY,
       });
       cellRight -= widths[column]!;
     }
   });
 
   const footerY = ROWS_TOP + rows.length * ROW_HEIGHT + 41;
-  write(ctx, "فرق الشغل فقط؛ لا يشمل دفعات العربيات أو نقدها المستقل.", right, footerY, {
+  write(ctx, "+ لأحمد (أخضر)، − على أحمد (أحمر)، 0 متعادل (رمادي). فرق الشغل فقط.", right, footerY, {
     size: 21, color: MUTED, maxWidth: 1260,
   });
 }

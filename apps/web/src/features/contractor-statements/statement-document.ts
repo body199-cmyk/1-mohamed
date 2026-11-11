@@ -42,7 +42,7 @@ export function toStatementDocument(
       reference: row.id, workDate: row.workDate,
       directionText: row.direction === "AHMED_SUPPLIES" ? "أحمد جاب العربيات لشغل المقاول" : "المقاول جاب العربيات لشغل أحمد",
       amountText: signedMoney(row.signedDeltaPiastres),
-      runningBalanceText: money(row.runningBalancePiastres),
+      runningBalanceText: signedMoney(row.runningBalancePiastres),
     })),
   };
 }

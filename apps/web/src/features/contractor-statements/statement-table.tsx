@@ -1,3 +1,4 @@
+import { ContractorMoney } from "../contractor-statements/contractor-money";
 import React from "react";
 import type { ContractorStatementRow } from "@ledger/contractor-statements";
 import { formatEgpFromPiastres } from "@ledger/accounting";
@@ -39,13 +40,13 @@ export function StatementTable({ rows, tripDetailsById }: StatementTableProps) {
           const delta = formatEgpFromPiastres(row.signedDeltaPiastres);
           const balance = formatEgpFromPiastres(row.runningBalancePiastres);
           return <details className={styles.mobileMovement} key={row.id}>
-            <summary>{row.workDate} — {details?.vehicle ?? "عربية غير معروفة"} — {delta.ok ? delta.amount : "غير صالح"} ج.م</summary>
+            <summary>{row.workDate} — {details?.vehicle ?? "عربية غير معروفة"} — <ContractorMoney value={row.signedDeltaPiastres} /></summary>
             <dl>
               <dt>المسار</dt><dd>{details?.route || "—"}</dd>
               <dt>الاتجاه</dt><dd>{row.direction === "AHMED_SUPPLIES" ? "شغل أحمد للمقاول" : "شغل المقاول لأحمد"}</dd>
               <dt>رقم النقلة</dt><dd dir="ltr">{row.id}</dd>
-              <dt>أثر الحركة</dt><dd dir="ltr">{delta.ok ? delta.amount : "غير صالح"} ج.م</dd>
-              <dt>الرصيد بعد الحركة</dt><dd dir="ltr">{balance.ok ? balance.amount : "غير صالح"} ج.م</dd>
+              <dt>أثر الحركة</dt><dd dir="ltr"><ContractorMoney value={row.signedDeltaPiastres} /></dd>
+              <dt>الرصيد بعد الحركة</dt><dd dir="ltr"><ContractorMoney value={row.runningBalancePiastres} /></dd>
             </dl>
           </details>;
         })}
@@ -86,7 +87,7 @@ export function StatementTable({ rows, tripDetailsById }: StatementTableProps) {
                         ✓ شغل أحمد (إضافة له)
                       </span>
                     ) : (
-                      <span style={{ color: "var(--color-warning)", fontWeight: 600 }}>
+                      <span style={{ color: "var(--color-danger)", fontWeight: 600 }}>
                         ✓ شغل المقاول (خصم على أحمد)
                       </span>
                     )}
@@ -96,14 +97,13 @@ export function StatementTable({ rows, tripDetailsById }: StatementTableProps) {
                       fontWeight: 700,
                       color: isAhmed
                         ? "var(--color-success)"
-                        : "var(--color-warning)",
+                        : "var(--color-danger)",
                     }}
                   >
-                    {isAhmed ? "+" : ""}
-                    {deltaFmt.ok ? deltaFmt.amount : "0.00"} ج.م
+                    <ContractorMoney value={row.signedDeltaPiastres} />
                   </td>
                   <td dir="ltr" style={{ fontWeight: 700, color: "var(--text-main)" }}>
-                    {runningFmt.ok ? runningFmt.amount : "0.00"} ج.م
+                    <ContractorMoney value={row.runningBalancePiastres} />
                   </td>
                 </tr>
                 </React.Fragment>

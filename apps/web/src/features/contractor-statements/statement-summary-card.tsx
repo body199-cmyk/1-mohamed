@@ -1,3 +1,4 @@
+import { ContractorMoney } from "../contractor-statements/contractor-money";
 import React from "react";
 import type { ContractorStatement } from "@ledger/contractor-statements";
 import { formatEgpFromPiastres } from "@ledger/accounting";
@@ -44,7 +45,7 @@ export function StatementSummaryCard({
   } else if (statement.beneficiary === "COUNTERPARTY") {
     beneficiaryBadgeClass = styles.badgeCounterparty;
     beneficiaryText = `صافي الرصيد لصالح المقاول (${contractorName}: ${closingAbsoluteAmount} ج.م)`;
-    beneficiaryIcon = "🟡";
+    beneficiaryIcon = "🔴";
   }
 
   return (
@@ -60,6 +61,7 @@ export function StatementSummaryCard({
             >
               <span>{beneficiaryIcon}</span>
               <span>{beneficiaryText}</span>
+              <ContractorMoney value={statement.closingBalancePiastres} />
             </span>
           </div>
         </div>
@@ -71,13 +73,26 @@ export function StatementSummaryCard({
       </div>
 
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,230px),1fr))",gap:12,marginBottom:16}}>
-        <div className={styles.metricBox}><strong>شغل أحمد — مستحق له عند المقاول</strong><strong style={{fontSize:"1.65rem"}}>{ahmedAmount} ج.م</strong></div>
-        <div className={styles.metricBox}><strong>شغل المقاول — مستحق له عند أحمد</strong><strong style={{fontSize:"1.65rem"}}>{counterpartyAmount} ج.م</strong></div>
+        <div className={styles.metricBox} data-testid="opening-balance-summary">
+          <strong>الحساب السابق — الرصيد المرحّل لأول الفترة</strong>
+          <strong style={{fontSize:"1.65rem"}}><ContractorMoney value={statement.openingBalancePiastres} /></strong>
+          <span>{BigInt(statement.openingBalancePiastres) > 0n
+            ? `لصالح أحمد عند ${contractorName}`
+            : BigInt(statement.openingBalancePiastres) < 0n
+            ? `لصالح ${contractorName} عند أحمد`
+            : "لا يوجد رصيد سابق لأي طرف"}</span>
+          <span className={styles.metricSubtext}>يشمل افتتاح الحساب وصافي الشغل السابق للفترة المحددة، ويُحتسب مرة واحدة في الصافي.</span>
+        </div>
+        <div className={styles.metricBox}><strong>شغل أحمد — مستحق له عند المقاول</strong><strong style={{fontSize:"1.65rem"}}><ContractorMoney value={statement.ahmedWorkPiastres} /></strong></div>
+        <div className={styles.metricBox}><strong>شغل المقاول — مستحق له عند أحمد</strong><strong style={{fontSize:"1.65rem"}}><ContractorMoney value={(-BigInt(statement.counterpartyWorkPiastres)).toString()} /></strong></div>
       </div>
-      <div style={{textAlign:"center",color:"var(--text-muted)",marginBottom:12,fontWeight:700}}>فرق الشغل = شغل أحمد − شغل المقاول، ثم يُحتسب الرصيد المرحّل للوصول إلى الصافي النهائي.</div>
-      <div role="status" style={{background:"#175CD3",color:"#fff",borderRadius:16,padding:"24px",marginBottom:18,textAlign:"center"}}>
+      <div style={{textAlign:"center",color:"var(--text-muted)",marginBottom:12,fontWeight:700}}>
+        <div>الصافي النهائي = الحساب السابق + شغل أحمد − شغل المقاول</div>
+        <bdi dir="ltr">{openingAmount} + {ahmedAmount} − {counterpartyAmount} = {closingAmount}</bdi> ج.م
+      </div>
+      <div role="status" style={{background:"var(--surface-hover)",color:"var(--text-main)",borderRadius:16,padding:"24px",marginBottom:18,textAlign:"center"}}>
         <div style={{fontSize:14,opacity:.9}}>صافي المستحق النهائي حتى {statement.period.to}</div>
-        <div style={{fontSize:"clamp(2rem,5vw,3rem)",fontWeight:900,marginTop:8}}>{closingAbsoluteAmount} ج.م</div>
+        <div style={{fontSize:"clamp(2rem,5vw,3rem)",fontWeight:900,marginTop:8}}><ContractorMoney value={statement.closingBalancePiastres} /></div>
         <div style={{fontSize:"clamp(1.1rem,3vw,1.6rem)",fontWeight:800,marginTop:8}}>
           {statement.beneficiary === "AHMED" ? `أحمد أبو علي له عند المقاول ${contractorName}` :
            statement.beneficiary === "COUNTERPARTY" ? `المقاول ${contractorName} له عند أحمد أبو علي` :
@@ -92,7 +107,7 @@ export function StatementSummaryCard({
         {/* Metric 1: Opening Balance */}
         <div className={styles.metricBox}>
           <span className={styles.metricLabel}>الرصيد الافتتاحي قبل الفترة</span>
-          <span className={styles.metricValue}>{openingAmount} ج.م</span>
+          <span className={styles.metricValue}><ContractorMoney value={statement.openingBalancePiastres} /></span>
           <span className={styles.metricSubtext}>
             {BigInt(statement.openingBalancePiastres) > 0n
               ? "لصالح أحمد (+)"
@@ -106,7 +121,7 @@ export function StatementSummaryCard({
         <div className={styles.metricBox}>
           <span className={styles.metricLabel}>إجمالي شغل أحمد (إضافة له)</span>
           <span className={styles.metricValue} style={{ color: "var(--color-success)" }}>
-            +{ahmedAmount} ج.م
+            <ContractorMoney value={statement.ahmedWorkPiastres} />
           </span>
           <span className={styles.metricSubtext}>أحمد جاب العربيات لشغل المقاول</span>
         </div>
@@ -114,8 +129,8 @@ export function StatementSummaryCard({
         {/* Metric 3: Counterparty Work */}
         <div className={styles.metricBox}>
           <span className={styles.metricLabel}>إجمالي شغل المقاول (خصم على أحمد)</span>
-          <span className={styles.metricValue} style={{ color: "var(--color-warning)" }}>
-            -{counterpartyAmount} ج.م
+          <span className={styles.metricValue} style={{ color: "var(--color-danger)" }}>
+            <ContractorMoney value={(-BigInt(statement.counterpartyWorkPiastres)).toString()} />
           </span>
           <span className={styles.metricSubtext}>المقاول جاب العربيات لشغل أحمد</span>
         </div>
@@ -128,12 +143,12 @@ export function StatementSummaryCard({
               statement.beneficiary === "AHMED"
                 ? "var(--color-success)"
                 : statement.beneficiary === "COUNTERPARTY"
-                ? "var(--color-warning)"
+                ? "var(--color-danger)"
                 : "var(--border-color)",
           }}
         >
           <span className={styles.metricLabel}>الرصيد الختامي الصافي</span>
-          <span className={styles.metricValue}>{closingAmount} ج.م</span>
+          <span className={styles.metricValue}><ContractorMoney value={statement.closingBalancePiastres} /></span>
           <span className={styles.metricSubtext}>
             {statement.beneficiary === "AHMED" && "مستحق لأحمد عند المقاول"}
             {statement.beneficiary === "COUNTERPARTY" && "مستحق للمقاول عند أحمد"}

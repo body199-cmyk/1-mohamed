@@ -89,3 +89,7 @@
   --hero-muted: #b2c6db;
   --metric-edge: #64a8f3;
 }
+
+/* Contractor balances, always from Ahmed’s perspective. */
+:root { --contractor-credit: #116744; --contractor-debit: #b42318; }
+[data-theme="dark"] { --contractor-credit: #86efac; --contractor-debit: #fca5a5; }

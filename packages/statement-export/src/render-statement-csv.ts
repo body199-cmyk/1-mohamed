@@ -41,6 +41,7 @@ export function renderContractorStatementCsv(
   const lines: string[] = [
     formatCsvRow(["اسم المنشأة", document.businessName]),
     formatCsvRow(["نوع التقرير", "كشف شغل مقاول"]),
+    formatCsvRow(["هوية الحساب", "+ لأحمد، − على أحمد، 0 متعادل"]),
     formatCsvRow(["المقاول", document.counterpartyName]),
     formatCsvRow(["من تاريخ", document.period.from]),
     formatCsvRow(["إلى تاريخ", document.period.to]),

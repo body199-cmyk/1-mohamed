@@ -1,4 +1,5 @@
 "use client";
+import { ContractorMoney } from "../contractor-statements/contractor-money";
 
 import React, { useMemo, useState } from "react";
 import { formatEgpFromPiastres } from "@ledger/accounting";
@@ -158,7 +159,7 @@ export function MasterDataView() {
                     <div><dt>بداية الحساب</dt><dd>{contractor.openingDate}</dd></div>
                     <div>
                       <dt>افتتاحي فرق الشغل</dt>
-                      <dd>{balance} ج.م — {beneficiary}</dd>
+                      <dd><ContractorMoney value={contractor.openingBalancePiastres} /></dd>
                     </div>
                   </dl>
                   <div className={styles.actions}>

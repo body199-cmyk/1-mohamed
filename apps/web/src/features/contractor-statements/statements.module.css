@@ -146,11 +146,7 @@
   border: 1px solid #a7f3d0;
 }
 
-.badgeCounterparty {
-  background-color: #fffbeb;
-  color: #92400e;
-  border: 1px solid #fde68a;
-}
+.badgeCounterparty {background:var(--color-danger-bg);color:var(--color-danger);border-color:var(--color-danger-border);}
 
 .badgeBalanced {
   background-color: #f1f5f9;
@@ -258,7 +254,7 @@
 
 /* H058 — themed report outcomes and true export-button affordances. */
 .badgeAhmed {background:var(--color-success-bg);color:var(--color-success);border-color:var(--color-success-border);}
-.badgeCounterparty {background:var(--color-warning-bg);color:var(--color-warning);border-color:var(--color-warning-border);}
+.badgeCounterparty {background:var(--color-danger-bg);color:var(--color-danger);border-color:var(--color-danger-border);}
 .badgeBalanced {background:var(--surface-hover);color:var(--text-main);border-color:var(--border-color);}
 .errorState {background:var(--color-danger-bg);border-color:var(--color-danger-border);color:var(--color-danger);}
 .filtersCard,.summaryCard,.tableCard {min-width:0;}
