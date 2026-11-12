@@ -2,15 +2,11 @@
 
 import { useRef, useState, type FormEvent } from "react";
 import type { WriteOperation } from "../../lib/ledger/operation-contract";
-import { poundsToPiastres, piastresToPounds } from "../../lib/ledger/amounts";
+import { poundsToPiastres, assertDecimal } from "../../lib/ledger/amounts";
 
 type Contractor = { id: string; name: string; is_primary: boolean; is_archived: boolean };
 type Vehicle = { id: string; plate_number: string; is_archived: boolean };
 type Account = { vehicle_id: string; contractor_id: string };
-type Saved = { status?: string; trip_id?: string; payment_id?: string;
-  responsible_contractor_id?: string; contractor_total_piastres?: string;
-  vehicle_total_piastres?: string; remaining_piastres?: string };
-
 type Props = {
   contractors: Contractor[];
   vehicles: Vehicle[];
@@ -21,19 +17,6 @@ type Props = {
 
 const field: React.CSSProperties = { display: "block", padding: 10, width: "100%", maxWidth: 460, margin: "6px 0 12px" };
 const section: React.CSSProperties = { border: "1px solid #d0d7e2", borderRadius: 12, padding: 16, marginBottom: 20 };
-
-export function assertDecimal(value: string, decimals: 2 | 3, positive: boolean): string {
-  const text = value.trim();
-  const re = decimals === 3 ? /^(0|[1-9][0-9]*)(?:\.([0-9]{1,3}))?$/ :
-    /^(0|[1-9][0-9]*)(?:\.([0-9]{1,2}))?$/;
-  if (!re.test(text)) throw new Error(`الرقم لازم يكون موجبًا وبحد أقصى ${decimals} خانات عشرية.`);
-  const scaled = BigInt(text.split(".")[0]) * 10n ** BigInt(decimals) +
-    BigInt((text.split(".")[1] ?? "").padEnd(decimals, "0"));
-  if (scaled > 9223372036854775807n || (positive && scaled <= 0n)) {
-    throw new Error("القيمة صفر أو خارج المدى المسموح.");
-  }
-  return text;
-}
 
 /**
  * Prepared real-data entry. SQL computes all totals and the responsible
