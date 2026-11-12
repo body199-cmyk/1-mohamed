@@ -26,6 +26,8 @@ jobs:
           cache: npm
       - name: Install locked dependencies
         run: npm ci
+      - name: Verify real-data handoff gate cannot falsely pass
+        run: node --test tools/production-preflight.test.mjs
       - name: Typecheck and unit tests
         run: npm run check
       - name: Verify isolated PostgreSQL migrations and suites
