@@ -36,8 +36,8 @@ for (const path of ["/demo/dashboard", "/demo/trips", "/demo/contractors", "/dem
   assert.equal(res.status, 200, `Expected 200 for public ${path}`);
 }
 const root = await request("/");
-assert.equal(root.status, 307, "Public root should retain its existing demo redirect");
-assert.equal(new URL(root.headers.get("location"), base).pathname, "/demo/home");
+assert.equal(root.status, 307, "Root must redirect to login");
+assert.equal(new URL(root.headers.get("location"), base).pathname, "/login");
 
 const masterHtml = await (await request("/demo/master-data")).text();
 assert.match(masterHtml, /بيانات المقاولين والعربيات/);
