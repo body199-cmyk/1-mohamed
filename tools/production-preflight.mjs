@@ -12,7 +12,7 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 
-export function assessSource({ rootPage, loginPage, proxy, layout, demoStore }) {
+export function assessSource({ rootPage, loginPage, proxy, layout, siteShell = '', demoStore }) {
   const blockers = [];
   if (/redirect\s*\(\s*["']\/demo\//.test(rootPage)) {
     blockers.push("Root still redirects to /demo; no authenticated production home.");
@@ -23,7 +23,7 @@ export function assessSource({ rootPage, loginPage, proxy, layout, demoStore }) 
   if (/temporary FAIL-CLOSED boundary|return NextResponse\.json\([\s\S]*status:\s*503/.test(proxy)) {
     blockers.push("Proxy still denies writes; authenticated server-side mutations are not active.");
   }
-  if (/DemoStoreProvider/.test(layout) && /useState<Demo(?:Contractor|TripRecord|Payment)/.test(demoStore)) {
+  if (/DemoStoreProvider/.test(layout + siteShell) && /useState<Demo(?:Contractor|TripRecord|Payment)/.test(demoStore)) {
     blockers.push("App shell uses an in-memory DemoStore; no durable data source is proven.");
   }
   return blockers;
@@ -57,6 +57,7 @@ function main() {
     loginPage: read(root, "apps/web/src/app/login/page.tsx"),
     proxy: read(root, "apps/web/src/proxy.ts"),
     layout: read(root, "apps/web/src/app/layout.tsx"),
+    siteShell: read(root, "apps/web/src/components/site-shell.tsx"),
     demoStore: read(root, "apps/web/src/demo/demo-context.tsx")
   });
   if (process.argv.includes("--json")) {
