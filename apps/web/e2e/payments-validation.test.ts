@@ -60,6 +60,23 @@ describe("T08.3 cash ledger demo follows T08.2/D15/D16",()=>{
     expect(validateDemoPayment({...source,payments:[]},draft("1000"),today).ok).toBe(true);
   });
 
+  it("fails closed on duplicate cash openings rather than choosing an arbitrary balance",()=>{
+    const first={vehicleId:"V1",contractorId:DEMO_PRIMARY_RESPONSIBLE_ID,
+      startDate:"2026-11-01",signedPiastres:"10000"};
+    const duplicate={...first,signedPiastres:"50000"};
+    const independent={vehicleId:"V1",contractorId:"K1",
+      startDate:"2026-11-01",signedPiastres:"700"};
+    const source={...base,trips:[],payments:[],
+      cashOpenings:[first,duplicate,independent]};
+    const invalid=buildCashLedger(source,"V1",DEMO_PRIMARY_RESPONSIBLE_ID,today);
+    expect(invalid.ok).toBe(false);
+    if(!invalid.ok) expect(invalid.error).toContain("أكثر من رصيد افتتاحي");
+    expect(validateDemoPayment(source,draft("1"),today).ok).toBe(false);
+    const other=buildCashLedger(source,"V1","K1",today);
+    expect(other.ok).toBe(true);
+    if(other.ok) expect(other.value.balancePiastres).toBe("700");
+  });
+
   it("rejects non-canonical persisted piastres encodings for openings and payments",()=>{
     for(const signedPiastres of ["+1","0x10","01","-0"]){
       const source={...base,trips:[],payments:[],cashOpenings:[{
