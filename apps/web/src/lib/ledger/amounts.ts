@@ -27,8 +27,8 @@ export function piastresToPounds(input: string): string {
 /** Validates exact nonnegative decimal strings for SQL weight/rate fields. */
 export function assertDecimal(value: string, decimals: 2 | 3, positive: boolean): string {
   const text = value.trim();
-  const re = decimals === 3 ? /^(0|[1-9][0-9]*)(?:\\.([0-9]{1,3}))?$/ :
-    /^(0|[1-9][0-9]*)(?:\\.([0-9]{1,2}))?$/;
+  const re = decimals === 3 ? /^(0|[1-9][0-9]*)(?:[.]([0-9]{1,3}))?$/ :
+    /^(0|[1-9][0-9]*)(?:[.]([0-9]{1,2}))?$/;
   if (!re.test(text)) throw new Error(`الرقم لازم يكون غير سالب وبحد أقصى ${decimals} خانات عشرية.`);
   const [whole, fractional = ""] = text.split(".");
   const scaled = BigInt(whole) * 10n ** BigInt(decimals) +
