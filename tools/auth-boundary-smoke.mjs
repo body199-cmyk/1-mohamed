@@ -45,8 +45,11 @@ assert.match(masterHtml, /المقاول أحمد علام/);
 assert.match(masterHtml, /شركة النيل للمقاولات/);
 
 const loginHtml = await (await request("/login")).text();
-assert.match(loginHtml, /تسجيل الدخول غير متاح حاليًا/);
-assert.doesNotMatch(loginHtml, /type=["']password["']/i);
+assert.match(loginHtml, /الربط الآمن لم يُفعّل بعد/);
+assert.match(loginHtml, /type=["']password["']/i);
+assert.match(loginHtml, /id=["']owner-password["'][^>]*disabled/i);
+assert.doesNotMatch(loginHtml, /المقاول أحمد علام|شركة النيل للمقاولات/);
+assert.doesNotMatch(loginHtml, /العودة إلى معاينة تسجيل النقلات/);
 
 for (const path of [
   "/trips",
@@ -61,6 +64,10 @@ for (const path of [
   "/dashboard",
   "/demonstration",
   "/auth/callback?code=not-a-real-token",
+  "/auth/reset",
+  "/app",
+  "/api/ledger/master?type=contractors",
+  "/api/ledger/read",
 ]) {
   const res = await request(path);
   assert.equal(res.status, 307, `Expected deny-all redirect for ${path}`);
@@ -76,11 +83,11 @@ for (const path of [
   assert.equal(res.headers.get("cache-control"), "no-store");
 }
 
-for (const path of ["/trips", "/payments", "/api/finance", "/demo/trips", "/fonts/cairo.css", "/favicon.svg"]) {
+for (const path of ["/trips", "/payments", "/api/finance", "/api/ledger/operations", "/api/ledger/read", "/demo/trips", "/fonts/cairo.css", "/favicon.svg"]) {
   const res = await request(path, { method: "POST", body: "test" });
   assert.equal(res.status, 503, `Expected denied POST for ${path}`);
   assert.equal(res.headers.get("location"), null);
   assert.equal(res.headers.get("cache-control"), "no-store");
 }
 
-console.log("AUTH-01/H039 PASS: public demo/login/assets, root redirect, 12 denied GETs and 6 denied POSTs.");
+console.log("AUTH-01/H039 PASS: disabled owner login, isolated demo, and fail-closed private GET/POST routes.");
