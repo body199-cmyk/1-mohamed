@@ -1,2 +1,4 @@
 import { redirect } from "next/navigation";
-export default function RootPage() { redirect("/demo/home"); }
+
+/** Private-system entry point: never land on a seeded demo. */
+export default function RootPage() { redirect("/login"); }

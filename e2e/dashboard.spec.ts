@@ -1,10 +1,10 @@
 import { expect, test } from "@playwright/test";
 
 test.describe("T08.6 dashboard — daily indicators and independent payments",()=>{
-  test("root shows the daily dashboard with tested work totals and usable report links",async({page})=>{
+  test("demo home shows the daily dashboard with tested work totals and usable report links",async({page})=>{
     // The demo fixtures are dated 2026-11-05; the live Cairo date must not change financial assertions.
     await page.clock.setFixedTime(new Date("2026-11-05T12:00:00+02:00"));
-    await page.goto("/");
+    await page.goto("/demo/home");
     await expect(page).toHaveURL(/\/demo\/home$/);
     await page.getByRole("navigation",{name:"التنقل الرئيسي"}).getByRole("link",{name:"لوحة المؤشرات",exact:true}).click();
     await expect(page).toHaveURL(/\/demo\/dashboard$/);
