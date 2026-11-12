@@ -6,6 +6,7 @@ import { postLedgerRead, postLedgerWrite } from "../../lib/ledger/transport";
 import { poundsToPiastres, piastresToPounds } from "../../lib/ledger/amounts";
 import type { WriteOperation } from "../../lib/ledger/operation-contract";
 import { LogoutButton } from "../auth/logout-button";
+import { TransactionEntry } from "./transaction-entry";
 
 type Contractor = { id: string; name: string; is_primary: boolean; is_archived: boolean };
 type Vehicle = { id: string; plate_number: string; driver_name: string | null; is_archived: boolean };
@@ -303,6 +304,8 @@ export function RealWorkspace() {
         <button disabled={busy} type="submit">حفظ الرصيد الافتتاحي</button>
       </form>
     </section>
+    <TransactionEntry contractors={contractors} vehicles={vehicles} accounts={accounts}
+      busy={busy} write={write} />
     <section style={section}>
       <h2>تقارير من قاعدة البيانات</h2>
       <form onSubmit={readReport}>
