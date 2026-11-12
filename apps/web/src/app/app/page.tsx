@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getSupabaseSetupStatus } from "../../lib/supabase/config";
+import { LogoutButton } from "../../features/auth/logout-button";
 
 export const metadata: Metadata = { title: "حسابات النقل — مساحة العمل" };
 
@@ -14,5 +15,6 @@ export default function ProtectedWorkspacePage() {
     <p role="status">{ready
       ? "تم تجهيز إعداد الاتصال، لكن تفعيل العمليات المالية ينتظر اختبار الحفظ والصلاحيات."
       : "الحفظ الدائم غير متاح قبل ربط قاعدة البيانات والتحقق من الصلاحيات."}</p>
+    <LogoutButton />
   </section>;
 }
