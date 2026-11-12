@@ -23,3 +23,18 @@ export function piastresToPounds(input: string): string {
   const abs = n < 0n ? -n : n;
   return sign + (abs / 100n).toString() + "." + (abs % 100n).toString().padStart(2, "0");
 }
+
+/** Validates exact nonnegative decimal strings for SQL weight/rate fields. */
+export function assertDecimal(value: string, decimals: 2 | 3, positive: boolean): string {
+  const text = value.trim();
+  const re = decimals === 3 ? /^(0|[1-9][0-9]*)(?:\\.([0-9]{1,3}))?$/ :
+    /^(0|[1-9][0-9]*)(?:\\.([0-9]{1,2}))?$/;
+  if (!re.test(text)) throw new Error(`الرقم لازم يكون غير سالب وبحد أقصى ${decimals} خانات عشرية.`);
+  const [whole, fractional = ""] = text.split(".");
+  const scaled = BigInt(whole) * 10n ** BigInt(decimals) +
+    BigInt(fractional.padEnd(decimals, "0"));
+  if (scaled > 9223372036854775807n || (positive && scaled <= 0n)) {
+    throw new Error("القيمة صفر أو خارج المدى المسموح.");
+  }
+  return text;
+}
