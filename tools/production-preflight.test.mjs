@@ -30,3 +30,16 @@ test("static source fixes alone never certify real-data readiness", () => {
     rootPage: "", loginPage: "", proxy: "", layout: "", demoStore: ""
   }).status, "BLOCKED");
 });
+
+test("detects demo seed provider after moving it to a route-specific shell", () => {
+  const blockers = assessSource({
+    rootPage: 'redirect("/login")',
+    loginPage: "export default function LoginPage() {}",
+    proxy: "export function proxy() {}",
+    layout: "<SiteShell />",
+    siteShell: "<DemoStoreProvider />",
+    demoStore: "const [trips, setTrips] = useState<DemoTripRecord[]>([])"
+  });
+  assert.equal(blockers.length, 1);
+  assert.match(blockers[0], /in-memory DemoStore/);
+});
