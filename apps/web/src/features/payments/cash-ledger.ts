@@ -61,7 +61,15 @@ export function buildCashLedger(
   excludePaymentId?: string
 ): CashCheck<CashLedger> {
   if (!validOpeningDate(asOf)) return { ok: false, error: "تاريخ التقييم غير صحيح." };
-  const opening = source.cashOpenings.find(o => o.vehicleId === vehicleId && o.contractorId === responsibleId);
+  const matchingOpenings = source.cashOpenings.filter(o =>
+    o.vehicleId === vehicleId && o.contractorId === responsibleId
+  );
+  // A corrupt/imported duplicate must not silently select an arbitrary opening
+  // and produce a plausible but incorrect cash balance.
+  if (matchingOpenings.length > 1) {
+    return { ok: false, error: "يوجد أكثر من رصيد افتتاحي لنفس حساب نقد العربية؛ راجع البيانات." };
+  }
+  const opening = matchingOpenings[0];
   if (opening && (!validOpeningDate(opening.startDate) || opening.startDate > asOf)) {
     return { ok: false, error: "تاريخ الافتتاحي لا يصلح لعرض هذا الحساب." };
   }
