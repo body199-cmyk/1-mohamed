@@ -523,3 +523,14 @@
 - 85 browser tests, 91 web tests, 205 package tests, isolated SQL/negative controls, backup/preflight, types/build and HTTP auth gates passed. Second critical review was by the same assistant; not an independent person.
 - Vercel deployment `dpl_8oDnXfwBtDqMEge7TGyaGmrckACU` READY for the merge commit. Live login HTTP 200 confirms disabled credentials and pre-connection notice. Mobile fixture screenshot reviewed.
 - Preparation complete within this scope. STOP before owner registration and Supabase connection. Final activation must verify real Auth/email/RLS, persistence across devices, concurrency, encrypted offsite backup/restore and physical-device acceptance. No cloud database or customer data touched; fixtures do not prove live operation.
+
+
+## Supabase provisioning checkpoint — 13 November 2026
+
+User authorized creating `1-mohamed` in organization `jbnzkuzxlvscvyjusjna` at quoted $0/month and setting up the supplied trial owner account. Created project `sskkuniskphlawivzudw` in `eu-central-1`; ACTIVE_HEALTHY. Applied the 18 existing migrations and additive `20261113142945_lock_helper_search_paths.sql`. All ten public tables have RLS; owner remains unset and Auth has zero users. No trial password is stored in the repository.
+
+Vercel production-only URL, publishable key and site URL are configured. `APP_ENABLE_REAL_DATA=false` deliberately remains until live Auth and persistence tests pass. No service-role key is exposed or installed.
+
+Verification: complete isolated SQL suite PASS including a hostile-search-path regression; hosted helper arithmetic/text smoke PASS, zero mutable helper paths. Advisor retains 20 expected authenticated SECURITY DEFINER RPC warnings: these are the existing owner-gated operation API, not unrestricted table access. Review source owner checks and test non-owner HTTP rejection during activation; advisory: https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable . Separate second-pass diff review by the same assistant; no claim of independent reviewer.
+
+BLOCKER: connector has no Auth admin/config tools; dashboard fallback reaches sign-in. Need authenticated dashboard session to create the trial account, disable public signup, set site/callback URLs, then initialize app_owner from the generated Auth UUID. Do not insert fake Auth records through SQL. Account creation, live login, recovery/email, RLS HTTP, persistence/concurrency, backup/restore and device acceptance are not yet complete. CI/merge for this checkpoint pending.

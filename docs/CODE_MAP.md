@@ -338,3 +338,9 @@
 - 85 browser tests, 91 web tests, 205 package tests, isolated SQL/negative controls, backup/preflight, types/build and HTTP auth gates passed. Second critical review was by the same assistant; not an independent person.
 - Vercel deployment `dpl_8oDnXfwBtDqMEge7TGyaGmrckACU` READY for the merge commit. Live login HTTP 200 confirms disabled credentials and pre-connection notice. Mobile fixture screenshot reviewed.
 - Preparation complete within this scope. STOP before owner registration and Supabase connection. Final activation must verify real Auth/email/RLS, persistence across devices, concurrency, encrypted offsite backup/restore and physical-device acceptance. No cloud database or customer data touched; fixtures do not prove live operation.
+
+
+## Hosted helper hardening
+- `supabase/migrations/20261113142945_lock_helper_search_paths.sql`: fixed lookup paths for seven existing helpers; no privilege or arithmetic changes.
+- `supabase/tests/15_helper_search_paths_verification.sql`: hostile lookup regression, wired in `tools/db-verify.mjs`.
+- Current hosted activation state and blocker: `docs/STATUS.md`.
