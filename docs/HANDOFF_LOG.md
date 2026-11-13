@@ -1177,3 +1177,11 @@
 
 ## CONTRACTOR-IDENTITY — ١١ نوفمبر ٢٠٢٦، قيد التحقق
 المستخدم اعتمد صراحة: من منظور أحمد، الأخضر له (+)، الأحمر عليه (−)، الرمادي متعادل. تنفيذ محلي على نفس فرع إصلاح الملخص: مكون ContractorMoney للملخص والجداول والموبايل وافتتاحيات البيانات الأساسية، وألوان ثابتة ونص دليل في HTML/PNG/PDF/XLSX/CSV. CSV لا يدعم ألوانًا. الرئيسية واليومية يعرضان حجم الشغل لا فرق الحساب فلا يصنف إجماليهما كدين. تغييرات العرض لا تغير المعادلات أو دفعات العربيات. اختبار حديث 52/52 PASS للتصدير والهوية والافتتاحي، وحزم الحساب السابقة 199 PASS. فحص حزمة التصدير للأنواع ناجح. مراجعة ثانية بنفس المساعد: حماية CSV والـHTML باقية، XLSX يصنف الخلايا المالية فقط وليس الأسماء أو المراجع، الحساب بأعداد صحيحة بلا تحويل Number. لا فحص بصري نهائي ولا CI ولا دمج بعد؛ تثبيت التبعيات المحلية جارٍ بسبب غياب @supabase/ssr. يلزم استكمال التحقق قبل الدمج.
+
+
+## PRE-SUPABASE-CLOSEOUT — 13 November 2026, review checkpoint
+Synced main 7d4d306, branched `fix/pre-supabase-workspace-closeout-20261113`. Current user supersedes old incomplete instructions: finish authorized preparation; stop before Supabase. No credentials or live data used.
+
+Separate second-pass review by the same assistant (not an independent person): checked responsible-contractor direction against SQL (AHMED_SUPPLIES assigns K_AHMED), D15 order and FIN-05 opening reuse; rejected partial/duplicate pages and audit changes including metadata-only edits; preserved source receipt fields but did not show receipt UI; full debt remains independent of client detail filters. Browser fixture is kept outside Next routes; owner checks remain in API and SQL. Root test:web now includes previously unwired real ledger tests.
+
+Actual local results: build/typecheck PASS; package baseline 205 tests PASS; updated web 91 tests PASS; complete isolated PostgreSQL migration suites PASS. Local Chromium blocked by executor socket permissions, not counted as a passing test. Full GitHub CI/browser results must be recorded before merge. Remaining connection acceptance: real owner email/Auth/SMTP, RLS/HTTP, cross-device persistence and concurrency, configured encrypted backup/actual isolated restore, physical-device smoke.

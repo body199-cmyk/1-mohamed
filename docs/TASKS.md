@@ -267,3 +267,10 @@
 
 ## CONTRACTOR-IDENTITY — ١١ نوفمبر ٢٠٢٦، قيد التحقق
 المستخدم اعتمد صراحة: من منظور أحمد، الأخضر له (+)، الأحمر عليه (−)، الرمادي متعادل. تنفيذ محلي على نفس فرع إصلاح الملخص: مكون ContractorMoney للملخص والجداول والموبايل وافتتاحيات البيانات الأساسية، وألوان ثابتة ونص دليل في HTML/PNG/PDF/XLSX/CSV. CSV لا يدعم ألوانًا. الرئيسية واليومية يعرضان حجم الشغل لا فرق الحساب فلا يصنف إجماليهما كدين. تغييرات العرض لا تغير المعادلات أو دفعات العربيات. اختبار حديث 52/52 PASS للتصدير والهوية والافتتاحي، وحزم الحساب السابقة 199 PASS. فحص حزمة التصدير للأنواع ناجح. مراجعة ثانية بنفس المساعد: حماية CSV والـHTML باقية، XLSX يصنف الخلايا المالية فقط وليس الأسماء أو المراجع، الحساب بأعداد صحيحة بلا تحويل Number. لا فحص بصري نهائي ولا CI ولا دمج بعد؛ تثبيت التبعيات المحلية جارٍ بسبب غياب @supabase/ssr. يلزم استكمال التحقق قبل الدمج.
+
+
+## PRE-SUPABASE-CLOSEOUT — 13 November 2026
+- Approved task: complete private-workspace parity and report integrity before final Supabase connection; baseline main 7d4d306.
+- Implemented: modular navigation retaining drafts; searchable recent entry selections, save/new/exit, per-day reset, exact Arabic decimals and payment preview; full cash movements; SQL daily work totals; grouped contractor detail/filter/export with full debt separate from selected subtotal; complete exports and automatic PNG fallback; snapshot-safe pagination.
+- Verification: local build/types, 91 web tests and isolated SQL pass; exact-head CI and browser fixture acceptance pending. Do not mark delivered before live cutover gates.
+- Cash contractor settlements / flat daily prices remain excluded by approved scope. Live email, Auth/RLS, second device, true concurrency and encrypted backup/restore are the final connection phase.

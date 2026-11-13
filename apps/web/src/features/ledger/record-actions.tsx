@@ -13,13 +13,14 @@ type Props = {
   vehicles: Vehicle[];
   reportType: "trips.list" | "payments.list";
   reportRows: Record<string, unknown>[];
+  mode?: "master" | "financial";
   busy: boolean;
   write: (operation: WriteOperation, payload: Record<string, unknown>) => Promise<boolean>;
 };
 const field: React.CSSProperties = { display: "block", padding: 10, width: "100%", maxWidth: 460, margin: "6px 0 12px" };
 const section: React.CSSProperties = { border: "1px solid #d0d7e2", borderRadius: 12, padding: 16, marginBottom: 20 };
 
-export function RecordActions({ contractors, vehicles, reportType, reportRows, busy, write }: Props) {
+export function RecordActions({ contractors, vehicles, reportType, reportRows, busy, write, mode }: Props) {
   const [contractorId, setContractorId] = useState("");
   const [contractorName, setContractorName] = useState("");
   const [vehicleId, setVehicleId] = useState("");
@@ -107,7 +108,7 @@ export function RecordActions({ contractors, vehicles, reportType, reportRows, b
       if (await write("payment.update", {
         id: financial.id, expected_version: financial.version, reason: paymentEditReason.trim(),
         vehicle_id: financial.vehicle_id, responsible_contractor_id: financial.responsible_contractor_id,
-        payment_date: paymentEditDate, amount_egp: paymentEditAmount.trim(),
+        payment_date: paymentEditDate, amount_egp: piastresToPounds(amount),
         linked_trip_id: financial.linked_trip_id ?? null,
         receipt_number: financial.receipt_number ?? null,
         notes: paymentEditNotes.trim()
@@ -130,7 +131,7 @@ export function RecordActions({ contractors, vehicles, reportType, reportRows, b
 
   return <>
     {feedback && <p role="status">{feedback}</p>}
-    <section style={section}>
+    <section style={section} hidden={mode === "financial"}>
       <h2>تعديل أو أرشفة المقاول</h2>
       <p>لا يمكن تعديل أو أرشفة المقاول الأساسي. كل تعديل يستخدم رقم إصدار لمنع الكتابة فوق تحديث أحدث.</p>
       <label htmlFor="manage-contractor">المقاول</label>
@@ -155,7 +156,7 @@ export function RecordActions({ contractors, vehicles, reportType, reportRows, b
         </button>
       </form>
     </section>
-    <section style={section}>
+    <section style={section} hidden={mode === "financial"}>
       <h2>تعديل أو أرشفة العربية</h2>
       <label htmlFor="manage-vehicle">العربية</label>
       <select id="manage-vehicle" style={field} value={vehicleId}
@@ -183,7 +184,7 @@ export function RecordActions({ contractors, vehicles, reportType, reportRows, b
         </button>
       </form>
     </section>
-    <section style={section}>
+    <section style={section} hidden={mode === "master"}>
       <h2>إلغاء نقلة أو دفعة مع توثيق السبب</h2>
       <p>اختَر سجلًا من نتائج التقرير المحمّل. الإلغاء لا يمسح السجل؛ الخادم يراجع الرصيد والتعارضات قبل الحفظ.</p>
       <form onSubmit={cancelFinancial}>

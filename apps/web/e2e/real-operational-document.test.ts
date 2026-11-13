@@ -36,7 +36,7 @@ describe("real operational five-format document", () => {
     expect(doc.businessName).not.toContain("تجريبية");
     expect(doc.metadata).toContainEqual({ label: "العربية المحددة", value: "عربية ١" });
     expect(doc.metadata).toContainEqual({ label: "المقاول المحدد", value: "المقاول الأول" });
-    expect(doc.columns.length).toBe(15);
+    expect(doc.columns.length).toBe(16);
     expect(doc.rows[0]).toContain("عربية ١");
     expect(doc.rows[0]).toContain("المقاول الأول");
     expect(doc.rows[0]).toContain("12.500");

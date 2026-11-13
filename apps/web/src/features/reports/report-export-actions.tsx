@@ -39,7 +39,8 @@ export function ReportExportActions(props: {
       if (typeof navigator.share === "function" && navigator.canShare?.({ files: [file] })) {
         await navigator.share({ files: [file], title: props.document.title });
       } else {
-        setError("المشاركة المباشرة غير مدعومة على هذا الجهاز. استخدم تنزيل صورة PNG ثم شاركها.");
+        downloadBlob(blob, props.fileNameBase + ".png");
+        setError("المشاركة المباشرة غير مدعومة؛ تم تنزيل صورة التقرير لمشاركتها.");
       }
     } catch (cause) {
       if (!(cause instanceof DOMException && cause.name === "AbortError")) {

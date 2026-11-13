@@ -170,3 +170,10 @@
 - **الاختبار المانع للعودة:** حالة `BUG-015` في `apps/web/e2e/payments-validation.test.ts` (ملف موصول بـCI في خطوة «Check D16 demo payment ledger and isolated accounts»): قبول الحد الأدنى `-(2^63)` في الكشف مع أرصدته، رفض `-9223372036854775809` بقرش أقل بنفس رسالة الخطأ، وبقاء الحد الموجب الأقصى مقبولًا. 20/20 PASS محليًا قبل الرفع.
 
 إظهار الحساب السابق — عيب عرض: الرصيد المرحّل كان مخفيًا داخل details رغم دخوله في الصافي. أصبح بطاقة ظاهرة، واختبار statement-opening-summary يغطي اتجاهيه والصفر. القبول البصري وCI والدمج لم يتموا.
+
+
+## CLOSEOUT-01 — report pagination could combine different ledger revisions
+A concurrent edit with unchanged totals could be combined with prior pages; operational reports had no snapshot comparison and silently deduplicated IDs. Add owner-only stable report wrapper with append-only audit count+max revision; require it on later pages and reject overlap/count mismatch. Regression: metadata-only edit triggers SQLSTATE 40001; 201-row test preserves exact count. Local SQL/web tests pass; final CI pending.
+
+## CLOSEOUT-02 — approved private-workspace workflows absent from demo-only acceptance
+Private workspace was a monolithic form and payment history did not contain earned cash movements. Complete modular private UI, combined cash ledger, entry controls and detailed contractor exports; browser fixtures test actual private components. Cloud end-to-end acceptance remains separate.

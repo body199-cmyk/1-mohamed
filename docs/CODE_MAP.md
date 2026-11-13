@@ -320,3 +320,14 @@
 
 ## CONTRACTOR-IDENTITY — ١١ نوفمبر ٢٠٢٦، قيد التحقق
 المستخدم اعتمد صراحة: من منظور أحمد، الأخضر له (+)، الأحمر عليه (−)، الرمادي متعادل. تنفيذ محلي على نفس فرع إصلاح الملخص: مكون ContractorMoney للملخص والجداول والموبايل وافتتاحيات البيانات الأساسية، وألوان ثابتة ونص دليل في HTML/PNG/PDF/XLSX/CSV. CSV لا يدعم ألوانًا. الرئيسية واليومية يعرضان حجم الشغل لا فرق الحساب فلا يصنف إجماليهما كدين. تغييرات العرض لا تغير المعادلات أو دفعات العربيات. اختبار حديث 52/52 PASS للتصدير والهوية والافتتاحي، وحزم الحساب السابقة 199 PASS. فحص حزمة التصدير للأنواع ناجح. مراجعة ثانية بنفس المساعد: حماية CSV والـHTML باقية، XLSX يصنف الخلايا المالية فقط وليس الأسماء أو المراجع، الحساب بأعداد صحيحة بلا تحويل Number. لا فحص بصري نهائي ولا CI ولا دمج بعد؛ تثبيت التبعيات المحلية جارٍ بسبب غياب @supabase/ssr. يلزم استكمال التحقق قبل الدمج.
+
+
+## PRE-SUPABASE-CLOSEOUT paths
+- `features/ledger/real-workspace.tsx`: small navigation shell; `workspace-data.ts`: owner API entity loading and synchronous idempotent write lock; `master-data-entry.tsx`: historical openings/master forms.
+- `real-reports.tsx`, `report-snapshot.ts`, `work-totals.tsx`: complete paginated report reading, duplicate/snapshot/count checks, SQL work-volume summaries.
+- `real-cash-statement.tsx`, `cash-statement-document.ts`: combined work/payment cash movement report and reconciled five-format document.
+- `contractor-details.tsx`, `contractor-detail-document.ts`: day/vehicle/route details, filters, full balance versus selection subtotal, complete detailed exports.
+- `payment-preview.tsx`, `searchable-choice.tsx`: server cash preview and accessible recent/search selections.
+- `supabase/migrations/20261113120001_report_snapshot_and_cash_statement.sql`: additive owner-only stable reporting; count+max append-only audit revision protects page consistency; local CLI-generated filename ordered after existing migrations.
+- `supabase/tests/14_report_snapshot_cash_verification.sql`, `apps/web/e2e/pre-supabase-closeout.test.ts`: isolated security/accounting tests.
+- `tools/workspace-test-server.mjs`, `playwright.workspace.config.ts`, `e2e/workspace/`: actual React components with fixture HTTP responses, isolated from Next production/auth. No live-cloud claims.

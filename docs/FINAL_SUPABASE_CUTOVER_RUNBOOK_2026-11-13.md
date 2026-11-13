@@ -69,3 +69,11 @@ If any gate fails, leave the production flag disabled or roll back; do not allow
 - Load more than 200 trips and payments, and more than 200 contractor statement rows; **no PDF, Excel or image export of a partial history**.
 - Compare every real export to the database after the final page is loaded; check Cairo font, Arabic RTL, Excel safety, and PDF/PNG rendering on Android.
 - The real operational visual export intentionally omits technical version/status fields from its 15-column layout; the detailed CSV includes those fields. Do not describe the visual export as a byte-for-byte database dump.
+
+
+## Prepared closeout additions
+- Apply the additive `20261113120001_report_snapshot_and_cash_statement.sql` after the existing 12:00 migration. It adds the owner-only `app_op_report_read(text,jsonb)` API dispatcher and combined cash movement statement. No prior migration was edited.
+- Verify a metadata-only edit between report pages causes a refresh requirement; also verify concurrent commits in reverse identity order. Every full export must use one unchanged report revision.
+- Private workspace now has navigation, retained form drafts, save/new/exit, Arabic numeric input, current before/after cash preview, SQL work totals, contractor filters and complete cash work/payment statements. Preview is advisory: SQL still enforces historical D16.
+- No daily flat-rate pricing or contractor cash-settlement feature is authorized. Do not add those during cutover.
+- Fixture browser tests exercise real UI modules through mocked HTTP. They do not replace real Auth, RPC, SMTP, actual mobile device, offsite backup/restore or concurrency tests.
