@@ -5,9 +5,9 @@ import { assertSupabaseConfigured } from "./config";
 /**
  * H041: candidate session-refresh adapter for a FUTURE feature branch.
  *
- * NOT connected to apps/web/src/proxy.ts yet; that deny-all boundary stays
- * in force until a dedicated Supabase TEST environment verifies GoTrue,
- * the owner gate, and session refresh behavior end-to-end.
+ * Only used when REAL_DATA_CUTOVER=enabled and all public Supabase config is set.
+ * Otherwise the default-deny proxy remains in force. Live GoTrue/RLS testing
+ * is still mandatory before activating this server-side flag.
  *
  * Important: when the future caller returns a different response (redirect),
  * it MUST copy refreshed cookies AND cache headers from this response.
@@ -37,11 +37,14 @@ export async function refreshSupabaseSession(request: NextRequest) {
   });
 
   const { data, error } = await supabase.auth.getClaims();
-  return {
-    response,
-    claims: !error ? (data?.claims ?? null) : null,
-    error,
-  };
+  const claims = !error ? (data?.claims ?? null) : null;
+  let authorized = false;
+  if (typeof claims?.sub === "string" && claims.sub.length > 0) {
+    const { data: isOwner, error: ownerError } = await supabase.rpc("app_is_owner");
+    authorized = !ownerError && isOwner === true;
+  }
+  response.headers.set("cache-control", "private, no-store");
+  return { response, claims, authorized, error };
 }
 
 /** Preserve both auth cookies and no-cache headers if redirecting later. */
