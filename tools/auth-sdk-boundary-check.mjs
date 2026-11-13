@@ -21,7 +21,11 @@ for (const [name, expected] of Object.entries({
 
 const proxy = read("apps/web/src/proxy.ts");
 assert.match(proxy, /matcher:\s*\[["']\/:path\*["']\]/);
-assert.doesNotMatch(proxy, /@supabase|refreshSupabaseSession|verifyOwnerForRoute/);
+assert.match(proxy, /REAL_DATA_CUTOVER/);
+assert.match(proxy, /refreshSupabaseSession/);
+assert.match(proxy, /classifyCutoverRoute/);
+assert.match(proxy, /session\.authorized/);
+assert.match(proxy, /Legacy public preview only/);
 assert.match(proxy, /NextResponse\.json/);
 assert.match(proxy, /status:\s*503/);
 assert.match(proxy, /NextResponse\.redirect/);
@@ -78,10 +82,12 @@ assert.match(server, /request\.cookies\.set\(/);
 assert.match(owner, /getClaims\(/);
 assert.match(owner, /rpc\("app_is_owner"\)/);
 assert.match(session, /getClaims\(/);
+assert.match(session, /rpc\("app_is_owner"\)/);
+assert.match(session, /authorized = !ownerError/);
 assert.match(session, /request\.cookies\.set\(/);
 assert.match(session, /response\.cookies\.set\(/);
 assert.match(session, /cache-control/);
 for (const source of [browser, server, owner, session, loginForm]) {
   assert.doesNotMatch(source, /SUPABASE_SERVICE_ROLE_KEY|sb_secret_/);
 }
-console.log("AUTH-01/H041 PASS: pinned SDK, prepared owner-only routes, default-deny Proxy and isolated demo.");
+console.log("AUTH-01/H041 PASS: pinned SDK, prepared owner-only routes, dormant owner-gated cutover, default-deny preview and isolated demo.");
