@@ -1,3 +1,5 @@
+> **Update 13 Nov 2026:** The historical checklist below describes the 4 Nov starting state. The Supabase SDK, login/recovery forms, owner-gated RPCs and dormant cutover proxy are now prepared. For the authoritative remaining live work, see [PRE_SUPABASE_FINAL_HANDOFF_GATE_2026-11-13.md](PRE_SUPABASE_FINAL_HANDOFF_GATE_2026-11-13.md). No live Supabase project or real Auth test has been performed yet.
+
 # إعداد الدخول الآمن (AUTH-01) — توثيق وتحضير مستقل
 
 **الحالة:** مكتوبة ولم تُختبر · **متوقفة بسبب عائق موضح** · لا تُعتبر اعتمادًا من المساعد.
