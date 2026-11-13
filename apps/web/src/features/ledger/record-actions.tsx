@@ -5,7 +5,7 @@ import type { WriteOperation } from "../../lib/ledger/operation-contract";
 import { piastresToPounds, poundsToPiastres } from "../../lib/ledger/amounts";
 
 type Contractor = { id: string; name: string; is_primary: boolean; is_archived: boolean; version: number };
-type Vehicle = { id: string; plate_number: string; driver_name: string | null; is_archived: boolean; version: number };
+type Vehicle = { id: string; plate_number: string; driver_name: string | null; notes: string | null; is_archived: boolean; version: number };
 type FinancialRow = { id: string; version: number; is_cancelled: boolean; [key: string]: unknown };
 type Props = {
   contractors: Contractor[];
@@ -24,6 +24,7 @@ export function RecordActions({ contractors, vehicles, reportType, reportRows, b
   const [vehicleId, setVehicleId] = useState("");
   const [plate, setPlate] = useState("");
   const [driver, setDriver] = useState("");
+  const [vehicleNotes, setVehicleNotes] = useState("");
   const [reason, setReason] = useState("");
   const [financialId, setFinancialId] = useState("");
   const [cancelReason, setCancelReason] = useState("");
@@ -47,7 +48,8 @@ export function RecordActions({ contractors, vehicles, reportType, reportRows, b
   useEffect(() => {
     setPlate(vehicle?.plate_number ?? "");
     setDriver(vehicle?.driver_name ?? "");
-  }, [vehicle?.id, vehicle?.version, vehicle?.plate_number, vehicle?.driver_name]);
+    setVehicleNotes(vehicle?.notes ?? "");
+  }, [vehicle?.id, vehicle?.version, vehicle?.plate_number, vehicle?.driver_name, vehicle?.notes]);
   useEffect(() => { setFinancialId(""); setConfirmed(false); }, [reportType, reportRows]);
   useEffect(() => {
     setPaymentEditDate(typeof financial?.payment_date === "string" ? financial.payment_date : "");
@@ -79,6 +81,7 @@ export function RecordActions({ contractors, vehicles, reportType, reportRows, b
     if (!vehicle || !plate.trim()) return;
     if (await write("vehicle.update", {
       id: vehicle.id, plate_number: plate.trim(), driver_name: driver.trim() || null,
+      notes: vehicleNotes.trim() || null,
       expected_version: vehicle.version, reason: reason.trim() || "تعديل بيانات العربية"
     })) { setFeedback("تم تحديث العربية."); setReason(""); }
   }
@@ -168,6 +171,9 @@ export function RecordActions({ contractors, vehicles, reportType, reportRows, b
         <label htmlFor="manage-driver">السائق</label>
         <input id="manage-driver" style={field} maxLength={160} value={driver}
           onChange={e => setDriver(e.target.value)} disabled={busy || !vehicle} />
+        <label htmlFor="manage-vehicle-notes">ملاحظات العربية</label>
+        <input id="manage-vehicle-notes" style={field} maxLength={400} value={vehicleNotes}
+          onChange={e => setVehicleNotes(e.target.value)} disabled={busy || !vehicle} />
         <button type="submit" disabled={busy || !vehicle}>حفظ تعديل العربية</button>
         {" "}
         <button type="button" disabled={busy || !vehicle || !reason.trim()}
