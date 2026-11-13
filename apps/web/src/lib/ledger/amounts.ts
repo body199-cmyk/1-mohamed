@@ -38,3 +38,14 @@ export function assertDecimal(value: string, decimals: 2 | 3, positive: boolean)
   }
   return text;
 }
+
+
+/** Format an exact persisted scaled integer without Number precision loss. */
+export function scaledIntegerToDecimal(input: string, decimals: 2 | 3): string {
+  if (!/^-?(0|[1-9][0-9]*)$/.test(input)) throw new Error("رقم مخزن غير صالح.");
+  const value = BigInt(input);
+  const scale = 10n ** BigInt(decimals);
+  const abs = value < 0n ? -value : value;
+  return (value < 0n ? "-" : "") + (abs / scale).toString() + "." +
+    (abs % scale).toString().padStart(decimals, "0");
+}
