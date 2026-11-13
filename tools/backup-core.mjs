@@ -24,8 +24,8 @@ const I64_MAX = 9223372036854775807n;
 const I64_MIN = -9223372036854775808n;
 
 const COLUMNS = {
-  contractors: ["id","name","is_primary","is_archived","created_at","updated_at"],
-  vehicles: ["id","plate_number","driver_name","notes","is_archived","created_at","updated_at"],
+  contractors: ["id","name","is_primary","is_archived","version","created_at","updated_at"],
+  vehicles: ["id","plate_number","driver_name","notes","is_archived","version","created_at","updated_at"],
   vehicle_accounts: ["vehicle_id","contractor_id","created_at","last_activity_at"],
   opening_balances: ["id","balance_type","contractor_id","vehicle_id","start_date",
     "signed_piastres","notes","is_cancelled","cancel_reason","cancelled_at",
@@ -173,10 +173,13 @@ export function verifyBusinessDataset(data) {
   for (const c of data.contractors) {
     requireValid(string(c,"id") && string(c,"name") &&
       flag(c,"is_primary") && flag(c,"is_archived") &&
-      !(c.is_primary && c.is_archived), "مقاول غير صالح.");
+      !(c.is_primary && c.is_archived) &&
+      (c.version === undefined || (Number.isSafeInteger(c.version) && c.version >= 1)),
+      "مقاول غير صالح.");
   }
   for (const v of data.vehicles) {
-    requireValid(string(v,"id") && string(v,"plate_number") && flag(v,"is_archived"),
+    requireValid(string(v,"id") && string(v,"plate_number") && flag(v,"is_archived") &&
+      (v.version === undefined || (Number.isSafeInteger(v.version) && v.version >= 1)),
       "عربية غير صالحة.");
   }
   for (const a of data.vehicle_accounts) {
