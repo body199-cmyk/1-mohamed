@@ -30,6 +30,8 @@ jobs:
         run: node --test tools/production-preflight.test.mjs
       - name: Typecheck and unit tests
         run: npm run check
+      - name: Verify dormant owner cutover policy and real report projection
+        run: npx vitest run apps/web/e2e/cutover-policy.test.ts apps/web/e2e/ledger-report-presentation.test.ts
       - name: Verify isolated PostgreSQL migrations and suites
         run: npm run db:verify
       - name: Verify negative controls actually catch regressions
@@ -71,6 +73,12 @@ jobs:
           server_pid=$!
           trap 'kill "$server_pid" 2>/dev/null || true' EXIT
           node tools/auth-boundary-smoke.mjs http://127.0.0.1:39123
+      - name: Verify flagged cutover fails closed without Supabase (HTTP)
+        run: |
+          REAL_DATA_CUTOVER=enabled npm run start --workspace=web -- --port 39124 > /tmp/next-cutover-smoke.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          node tools/auth-cutover-no-config-smoke.mjs http://127.0.0.1:39124
       - name: Install isolated Chromium browser for UI regression
         run: npx playwright install chromium
       - name: Test approved mobile trip entry and FIN-03 opening rejection
