@@ -13,7 +13,8 @@ type Contractor = { id: string; name: string; is_primary: boolean; is_archived: 
 type Vehicle = { id: string; plate_number: string; driver_name: string | null; notes: string | null; is_archived: boolean; version: number };
 type Account = { vehicle_id: string; contractor_id: string };
 type Page<T> = { ok: boolean; data?: T[]; hasMore?: boolean; error?: string };
-type Report = { status: string; rows: Record<string, unknown>[]; total_count?: number;
+type Report = { status: string; rows: Record<string, unknown>[]; total_count?: string | number;
+  next_cursor?: { date: string; id: string } | null;
   period_opening_piastres?: string; period_closing_piastres?: string;
   current_cash_balance_piastres?: string; cash_balance_piastres?: string };
 type ReportType = "trips.list" | "payments.list";
@@ -57,6 +58,7 @@ export function RealWorkspace() {
   const [includeCancelled, setIncludeCancelled] = useState(false);
   const [report, setReport] = useState<Report | null>(null);
   const pending = useRef(new Map<string, string>());
+  const reportQuery = useRef<{ type: ReportType; payload: Record<string, unknown> } | null>(null);
 
   const loadMasters = useCallback(async () => {
     if (!configured) return;
@@ -107,6 +109,7 @@ export function RealWorkspace() {
       pending.current.delete(signature);
       setNotice("تم الحفظ في الخادم. يُرجى التحقق من السجل بعد إعادة التحميل.");
       setReport(null); // An edit/cancellation invalidates every displayed financial total.
+      reportQuery.current = null;
       await loadMasters();
       return true;
     } catch {
@@ -179,6 +182,7 @@ export function RealWorkspace() {
     event.preventDefault();
     if (!configured || !reportFrom || !reportTo) return;
     setBusy(true); setNotice(""); setReport(null);
+    reportQuery.current = null;
     try {
       let payload: Record<string, unknown> = { date_from: reportFrom, date_to: reportTo,
         include_cancelled: includeCancelled, limit: 200 };
@@ -191,8 +195,36 @@ export function RealWorkspace() {
       }
       const response = await postLedgerRead<Report>(reportType, payload);
       if (!response.ok) { setNotice(response.error); return; }
+      if (!Array.isArray(response.data?.rows)) { setNotice("تقرير غير صالح من الخادم."); return; }
+      reportQuery.current = { type: reportType, payload };
       setReport(response.data);
     } catch { setNotice("تعذّر تحميل التقرير من الخادم."); }
+    finally { setBusy(false); }
+  }
+
+  async function loadMoreTrips() {
+    const query = reportQuery.current;
+    if (busy || !report || !report.next_cursor || !query || query.type !== "trips.list") return;
+    setBusy(true); setNotice("");
+    try {
+      const response = await postLedgerRead<Report>("trips.list", {
+        ...query.payload, cursor: report.next_cursor
+      });
+      if (!response.ok) { setNotice(response.error); return; }
+      if (!Array.isArray(response.data?.rows)) {
+        setNotice("صفحة التقرير غير صالحة من الخادم."); return;
+      }
+      // SQL keyset pagination guarantees a stable order by date and id.
+      const existingIds = new Set(report.rows.map(row => row.id));
+      const newRows = response.data.rows.filter(row => !existingIds.has(row.id));
+      if (response.data.next_cursor &&
+          response.data.next_cursor.date === report.next_cursor.date &&
+          response.data.next_cursor.id === report.next_cursor.id) {
+        setNotice("مؤشر الصفحة لم يتغير. أوقفنا القراءة لمنع تكرار السجلات."); return;
+      }
+      setReport({ ...report, rows: [...report.rows, ...newRows],
+        next_cursor: response.data.next_cursor ?? null });
+    } catch { setNotice("تعذر تحميل الصفحة التالية. يمكنك المحاولة مجددًا."); }
     finally { setBusy(false); }
   }
 
@@ -325,7 +357,7 @@ export function RealWorkspace() {
         {reportType === "payments.list" && <>
           <label htmlFor="report-account">حساب العربية والمقاول</label>
           <select id="report-account" style={field} required value={reportAccount}
-            onChange={e => setReportAccount(e.target.value)} disabled={busy}>
+            onChange={e => { setReportAccount(e.target.value); setReport(null); }} disabled={busy}>
             <option value="">اختر الحساب</option>
             {accounts.map(a => <option key={a.vehicle_id + "|" + a.contractor_id}
               value={a.vehicle_id + "|" + a.contractor_id}>
@@ -336,12 +368,12 @@ export function RealWorkspace() {
         </>}
         <label htmlFor="report-from">من تاريخ</label>
         <input id="report-from" style={field} type="date" required value={reportFrom}
-          onChange={e => setReportFrom(e.target.value)} disabled={busy} />
+          onChange={e => { setReportFrom(e.target.value); setReport(null); }} disabled={busy} />
         <label htmlFor="report-to">إلى تاريخ</label>
         <input id="report-to" style={field} type="date" required value={reportTo}
-          onChange={e => setReportTo(e.target.value)} disabled={busy} />
+          onChange={e => { setReportTo(e.target.value); setReport(null); }} disabled={busy} />
         <label style={{ display: "block", marginBottom: 12 }}>
-          <input type="checkbox" checked={includeCancelled} onChange={e => setIncludeCancelled(e.target.checked)} disabled={busy} />
+          <input type="checkbox" checked={includeCancelled} onChange={e => { setIncludeCancelled(e.target.checked); setReport(null); }} disabled={busy} />
           {" "}عرض القيود الملغاة أيضًا
         </label>
         <button disabled={busy} type="submit">تحميل التقرير</button>
@@ -357,8 +389,15 @@ export function RealWorkspace() {
         {typeof report.current_cash_balance_piastres === "string" && <p>
           الرصيد الحالي: {piastresToPounds(report.current_cash_balance_piastres)} جنيه
         </p>}
-        <p>يتم عرض أول 200 سجل فقط. التصدير خاص بالصفحة المعروضة وليس بكل التاريخ.</p>
-        <button type="button" disabled={!report.rows?.length} onClick={exportReport}>تصدير الصفحة CSV</button>
+        <p>تم تحميل {report.rows?.length ?? 0} سجل من أصل {report.total_count ?? "غير معروف"}.
+          التصدير يشمل السجلات المحمّلة فقط.</p>
+        {reportType === "trips.list" && report.next_cursor && <button type="button"
+          disabled={busy} onClick={() => void loadMoreTrips()}>
+          {busy ? "جارٍ تحميل المزيد..." : "تحميل 200 نقلة إضافية"}
+        </button>}
+        {reportType === "payments.list" && Number(report.total_count ?? 0) > (report.rows?.length ?? 0) &&
+          <p>تقرير المدفوعات يعرض أول 200 سجل فقط؛ قلّص الفترة لاستعراض باقي السجلات.</p>}
+        <button type="button" disabled={!report.rows?.length || busy} onClick={exportReport}>تصدير السجلات المحمّلة CSV</button>
         <div style={{ overflowX: "auto", marginTop: 12 }}>
           <table style={{ borderCollapse: "collapse", minWidth: 600 }}>
             <thead><tr>{Object.keys(report.rows?.[0] ?? {}).map(k =>
