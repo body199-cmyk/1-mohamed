@@ -37,11 +37,13 @@ export async function refreshSupabaseSession(request: NextRequest) {
   });
 
   const { data, error } = await supabase.auth.getClaims();
-  return {
-    response,
-    claims: !error ? (data?.claims ?? null) : null,
-    error,
-  };
+  const claims = !error ? (data?.claims ?? null) : null;
+  // Authenticated is NOT authorized: an invited/created Auth user must also
+  // match the owner row, as enforced independently by RLS and every RPC.
+  const ownerResult = claims?.sub ? await supabase.rpc("app_is_owner") : null;
+  const ownerAuthorized = !!claims?.sub && ownerResult?.error == null && ownerResult?.data === true;
+  return { response, claims, ownerAuthorized, error };
+
 }
 
 /** Preserve both auth cookies and no-cache headers if redirecting later. */
