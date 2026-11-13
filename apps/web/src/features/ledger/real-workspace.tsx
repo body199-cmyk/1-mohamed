@@ -10,7 +10,7 @@ import { TransactionEntry } from "./transaction-entry";
 import { RecordActions } from "./record-actions";
 
 type Contractor = { id: string; name: string; is_primary: boolean; is_archived: boolean; version: number };
-type Vehicle = { id: string; plate_number: string; driver_name: string | null; is_archived: boolean; version: number };
+type Vehicle = { id: string; plate_number: string; driver_name: string | null; notes: string | null; is_archived: boolean; version: number };
 type Account = { vehicle_id: string; contractor_id: string };
 type Page<T> = { ok: boolean; data?: T[]; hasMore?: boolean; error?: string };
 type Report = { status: string; rows: Record<string, unknown>[]; total_count?: number;
