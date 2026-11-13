@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import type { WriteOperation } from "../../lib/ledger/operation-contract";
+import { piastresToPounds, poundsToPiastres } from "../../lib/ledger/amounts";
 
 type Contractor = { id: string; name: string; is_primary: boolean; is_archived: boolean; version: number };
 type Vehicle = { id: string; plate_number: string; driver_name: string | null; is_archived: boolean; version: number };
@@ -28,6 +29,10 @@ export function RecordActions({ contractors, vehicles, reportType, reportRows, b
   const [cancelReason, setCancelReason] = useState("");
   const [confirmed, setConfirmed] = useState(false);
   const [feedback, setFeedback] = useState("");
+  const [paymentEditDate, setPaymentEditDate] = useState("");
+  const [paymentEditAmount, setPaymentEditAmount] = useState("");
+  const [paymentEditNotes, setPaymentEditNotes] = useState("");
+  const [paymentEditReason, setPaymentEditReason] = useState("");
 
   const contractor = contractors.find(c => c.id === contractorId);
   const vehicle = vehicles.find(v => v.id === vehicleId);
@@ -44,6 +49,13 @@ export function RecordActions({ contractors, vehicles, reportType, reportRows, b
     setDriver(vehicle?.driver_name ?? "");
   }, [vehicle?.id, vehicle?.version, vehicle?.plate_number, vehicle?.driver_name]);
   useEffect(() => { setFinancialId(""); setConfirmed(false); }, [reportType, reportRows]);
+  useEffect(() => {
+    setPaymentEditDate(typeof financial?.payment_date === "string" ? financial.payment_date : "");
+    setPaymentEditAmount(typeof financial?.amount_piastres === "string"
+      ? piastresToPounds(financial.amount_piastres) : "");
+    setPaymentEditNotes(typeof financial?.notes === "string" ? financial.notes : "");
+    setPaymentEditReason("");
+  }, [financial?.id, financial?.version, financial?.payment_date, financial?.amount_piastres, financial?.notes]);
 
   async function updateContractor(event: FormEvent) {
     event.preventDefault(); setFeedback("");
@@ -78,6 +90,25 @@ export function RecordActions({ contractors, vehicles, reportType, reportRows, b
       id: vehicle.id, archived: !vehicle.is_archived,
       expected_version: vehicle.version, reason: reason.trim()
     })) { setFeedback("تم تغيير حالة العربية."); setReason(""); }
+  }
+  async function updatePayment(event: FormEvent) {
+    event.preventDefault(); setFeedback("");
+    if (reportType !== "payments.list" || !financial || financial.is_cancelled || !paymentEditReason.trim()) {
+      setFeedback("اختر دفعة نشطة واكتب سبب التعديل."); return;
+    }
+    try {
+      const amount = poundsToPiastres(paymentEditAmount);
+      if (BigInt(amount) <= 0n) throw new Error("مبلغ الدفعة يجب أن يكون أكبر من صفر.");
+      if (!paymentEditDate) throw new Error("تاريخ الدفعة مطلوب.");
+      if (await write("payment.update", {
+        id: financial.id, expected_version: financial.version, reason: paymentEditReason.trim(),
+        vehicle_id: financial.vehicle_id, responsible_contractor_id: financial.responsible_contractor_id,
+        payment_date: paymentEditDate, amount_egp: paymentEditAmount.trim(),
+        linked_trip_id: financial.linked_trip_id ?? null,
+        receipt_number: financial.receipt_number ?? null,
+        notes: paymentEditNotes.trim()
+      })) { setFeedback("تم تعديل الدفعة. حمّل التقرير من جديد لمراجعة الرصيد."); }
+    } catch (error) { setFeedback(error instanceof Error ? error.message : "مبلغ غير صحيح."); }
   }
   async function cancelFinancial(event: FormEvent) {
     event.preventDefault(); setFeedback("");
@@ -168,6 +199,23 @@ export function RecordActions({ contractors, vehicles, reportType, reportRows, b
           إلغاء القيد وتسجيل السبب
         </button>
       </form>
+      {reportType === "payments.list" && financial && !financial.is_cancelled && <form onSubmit={updatePayment}>
+        <h3>تعديل الدفعة المختارة</h3>
+        <p>يتم الاحتفاظ برقم القيد والحساب المرتبط به. أي تغيير يُراجع الرصيد في قاعدة البيانات.</p>
+        <label htmlFor="payment-edit-date">التاريخ الجديد</label>
+        <input id="payment-edit-date" type="date" style={field} required value={paymentEditDate}
+          onChange={e => setPaymentEditDate(e.target.value)} disabled={busy} />
+        <label htmlFor="payment-edit-amount">المبلغ الجديد بالجنيه</label>
+        <input id="payment-edit-amount" style={field} required inputMode="decimal" value={paymentEditAmount}
+          onChange={e => setPaymentEditAmount(e.target.value)} disabled={busy} />
+        <label htmlFor="payment-edit-notes">الملاحظات</label>
+        <input id="payment-edit-notes" style={field} maxLength={400} value={paymentEditNotes}
+          onChange={e => setPaymentEditNotes(e.target.value)} disabled={busy} />
+        <label htmlFor="payment-edit-reason">سبب تعديل الدفعة (إلزامي)</label>
+        <input id="payment-edit-reason" style={field} required maxLength={400} value={paymentEditReason}
+          onChange={e => setPaymentEditReason(e.target.value)} disabled={busy} />
+        <button type="submit" disabled={busy || !paymentEditReason.trim()}>حفظ تعديل الدفعة</button>
+      </form>}
     </section>
   </>;
 }
