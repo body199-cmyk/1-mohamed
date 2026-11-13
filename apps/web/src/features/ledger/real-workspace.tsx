@@ -7,15 +7,17 @@ import { poundsToPiastres, piastresToPounds } from "../../lib/ledger/amounts";
 import type { WriteOperation } from "../../lib/ledger/operation-contract";
 import { LogoutButton } from "../auth/logout-button";
 import { TransactionEntry } from "./transaction-entry";
+import { RecordActions } from "./record-actions";
 
-type Contractor = { id: string; name: string; is_primary: boolean; is_archived: boolean };
-type Vehicle = { id: string; plate_number: string; driver_name: string | null; is_archived: boolean };
+type Contractor = { id: string; name: string; is_primary: boolean; is_archived: boolean; version: number };
+type Vehicle = { id: string; plate_number: string; driver_name: string | null; notes: string | null; is_archived: boolean; version: number };
 type Account = { vehicle_id: string; contractor_id: string };
 type Page<T> = { ok: boolean; data?: T[]; hasMore?: boolean; error?: string };
 type Report = { status: string; rows: Record<string, unknown>[]; total_count?: number;
   period_opening_piastres?: string; period_closing_piastres?: string;
   current_cash_balance_piastres?: string; cash_balance_piastres?: string };
 type ReportType = "trips.list" | "payments.list";
+const EMPTY_ROWS: Record<string, unknown>[] = [];
 
 const field: React.CSSProperties = { display: "block", padding: 10, width: "100%", maxWidth: 460, margin: "6px 0 12px" };
 const section: React.CSSProperties = { border: "1px solid #d0d7e2", borderRadius: 12, padding: 16, marginBottom: 20 };
@@ -52,6 +54,7 @@ export function RealWorkspace() {
   const [reportFrom, setReportFrom] = useState("");
   const [reportTo, setReportTo] = useState("");
   const [reportAccount, setReportAccount] = useState("");
+  const [includeCancelled, setIncludeCancelled] = useState(false);
   const [report, setReport] = useState<Report | null>(null);
   const pending = useRef(new Map<string, string>());
 
@@ -103,6 +106,7 @@ export function RealWorkspace() {
       }
       pending.current.delete(signature);
       setNotice("تم الحفظ في الخادم. يُرجى التحقق من السجل بعد إعادة التحميل.");
+      setReport(null); // An edit/cancellation invalidates every displayed financial total.
       await loadMasters();
       return true;
     } catch {
@@ -176,7 +180,8 @@ export function RealWorkspace() {
     if (!configured || !reportFrom || !reportTo) return;
     setBusy(true); setNotice(""); setReport(null);
     try {
-      let payload: Record<string, unknown> = { date_from: reportFrom, date_to: reportTo, limit: 200 };
+      let payload: Record<string, unknown> = { date_from: reportFrom, date_to: reportTo,
+        include_cancelled: includeCancelled, limit: 200 };
       if (reportType === "payments.list") {
         const [vehicle_id, responsible_contractor_id] = reportAccount.split("|");
         if (!vehicle_id || !responsible_contractor_id) {
@@ -306,6 +311,8 @@ export function RealWorkspace() {
     </section>
     <TransactionEntry contractors={contractors} vehicles={vehicles} accounts={accounts}
       busy={busy} write={write} />
+    <RecordActions contractors={contractors} vehicles={vehicles}
+      reportType={reportType} reportRows={report?.rows ?? EMPTY_ROWS} busy={busy} write={write} />
     <section style={section}>
       <h2>تقارير من قاعدة البيانات</h2>
       <form onSubmit={readReport}>
@@ -333,6 +340,10 @@ export function RealWorkspace() {
         <label htmlFor="report-to">إلى تاريخ</label>
         <input id="report-to" style={field} type="date" required value={reportTo}
           onChange={e => setReportTo(e.target.value)} disabled={busy} />
+        <label style={{ display: "block", marginBottom: 12 }}>
+          <input type="checkbox" checked={includeCancelled} onChange={e => setIncludeCancelled(e.target.checked)} disabled={busy} />
+          {" "}عرض القيود الملغاة أيضًا
+        </label>
         <button disabled={busy} type="submit">تحميل التقرير</button>
       </form>
       {report && <>

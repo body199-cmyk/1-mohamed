@@ -7,8 +7,8 @@ import { getSupabaseSetupStatus } from "../../../../lib/supabase/config";
 export const dynamic = "force-dynamic";
 
 const MASTER_TABLES = {
-  contractors: "id,name,is_primary,is_archived,created_at,updated_at",
-  vehicles: "id,plate_number,driver_name,is_archived,created_at,updated_at",
+  contractors: "id,name,is_primary,is_archived,version,created_at,updated_at",
+  vehicles: "id,plate_number,driver_name,notes,is_archived,version,created_at,updated_at",
   vehicle_accounts: "vehicle_id,contractor_id,created_at",
 } as const;
 
