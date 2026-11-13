@@ -1,3 +1,20 @@
+# Current execution — 13 November 2026 / PRE-SUPABASE-CLOSEOUT
+
+Baseline: `main@7d4d306` (PR #70); PR #65 is already merged. User explicitly requests completing all approved preparation and stopping before Supabase connection.
+
+1. [x] Sync latest main and reconcile prior reports with approved scope.
+2. [x] Prepare private workspace navigation/forms, exact payment preview, grouped contractor details and filters, SQL daily totals, full vehicle cash movements and complete exports.
+3. [x] Add consistent report snapshot gate and isolated regression tests; no cloud project or customer data touched.
+4. [ ] Complete exact-head CI, browser fixture tests and separate critical review; fix failures before merge.
+5. [ ] Verify reviewed merge and Vercel deployment, record final evidence here.
+6. [ ] STOP: Supabase project/owner email/Auth/SMTP/RLS live acceptance, concurrency, backup/restore and physical-device handoff.
+
+Local evidence so far: full build and web TypeScript PASS, 91 web tests PASS, full isolated PostgreSQL suites PASS. Browser launch in this executor failed with `socket() ... Operation not permitted`; GitHub CI must run the committed fixture suite. A fixture is not live Auth or persistence evidence.
+
+Scope correction: PROJECT_REQUIREMENTS §§5/6 and DECISIONS A02 exclude flat daily pricing and cash settlements between contractors. The earlier integrated audit incorrectly listed those as missing requirements. Daily *reporting* and reciprocal-work statements remain required and are implemented/tested separately. Older status text below is historical and does not override this checkpoint.
+
+---
+
 
 ## CONTRACTOR-IDENTITY — ١١ نوفمبر ٢٠٢٦، قيد التحقق
 المستخدم اعتمد صراحة: من منظور أحمد، الأخضر له (+)، الأحمر عليه (−)، الرمادي متعادل. تنفيذ محلي على نفس فرع إصلاح الملخص: مكون ContractorMoney للملخص والجداول والموبايل وافتتاحيات البيانات الأساسية، وألوان ثابتة ونص دليل في HTML/PNG/PDF/XLSX/CSV. CSV لا يدعم ألوانًا. الرئيسية واليومية يعرضان حجم الشغل لا فرق الحساب فلا يصنف إجماليهما كدين. تغييرات العرض لا تغير المعادلات أو دفعات العربيات. اختبار حديث 52/52 PASS للتصدير والهوية والافتتاحي، وحزم الحساب السابقة 199 PASS. فحص حزمة التصدير للأنواع ناجح. مراجعة ثانية بنفس المساعد: حماية CSV والـHTML باقية، XLSX يصنف الخلايا المالية فقط وليس الأسماء أو المراجع، الحساب بأعداد صحيحة بلا تحويل Number. لا فحص بصري نهائي ولا CI ولا دمج بعد؛ تثبيت التبعيات المحلية جارٍ بسبب غياب @supabase/ssr. يلزم استكمال التحقق قبل الدمج.

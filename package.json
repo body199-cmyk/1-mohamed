@@ -17,12 +17,15 @@
     "db:verify": "node --max-old-space-size=256 --max-semi-space-size=2 tools/db-verify.mjs",
     "db:verify:negative": "node --max-old-space-size=256 --max-semi-space-size=2 tools/db-verify.mjs --negative-control",
     "db:verify:negative-b": "node --max-old-space-size=256 --max-semi-space-size=2 tools/db-verify.mjs --negative-control-b",
-    "db:verify:negative-c": "node --max-old-space-size=256 --max-semi-space-size=2 tools/db-verify.mjs --negative-control-c"
+    "db:verify:negative-c": "node --max-old-space-size=256 --max-semi-space-size=2 tools/db-verify.mjs --negative-control-c",
+    "test:web": "vitest run apps/web/e2e",
+    "test:workspace": "playwright test --config=playwright.workspace.config.ts"
   },
   "devDependencies": {
     "@electric-sql/pglite": "0.5.15",
     "@playwright/test": "1.64.1",
     "@types/node": "22.13.4",
+    "esbuild": "0.27.2",
     "typescript": "5.4.5"
   }
 }

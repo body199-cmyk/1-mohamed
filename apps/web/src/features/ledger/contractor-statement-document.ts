@@ -12,6 +12,7 @@ export type LiveStatementRow = {
 
 export type LiveStatementReport = {
   status: string;
+  snapshot?: string;
   counterparty_contractor_id: string;
   date_from: string; date_to: string;
   opening_balance_piastres: string;
@@ -77,7 +78,7 @@ export function verifyLiveStatement(report: LiveStatementReport): void {
 
 export function assertSameStatementSnapshot(previous: LiveStatementReport,
   next: LiveStatementReport): void {
-  for (const key of ["counterparty_contractor_id", "date_from", "date_to",
+  for (const key of ["snapshot", "counterparty_contractor_id", "date_from", "date_to",
     "opening_balance_piastres", "ahmed_work_piastres", "counterparty_work_piastres",
     "closing_balance_piastres", "total_count", "beneficiary"] as const) {
     if (previous[key] !== next[key]) {

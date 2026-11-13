@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createRouteHandlerSupabaseClient } from "../../../../lib/supabase/server";
 import { verifyOwnerForRoute } from "../../../../lib/supabase/owner";
 import { carrySessionHeaders } from "../../../../lib/supabase/proxy-session";
-import { isJsonRecord, isReadOperation, READ_OPERATIONS } from "../../../../lib/ledger/operation-contract";
+import { isJsonRecord, isReadOperation } from "../../../../lib/ledger/operation-contract";
 import { getSupabaseSetupStatus } from "../../../../lib/supabase/config";
 
 export const dynamic = "force-dynamic";
@@ -36,9 +36,13 @@ export async function POST(request: NextRequest) {
   if (!(await verifyOwnerForRoute(client)).authorized) {
     return result({ error: "غير مصرح بالدخول." }, 401, sessionResponse);
   }
-  const { data, error } = await client.rpc(READ_OPERATIONS[input.operation], {
+  const { data, error } = await client.rpc("app_op_report_read", {
+    p_operation: input.operation,
     p_payload: input.payload,
   });
-  if (error) return result({ error: "تعذّر تحميل البيانات المطلوبة." }, 422, sessionResponse);
+  if (error) return result({ error: error.code === "40001" ?
+    "تغيرت البيانات أثناء القراءة. أعد تحميل التقرير من البداية." :
+    "تعذّر تحميل البيانات المطلوبة. راجع الحساب والفترة المحددة." },
+    error.code === "40001" ? 409 : 422, sessionResponse);
   return result({ ok: true, data }, 200, sessionResponse);
 }

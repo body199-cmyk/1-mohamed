@@ -87,6 +87,8 @@ const steps = [
   ['tests trip cancellation reason', 'supabase/tests/12_trip_cancel_history_verification.sql', 'PRE-LIVE: cancelled trip reason and hidden-by-default rows'],
   ['migration contractor statement', 'supabase/migrations/20261113120000_owner_contractor_statement.sql', 'PRE-LIVE: owner-only contractor work statement and keyset pages'],
   ['tests contractor statement', 'supabase/tests/13_owner_contractor_statement_verification.sql', 'PRE-LIVE: signed settlement, opening, cancellation and pagination'],
+  ['migration report snapshot', 'supabase/migrations/20261113120001_report_snapshot_and_cash_statement.sql', 'CLOSEOUT: consistent report pages and complete vehicle cash ledger'],
+  ['tests report snapshot', 'supabase/tests/14_report_snapshot_cash_verification.sql', 'CLOSEOUT: stale pages, SQL daily totals, cash work/payment reconciliation and access'],
 ];
 
 function describe(error) {

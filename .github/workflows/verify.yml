@@ -30,6 +30,8 @@ jobs:
         run: node --test tools/production-preflight.test.mjs
       - name: Typecheck and unit tests
         run: npm run check
+      - name: Verify all web and permanent-workspace contracts
+        run: npm run test:web
       - name: Verify isolated PostgreSQL migrations and suites
         run: npm run db:verify
       - name: Verify negative controls actually catch regressions
@@ -79,6 +81,16 @@ jobs:
           node tools/auth-cutover-smoke.mjs http://127.0.0.1:39124
       - name: Install isolated Chromium browser for UI regression
         run: npx playwright install chromium
+      - name: Test private workspace components with isolated HTTP fixtures
+        run: npm run test:workspace
+      - name: Keep private workspace browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pre-supabase-workspace-browser
+          path: artifacts/closeout/
+          if-no-files-found: ignore
+          retention-days: 7
       - name: Test approved mobile trip entry and FIN-03 opening rejection
         run: npx playwright test --config=playwright.ui.config.ts e2e/trip-entry-stage2.spec.ts e2e/trip-cash-opening-fin03.spec.ts
       - name: Test canonical payment preview and UI-01 labeled assertions

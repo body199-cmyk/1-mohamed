@@ -9,6 +9,7 @@ import {
 
 type SourceReport = {
   rows: Record<string, unknown>[];
+  totals?: Record<string,string>;
   total_count?: string | number;
   next_cursor?: unknown;
   period_opening_piastres?: string;
@@ -20,11 +21,11 @@ const tripColumns = [
   "id", "trip_date", "vehicle_id", "counterparty_contractor_id", "direction",
   "origin", "destination", "weight_milli_tonnes",
   "contractor_rate_piastres", "vehicle_rate_piastres", "expense_piastres",
-  "contractor_total_piastres", "vehicle_total_piastres", "notes", "cancel_reason"
+  "contractor_total_piastres", "vehicle_total_piastres", "notes", "is_cancelled", "cancel_reason"
 ] as const;
 const paymentColumns = [
   "id", "payment_date", "vehicle_id", "responsible_contractor_id",
-  "amount_piastres", "notes", "cancel_reason"
+  "amount_piastres", "notes", "is_cancelled", "cancel_reason"
 ] as const;
 
 /** Full report exports are never produced from a truncated history page. */
@@ -58,6 +59,14 @@ export function buildRealOperationalDocument(
   const metrics: { label: string; value: string }[] = [
     { label: "عدد السجلات", value: String(report.total_count) }
   ];
+  if (type === "trips.list" && report.totals) {
+    for (const [key,label] of [["contractor_total_piastres","قيمة شغل المقاولين"],["vehicle_total_piastres","مستحقات العربيات"],
+      ["ahmed_work_piastres","شغل أحمد"],["counterparty_work_piastres","شغل المقاول"]]) {
+      assertSqlMoney(report.totals[key]);
+      metrics.push({label,value:piastresToPounds(report.totals[key])+" ج.م"});
+    }
+    metrics.push({label:"النقلات النشطة",value:report.totals.active_count});
+  }
   if (type === "payments.list") {
     for (const [key, title] of [
       ["period_opening_piastres", "رصيد أول الفترة"],
@@ -88,7 +97,7 @@ export function buildRealOperationalDocument(
     emptyMessage: "لا توجد حركات في الفترة المحددة.",
     footerNotes: [
       "الأرصدة مأخوذة من SQL كما هي؛ لا يُعاد حسابها داخل ملف التصدير.",
-      "التصدير التفصيلي CSV يشمل أيضًا الحقول التقنية مثل حالة الإلغاء ورقم الإصدار."
+      "الحركات الملغاة ظاهرة بحالتها عند اختيارها؛ لا تدخل في ملخص الشغل أو الأرصدة."
     ]
   };
   assertOperationalReportDocument(document);

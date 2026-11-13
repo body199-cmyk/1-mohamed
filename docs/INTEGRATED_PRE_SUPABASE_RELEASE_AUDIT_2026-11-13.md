@@ -1,3 +1,5 @@
+> **Correction, 13 November 2026:** The historical table below incorrectly treats separately priced daily work and contractor cash settlements as delivery requirements. PROJECT_REQUIREMENTS and DECISIONS A02/D06 explicitly exclude them from v1. Daily reporting by trip (each with its own contractor/vehicle rates) and reciprocal-work reconciliation are required. The closeout branch completes those prepared report/UI paths and fixes pagination consistency; consult STATUS for actual CI/merge evidence. Live connection/backup/restore evidence is still mandatory.
+
 # Integrated pre-Supabase release audit — 2026-11-13
 
 ## Exact integration baseline

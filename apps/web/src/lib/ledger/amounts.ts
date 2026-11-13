@@ -1,10 +1,14 @@
+export function normalizeDecimalInput(input: string): string {
+  return input.trim().replace(/[٠-٩]/g,c=>String(c.charCodeAt(0)-0x660))
+    .replace(/[۰-۹]/g,c=>String(c.charCodeAt(0)-0x6f0)).replace(/٫/g,".");
+}
 /**
  * Egyptian pounds -> integer piastres without IEEE-754 money arithmetic.
  * Supports signed historical opening balances; transaction forms should
  * independently reject negative amounts when their business rules require.
  */
 export function poundsToPiastres(input: string): string {
-  const value = input.trim();
+  const value = normalizeDecimalInput(input);
   const match = /^(-?)(0|[1-9][0-9]*)(?:\.([0-9]{1,2}))?$/.exec(value);
   if (!match) throw new Error("اكتب مبلغًا صحيحًا بالجنيه، بحد أقصى خانتين بعد العلامة.");
   const integer = BigInt(match[2]);
@@ -26,7 +30,7 @@ export function piastresToPounds(input: string): string {
 
 /** Validates exact nonnegative decimal strings for SQL weight/rate fields. */
 export function assertDecimal(value: string, decimals: 2 | 3, positive: boolean): string {
-  const text = value.trim();
+  const text = normalizeDecimalInput(value);
   const re = decimals === 3 ? /^(0|[1-9][0-9]*)(?:[.]([0-9]{1,3}))?$/ :
     /^(0|[1-9][0-9]*)(?:[.]([0-9]{1,2}))?$/;
   if (!re.test(text)) throw new Error(`الرقم لازم يكون غير سالب وبحد أقصى ${decimals} خانات عشرية.`);

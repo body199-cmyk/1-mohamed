@@ -1,8 +1,11 @@
 "use client";
 
 import { useRef, useState, type FormEvent } from "react";
+import { PaymentPreview } from "./payment-preview";
+import { SearchableChoice } from "./searchable-choice";
+import { TripPreviewCard } from "../trips/trip-preview-card";
 import type { WriteOperation } from "../../lib/ledger/operation-contract";
-import { poundsToPiastres, assertDecimal } from "../../lib/ledger/amounts";
+import { poundsToPiastres, assertDecimal, normalizeDecimalInput } from "../../lib/ledger/amounts";
 
 type Contractor = { id: string; name: string; is_primary: boolean; is_archived: boolean };
 type Vehicle = { id: string; plate_number: string; is_archived: boolean };
@@ -12,6 +15,8 @@ type Props = {
   vehicles: Vehicle[];
   accounts: Account[];
   busy: boolean;
+  revision?: number;
+  onExit?: () => void;
   write: (operation: WriteOperation, payload: Record<string, unknown>) => Promise<boolean>;
 };
 
@@ -22,7 +27,7 @@ const section: React.CSSProperties = { border: "1px solid #d0d7e2", borderRadius
  * Prepared real-data entry. SQL computes all totals and the responsible
  * contractor. Never accept browser-computed totals as authoritative.
  */
-export function TransactionEntry({ contractors, vehicles, accounts, busy, write }: Props) {
+export function TransactionEntry({ contractors, vehicles, accounts, busy, write, revision, onExit }: Props) {
   const [tripVehicle, setTripVehicle] = useState("");
   const [tripCounterparty, setTripCounterparty] = useState("");
   const [direction, setDirection] = useState<"AHMED_SUPPLIES" | "OTHER_SUPPLIES">("AHMED_SUPPLIES");
@@ -39,11 +44,15 @@ export function TransactionEntry({ contractors, vehicles, accounts, busy, write 
   const [paymentDate, setPaymentDate] = useState("");
   const [paymentAmount, setPaymentAmount] = useState("");
   const [paymentNotes, setPaymentNotes] = useState("");
+  const [reuseDay,setReuseDay] = useState(false);
+  const submitting = useRef(false);
   const [message, setMessage] = useState("");
   const drafts = useRef(new Map<string, Record<string, unknown>>());
 
   async function createTrip(event: FormEvent) {
     event.preventDefault();
+    if (busy || submitting.current) return;
+    submitting.current = true;
     setMessage("");
     try {
       if (!tripVehicle || !tripCounterparty || !tripDate) throw new Error("حدد العربية والمقاول والتاريخ.");
@@ -63,14 +72,20 @@ export function TransactionEntry({ contractors, vehicles, accounts, busy, write 
       drafts.current.set(signature, payload);
       if (await write("trip.create", payload)) {
         drafts.current.delete(signature);
-        setWeight(""); setTripNotes(""); setTripOrigin(""); setTripDestination("");
-        setMessage("تم إرسال النقلة للحفظ في الخادم.");
+        setWeight(""); setTripNotes("");
+        if (!reuseDay) {setTripOrigin("");setTripDestination("");setContractorRate("");setVehicleRate("");setExpense("0");setTripVehicle("");setTripCounterparty("");}
+        const button = (event.nativeEvent as SubmitEvent).submitter as HTMLButtonElement | null;
+        if (button?.value === "exit") onExit?.();
+        setMessage("تم حفظ النقلة بنجاح.");
       }
     } catch (error) { setMessage(error instanceof Error ? error.message : "بيانات النقلة غير صالحة."); }
+    finally { submitting.current = false; }
   }
 
   async function createPayment(event: FormEvent) {
     event.preventDefault();
+    if (busy || submitting.current) return;
+    submitting.current = true;
     setMessage("");
     try {
       const [vehicle_id, responsible_contractor_id] = paymentAccount.split("|");
@@ -87,31 +102,23 @@ export function TransactionEntry({ contractors, vehicles, accounts, busy, write 
       drafts.current.set(signature, payload);
       if (await write("payment.create", payload)) {
         drafts.current.delete(signature);
-        setPaymentAmount(""); setPaymentNotes(""); setMessage("تم إرسال الدفعة للحفظ في الخادم.");
+        setPaymentAmount(""); setPaymentNotes(""); setMessage("تم حفظ الدفعة بنجاح.");
       }
     } catch (error) { setMessage(error instanceof Error ? error.message : "بيانات الدفعة غير صالحة."); }
+    finally { submitting.current = false; }
   }
 
   return <>
     {message && <p role="status">{message}</p>}
     <section style={section}>
-      <h2>تسجيل نقلة حقيقية</h2>
-      <p>المسؤول عن نقدية العربية والإجماليات بيتحددوا في قاعدة البيانات حسب اتجاه النقلة، مش من المتصفح.</p>
+      <h2>تسجيل نقلة</h2>
+      <p>اختر اتجاه الشغل، ثم أدخل الوزن والأسعار. يمكنك تسجيل أكثر من نقلة بأسعار مختلفة في اليوم نفسه.</p>
       <form onSubmit={createTrip}>
-        <label htmlFor="real-trip-vehicle">العربية</label>
-        <select id="real-trip-vehicle" style={field} required value={tripVehicle}
-          onChange={e => setTripVehicle(e.target.value)} disabled={busy}>
-          <option value="">اختر العربية</option>
-          {vehicles.filter(v => !v.is_archived).map(v =>
-            <option key={v.id} value={v.id}>{v.plate_number}</option>)}
-        </select>
-        <label htmlFor="real-trip-counterparty">المقاول الطرف</label>
-        <select id="real-trip-counterparty" style={field} required value={tripCounterparty}
-          onChange={e => setTripCounterparty(e.target.value)} disabled={busy}>
-          <option value="">اختر المقاول</option>
-          {contractors.filter(c => !c.is_archived && !c.is_primary).map(c =>
-            <option key={c.id} value={c.id}>{c.name}</option>)}
-        </select>
+        <details open><summary>العربية والمقاول والتاريخ</summary>
+        <SearchableChoice id="real-trip-vehicle" label="العربية" value={tripVehicle} onChange={setTripVehicle} disabled={busy}
+          choices={vehicles.filter(v=>!v.is_archived).map(v=>({id:v.id,label:v.plate_number}))}/>
+        <SearchableChoice id="real-trip-counterparty" label="المقاول الطرف" value={tripCounterparty} onChange={setTripCounterparty} disabled={busy}
+          choices={contractors.filter(c=>!c.is_archived&&!c.is_primary).map(c=>({id:c.id,label:c.name}))}/>
         <label htmlFor="real-trip-direction">اتجاه النقلة</label>
         <select id="real-trip-direction" style={field} value={direction}
           onChange={e => setDirection(e.target.value as typeof direction)} disabled={busy}>
@@ -120,7 +127,9 @@ export function TransactionEntry({ contractors, vehicles, accounts, busy, write 
         </select>
         <label htmlFor="real-trip-date">تاريخ النقلة (يسمح بالتاريخ القديم)</label>
         <input id="real-trip-date" style={field} type="date" required value={tripDate}
-          onChange={e => setTripDate(e.target.value)} disabled={busy} />
+          onChange={e => {setTripDate(e.target.value);setContractorRate("");setVehicleRate("");setExpense("0");setTripOrigin("");setTripDestination("");}} disabled={busy} />
+        </details>
+        <details open><summary>الوزن والأسعار والمصاريف</summary>
         <label htmlFor="real-trip-weight">الوزن بالطن (3 خانات عشرية)</label>
         <input id="real-trip-weight" style={field} required inputMode="decimal" placeholder="12.500"
           value={weight} onChange={e => setWeight(e.target.value)} disabled={busy} />
@@ -139,6 +148,8 @@ export function TransactionEntry({ contractors, vehicles, accounts, busy, write 
         <label htmlFor="real-trip-expense">مصاريف النقلة بالجنيه</label>
         <input id="real-trip-expense" style={field} required inputMode="decimal"
           value={expense} onChange={e => setExpense(e.target.value)} disabled={busy} />
+        </details>
+        <details><summary>خط السير والملاحظات</summary>
         <label htmlFor="real-trip-origin">من</label>
         <input id="real-trip-origin" style={field} maxLength={200} value={tripOrigin}
           onChange={e => setTripOrigin(e.target.value)} disabled={busy} />
@@ -148,11 +159,18 @@ export function TransactionEntry({ contractors, vehicles, accounts, busy, write 
         <label htmlFor="real-trip-notes">ملاحظات</label>
         <input id="real-trip-notes" style={field} maxLength={400} value={tripNotes}
           onChange={e => setTripNotes(e.target.value)} disabled={busy} />
-        <button type="submit" disabled={busy}>حفظ النقلة</button>
+        </details>
+        <label><input type="checkbox" checked={reuseDay} disabled={busy} onChange={e=>setReuseDay(e.target.checked)}/> استخدام نفس بيانات اليوم للنقلة التالية (اختياري)</label>
+        <TripPreviewCard weightTonnes={normalizeDecimalInput(weight)} contractorRateEgp={normalizeDecimalInput(contractorRate)}
+          vehicleRateEgp={normalizeDecimalInput(sameRate?contractorRate:vehicleRate)} expenseEgp={normalizeDecimalInput(expense)} direction={direction}
+          counterpartyName={contractors.find(c=>c.id===tripCounterparty)?.name}
+          vehiclePlate={vehicles.find(v=>v.id===tripVehicle)?.plate_number}/>
+        <button type="submit" value="new" disabled={busy}>حفظ وإضافة نقلة جديدة</button>{" "}
+        <button type="submit" value="exit" disabled={busy}>حفظ وخروج</button>
       </form>
     </section>
     <section style={section}>
-      <h2>تسجيل دفعة نقدية حقيقية</h2>
+      <h2>تسجيل دفعة نقدية</h2>
       <p>لا يُسمح بصرف أكثر من الرصيد المتاح في أي تاريخ لاحق؛ الخادم يرفض أي عجز.</p>
       <form onSubmit={createPayment}>
         <label htmlFor="real-payment-account">حساب العربية والمقاول المسؤول</label>
@@ -174,6 +192,7 @@ export function TransactionEntry({ contractors, vehicles, accounts, busy, write 
         <label htmlFor="real-payment-notes">ملاحظات</label>
         <input id="real-payment-notes" style={field} maxLength={400} value={paymentNotes}
           onChange={e => setPaymentNotes(e.target.value)} disabled={busy} />
+        <PaymentPreview account={paymentAccount} amount={paymentAmount} revision={revision}/>
         <button type="submit" disabled={busy}>حفظ الدفعة</button>
       </form>
     </section>
