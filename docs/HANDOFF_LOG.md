@@ -1185,3 +1185,10 @@ Synced main 7d4d306, branched `fix/pre-supabase-workspace-closeout-20261113`. Cu
 Separate second-pass review by the same assistant (not an independent person): checked responsible-contractor direction against SQL (AHMED_SUPPLIES assigns K_AHMED), D15 order and FIN-05 opening reuse; rejected partial/duplicate pages and audit changes including metadata-only edits; preserved source receipt fields but did not show receipt UI; full debt remains independent of client detail filters. Browser fixture is kept outside Next routes; owner checks remain in API and SQL. Root test:web now includes previously unwired real ledger tests.
 
 Actual local results: build/typecheck PASS; package baseline 205 tests PASS; updated web 91 tests PASS; complete isolated PostgreSQL migration suites PASS. Local Chromium blocked by executor socket permissions, not counted as a passing test. Full GitHub CI/browser results must be recorded before merge. Remaining connection acceptance: real owner email/Auth/SMTP, RLS/HTTP, cross-device persistence and concurrency, configured encrypted backup/actual isolated restore, physical-device smoke.
+
+
+## Verified pre-Supabase checkpoint — 13 November 2026
+- PR #71 merged: `27ee8ff6b2e58811393551856d8c12c5c5e74ad9`. Exact reviewed head `f511d535b5b545ead047463cf9d245c1a78e9c91`; CI https://github.com/body199-cmyk/1-mohamed/actions/runs/43371111024 SUCCESS.
+- 85 browser tests, 91 web tests, 205 package tests, isolated SQL/negative controls, backup/preflight, types/build and HTTP auth gates passed. Second critical review was by the same assistant; not an independent person.
+- Vercel deployment `dpl_8oDnXfwBtDqMEge7TGyaGmrckACU` READY for the merge commit. Live login HTTP 200 confirms disabled credentials and pre-connection notice. Mobile fixture screenshot reviewed.
+- Preparation complete within this scope. STOP before owner registration and Supabase connection. Final activation must verify real Auth/email/RLS, persistence across devices, concurrency, encrypted offsite backup/restore and physical-device acceptance. No cloud database or customer data touched; fixtures do not prove live operation.
