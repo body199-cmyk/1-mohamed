@@ -71,6 +71,12 @@ jobs:
           server_pid=$!
           trap 'kill "$server_pid" 2>/dev/null || true' EXIT
           node tools/auth-boundary-smoke.mjs http://127.0.0.1:39123
+      - name: Prove real-data switch alone cannot expose financial data
+        run: |
+          APP_ENABLE_REAL_DATA=true npm run start --workspace=web -- --port 39124 > /tmp/next-cutover-negative.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          node tools/auth-cutover-smoke.mjs http://127.0.0.1:39124
       - name: Install isolated Chromium browser for UI regression
         run: npx playwright install chromium
       - name: Test approved mobile trip entry and FIN-03 opening rejection

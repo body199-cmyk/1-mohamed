@@ -21,7 +21,11 @@ for (const [name, expected] of Object.entries({
 
 const proxy = read("apps/web/src/proxy.ts");
 assert.match(proxy, /matcher:\s*\[["']\/:path\*["']\]/);
-assert.doesNotMatch(proxy, /@supabase|refreshSupabaseSession|verifyOwnerForRoute/);
+assert.match(proxy, /APP_ENABLE_REAL_DATA/);
+assert.match(proxy, /refreshSupabaseSession/);
+assert.match(proxy, /session\.ownerAuthorized/);
+assert.match(proxy, /pathname\.startsWith/);
+assert.match(proxy, /jsonDenied\(404\)/);
 assert.match(proxy, /NextResponse\.json/);
 assert.match(proxy, /status:\s*503/);
 assert.match(proxy, /NextResponse\.redirect/);
@@ -84,4 +88,4 @@ assert.match(session, /cache-control/);
 for (const source of [browser, server, owner, session, loginForm]) {
   assert.doesNotMatch(source, /SUPABASE_SERVICE_ROLE_KEY|sb_secret_/);
 }
-console.log("AUTH-01/H041 PASS: pinned SDK, prepared owner-only routes, default-deny Proxy and isolated demo.");
+console.log("AUTH-01/PRE-LIVE PASS: pinned SDK, explicit disabled-by-default real-data flag and owner-gated Proxy.");
