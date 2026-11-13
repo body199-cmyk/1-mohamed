@@ -23,6 +23,7 @@ export const WRITE_OPERATIONS = {
 export const READ_OPERATIONS = {
   "trips.list": "app_op_trips_read",
   "payments.list": "app_op_payments_read",
+  "contractor.statement": "app_op_contractor_statement_read",
 } as const;
 
 export type WriteOperation = keyof typeof WRITE_OPERATIONS;
