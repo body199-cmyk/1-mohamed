@@ -33,6 +33,8 @@ describe("real operational five-format document", () => {
     const doc = buildRealOperationalDocument("trips.list", report, lookups,
       "2026-01-01", "2026-01-31", "2026-02-01");
     expect(doc.businessName).not.toContain("تجريبية");
+    expect(doc.metadata).toContainEqual({ label: "العربية المحددة", value: "عربية ١" });
+    expect(doc.metadata).toContainEqual({ label: "المقاول المحدد", value: "المقاول الأول" });
     expect(doc.columns.length).toBe(15);
     expect(doc.rows[0]).toContain("عربية ١");
     expect(doc.rows[0]).toContain("المقاول الأول");
