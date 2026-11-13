@@ -6,7 +6,7 @@ import { assertDecimal, piastresToPounds, scaledIntegerToDecimal } from "../../l
 
 type Choice = { id: string; name: string; is_archived: boolean };
 type Vehicle = { id: string; plate_number: string; is_archived: boolean };
-type TripRow = {
+type TripRow = Record<string, unknown> & {
   id: string; version: number; is_cancelled: boolean;
   vehicle_id: string; counterparty_contractor_id: string;
   direction: "AHMED_SUPPLIES" | "OTHER_SUPPLIES";
