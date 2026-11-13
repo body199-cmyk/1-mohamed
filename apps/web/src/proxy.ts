@@ -32,7 +32,7 @@ function jsonDenied(status: number) {
     { status, headers: { "cache-control": "no-store" } });
 }
 function noCache(response: NextResponse) {
-  response.headers.set("cache-control", "private, no-store, max-age=0");
+  response.headers.set("cache-control", "no-store");
   return response;
 }
 
