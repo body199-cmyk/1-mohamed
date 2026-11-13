@@ -60,6 +60,8 @@ export function RealWorkspace() {
   const [reportFrom, setReportFrom] = useState("");
   const [reportTo, setReportTo] = useState("");
   const [reportAccount, setReportAccount] = useState("");
+  const [reportVehicle, setReportVehicle] = useState("");
+  const [reportCounterparty, setReportCounterparty] = useState("");
   const [includeCancelled, setIncludeCancelled] = useState(false);
   const [report, setReport] = useState<Report | null>(null);
   const pending = useRef(new Map<string, string>());
@@ -192,6 +194,10 @@ export function RealWorkspace() {
     try {
       let payload: Record<string, unknown> = { date_from: reportFrom, date_to: reportTo,
         include_cancelled: includeCancelled, limit: 200 };
+      if (reportType === "trips.list") {
+        if (reportVehicle) payload.vehicle_id = reportVehicle;
+        if (reportCounterparty) payload.counterparty_contractor_id = reportCounterparty;
+      }
       if (reportType === "payments.list") {
         const [vehicle_id, responsible_contractor_id] = reportAccount.split("|");
         if (!vehicle_id || !responsible_contractor_id) {
@@ -263,7 +269,12 @@ export function RealWorkspace() {
         contractors: new Map(contractors.map(c => [c.id, c.name]))
       }, reportFrom, reportTo, new Intl.DateTimeFormat("ar-EG", {
         timeZone: "Africa/Cairo", dateStyle: "medium", timeStyle: "short"
-      }).format(new Date()));
+      }).format(new Date()), {
+        vehicle: reportType === "trips.list" && reportVehicle ?
+          vehicles.find(v => v.id === reportVehicle)?.plate_number ?? reportVehicle : undefined,
+        contractor: reportType === "trips.list" && reportCounterparty ?
+          contractors.find(c => c.id === reportCounterparty)?.name ?? reportCounterparty : undefined
+      });
     } catch { return null; }
   })();
 
@@ -382,6 +393,21 @@ export function RealWorkspace() {
           <option value="trips.list">النقلات</option>
           <option value="payments.list">مدفوعات وحساب نقدية عربية</option>
         </select>
+        {reportType === "trips.list" && <>
+          <label htmlFor="report-trip-vehicle">العربية (اختياري)</label>
+          <select id="report-trip-vehicle" style={field} value={reportVehicle}
+            onChange={e => { setReportVehicle(e.target.value); setReport(null); }} disabled={busy}>
+            <option value="">كل العربيات</option>
+            {vehicles.map(v => <option key={v.id} value={v.id}>{v.plate_number}</option>)}
+          </select>
+          <label htmlFor="report-trip-contractor">المقاول الطرف (اختياري)</label>
+          <select id="report-trip-contractor" style={field} value={reportCounterparty}
+            onChange={e => { setReportCounterparty(e.target.value); setReport(null); }} disabled={busy}>
+            <option value="">كل المقاولين</option>
+            {contractors.filter(c => !c.is_primary).map(c =>
+              <option key={c.id} value={c.id}>{c.name}</option>)}
+          </select>
+        </>}
         {reportType === "payments.list" && <>
           <label htmlFor="report-account">حساب العربية والمقاول</label>
           <select id="report-account" style={field} required value={reportAccount}
