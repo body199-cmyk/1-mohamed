@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { poundsToPiastres, piastresToPounds, assertDecimal } from "../src/lib/ledger/amounts";
+import { poundsToPiastres, piastresToPounds, assertDecimal, milliTonnesToTonnes } from "../src/lib/ledger/amounts";
 
 describe("real-data exact money entry", () => {
   it("converts pounds without floating point", () => {
@@ -28,5 +28,18 @@ describe("trip and payment SQL decimal inputs", () => {
     }
     expect(() => assertDecimal("1.234", 2, true)).toThrow();
     expect(() => assertDecimal("92233720368547758.08", 2, true)).toThrow();
+  });
+});
+
+describe("historical trip edit weight formatting", () => {
+  it("preserves all three milli-tonne decimal places exactly", () => {
+    expect(milliTonnesToTonnes("12500")).toBe("12.5");
+    expect(milliTonnesToTonnes("1")).toBe("0.001");
+    expect(milliTonnesToTonnes("1000")).toBe("1");
+    expect(milliTonnesToTonnes("9007199254740993")).toBe("9007199254740.993");
+  });
+  it("rejects malformed SQL weights", () => {
+    expect(() => milliTonnesToTonnes("1.5")).toThrow();
+    expect(() => milliTonnesToTonnes("-1")).toThrow();
   });
 });
