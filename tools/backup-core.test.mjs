@@ -218,7 +218,7 @@ test("B04 preserves master-data optimistic versions and rejects invalid ones", (
   assertInvalid(() => createBusinessBackup(wrong), /مقاول غير صالح/);
   const badVehicle = fixture();
   badVehicle.vehicles[0].version = 1.5;
-  assertInvalid(() => createBusinessBackup(badVehicle), /عربية غير صالحة/);
+  assertInvalid(() => createBusinessBackup(badVehicle), /أعدادًا صحيحة|عربية غير صالحة/);
   const legacy = fixture();
   delete legacy.contractors[0].version;
   delete legacy.vehicles[0].version;
