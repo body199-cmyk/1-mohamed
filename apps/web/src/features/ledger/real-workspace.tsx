@@ -9,6 +9,7 @@ import { LogoutButton } from "../auth/logout-button";
 import { TransactionEntry } from "./transaction-entry";
 import { RecordActions } from "./record-actions";
 import { projectLedgerReport } from "./report-presentation";
+import { RealContractorStatement } from "./real-contractor-statement";
 
 type Contractor = { id: string; name: string; is_primary: boolean; is_archived: boolean; version: number };
 type Vehicle = { id: string; plate_number: string; driver_name: string | null; notes: string | null; is_archived: boolean; version: number };
@@ -40,6 +41,7 @@ export function RealWorkspace() {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [loading, setLoading] = useState(false);
   const [notice, setNotice] = useState("");
+  const [ledgerRevision, setLedgerRevision] = useState(0);
   const [busy, setBusy] = useState(false);
   const [contractorName, setContractorName] = useState("");
   const [plate, setPlate] = useState("");
@@ -111,6 +113,7 @@ export function RealWorkspace() {
       setNotice("تم الحفظ في الخادم. يُرجى التحقق من السجل بعد إعادة التحميل.");
       setReport(null); // An edit/cancellation invalidates every displayed financial total.
       reportQuery.current = null;
+      setLedgerRevision(current => current + 1);
       await loadMasters();
       return true;
     } catch {
@@ -355,6 +358,8 @@ export function RealWorkspace() {
       busy={busy} write={write} />
     <RecordActions contractors={contractors} vehicles={vehicles}
       reportType={reportType} reportRows={report?.rows ?? EMPTY_ROWS} busy={busy} write={write} />
+    <RealContractorStatement contractors={contractors} vehicles={vehicles}
+      revision={ledgerRevision} disabled={busy || loading} />
     <section style={section}>
       <h2>تقارير من قاعدة البيانات</h2>
       <form onSubmit={readReport}>
