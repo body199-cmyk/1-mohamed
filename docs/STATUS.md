@@ -5,11 +5,11 @@ Baseline: `main@7d4d306` (PR #70); PR #65 is already merged. User explicitly req
 1. [x] Sync latest main and reconcile prior reports with approved scope.
 2. [x] Prepare private workspace navigation/forms, exact payment preview, grouped contractor details and filters, SQL daily totals, full vehicle cash movements and complete exports.
 3. [x] Add consistent report snapshot gate and isolated regression tests; no cloud project or customer data touched.
-4. [ ] Complete exact-head CI, browser fixture tests and separate critical review; fix failures before merge.
-5. [ ] Verify reviewed merge and Vercel deployment, record final evidence here.
+4. [x] Exact-head CI and all 85 browser tests PASS; second critical review completed by the same assistant (not an independent reviewer).
+5. [x] PR #71 merged at `27ee8ff6b2e58811393551856d8c12c5c5e74ad9`; Vercel production deployment READY on that commit.
 6. [ ] STOP: Supabase project/owner email/Auth/SMTP/RLS live acceptance, concurrency, backup/restore and physical-device handoff.
 
-Local evidence so far: full build and web TypeScript PASS, 91 web tests PASS, full isolated PostgreSQL suites PASS. Browser launch in this executor failed with `socket() ... Operation not permitted`; GitHub CI must run the committed fixture suite. A fixture is not live Auth or persistence evidence.
+Verified evidence: [CI 43371111024](https://github.com/body199-cmyk/1-mohamed/actions/runs/43371111024) passed on `f511d535b5b545ead047463cf9d245c1a78e9c91`: 85 browser tests, 91 web unit tests, 205 package tests, isolated PostgreSQL suites/negative controls, backup/preflight tests, types/build and HTTP auth gates. [PR #71](https://github.com/body199-cmyk/1-mohamed/pull/71) is merged. Deployment `dpl_8oDnXfwBtDqMEge7TGyaGmrckACU` is READY; https://1-mohamed.vercel.app/login returned HTTP 200 with login disabled and the pre-connection notice. Mobile fixture screenshot reviewed. A fixture is not live Auth or persistence evidence.
 
 Scope correction: PROJECT_REQUIREMENTS §§5/6 and DECISIONS A02 exclude flat daily pricing and cash settlements between contractors. The earlier integrated audit incorrectly listed those as missing requirements. Daily *reporting* and reciprocal-work statements remain required and are implemented/tested separately. Older status text below is historical and does not override this checkpoint.
 
