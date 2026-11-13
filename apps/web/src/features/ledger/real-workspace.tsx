@@ -8,6 +8,7 @@ import type { WriteOperation } from "../../lib/ledger/operation-contract";
 import { LogoutButton } from "../auth/logout-button";
 import { TransactionEntry } from "./transaction-entry";
 import { RecordActions } from "./record-actions";
+import { projectLedgerReport } from "./report-presentation";
 
 type Contractor = { id: string; name: string; is_primary: boolean; is_archived: boolean; version: number };
 type Vehicle = { id: string; plate_number: string; driver_name: string | null; notes: string | null; is_archived: boolean; version: number };
@@ -231,9 +232,12 @@ export function RealWorkspace() {
 
   function exportReport() {
     if (!report || !Array.isArray(report.rows) || report.rows.length === 0) return;
-    const columns = [...new Set(report.rows.flatMap(row => Object.keys(row)))];
-    const csv = "\uFEFF" + [columns.map(csvCell).join(","),
-      ...report.rows.map(row => columns.map(column => csvCell(row[column])).join(","))].join("\r\n");
+    const projected = projectLedgerReport(reportType, report.rows, {
+      vehicles: new Map(vehicles.map(v => [v.id, v.plate_number])),
+      contractors: new Map(contractors.map(c => [c.id, c.name]))
+    });
+    const csv = "\uFEFF" + [projected.headers.map(csvCell).join(","),
+      ...projected.rows.map(row => row.map(csvCell).join(","))].join("\r\n");
     const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
     const anchor = document.createElement("a");
     anchor.href = url;
@@ -241,6 +245,11 @@ export function RealWorkspace() {
     anchor.click();
     URL.revokeObjectURL(url);
   }
+
+  const projected = report ? projectLedgerReport(reportType, report.rows, {
+    vehicles: new Map(vehicles.map(v => [v.id, v.plate_number])),
+    contractors: new Map(contractors.map(c => [c.id, c.name]))
+  }) : null;
 
   if (!configured) return <section style={section}>
     <h1>مساحة العمل الحقيقية</h1>
@@ -399,12 +408,12 @@ export function RealWorkspace() {
         <button type="button" disabled={!report.rows?.length || busy} onClick={exportReport}>تصدير السجلات المحمّلة CSV</button>
         <div style={{ overflowX: "auto", marginTop: 12 }}>
           <table style={{ borderCollapse: "collapse", minWidth: 600 }}>
-            <thead><tr>{Object.keys(report.rows?.[0] ?? {}).map(k =>
-              <th key={k} style={{ padding: 8, borderBottom: "1px solid #ccc" }}>{k}</th>)}</tr></thead>
-            <tbody>{report.rows?.map((row, index) => <tr key={asText(row.id) || index}>
-              {Object.keys(report.rows?.[0] ?? {}).map(k =>
-                <td key={k} style={{ padding: 8, borderBottom: "1px solid #ddd" }}>
-                  {short(asText(row[k]))}</td>)}
+            <thead><tr>{projected?.headers.map((header, index) =>
+              <th key={index} scope="col" style={{ padding: 8, borderBottom: "1px solid #ccc" }}>{header}</th>)}</tr></thead>
+            <tbody>{projected?.rows.map((row, index) => <tr key={asText(report.rows[index]?.id) || index}>
+              {row.map((value, column) =>
+                <td key={column} style={{ padding: 8, borderBottom: "1px solid #ddd" }}>
+                  {value}</td>)}
             </tr>)}</tbody>
           </table>
         </div>
