@@ -33,6 +33,8 @@ export function TransactionEntry({ contractors, vehicles, accounts, busy, write 
   const [vehicleRate, setVehicleRate] = useState("");
   const [expense, setExpense] = useState("0");
   const [tripNotes, setTripNotes] = useState("");
+  const [tripOrigin, setTripOrigin] = useState("");
+  const [tripDestination, setTripDestination] = useState("");
   const [paymentAccount, setPaymentAccount] = useState("");
   const [paymentDate, setPaymentDate] = useState("");
   const [paymentAmount, setPaymentAmount] = useState("");
@@ -54,13 +56,15 @@ export function TransactionEntry({ contractors, vehicles, accounts, busy, write 
       const exp = assertDecimal(expense, 2, false);
       const source = { vehicle_id: tripVehicle, counterparty_contractor_id: tripCounterparty,
         direction, trip_date: tripDate, weight_tonnes: w, contractor_rate_egp: cr,
-        vehicle_rate_egp: vr, same_rate: sameRate, expense_egp: exp, notes: tripNotes.trim() };
+        vehicle_rate_egp: vr, same_rate: sameRate, expense_egp: exp, notes: tripNotes.trim(),
+        origin: tripOrigin.trim() || null, destination: tripDestination.trim() || null };
       const signature = "trip:" + JSON.stringify(source);
       const payload = drafts.current.get(signature) ?? { id: "TR-" + crypto.randomUUID(), ...source };
       drafts.current.set(signature, payload);
       if (await write("trip.create", payload)) {
         drafts.current.delete(signature);
-        setWeight(""); setTripNotes(""); setMessage("تم إرسال النقلة للحفظ في الخادم.");
+        setWeight(""); setTripNotes(""); setTripOrigin(""); setTripDestination("");
+        setMessage("تم إرسال النقلة للحفظ في الخادم.");
       }
     } catch (error) { setMessage(error instanceof Error ? error.message : "بيانات النقلة غير صالحة."); }
   }
@@ -135,6 +139,12 @@ export function TransactionEntry({ contractors, vehicles, accounts, busy, write 
         <label htmlFor="real-trip-expense">مصاريف النقلة بالجنيه</label>
         <input id="real-trip-expense" style={field} required inputMode="decimal"
           value={expense} onChange={e => setExpense(e.target.value)} disabled={busy} />
+        <label htmlFor="real-trip-origin">من</label>
+        <input id="real-trip-origin" style={field} maxLength={200} value={tripOrigin}
+          onChange={e => setTripOrigin(e.target.value)} disabled={busy} />
+        <label htmlFor="real-trip-destination">إلى</label>
+        <input id="real-trip-destination" style={field} maxLength={200} value={tripDestination}
+          onChange={e => setTripDestination(e.target.value)} disabled={busy} />
         <label htmlFor="real-trip-notes">ملاحظات</label>
         <input id="real-trip-notes" style={field} maxLength={400} value={tripNotes}
           onChange={e => setTripNotes(e.target.value)} disabled={busy} />
