@@ -81,6 +81,8 @@ const steps = [
   ['tests fin04', 'supabase/tests/09_fin04_cash_opening_timeline_verification.sql', 'FIN-04: SQL reject earlier trip or payment atomically'],
   ['migration fin05', 'supabase/migrations/20261109210010_fin05_payment_period_opening.sql', 'FIN-05: period opening and closing semantics'],
   ['tests fin05', 'supabase/tests/10_fin05_payment_period_opening_verification.sql', 'FIN-05: opening day, historical cutoff and independent current balance'],
+  ['migration fin06', 'supabase/migrations/20261113210000_fin06_payment_keyset_pagination.sql', 'FIN-06: deterministic payment keyset pages'],
+  ['tests fin06', 'supabase/tests/11_fin06_payment_pagination_verification.sql', 'FIN-06: complete history and FIN-05 balance compatibility'],
 ];
 
 function describe(error) {
