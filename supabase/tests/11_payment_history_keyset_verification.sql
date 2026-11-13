@@ -18,7 +18,6 @@ declare
   v_first jsonb;
   v_second jsonb;
   v_third jsonb;
-  v_fourth jsonb;
   v_ids text[];
   v_opening text;
   v_closing text;
@@ -32,8 +31,6 @@ begin
     jsonb_build_object('cursor',v_first->'next_cursor'));
   v_third := public.app_op_payments_read(v_base ||
     jsonb_build_object('cursor',v_second->'next_cursor'));
-  v_fourth := public.app_op_payments_read(v_base ||
-    jsonb_build_object('cursor',v_third->'next_cursor'));
   v_ids := array[v_first->'rows'->0->>'id',v_second->'rows'->0->>'id',
     v_third->'rows'->0->>'id'];
   perform public.app_test_assert(
