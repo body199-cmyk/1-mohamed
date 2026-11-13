@@ -31,7 +31,8 @@ describe("real operational five-format document", () => {
       notes: "تسوية", cancel_reason: null
     }], total_count: "1", next_cursor: null };
     const doc = buildRealOperationalDocument("trips.list", report, lookups,
-      "2026-01-01", "2026-01-31", "2026-02-01");
+      "2026-01-01", "2026-01-31", "2026-02-01",
+      { vehicle: "عربية ١", contractor: "المقاول الأول" });
     expect(doc.businessName).not.toContain("تجريبية");
     expect(doc.metadata).toContainEqual({ label: "العربية المحددة", value: "عربية ١" });
     expect(doc.metadata).toContainEqual({ label: "المقاول المحدد", value: "المقاول الأول" });
