@@ -357,7 +357,7 @@ export function RealWorkspace() {
         {reportType === "payments.list" && <>
           <label htmlFor="report-account">حساب العربية والمقاول</label>
           <select id="report-account" style={field} required value={reportAccount}
-            onChange={e => setReportAccount(e.target.value)} disabled={busy}>
+            onChange={e => { setReportAccount(e.target.value); setReport(null); }} disabled={busy}>
             <option value="">اختر الحساب</option>
             {accounts.map(a => <option key={a.vehicle_id + "|" + a.contractor_id}
               value={a.vehicle_id + "|" + a.contractor_id}>
@@ -368,12 +368,12 @@ export function RealWorkspace() {
         </>}
         <label htmlFor="report-from">من تاريخ</label>
         <input id="report-from" style={field} type="date" required value={reportFrom}
-          onChange={e => setReportFrom(e.target.value)} disabled={busy} />
+          onChange={e => { setReportFrom(e.target.value); setReport(null); }} disabled={busy} />
         <label htmlFor="report-to">إلى تاريخ</label>
         <input id="report-to" style={field} type="date" required value={reportTo}
-          onChange={e => setReportTo(e.target.value)} disabled={busy} />
+          onChange={e => { setReportTo(e.target.value); setReport(null); }} disabled={busy} />
         <label style={{ display: "block", marginBottom: 12 }}>
-          <input type="checkbox" checked={includeCancelled} onChange={e => setIncludeCancelled(e.target.checked)} disabled={busy} />
+          <input type="checkbox" checked={includeCancelled} onChange={e => { setIncludeCancelled(e.target.checked); setReport(null); }} disabled={busy} />
           {" "}عرض القيود الملغاة أيضًا
         </label>
         <button disabled={busy} type="submit">تحميل التقرير</button>
