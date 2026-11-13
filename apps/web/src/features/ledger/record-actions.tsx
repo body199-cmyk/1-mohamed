@@ -3,6 +3,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import type { WriteOperation } from "../../lib/ledger/operation-contract";
 import { piastresToPounds, poundsToPiastres } from "../../lib/ledger/amounts";
+import { TripEditor } from "./trip-editor";
 
 type Contractor = { id: string; name: string; is_primary: boolean; is_archived: boolean; version: number };
 type Vehicle = { id: string; plate_number: string; driver_name: string | null; notes: string | null; is_archived: boolean; version: number };
@@ -205,6 +206,9 @@ export function RecordActions({ contractors, vehicles, reportType, reportRows, b
           إلغاء القيد وتسجيل السبب
         </button>
       </form>
+      {reportType === "trips.list" && financial && !financial.is_cancelled &&
+        <TripEditor row={financial} contractors={contractors} vehicles={vehicles}
+          busy={busy} write={write} />}
       {reportType === "payments.list" && financial && !financial.is_cancelled && <form onSubmit={updatePayment}>
         <h3>تعديل الدفعة المختارة</h3>
         <p>يتم الاحتفاظ برقم القيد والحساب المرتبط به. أي تغيير يُراجع الرصيد في قاعدة البيانات.</p>
