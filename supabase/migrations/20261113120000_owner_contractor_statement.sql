@@ -2,6 +2,7 @@
 -- Positive signed balance = Ahmed is owed; negative = counterparty is owed.
 -- Contractor WORK opening is independent of VEHICLE_CASH and payment entries.
 -- Supports keyset history without truncating totals; no browser recomputation.
+reset role;
 create or replace function public.app_op_contractor_statement_read(p_payload jsonb)
 returns jsonb
 language plpgsql stable security definer
