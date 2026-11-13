@@ -14,7 +14,7 @@ type Vehicle = { id: string; plate_number: string; driver_name: string | null; n
 type Account = { vehicle_id: string; contractor_id: string };
 type Page<T> = { ok: boolean; data?: T[]; hasMore?: boolean; error?: string };
 type Report = { status: string; rows: Record<string, unknown>[]; total_count?: string | number;
-  next_cursor?: { date: string; id: string } | null;
+  next_cursor?: { date: string; id: string; created_at?: string } | null;
   period_opening_piastres?: string; period_closing_piastres?: string;
   current_cash_balance_piastres?: string; cash_balance_piastres?: string };
 type ReportType = "trips.list" | "payments.list";
@@ -202,12 +202,12 @@ export function RealWorkspace() {
     finally { setBusy(false); }
   }
 
-  async function loadMoreTrips() {
+  async function loadMoreReport() {
     const query = reportQuery.current;
-    if (busy || !report || !report.next_cursor || !query || query.type !== "trips.list") return;
+    if (busy || !report || !report.next_cursor || !query || query.type !== reportType) return;
     setBusy(true); setNotice("");
     try {
-      const response = await postLedgerRead<Report>("trips.list", {
+      const response = await postLedgerRead<Report>(query.type, {
         ...query.payload, cursor: report.next_cursor
       });
       if (!response.ok) { setNotice(response.error); return; }
@@ -219,7 +219,8 @@ export function RealWorkspace() {
       const newRows = response.data.rows.filter(row => !existingIds.has(row.id));
       if (response.data.next_cursor &&
           response.data.next_cursor.date === report.next_cursor.date &&
-          response.data.next_cursor.id === report.next_cursor.id) {
+          response.data.next_cursor.id === report.next_cursor.id &&
+          response.data.next_cursor.created_at === report.next_cursor.created_at) {
         setNotice("مؤشر الصفحة لم يتغير. أوقفنا القراءة لمنع تكرار السجلات."); return;
       }
       setReport({ ...report, rows: [...report.rows, ...newRows],
@@ -391,12 +392,12 @@ export function RealWorkspace() {
         </p>}
         <p>تم تحميل {report.rows?.length ?? 0} سجل من أصل {report.total_count ?? "غير معروف"}.
           التصدير يشمل السجلات المحمّلة فقط.</p>
-        {reportType === "trips.list" && report.next_cursor && <button type="button"
-          disabled={busy} onClick={() => void loadMoreTrips()}>
-          {busy ? "جارٍ تحميل المزيد..." : "تحميل 200 نقلة إضافية"}
+        {report.next_cursor && <button type="button"
+          disabled={busy} onClick={() => void loadMoreReport()}>
+          {busy ? "جارٍ تحميل المزيد..." : "تحميل 200 سجل إضافي"}
         </button>}
-        {reportType === "payments.list" && Number(report.total_count ?? 0) > (report.rows?.length ?? 0) &&
-          <p>تقرير المدفوعات يعرض أول 200 سجل فقط؛ قلّص الفترة لاستعراض باقي السجلات.</p>}
+        {!report.next_cursor && Number(report.total_count ?? 0) > (report.rows?.length ?? 0) &&
+          <p>قد تكون البيانات تغيّرت أثناء القراءة؛ أعد تحميل التقرير للتأكد من اكتمال التاريخ.</p>}
         <button type="button" disabled={!report.rows?.length || busy} onClick={exportReport}>تصدير السجلات المحمّلة CSV</button>
         <div style={{ overflowX: "auto", marginTop: 12 }}>
           <table style={{ borderCollapse: "collapse", minWidth: 600 }}>
