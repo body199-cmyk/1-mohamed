@@ -5,11 +5,15 @@
  * miss a new page. We therefore deny unknown application paths by default.
  * Only documented demo pages and their static assets are public.
  *
- * Replace this deny-all guard only together with real Supabase getClaims(),
- * owner authorization, and production-equivalent integration tests.
+ * A separately gated owner-only cutover path is prepared below. It is OFF
+ * until REAL_DATA_CUTOVER=enabled AND Supabase configuration is complete.
+ * Never enable without live Auth/RLS/backup/restore acceptance.
  * Proxy is not an authorization substitute for Server Actions, APIs or RPCs.
  */
 import { NextResponse, type NextRequest } from "next/server";
+import { getSupabaseSetupStatus } from "./lib/supabase/config";
+import { classifyCutoverRoute } from "./lib/supabase/cutover-policy";
+import { carrySessionHeaders, refreshSupabaseSession } from "./lib/supabase/proxy-session";
 
 function isPublicAsset(pathname: string): boolean {
   return (
@@ -28,8 +32,45 @@ function isPublicPage(pathname: string): boolean {
   );
 }
 
-export function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
+
+  if (process.env.REAL_DATA_CUTOVER === "enabled") {
+    const route = classifyCutoverRoute(pathname, request.method);
+    if (route === "asset" || route === "public") return NextResponse.next();
+    if (route === "root" || route === "demo") {
+      const redirect = NextResponse.redirect(new URL("/login", request.url), { status: 307 });
+      redirect.headers.set("cache-control", "no-store");
+      return redirect;
+    }
+    if (route === "deny") {
+      return NextResponse.json({ error: "المسار غير متاح." },
+        { status: 404, headers: { "cache-control": "no-store" } });
+    }
+    if (!getSupabaseSetupStatus().ready) {
+      return NextResponse.json({ error: "إعداد المصادقة غير مكتمل." },
+        { status: 503, headers: { "cache-control": "no-store" } });
+    }
+    try {
+      const session = await refreshSupabaseSession(request);
+      if (session.authorized) return session.response;
+      if (pathname.startsWith("/api/")) {
+        const denied = NextResponse.json({ error: "غير مصرح بالدخول." },
+          { status: 401, headers: { "cache-control": "no-store" } });
+        return carrySessionHeaders(denied, session.response);
+      }
+      const login = new URL("/login", request.url);
+      login.searchParams.set("next", request.nextUrl.pathname + request.nextUrl.search);
+      const denied = NextResponse.redirect(login, { status: 307 });
+      denied.headers.set("cache-control", "no-store");
+      return carrySessionHeaders(denied, session.response);
+    } catch {
+      return NextResponse.json({ error: "تعذر التحقق من الجلسة بأمان." },
+        { status: 503, headers: { "cache-control": "no-store" } });
+    }
+  }
+
+  // Legacy public preview only: all private reads/writes remain fail-closed.
 
   // Next.js code chunks/fonts/icons are public assets. They carry no business
   // data and must keep working on the independent in-memory demo.
