@@ -2,12 +2,13 @@
 
 ## Exact integration baseline
 
-- Main baseline: `2417d1d0d78a481db356a95efacddf8f7b87a34d` after merging #62, #65, #66 and #67.
+- Main baseline after #68: `8fe74f3ae238280632ebb74ddd279a494f7eb228` (merged #62, #65, #66, #67, #68).
 - #62: real trip editing, payment history pagination, Arabic exact reports and cancellation reasons.
 - #65: owner-only cutover proxy behind server-only flag; public demo denied when activated; negative missing-config HTTP smoke and no-cloud security checks.
 - #66: owner-only SQL contractor signed statements, full-page history and CSV/XLSX/PDF/PNG/print/share UI, with isolated SQL and unit tests.
 - #67: master record optimistic versions preserved in business snapshots and tested.
-- CI for each exact PR head was green before merge. **The combined integration is not independently certified until the CI on this audit PR finishes.**
+- #68: real trip and vehicle-payment reports now support complete-history CSV/XLSX/PDF/PNG/print/share exports, disabled until all pages are loaded.
+- CI for each exact PR head was green before merge. PR #68 branched from main after #67 and its 42-step CI passed, covering the combined pre-Supabase code. This documentation PR has its own CI but is not a live-cloud certification.
 
 ## Scope verified without Supabase
 
@@ -24,7 +25,7 @@
 | Login / recovery | UI, SDK and gated proxy prepared | Real Auth SMTP, verified owner email, session expiry, non-owner test |
 | Durable ledger | SQL RPC + client forms and isolated tests | Real PostgREST/RLS persistence, second device and concurrency |
 | Contractor work | SQL signed statement, pagination and five exports prepared | Real-data reconciliation and client sign-off; settlement payment workflow is not yet proven |
-| Vehicle cash | SQL payment history, period/current balances and CSV prepared | Live balance checks; rich export parity with demo not established |
+| Vehicle cash | SQL payment history, period/current balances and five-format full-history exports prepared | Live balance and file parity on the actual production database not established |
 | Daily work | Polished demo workflow exists | The real SQL workspace does **not** yet establish full parity for separately priced daily-work records and multi-route/day pricing |
 | Backups | Isolated business snapshot and version validation | Live database backup storage, encryption, schedule and actual isolated restore |
 | Deployment | CI build and preflight checks | Vercel envs, live Supabase project, production release and Android smoke |
