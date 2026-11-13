@@ -39,7 +39,7 @@ export type TripEditFields = {
 export function buildTripUpdatePayload(row: Record<string, unknown>, fields: TripEditFields):
   Record<string, unknown> {
   const id = requiredText(row.id, "trip id");
-  if (!Number.isSafeInteger(row.version) || (row.version as number) < 1) {
+  if (typeof row.version !== "number" || !Number.isSafeInteger(row.version) || row.version < 1) {
     throw new Error("Invalid trip version");
   }
   if (row.is_cancelled !== false) throw new Error("Cannot edit a cancelled trip");
