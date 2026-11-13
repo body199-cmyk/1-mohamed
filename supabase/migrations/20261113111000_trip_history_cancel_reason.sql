@@ -1,5 +1,7 @@
 -- PRE-LIVE-02: cancelled trip history includes its audited reason.
 -- Preserve all previous trip keyset, owner checks and financial projections.
+-- Migrations execute as owner even after preceding authenticated-role SQL tests.
+reset role;
 create or replace function public.app_op_trips_read(p_payload jsonb)
 returns jsonb
 language plpgsql
