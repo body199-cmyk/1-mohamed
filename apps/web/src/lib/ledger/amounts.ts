@@ -38,3 +38,12 @@ export function assertDecimal(value: string, decimals: 2 | 3, positive: boolean)
   }
   return text;
 }
+
+/** Convert the SQL integer milli-tonne representation without Number rounding. */
+export function milliTonnesToTonnes(value: string): string {
+  if (!/^[0-9]+$/.test(value)) throw new Error("Invalid SQL weight");
+  const amount = BigInt(value);
+  const whole = amount / 1000n;
+  const fraction = (amount % 1000n).toString().padStart(3, "0").replace(/0+$/, "");
+  return fraction ? whole.toString() + "." + fraction : whole.toString();
+}
