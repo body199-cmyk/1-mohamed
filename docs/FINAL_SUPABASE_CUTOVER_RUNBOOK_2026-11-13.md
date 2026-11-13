@@ -58,6 +58,14 @@ If any gate fails, leave the production flag disabled or roll back; do not allow
 
 - Code and SQL migrations are on GitHub with CI evidence; real project and owner email have not yet been configured.
 - Public demo exists only while the flag is disabled. Final activation must hide it.
-- The real workspace currently provides core entry, management, CSV and Arabic SQL-backed history. The rich demo's image/PDF/XLSX exports and navigation are **not automatically proof of production real-data parity**; test each supported format and explicitly disclose any unsupported export before acceptance.
+- The real workspace now has SQL-backed trip/payment history, contractor settlement statements, CSV detailed exports and prepared five-format operational/contractor exports (CSV, XLSX, PDF, PNG, print) with image sharing. These are **pre-live code paths only**: each format must be checked against actual persisted SQL data, Arabic rendering and Android browsers during cutover. The public demo remains a separate preview and is never a source of real financial records.
 - Backup snapshot core has isolated tests, but there is **no proven scheduled encrypted cloud backup or actual database restore** yet.
 - This runbook does not authorize creating a Supabase project, incurring charges, adding users or enabling production writes.
+
+## Extra acceptance for contractor settlements and exports
+
+- Test signed contractor WORK opening independently of vehicle CASH opening; positive closing favors Ahmed, negative favors the counterparty.
+- Test cancellation, re-dating and same-day trip ordering against the real SQL statement and verify each row's running balance.
+- Load more than 200 trips and payments, and more than 200 contractor statement rows; **no PDF, Excel or image export of a partial history**.
+- Compare every real export to the database after the final page is loaded; check Cairo font, Arabic RTL, Excel safety, and PDF/PNG rendering on Android.
+- The real operational visual export intentionally omits technical version/status fields from its 15-column layout; the detailed CSV includes those fields. Do not describe the visual export as a byte-for-byte database dump.

@@ -10,6 +10,8 @@ import { TransactionEntry } from "./transaction-entry";
 import { RecordActions } from "./record-actions";
 import { projectLedgerReport } from "./report-presentation";
 import { RealContractorStatement } from "./real-contractor-statement";
+import { ReportExportActions } from "../reports/report-export-actions";
+import { buildRealOperationalDocument, isFullOperationalReport } from "./real-operational-document";
 
 type Contractor = { id: string; name: string; is_primary: boolean; is_archived: boolean; version: number };
 type Vehicle = { id: string; plate_number: string; driver_name: string | null; notes: string | null; is_archived: boolean; version: number };
@@ -253,6 +255,17 @@ export function RealWorkspace() {
     vehicles: new Map(vehicles.map(v => [v.id, v.plate_number])),
     contractors: new Map(contractors.map(c => [c.id, c.name]))
   }) : null;
+  const fullExportDocument = (() => {
+    if (!report || !isFullOperationalReport(report)) return null;
+    try {
+      return buildRealOperationalDocument(reportType, report, {
+        vehicles: new Map(vehicles.map(v => [v.id, v.plate_number])),
+        contractors: new Map(contractors.map(c => [c.id, c.name]))
+      }, reportFrom, reportTo, new Intl.DateTimeFormat("ar-EG", {
+        timeZone: "Africa/Cairo", dateStyle: "medium", timeStyle: "short"
+      }).format(new Date()));
+    } catch { return null; }
+  })();
 
   if (!configured) return <section style={section}>
     <h1>مساحة العمل الحقيقية</h1>
@@ -411,6 +424,16 @@ export function RealWorkspace() {
           {busy ? "جارٍ تحميل المزيد..." : "تحميل 200 سجل إضافي"}
         </button>}
         <button type="button" disabled={!report.rows?.length || busy} onClick={exportReport}>تصدير السجلات المحمّلة CSV</button>
+        {!isFullOperationalReport(report) && <p role="status">
+          الصيغ الكاملة (PDF/Excel/PNG/طباعة) تتطلب تحميل كل الصفحات أولًا.
+        </p>}
+        {!busy && fullExportDocument && <div style={{ marginTop: 16 }}>
+          <h3>تصدير التقرير الكامل بخمس صيغ ومشاركة الصورة</h3>
+          <ReportExportActions document={fullExportDocument}
+            fileNameBase={`real-${reportType.replace(".", "-")}-${reportFrom}-${reportTo}`} />
+        </div>}
+        {isFullOperationalReport(report) && !fullExportDocument &&
+          <p role="alert">بيانات التقرير غير متسقة؛ تم إيقاف التصدير الكامل لحمايتك.</p>}
         <div style={{ overflowX: "auto", marginTop: 12 }}>
           <table style={{ borderCollapse: "collapse", minWidth: 600 }}>
             <thead><tr>{projected?.headers.map((header, index) =>
