@@ -10,10 +10,10 @@ const ORIGINAL_EPOCH = 7;
 function fixture() {
   return {
     contractors:[
-      {id:"K_PRIMARY",name:"أحمد أبو علي",is_primary:true,is_archived:false},
-      {id:"K_2",name:"شركة النيل",is_primary:false,is_archived:false},
+      {id:"K_PRIMARY",name:"أحمد أبو علي",is_primary:true,is_archived:false,version:3},
+      {id:"K_2",name:"شركة النيل",is_primary:false,is_archived:false,version:2},
     ],
-    vehicles:[{id:"V_1",plate_number:"أ ب ج 0007",is_archived:false}],
+    vehicles:[{id:"V_1",plate_number:"أ ب ج 0007",is_archived:false,version:5}],
     vehicle_accounts:[{vehicle_id:"V_1",contractor_id:"K_PRIMARY"}],
     opening_balances:[{id:"OB_1",balance_type:"VEHICLE_CASH",contractor_id:"K_PRIMARY",
       vehicle_id:"V_1",start_date:"2026-11-01",signed_piastres:"50000",
@@ -56,6 +56,9 @@ test("B04 versioned verified snapshot includes every business table and exact re
   assert.equal(verified.data.trips[0].vehicle_total_piastres,"10000");
   assert.equal(verified.data.audit_log[0].new_data.receipt_number,"000012");
   assert.equal(verified.data.idempotency_keys[0].key,"req-00001");
+  assert.equal(verified.data.contractors[0].version,3);
+  assert.equal(verified.data.contractors[1].version,2);
+  assert.equal(verified.data.vehicles[0].version,5);
   assert(!file.includes("owner_user_id")); // Supabase identity must never be restored.
   assert.equal(verified.sha256.length,64);
   assert.equal(serializeBusinessBackup(backup(data)),file); // deterministic fixture
@@ -205,4 +208,19 @@ test("B04 rejects malformed oversized archive before any transaction side effect
   }),/تجاوز الحد/);
   assert.equal(safetyCalls,0);
   assert.equal(store.epoch,0);
+});
+
+test("B04 preserves master-data optimistic versions and rejects invalid ones", () => {
+  const data = fixture();
+  assert.equal(verifyBusinessBackup(createBusinessBackup(data)).data.vehicles[0].version,5);
+  const wrong = fixture();
+  wrong.contractors[0].version = -1;
+  assertInvalid(() => createBusinessBackup(wrong), /مقاول غير صالح/);
+  const badVehicle = fixture();
+  badVehicle.vehicles[0].version = 1.5;
+  assertInvalid(() => createBusinessBackup(badVehicle), /عربية غير صالحة/);
+  const legacy = fixture();
+  delete legacy.contractors[0].version;
+  delete legacy.vehicles[0].version;
+  assert.doesNotThrow(() => createBusinessBackup(legacy)); // old v1 snapshots remain readable
 });
