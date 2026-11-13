@@ -40,6 +40,9 @@ export async function GET(request: NextRequest) {
   const columns = MASTER_TABLES[table];
   const { data, error } = await client.from(table).select(columns)
     .order(table === "vehicle_accounts" ? "vehicle_id" : "id")
+    // Multiple contractors may share a vehicle: deterministic tie-breaker
+    // prevents skipped or duplicated accounts across offset pages.
+    .order(table === "vehicle_accounts" ? "contractor_id" : "id")
     .range(offset, offset + limit);
   if (error || !data) return result({ error: "تعذّر قراءة البيانات الأساسية." }, 422, sessionResponse);
   return result({ ok: true, data: data.slice(0, limit), hasMore: data.length > limit,
