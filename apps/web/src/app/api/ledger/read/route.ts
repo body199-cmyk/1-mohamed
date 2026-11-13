@@ -14,6 +14,11 @@ function result(body: object, status: number, session?: NextResponse) {
 
 /** Owner-only read RPC; financial bigint fields are returned as strings by SQL. */
 export async function POST(request: NextRequest) {
+  const origin = request.headers.get("origin");
+  const fetchSite = request.headers.get("sec-fetch-site");
+  if ((origin && origin !== request.nextUrl.origin) || fetchSite === "cross-site") {
+    return result({ error: "طلب من مصدر غير مسموح." }, 403);
+  }
   if (!getSupabaseSetupStatus().ready) return result({ error: "القراءة الدائمة غير مفعّلة." }, 503);
   let input: unknown;
   try {
