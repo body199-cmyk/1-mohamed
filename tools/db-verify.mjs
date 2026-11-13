@@ -81,6 +81,10 @@ const steps = [
   ['tests fin04', 'supabase/tests/09_fin04_cash_opening_timeline_verification.sql', 'FIN-04: SQL reject earlier trip or payment atomically'],
   ['migration fin05', 'supabase/migrations/20261109210010_fin05_payment_period_opening.sql', 'FIN-05: period opening and closing semantics'],
   ['tests fin05', 'supabase/tests/10_fin05_payment_period_opening_verification.sql', 'FIN-05: opening day, historical cutoff and independent current balance'],
+  ['migration payment keyset', 'supabase/migrations/20261113110000_payment_history_keyset.sql', 'PRE-LIVE: stable owner-only payment history pagination'],
+  ['tests payment keyset', 'supabase/tests/11_payment_history_keyset_verification.sql', 'PRE-LIVE: no skipped payments, unchanged cash balances'],
+  ['migration trip cancellation reason', 'supabase/migrations/20261113111000_trip_history_cancel_reason.sql', 'PRE-LIVE: cancelled trip reason in read history'],
+  ['tests trip cancellation reason', 'supabase/tests/12_trip_cancel_history_verification.sql', 'PRE-LIVE: cancelled trip reason and hidden-by-default rows'],
 ];
 
 function describe(error) {

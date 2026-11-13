@@ -8,13 +8,14 @@ import type { WriteOperation } from "../../lib/ledger/operation-contract";
 import { LogoutButton } from "../auth/logout-button";
 import { TransactionEntry } from "./transaction-entry";
 import { RecordActions } from "./record-actions";
+import { projectLedgerReport } from "./report-presentation";
 
 type Contractor = { id: string; name: string; is_primary: boolean; is_archived: boolean; version: number };
 type Vehicle = { id: string; plate_number: string; driver_name: string | null; notes: string | null; is_archived: boolean; version: number };
 type Account = { vehicle_id: string; contractor_id: string };
 type Page<T> = { ok: boolean; data?: T[]; hasMore?: boolean; error?: string };
 type Report = { status: string; rows: Record<string, unknown>[]; total_count?: string | number;
-  next_cursor?: { date: string; id: string } | null;
+  next_cursor?: { date: string; id: string; created_at?: string } | null;
   period_opening_piastres?: string; period_closing_piastres?: string;
   current_cash_balance_piastres?: string; cash_balance_piastres?: string };
 type ReportType = "trips.list" | "payments.list";
@@ -202,24 +203,25 @@ export function RealWorkspace() {
     finally { setBusy(false); }
   }
 
-  async function loadMoreTrips() {
+  async function loadMoreRows() {
     const query = reportQuery.current;
-    if (busy || !report || !report.next_cursor || !query || query.type !== "trips.list") return;
+    if (busy || !report || !report.next_cursor || !query) return;
     setBusy(true); setNotice("");
     try {
-      const response = await postLedgerRead<Report>("trips.list", {
+      const response = await postLedgerRead<Report>(query.type, {
         ...query.payload, cursor: report.next_cursor
       });
       if (!response.ok) { setNotice(response.error); return; }
       if (!Array.isArray(response.data?.rows)) {
         setNotice("صفحة التقرير غير صالحة من الخادم."); return;
       }
-      // SQL keyset pagination guarantees a stable order by date and id.
+      // Each SQL RPC owns its stable keyset order; never use client offsets.
       const existingIds = new Set(report.rows.map(row => row.id));
       const newRows = response.data.rows.filter(row => !existingIds.has(row.id));
       if (response.data.next_cursor &&
           response.data.next_cursor.date === report.next_cursor.date &&
-          response.data.next_cursor.id === report.next_cursor.id) {
+          response.data.next_cursor.id === report.next_cursor.id &&
+          response.data.next_cursor.created_at === report.next_cursor.created_at) {
         setNotice("مؤشر الصفحة لم يتغير. أوقفنا القراءة لمنع تكرار السجلات."); return;
       }
       setReport({ ...report, rows: [...report.rows, ...newRows],
@@ -230,9 +232,12 @@ export function RealWorkspace() {
 
   function exportReport() {
     if (!report || !Array.isArray(report.rows) || report.rows.length === 0) return;
-    const columns = [...new Set(report.rows.flatMap(row => Object.keys(row)))];
-    const csv = "\uFEFF" + [columns.map(csvCell).join(","),
-      ...report.rows.map(row => columns.map(column => csvCell(row[column])).join(","))].join("\r\n");
+    const projected = projectLedgerReport(reportType, report.rows, {
+      vehicles: new Map(vehicles.map(v => [v.id, v.plate_number])),
+      contractors: new Map(contractors.map(c => [c.id, c.name]))
+    });
+    const csv = "\uFEFF" + [projected.headers.map(csvCell).join(","),
+      ...projected.rows.map(row => row.map(csvCell).join(","))].join("\r\n");
     const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
     const anchor = document.createElement("a");
     anchor.href = url;
@@ -240,6 +245,11 @@ export function RealWorkspace() {
     anchor.click();
     URL.revokeObjectURL(url);
   }
+
+  const projected = report ? projectLedgerReport(reportType, report.rows, {
+    vehicles: new Map(vehicles.map(v => [v.id, v.plate_number])),
+    contractors: new Map(contractors.map(c => [c.id, c.name]))
+  }) : null;
 
   if (!configured) return <section style={section}>
     <h1>مساحة العمل الحقيقية</h1>
@@ -391,21 +401,19 @@ export function RealWorkspace() {
         </p>}
         <p>تم تحميل {report.rows?.length ?? 0} سجل من أصل {report.total_count ?? "غير معروف"}.
           التصدير يشمل السجلات المحمّلة فقط.</p>
-        {reportType === "trips.list" && report.next_cursor && <button type="button"
-          disabled={busy} onClick={() => void loadMoreTrips()}>
-          {busy ? "جارٍ تحميل المزيد..." : "تحميل 200 نقلة إضافية"}
+        {report.next_cursor && <button type="button"
+          disabled={busy} onClick={() => void loadMoreRows()}>
+          {busy ? "جارٍ تحميل المزيد..." : "تحميل 200 سجل إضافي"}
         </button>}
-        {reportType === "payments.list" && Number(report.total_count ?? 0) > (report.rows?.length ?? 0) &&
-          <p>تقرير المدفوعات يعرض أول 200 سجل فقط؛ قلّص الفترة لاستعراض باقي السجلات.</p>}
         <button type="button" disabled={!report.rows?.length || busy} onClick={exportReport}>تصدير السجلات المحمّلة CSV</button>
         <div style={{ overflowX: "auto", marginTop: 12 }}>
           <table style={{ borderCollapse: "collapse", minWidth: 600 }}>
-            <thead><tr>{Object.keys(report.rows?.[0] ?? {}).map(k =>
-              <th key={k} style={{ padding: 8, borderBottom: "1px solid #ccc" }}>{k}</th>)}</tr></thead>
-            <tbody>{report.rows?.map((row, index) => <tr key={asText(row.id) || index}>
-              {Object.keys(report.rows?.[0] ?? {}).map(k =>
-                <td key={k} style={{ padding: 8, borderBottom: "1px solid #ddd" }}>
-                  {short(asText(row[k]))}</td>)}
+            <thead><tr>{projected?.headers.map((header, index) =>
+              <th key={index} scope="col" style={{ padding: 8, borderBottom: "1px solid #ccc" }}>{header}</th>)}</tr></thead>
+            <tbody>{projected?.rows.map((row, index) => <tr key={asText(report.rows[index]?.id) || index}>
+              {row.map((value, column) =>
+                <td key={column} style={{ padding: 8, borderBottom: "1px solid #ddd" }}>
+                  {value}</td>)}
             </tr>)}</tbody>
           </table>
         </div>
