@@ -40,7 +40,8 @@ export function isFullOperationalReport(report: SourceReport): boolean {
 
 export function buildRealOperationalDocument(
   type: LedgerReportType, report: SourceReport,
-  lookups: LedgerLookups, from: string, to: string, generatedAtLabel: string
+  lookups: LedgerLookups, from: string, to: string, generatedAtLabel: string,
+  filters: { vehicle?: string; contractor?: string } = {}
 ): OperationalReportDocument {
   if (!isFullOperationalReport(report)) {
     throw new Error("حمّل كل صفحات التقرير قبل التصدير الكامل؛ لن نحذف حركات بصمت.");
@@ -78,6 +79,8 @@ export function buildRealOperationalDocument(
     metadata: [
       { label: "من تاريخ", value: from },
       { label: "إلى تاريخ", value: to },
+      ...(filters.vehicle ? [{ label: "العربية المحددة", value: filters.vehicle }] : []),
+      ...(filters.contractor ? [{ label: "المقاول المحدد", value: filters.contractor }] : []),
       { label: "حالة البيانات", value: "كل سجلات الفترة المحددة محمّلة" }
     ],
     summarySections: [{ title: "ملخص الفترة", metrics }],
