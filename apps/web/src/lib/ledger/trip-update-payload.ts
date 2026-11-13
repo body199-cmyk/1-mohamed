@@ -50,7 +50,7 @@ export function buildTripUpdatePayload(row: Record<string, unknown>, fields: Tri
   if (!["AHMED_SUPPLIES", "OTHER_SUPPLIES"].includes(fields.direction)) {
     throw new Error("اتجاه النقلة غير صالح.");
   }
-  if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(fields.trip_date)) {
+  if (!/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(fields.trip_date)) {
     throw new Error("تاريخ النقلة غير صالح.");
   }
   const weight = assertDecimal(fields.weight_tonnes, 3, true);
