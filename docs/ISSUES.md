@@ -177,3 +177,5 @@ A concurrent edit with unchanged totals could be combined with prior pages; oper
 
 ## CLOSEOUT-02 — approved private-workspace workflows absent from demo-only acceptance
 Private workspace was a monolithic form and payment history did not contain earned cash movements. Complete modular private UI, combined cash ledger, entry controls and detailed contractor exports; browser fixtures test actual private components. Cloud end-to-end acceptance remains separate.
+
+14 November 2026 — Workspace stale access notice: successful master-data refresh retained prior unauthorized error. Fixed by independent load-error state cleared only on latest complete success. Regression: e2e/workspace/workspace.spec.ts repeated denial then recovery. Live master reads 200; initial rejection cause unproven.
