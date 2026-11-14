@@ -3,6 +3,7 @@
 import { useRef, useState, type FormEvent } from "react";
 import { PaymentPreview } from "./payment-preview";
 import { SearchableChoice } from "./searchable-choice";
+import { QuickRecordModal, type QuickRecordInput } from "./quick-record-modal";
 import { TripPreviewCard } from "../trips/trip-preview-card";
 import type { WriteOperation } from "../../lib/ledger/operation-contract";
 import { poundsToPiastres, assertDecimal, normalizeDecimalInput } from "../../lib/ledger/amounts";
@@ -45,9 +46,21 @@ export function TransactionEntry({ contractors, vehicles, accounts, busy, write,
   const [paymentAmount, setPaymentAmount] = useState("");
   const [paymentNotes, setPaymentNotes] = useState("");
   const [reuseDay,setReuseDay] = useState(false);
+  const [quickModal, setQuickModal] = useState<null | "vehicle" | "contractor">(null);
   const submitting = useRef(false);
   const [message, setMessage] = useState("");
   const drafts = useRef(new Map<string, Record<string, unknown>>());
+
+  /** Inline creation from the choice fields; payloads keep a stable id across retries. */
+  async function quickCreateVehicle(input: QuickRecordInput): Promise<string | null> {
+    const payload = { id: "VEH-" + crypto.randomUUID(),
+      plate_number: input.plate, driver_name: input.driver || null };
+    return (await write("vehicle.create", payload)) ? payload.id : null;
+  }
+  async function quickCreateContractor(input: QuickRecordInput): Promise<string | null> {
+    const payload = { id: "CTR-" + crypto.randomUUID(), name: input.name, start_mode: "DETAILS" };
+    return (await write("contractor.create", payload)) ? payload.id : null;
+  }
 
   async function createTrip(event: FormEvent) {
     event.preventDefault();
@@ -116,9 +129,11 @@ export function TransactionEntry({ contractors, vehicles, accounts, busy, write,
       <form onSubmit={createTrip}>
         <details open><summary>العربية والمقاول والتاريخ</summary>
         <SearchableChoice id="real-trip-vehicle" label="العربية" value={tripVehicle} onChange={setTripVehicle} disabled={busy}
-          choices={vehicles.filter(v=>!v.is_archived).map(v=>({id:v.id,label:v.plate_number}))}/>
+          choices={vehicles.filter(v=>!v.is_archived).map(v=>({id:v.id,label:v.plate_number}))}
+          onAdd={() => setQuickModal("vehicle")} addLabel="+ عربية جديدة"/>
         <SearchableChoice id="real-trip-counterparty" label="المقاول الطرف" value={tripCounterparty} onChange={setTripCounterparty} disabled={busy}
-          choices={contractors.filter(c=>!c.is_archived&&!c.is_primary).map(c=>({id:c.id,label:c.name}))}/>
+          choices={contractors.filter(c=>!c.is_archived&&!c.is_primary).map(c=>({id:c.id,label:c.name}))}
+          onAdd={() => setQuickModal("contractor")} addLabel="+ مقاول جديد"/>
         <label htmlFor="real-trip-direction">اتجاه النقلة</label>
         <select id="real-trip-direction" style={field} value={direction}
           onChange={e => setDirection(e.target.value as typeof direction)} disabled={busy}>
@@ -168,6 +183,14 @@ export function TransactionEntry({ contractors, vehicles, accounts, busy, write,
         <button type="submit" value="new" disabled={busy}>حفظ وإضافة نقلة جديدة</button>{" "}
         <button type="submit" value="exit" disabled={busy}>حفظ وخروج</button>
       </form>
+      <QuickRecordModal kind="vehicle" open={quickModal === "vehicle"} busy={busy}
+        existing={vehicles.filter(v => !v.is_archived).map(v => v.plate_number)}
+        onClose={() => setQuickModal(null)}
+        onCreate={quickCreateVehicle} onCreated={id => setTripVehicle(id)}/>
+      <QuickRecordModal kind="contractor" open={quickModal === "contractor"} busy={busy}
+        existing={contractors.filter(c => !c.is_archived).map(c => c.name)}
+        onClose={() => setQuickModal(null)}
+        onCreate={quickCreateContractor} onCreated={id => setTripCounterparty(id)}/>
     </section>
     <section style={section}>
       <h2>تسجيل دفعة نقدية</h2>
