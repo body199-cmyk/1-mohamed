@@ -548,3 +548,7 @@ Validation: TypeScript PASS; isolated browser regression covers repeated 401 the
 ## 14 November 2026 — inline quick-add (in progress)
 الخطوات المنفذة على فرع feat/inline-quick-add-20261114 من أساس 8aac8fd: (1) مُحققات التكرار السريع 97fc0a0، (2) QuickRecordModal وأزرار الإضافة في SearchableChoice e6ff965، (3) توصيل النقلة واختباراتها 020a348، (4) نافذة حساب الدفعة وربطها 392c5d6، (5) عيوب المراجع 5a–5f واختبارات الموثوقية f3980b5.
 التحقق عند f3980b5: typecheck exit 0؛ npm run test:web 103/103؛ npx playwright test --config=playwright.workspace.config.ts quick-add 24/24. المتبقي: مراجعة نقدية منفصلة للفرق كاملًا، فحوص القبول الكاملة على آخر commit، CI، ثم PR بلا دمج. ما لم يُختبر: حفظ حي في Supabase، Auth/RLS حقيقية وتزامن، أجهزة فعلية، وضمان منع التطابق عبر جلسات متزامنة خارج ضمانات الخادم الحالية.
+
+
+## DELIVERY-01 — 14 November 2026
+DELIVERY-01 slice: clean latest-main install; runtime-aware login; canonical-origin read/write regression and hosted contractor persistence. Acceptance pending exact-head CI; next financial/live backup slice remains unstarted.

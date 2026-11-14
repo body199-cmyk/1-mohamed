@@ -32,7 +32,8 @@ assert.match(proxy, /NextResponse\.redirect/);
 
 const login = read("apps/web/src/app/login/page.tsx");
 const loginForm = read("apps/web/src/features/auth/login-form.tsx");
-assert.match(login, /<LoginForm\s*\/>/);
+assert.match(login, /<LoginForm\s+enabled=\{process\.env\.APP_ENABLE_REAL_DATA\s*===\s*"true"\}/);
+assert.match(login, /export const dynamic\s*=\s*"force-dynamic"/);
 assert.match(loginForm, /signInWithPassword/);
 assert.match(loginForm, /app_is_owner/);
 assert.match(loginForm, /resetPasswordForEmail/);

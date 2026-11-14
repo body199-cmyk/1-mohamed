@@ -10,7 +10,7 @@ import { buildAuthCallbackUrl, getSupabaseSetupStatus } from "../../lib/supabase
  * A Supabase Auth user is not authorized merely because their password works:
  * app_is_owner() is the server-backed, fail-closed access gate.
  */
-export function LoginForm() {
+export function LoginForm({ enabled = false }: { enabled?: boolean }) {
   const router = useRouter();
   const setup = getSupabaseSetupStatus();
   const [email, setEmail] = useState("");
@@ -22,7 +22,7 @@ export function LoginForm() {
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (busy || !setup.ready) return;
+    if (busy || !enabled || !setup.ready) return;
     setBusy(true);
     setMessage("");
     try {
@@ -67,25 +67,26 @@ export function LoginForm() {
       <h1 id="login-heading">{recovery ? "استرجاع كلمة المرور" : "تسجيل الدخول"}</h1>
       <p>حسابات النقل والمقاولين — الدخول للحسابات المصرّح بها فقط.</p>
       {!setup.ready && <p role="status">الربط الآمن لم يُفعّل بعد. لا تدخل كلمة مرور حقيقية الآن.</p>}
+      {setup.ready && !enabled && <p role="status">الحسابات الدائمة غير مفعّلة على النسخة دي. الدخول متوقف لحد استكمال إعداد التشغيل؛ ده مش معناه إن حسابك اتمسح أو كلمة السر غلط.</p>}
       <form onSubmit={submit}>
         <label htmlFor="owner-email">البريد الإلكتروني</label>
         <input id="owner-email" type="email" required autoComplete="email" value={email}
-          onChange={e => setEmail(e.target.value)} disabled={busy || !setup.ready}
+          onChange={e => setEmail(e.target.value)} disabled={busy || !enabled || !setup.ready}
           style={{ width: "100%", padding: 12, marginBottom: 14, display: "block" }} />
         {!recovery && <>
           <label htmlFor="owner-password">كلمة المرور</label>
           <input id="owner-password" type="password" required autoComplete="current-password"
             value={password} onChange={e => setPassword(e.target.value)}
-            disabled={busy || !setup.ready}
+            disabled={busy || !enabled || !setup.ready}
             style={{ width: "100%", padding: 12, marginBottom: 14, display: "block" }} />
         </>}
-        <button type="submit" disabled={busy || !setup.ready || done}
+        <button type="submit" disabled={busy || !enabled || !setup.ready || done}
           style={{ padding: "10px 24px", cursor: "pointer" }}>
           {busy ? "جارٍ التحقق..." : recovery ? "إرسال رابط الاسترجاع" : "دخول"}
         </button>
       </form>
       <button type="button" onClick={() => { setRecovery(!recovery); setMessage(""); setDone(false); }}
-        disabled={busy} style={{ display: "block", marginTop: 16 }}>
+        disabled={busy || !enabled || !setup.ready} style={{ display: "block", marginTop: 16 }}>
         {recovery ? "الرجوع لتسجيل الدخول" : "نسيت كلمة المرور؟"}
       </button>
       {message && <p role="status">{message}</p>}
