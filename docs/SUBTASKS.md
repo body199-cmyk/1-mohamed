@@ -552,3 +552,7 @@ Validation: TypeScript PASS; isolated browser regression covers repeated 401 the
 
 ## DELIVERY-01 — 14 November 2026
 DELIVERY-01 slice: clean latest-main install; runtime-aware login; canonical-origin read/write regression and hosted contractor persistence. Acceptance pending exact-head CI; next financial/live backup slice remains unstarted.
+
+
+## DELIVERY-02 — 14 November 2026
+DELIVERY-02 acceptance: both work directions show counterparty and actual cash-responsible separately; no monetary recalculation. Browser RED reproduced, full checks/CI pending. Hosted trial basic save/reload 100 - 30 = 70 verified; concurrency/restore not closed.

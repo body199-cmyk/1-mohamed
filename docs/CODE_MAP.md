@@ -359,3 +359,7 @@ Live workspace home reuses approved shortcut styles from styles/globals.css; rea
 
 ## DELIVERY-01 — 14 November 2026
 DELIVERY-01: apps/web/src/lib/ledger/request-origin.ts owns canonical public-origin validation for both ledger POST routes. apps/web/e2e/ledger-origin.test.ts and login-activation.test.tsx cover proxy-origin and activation behavior; login/page.tsx now evaluates the runtime flag dynamically.
+
+
+## DELIVERY-02 — 14 November 2026
+TripPreviewCard accepts optional responsibleContractorName separately from counterpartyName. Real TransactionEntry supplies primary or counterparty according to direction; e2e/workspace/workspace.spec.ts covers both directions.
