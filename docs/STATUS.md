@@ -1,3 +1,15 @@
+
+## 14 November 2026 — workspace recovery fix
+Observed live owner requests to all three master endpoints returned HTTP 200. The UI retained a prior failed refresh notice because successful refresh never cleared it. Separate loadError from write notices; only the latest successful complete refresh clears loadError. Repeated denial remains visible and all Auth/RLS guards are unchanged. Includes approved blue home cards reused from global CSS; browser fixture now loads that same CSS.
+Validation: TypeScript PASS; isolated browser regression covers repeated 401 then recovery and real populated selectors/counts. Six workspace browser tests run with installed Edge. Separate critical diff review by the same assistant: request-token race guard preserved, partial success cannot clear error, write success notices preserved. Original transient rejection cause is not proven; this fixes the demonstrated stale notice. Live writes, backup/restore, multi-user authorization and production activation remain pending. Exact-head CI required before merge.
+---
+
+## SUPABASE-TRIAL-ACCEPTANCE — 13 November 2026 (in progress)
+User authorizes trial-only Auth, owner, persistence/permissions and backup/restore acceptance; production activation requires results presented first. Baseline main 792120e, PR #73 already merged (supersedes its pending-merge note). Branch codex/supabase-trial-acceptance.
+Dashboard access now works as body199-cmyk in the existing organization. Auth Users shows no users. Public signup was switched off and saved; email confirmation remains enabled, anonymous sign-in disabled. No owner account or business fixtures created, no production activation.
+Environment gate: existing project sskkuniskphlawivzudw is labeled main PRODUCTION and is configured for the published site. Automatic review rejected the read-only row-count query as production access. Await user identification of a separate trial project/organization or explicit confirmation that the existing project is empty and designated for trials; also await owner email. Do not bypass the rejected query or claim real Auth/persistence/restore PASS.
+Backup source inspection confirms tools/backup-core.mjs is an isolated core, not a hosted backup/restore adapter. Live backup/restore remains implementation and acceptance work, not merely an environment-variable change.
+---
 # Current execution — Supabase provisioning
 
 ## Supabase provisioning checkpoint — 13 November 2026
@@ -161,3 +173,7 @@ Scope correction: PROJECT_REQUIREMENTS §§5/6 and DECISIONS A02 exclude flat da
 ## بيان أحدث — إظهار الحساب السابق، ١١ نوفمبر ٢٠٢٦
 طلب المستخدم إظهار الرصيد السابق ضمن ملخص كل مقاول. الفرع `codex/statement-visible-opening`: بطاقة ظاهرة بالمبلغ وصاحبه وتفصيل الصافي بالأرقام، من نفس نتيجة المحرك دون تعديل المعادلات. الملفات: `apps/web/src/features/contractor-statements/statement-summary-card.tsx` واختبار `apps/web/e2e/statement-opening-summary.test.tsx` الموصول بـCI. اختبارات الموجب والسالب والصفر: 3/3 PASS. مراجعة ثانية للفروق بواسطة نفس المساعد: السابق يحتسب مرة واحدة، محفوظ لكل مقاول وفترة، واتجاه الأرقام معزول بـbdi. لم يُختبر العرض بصريًا في المتصفح. typecheck متعطل محليًا بسبب غياب @supabase/ssr وأخطاء الأنواع التابعة له. لم يتم الدمج؛ يلزم CI على آخر SHA والتحقق البصري. الحالة جزئية وليست إغلاقًا لمراجعة الحسابات الشاملة.
 
+## Trial owner bootstrap — 13 November 2026
+User explicitly confirmed existing project is trial-only and empty of real data, and approved multiple independent accounts with equal full permissions. Initial account created by user; hosted lookup verified confirmed Auth user. app_set_initial_owner completed and independent read verified owner_linked=true. Hosted SQL role probes returned owner_allowed=true and outsider_allowed=false with zero visible contractors. These probes manually set request claims and are NOT Auth/HTTP acceptance. No business fixtures written and no production activation. Multi-user allowlist and real backup/restore adapter remain unimplemented; do not claim completion. Local dependency installation is required before browser login/persistence acceptance. Earlier environment-authorization blocker is superseded by explicit user confirmation.
+
+14 November 2026 — Minimal live-home visual correction: real-workspace.tsx reuses approved shortcutGrid/shortcutTile globals (blue variants, icons and captions); workspace.module.css removes white-card overrides. No data/Auth/accounting behavior changed. TypeScript noEmit PASS; actual /app browser screenshot confirms blue cards. Second diff review by same assistant checked hidden sections and unchanged navigation. Live data displayed unauthorized notice: unresolved integration issue, not a successful persistence test. Local only, no production deployment.

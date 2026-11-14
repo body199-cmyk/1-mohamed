@@ -68,3 +68,5 @@
 
 ## CONTRACTOR-IDENTITY — ١١ نوفمبر ٢٠٢٦، قيد التحقق
 المستخدم اعتمد صراحة: من منظور أحمد، الأخضر له (+)، الأحمر عليه (−)، الرمادي متعادل. تنفيذ محلي على نفس فرع إصلاح الملخص: مكون ContractorMoney للملخص والجداول والموبايل وافتتاحيات البيانات الأساسية، وألوان ثابتة ونص دليل في HTML/PNG/PDF/XLSX/CSV. CSV لا يدعم ألوانًا. الرئيسية واليومية يعرضان حجم الشغل لا فرق الحساب فلا يصنف إجماليهما كدين. تغييرات العرض لا تغير المعادلات أو دفعات العربيات. اختبار حديث 52/52 PASS للتصدير والهوية والافتتاحي، وحزم الحساب السابقة 199 PASS. فحص حزمة التصدير للأنواع ناجح. مراجعة ثانية بنفس المساعد: حماية CSV والـHTML باقية، XLSX يصنف الخلايا المالية فقط وليس الأسماء أو المراجع، الحساب بأعداد صحيحة بلا تحويل Number. لا فحص بصري نهائي ولا CI ولا دمج بعد؛ تثبيت التبعيات المحلية جارٍ بسبب غياب @supabase/ssr. يلزم استكمال التحقق قبل الدمج.
+
+Approved 13 November 2026: multiple separately authenticated, explicitly approved users share the same business dataset and equal full permissions. This supersedes the single-owner-only scope; implementation and acceptance pending.

@@ -14,6 +14,13 @@ const sections = [
   ["home","الرئيسية"],["entry","تسجيل الشغل والدفعات"],["reports","النقلات واليومية"],
   ["contractor","كشف المقاول"],["cash","نقدية العربية"],["master","البيانات الأساسية"],["settings","الإعدادات"]
 ] as const;
+const shortcutDetails = {
+  entry: ["🚚", "إضافة ومتابعة الشغل والدفعات"],
+  reports: ["📅", "شغل اليوم بالتفصيل"],
+  contractor: ["📋", "مين له ومين عليه"],
+  cash: ["🚛", "حساب كل عربية"],
+  master: ["🗂️", "المقاولين والعربيات"],
+} as const;
 type Screen=typeof sections[number][0];
 export function RealWorkspace() {
   const data=useWorkspaceData();
@@ -32,9 +39,16 @@ export function RealWorkspace() {
       {data.notice&&<p role="status" className={styles.notice}>{data.notice}</p>}
       <button disabled={blocked} onClick={()=>void data.refresh()}>{data.loading?"جارٍ التحديث...":"تحديث البيانات"}</button>
       <section hidden={screen!=="home"}>
-        <h2>ابدأ يومك</h2><p>سجّل الشغل، راجع الحسابات، وصدّر الكشوف.</p>
-        <div className={styles.shortcuts}>{sections.filter(([id])=>id!=="home"&&id!=="settings").map(([id,label])=>
-          <button key={id} onClick={()=>setScreen(id)}>{label}</button>)}</div>
+        <div className="shortcutHeading"><div><p className="shortcutEyebrow">نظام حسابات النقل</p>
+          <h2>أهلًا بك في إدارة الشغل</h2><p>سجّل الشغل، راجع الحسابات، وصدّر الكشوف.</p></div></div>
+        <div className={`shortcutGrid ${styles.shortcuts}`}>{sections.filter(([id])=>id!=="home"&&id!=="settings").map(([id,label],index)=> {
+          const detail = shortcutDetails[id as keyof typeof shortcutDetails];
+          return <button key={id} type="button" className={`shortcutTile shortcutTile${index % 4}`} onClick={()=>setScreen(id)}>
+            <span className="shortcutIcon" aria-hidden="true">{detail[0]}</span>
+            <span className="shortcutTitle">{label}</span><span className="shortcutHint">{detail[1]}</span>
+            <span className="shortcutArrow" aria-hidden="true">←</span>
+          </button>;
+        })}</div>
         <p>المقاولون: {data.contractors.filter(c=>!c.is_archived&&!c.is_primary).length} — العربيات: {data.vehicles.filter(v=>!v.is_archived).length}</p>
         {data.contractors.length===0&&!data.loading&&<p role="status">الحساب فارغ. ابدأ بإعداد صاحب الحساب ثم أضف المقاولين والعربيات من البيانات الأساسية.</p>}
       </section>

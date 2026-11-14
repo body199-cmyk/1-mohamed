@@ -15,6 +15,7 @@ export function useWorkspaceData() {
   const [loading,setLoading] = useState(false);
   const [busy,setBusy] = useState(false);
   const [notice,setNotice] = useState("");
+  const [loadError,setLoadError] = useState("");
   const [revision,setRevision] = useState(0);
   const pending = useRef(new Map<string,string>());
   const writeLock = useRef(false);
@@ -38,8 +39,11 @@ export function useWorkspaceData() {
       }
       const [contractors,vehicles,accounts]=await Promise.all([
         all<Contractor>("contractors"),all<Vehicle>("vehicles"),all<Account>("vehicle_accounts")]);
-      if(token===readToken.current) setEntities({contractors,vehicles,accounts});
-    } catch(error) { if(token===readToken.current) setNotice(error instanceof Error ? error.message : "تعذر التحديث."); }
+      if(token===readToken.current) {
+        setEntities({contractors,vehicles,accounts});
+        setLoadError("");
+      }
+    } catch(error) { if(token===readToken.current) setLoadError(error instanceof Error ? error.message : "تعذر التحديث."); }
     finally { if(token===readToken.current) setLoading(false); }
   },[configured]);
   useEffect(()=>{void refresh();return ()=>{readToken.current++;};},[refresh]);
@@ -61,5 +65,5 @@ export function useWorkspaceData() {
     } catch {setNotice("انقطع الاتصال ولم تتأكد نتيجة الحفظ. أعد المحاولة بنفس البيانات.");return false;}
     finally {writeLock.current=false;setBusy(false);}
   };
-  return {...entities,configured,loading,busy,notice,revision,refresh,write};
+  return {...entities,configured,loading,busy,notice:loadError||notice,revision,refresh,write};
 }

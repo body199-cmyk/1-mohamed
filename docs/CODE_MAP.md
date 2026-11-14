@@ -344,3 +344,5 @@
 - `supabase/migrations/20261113142945_lock_helper_search_paths.sql`: fixed lookup paths for seven existing helpers; no privilege or arithmetic changes.
 - `supabase/tests/15_helper_search_paths_verification.sql`: hostile lookup regression, wired in `tools/db-verify.mjs`.
 - Current hosted activation state and blocker: `docs/STATUS.md`.
+
+Live workspace home reuses approved shortcut styles from styles/globals.css; real-workspace.tsx owns navigation and workspace.module.css supplies button sizing. 14 November 2026.

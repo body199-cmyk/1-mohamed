@@ -13,9 +13,25 @@ async function fixture(page:Page){
  await page.route('**/api/ledger/operations',route=>route.fulfill({json:{ok:true,data:{status:'OK'}}}));
  await page.route('**/api/ledger/read',route=>route.fulfill({json:{ok:true,data:{status:'OK',snapshot:'10:10',
   rows:[],total_count:'0',next_cursor:null,current_cash_balance_piastres:'28000'}}}));
- await page.goto('/');await expect(page.getByText('ابدأ يومك',{exact:true})).toBeVisible();
+ await page.goto('/');await expect(page.getByText('أهلًا بك في إدارة الشغل',{exact:true})).toBeVisible();
 }
 async function nav(page:Page,label:string){await page.getByRole('navigation').getByRole('button',{name:label,exact:true}).click();}
+test('successful refresh clears a previous access error; repeated denial stays visible',async({page})=>{
+ await fixture(page);
+ await page.route('**/api/ledger/master?**',route=>route.fulfill({status:401,json:{error:'غير مصرح بالدخول.'}}));
+ await page.getByRole('button',{name:'تحديث البيانات',exact:true}).click();
+ await expect(page.getByRole('status')).toContainText('غير مصرح بالدخول.');
+ await page.getByRole('button',{name:'تحديث البيانات',exact:true}).click();
+ await expect(page.getByRole('button',{name:'تحديث البيانات',exact:true})).toBeEnabled();
+ await expect(page.getByRole('status')).toContainText('غير مصرح بالدخول.');
+ await page.route('**/api/ledger/master?**',route=>{
+  const type=new URL(route.request().url()).searchParams.get('type');
+  return route.fulfill({json:{ok:true,data:type==='contractors'?contractors:type==='vehicles'?vehicles:accounts,hasMore:false}});
+ });
+ await page.getByRole('button',{name:'تحديث البيانات',exact:true}).click();
+ await expect(page.getByText('غير مصرح بالدخول.',{exact:true})).toHaveCount(0);
+ await expect(page.getByText('المقاولون: 1 — العربيات: 1')).toBeVisible();
+});
 async function trip(page:Page){
  await nav(page,'تسجيل الشغل والدفعات');
  await page.locator('#real-trip-vehicle').selectOption('V1');await page.locator('#real-trip-counterparty').selectOption('K1');
@@ -28,7 +44,7 @@ test('mobile real workspace preserves draft, saves canonical Arabic input and ex
  const saved=page.waitForRequest(r=>r.url().includes('/api/ledger/operations'));
  await page.getByRole('button',{name:'حفظ وخروج',exact:true}).click();const payload=(await saved).postDataJSON();
  expect(payload.operation).toBe('trip.create');expect(payload.payload.weight_tonnes).toBe('1.250');expect(payload.payload.contractor_rate_egp).toBe('100');
- await expect(page.getByText('ابدأ يومك',{exact:true})).toBeVisible();
+ await expect(page.getByText('أهلًا بك في إدارة الشغل',{exact:true})).toBeVisible();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  await page.screenshot({path:'artifacts/closeout/workspace-mobile.png',fullPage:true});
 });
