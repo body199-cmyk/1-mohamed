@@ -2,7 +2,7 @@
 import { useEffect,useRef,useState,type FormEvent } from 'react';
 import type { LedgerEntities } from './workspace-data';
 import { postLedgerRead } from '../../lib/ledger/transport';
-import { piastresToPounds } from '../../lib/ledger/amounts';
+import { formatPoundsForDisplay } from '../../lib/ledger/amounts';
 import { mergeReportPage } from './report-snapshot';
 import { cashStatementDocument,verifyCashReport,type CashReport } from './cash-statement-document';
 import { ReportExportActions } from '../reports/report-export-actions';
@@ -47,17 +47,17 @@ export function RealCashStatement({contractors,vehicles,accounts,disabled,revisi
     </form>
     {error&&<p role="alert">{error}</p>}
     {report&&<>
-      <p>أول الفترة: {piastresToPounds(report.period_opening_piastres)} — مستحق الشغل: {piastresToPounds(report.work_piastres)} — المدفوع: {piastresToPounds(report.paid_piastres)}</p>
-      <p>آخر الفترة: <strong>{piastresToPounds(report.period_closing_piastres)} جنيه</strong> — {BigInt(report.period_closing_piastres)<0n?'على العربية':BigInt(report.period_closing_piastres)>0n?'للعربية':'متعادل'}</p>
-      <p>المتبقي الحالي: <strong>{piastresToPounds(report.current_cash_balance_piastres)} جنيه</strong> — {BigInt(report.current_cash_balance_piastres)<0n?'على العربية':BigInt(report.current_cash_balance_piastres)>0n?'للعربية':'متعادل'}. يشمل الحركات خارج الفترة المختارة.</p>
+      <p>أول الفترة: {formatPoundsForDisplay(report.period_opening_piastres)} — مستحق الشغل: {formatPoundsForDisplay(report.work_piastres)} — المدفوع: {formatPoundsForDisplay(report.paid_piastres)}</p>
+      <p>آخر الفترة: <strong>{formatPoundsForDisplay(report.period_closing_piastres)} جنيه</strong> — {BigInt(report.period_closing_piastres)<0n?'على العربية':BigInt(report.period_closing_piastres)>0n?'للعربية':'متعادل'}</p>
+      <p>المتبقي الحالي: <strong>{formatPoundsForDisplay(report.current_cash_balance_piastres)} جنيه</strong> — {BigInt(report.current_cash_balance_piastres)<0n?'على العربية':BigInt(report.current_cash_balance_piastres)>0n?'للعربية':'متعادل'}. يشمل الحركات خارج الفترة المختارة.</p>
       <p>تم تحميل {report.rows.length} من {report.total_count} حركة.</p>
       {report.next_cursor&&<button disabled={busy||disabled} onClick={()=>void load()}>تحميل المزيد</button>}
       {doc&&!busy&&!disabled&&<ReportExportActions document={doc} fileNameBase={`vehicle-cash-${from}-${to}`}/>}
       <div style={{overflowX:'auto'}}><table><thead><tr>{['التاريخ','الحركة','المبلغ','الرصيد','خط السير'].map(x=><th key={x}>{x}</th>)}</tr></thead>
       <tbody>{report.rows.map(row=><tr key={String(row.movement_type)+row.id}>
         <td>{String(row.date)}</td><td>{row.movement_type==='WORK'?'شغل':'دفعة'}</td>
-        <td><bdi>{piastresToPounds(String(row.signed_delta_piastres))}</bdi></td>
-        <td><bdi>{piastresToPounds(String(row.running_balance_piastres))}</bdi></td>
+        <td><bdi>{formatPoundsForDisplay(String(row.signed_delta_piastres))}</bdi></td>
+        <td><bdi>{formatPoundsForDisplay(String(row.running_balance_piastres))}</bdi></td>
         <td>{[row.origin,row.destination].filter(Boolean).join(' ← ')}</td>
       </tr>)}</tbody></table></div>
     </>}

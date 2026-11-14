@@ -1230,3 +1230,7 @@ Follow-up review: merged current main fd3122c; completed remaining live-ref guar
 DELIVERY-01 / 2026-11-14: corrected stale-branch audit, fixed login activation feedback and internal-proxy origin comparison; verified hosted owner login + one contractor persistence/reload. Same-assistant separate critical review, hostile-origin cases added. Password unchanged and never stored. No production activation. Review: DELIVERY_01_REVIEW_2026-11-14.md. Exact-head CI and remaining financial/restore gates pending.
 
 DELIVERY-01 follow-up: Edge suite ultimately exited 0 (25 PASS); 205 package + 124 web + 16 backup/preflight tests PASS. Updated SDK static assertion for explicit runtime activation prop; owner and secret checks unchanged. CI on final SHA still required.
+
+
+## WHOLE-POUND / D19 — 14 November 2026 (local checkpoint)
+Objective: user-approved whole EGP and readable millions while continuing delivery readiness. Worktree .delivery-readiness / codex/whole-pound-accounting-20261114 from main 15dbdc2; uncommitted at this checkpoint. Accounting/UI/documents, additive SQL and backup v2 updated; historical v1 remains readable. See WHOLE_POUND_REVIEW_2026-11-14.md for acceptance and remaining limitations. No hosted migration or new deployment. Independent same-assistant second review found/fixed backup mismatch, payment edit decimals and parser cast order. Next: finish browser rerun, commit, exact-head CI and reviewed release decision. PR #79 remains separate and CI-successful; PR #78 merge/deployment already verified. No secrets included.

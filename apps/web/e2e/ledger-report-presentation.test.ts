@@ -20,7 +20,7 @@ describe("PRE-LIVE exact historical report projection", () => {
       is_cancelled: true, cancel_reason: "تصحيح تاريخي", version: 2
     }], lookups);
     expect(report.headers).toContain("إجمالي المقاول (جنيه)");
-    expect(report.rows[0]).toContain("90071992547409931.23");
+    expect(report.rows[0]).toContain("90,071,992,547,409,931");
     expect(report.rows[0]).toContain("12.500");
     expect(report.rows[0]).toContain("عربية ١");
     expect(report.rows[0]).toContain("مقاول أول");
@@ -35,7 +35,7 @@ describe("PRE-LIVE exact historical report projection", () => {
       responsible_contractor_id: "K1", amount_piastres: "12345",
       receipt_number: "000007", is_cancelled: false, version: 1
     }], lookups);
-    expect(report.rows[0]).toContain("123.45");
+    expect(report.rows[0]).toContain("123");
     expect(report.rows[0]).toContain("نشط");
     expect(report.headers).not.toContain("رقم الإيصال");
     expect(report.rows[0]).not.toContain("000007");

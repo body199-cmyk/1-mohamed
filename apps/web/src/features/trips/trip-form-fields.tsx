@@ -283,7 +283,7 @@ export function TripFormFields({
         <input
           type="text"
           required
-          placeholder="مثال: 120.00"
+          placeholder="مثال: 120"
           aria-label="سعر المقاول للطن" value={tripDraft.contractorRateEgp}
           onChange={(e) =>
             dispatch({
@@ -302,7 +302,7 @@ export function TripFormFields({
         <input
           type="text"
           required
-          placeholder="مثال: 110.00"
+          placeholder="مثال: 110"
           aria-label="سعر السيارة للطن" value={tripDraft.vehicleRateEgp}
           disabled={tripDraft.sameRate}
           onChange={(e) =>
@@ -357,7 +357,7 @@ export function TripFormFields({
         <label className={styles.label}>مصاريف النقلة (كارتات وخلافه) (ج.م)</label>
         <input
           type="text"
-          placeholder="0.00"
+          placeholder="0"
           aria-label="مصاريف النقلة" value={tripDraft.expenseEgp}
           onChange={(e) =>
             dispatch({

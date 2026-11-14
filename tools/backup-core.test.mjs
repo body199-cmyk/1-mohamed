@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { test } from "node:test";
 import {
   BACKUP_TABLES, createBusinessBackup, verifyBusinessBackup,
@@ -66,7 +67,7 @@ test("B04 versioned verified snapshot includes every business table and exact re
 
 test("B04 checksum, counts and unsupported/missing fields rejected before restore",()=>{
   const archive=backup();
-  assertInvalid(()=>verifyBusinessBackup({...archive,version:2}));
+  assertInvalid(()=>verifyBusinessBackup({...archive,version:999}));
   assertInvalid(()=>verifyBusinessBackup({...archive,counts:{...archive.counts,payments:0}}));
   assertInvalid(()=>verifyBusinessBackup({...archive,sha256:"0".repeat(64)}));
   assertInvalid(()=>verifyBusinessBackup(JSON.stringify(archive).replace("000012","999999")));
@@ -74,6 +75,44 @@ test("B04 checksum, counts and unsupported/missing fields rejected before restor
   assertInvalid(()=>verifyBusinessBackup({...archive,extra:1}));
   const short=fixture();delete short.audit_log;
   assertInvalid(()=>createBusinessBackup(short));
+});
+
+test("whole-pound archive preserves rounded trip and rejects fractional financial rows", () => {
+  const data = fixture();
+  Object.assign(data.trips[0], {weight_milli_tonnes:"500",
+    contractor_rate_piastres:"100",vehicle_rate_piastres:"100",
+    contractor_total_piastres:"100",vehicle_total_piastres:"100"});
+  data.payments = [];
+  const archive = backup(data);
+  assert.equal(archive.version, 2);
+  assert.equal(verifyBusinessBackup(serializeBusinessBackup(archive)).data.trips[0].vehicle_total_piastres,"100");
+  for (const table of ["trips", "opening_balances", "payments"]) {
+    const bad = fixture();
+    const field = table === "trips" ? "contractor_rate_piastres" : table === "payments" ? "amount_piastres" : "signed_piastres";
+    bad[table][0][field] = "101";
+    assertInvalid(() => backup(bad));
+  }
+  data.trips[0].contractor_total_piastres = "50";
+  assertInvalid(() => backup(data));
+});
+
+test("legacy v1 archive retains original fractional total without reinterpretation", () => {
+  const data = fixture();
+  const archive = structuredClone(backup(data));
+  archive.version = 1;
+  Object.assign(archive.data.trips[0], {weight_milli_tonnes:"500",
+    contractor_rate_piastres:"100",vehicle_rate_piastres:"100",
+    contractor_total_piastres:"50",vehicle_total_piastres:"50"});
+  archive.data.payments = [];
+  archive.counts.payments = 0;
+  const sorted = value => Array.isArray(value) ? value.map(sorted) : value && typeof value === "object"
+    ? Object.fromEntries(Object.keys(value).sort().map(key => [key,sorted(value[key])])) : value;
+  const {sha256, ...body} = archive;
+  archive.sha256 = createHash("sha256").update(JSON.stringify(sorted(body))).digest("hex");
+  const restored = verifyBusinessBackup(archive);
+  assert.equal(restored.version,1);
+  assert.equal(restored.data.trips[0].vehicle_total_piastres,"50");
+  assertInvalid(() => createBusinessBackup(restored.data)); // explicit migration required
 });
 
 test("B04 validates cross-table FKs, account isolation and historical trip references",()=>{

@@ -1,5 +1,5 @@
 import type { OperationalReportDocument } from "@ledger/statement-export";
-import { piastresToPounds } from "../../lib/ledger/amounts";
+import { formatPoundsForDisplay } from "../../lib/ledger/amounts";
 import { assertSqlMoney } from "../../lib/ledger/report-contract";
 import { assertReportPage, type ReportPage } from "./report-snapshot";
 export type CashReport = ReportPage & {
@@ -25,7 +25,7 @@ export function verifyCashReport(report:CashReport) {
 export function cashStatementDocument(report:CashReport,vehicle:string,contractor:string):OperationalReportDocument {
   verifyCashReport(report);
   if(report.next_cursor) throw new Error('حمّل كل الصفحات قبل التصدير.');
-  const money=(v:string)=>piastresToPounds(v)+' ج.م';
+  const money=(v:string)=>formatPoundsForDisplay(v)+' ج.م';
   return {businessName:'أحمد أبو علي — حسابات النقل',title:'كشف نقدية العربية',
     subtitle:'شغل العربية ودفعاتها لدى المقاول المسؤول؛ مستقل عن فرق شغل المقاولين.',
     generatedAtLabel:new Intl.DateTimeFormat('ar-EG',{timeZone:'Africa/Cairo',dateStyle:'medium',timeStyle:'short'}).format(new Date()),
@@ -38,7 +38,7 @@ export function cashStatementDocument(report:CashReport,vehicle:string,contracto
       {label:'الرصيد الحالي',value:money(report.current_cash_balance_piastres)}]}],
     columns:['التاريخ','نوع الحركة','المرجع','خط السير','الحركة (جنيه)','الرصيد (جنيه)','ملاحظات'].map(label=>({label,widthWeight:1})),
     rows:report.rows.map(r=>[String(r.date),r.movement_type==='WORK'?'شغل':'دفعة',String(r.id),
-      [r.origin,r.destination].filter(Boolean).join(' ← '),piastresToPounds(String(r.signed_delta_piastres)),
-      piastresToPounds(String(r.running_balance_piastres)),String(r.notes??'')]),
+      [r.origin,r.destination].filter(Boolean).join(' ← '),formatPoundsForDisplay(String(r.signed_delta_piastres)),
+      formatPoundsForDisplay(String(r.running_balance_piastres)),String(r.notes??'')]),
     emptyMessage:'لا توجد حركات في الفترة.',footerNotes:['الموجب مستحق للعربية؛ السالب على العربية لدى هذا المقاول.','الإلغاءات مستبعدة. الشغل يسبق الدفعات في اليوم نفسه.']};
 }

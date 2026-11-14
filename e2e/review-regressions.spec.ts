@@ -44,7 +44,7 @@ test("المسودة تبقى بين الشاشتين والإضافة الوا�
   await page.locator('a[href="/demo/contractors"]').click();
   const afterMovementCount = await statementMovementCount(page);
   expect(afterMovementCount).toBe(beforeMovementCount + 1);
-  await expect(page.getByText("صافي الرصيد لصالح أحمد (1300.00 ج.م)", { exact: true })).toBeVisible();
+  await expect(page.getByText("صافي الرصيد لصالح أحمد (1,300 ج.م)", { exact: true })).toBeVisible();
 });
 
 test("تغيير الطريق وحده يستلزم تأكيدًا قبل استبدال المسودة", async ({ page }) => {
@@ -91,7 +91,7 @@ test("الرصيد الافتتاحي العربي دقيق والمبلغ غي�
   await expect(dialog).toHaveCount(0);
   await page.locator('a[href="/demo/contractors"]').click();
   await page.getByLabel("اختر المقاول").selectOption({ label: "اختبار الرصيد (K4)" });
-  await expect(page.getByText("صافي الرصيد لصالح أحمد (25.50 ج.م)", { exact: true })).toBeVisible();
+  await expect(page.getByText("صافي الرصيد لصالح أحمد (26 ج.م)", { exact: true })).toBeVisible();
 });
 
 test("الإضافة من المشترك لا تغير مقاول النقلة والبحث والإغلاق يحفظان المسودة", async ({ page }) => {
@@ -132,16 +132,16 @@ test("التصدير يطابق الفترة المعروضة ويدعم الع�
   const bytes = await readFile((await download.path())!);
   expect([...bytes.subarray(0, 3)]).toEqual([239, 187, 191]);
   const csv = bytes.toString("utf8");
-  expect(csv).toContain('"رصيد أول الفترة","\'-100.00 ج.م"');
+  expect(csv).toContain('"رصيد أول الفترة","\'-100 ج.م"');
   // H063 (PR #26): closing balance carries an explicit '+' sign and the formula guard apostrophe.
-  expect(csv).toContain('"رصيد آخر الفترة","\'+300.00 ج.م"');
+  expect(csv).toContain('"رصيد آخر الفترة","\'+300 ج.م"');
   expect(csv).toContain('"عدد الحركات","2"');
   const popupEvent = page.waitForEvent("popup");
   await page.getByRole("button", { name: "طباعة / حفظ PDF" }).click();
   const popup = await popupEvent;
   await expect(popup.locator("body")).toContainText("بيانات تجريبية، ليست كشفًا فعليًا");
   await expect(popup.locator(".details-table tbody tr")).toHaveCount(2);
-  await expect(popup.locator("body")).toContainText("300.00 ج.م");
+  await expect(popup.locator("body")).toContainText("300 ج.م");
   await popup.evaluate(() => document.fonts.ready);
   await popup.screenshot({ path: "apps/web/e2e/screenshots/statement-print-review.png", fullPage: true });
   await popup.close();

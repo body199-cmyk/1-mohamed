@@ -149,10 +149,10 @@ describe("T08.4/5 vehicle cash statement is a strict projection of cash-ledger",
       tripLookup:new Map(source.trips.map(t=>[t.id,t])),
     });
     expect(document.summarySections[0]!.metrics.slice(0,4).map(metric=>metric.value)).toEqual([
-      "330.00 ج.م","100.00 ج.م","100.00 ج.م","330.00 ج.م"
+      "330 ج.م","100 ج.م","100 ج.م","330 ج.م"
     ]);
-    expect(document.rows.map(row=>row[5])).toEqual(["-100.00 ج.م","100.00 ج.م"]);
-    expect(document.rows.map(row=>row[6])).toEqual(["230.00 ج.م","330.00 ج.م"]);
+    expect(document.rows.map(row=>row[5])).toEqual(["-100 ج.م","100 ج.م"]);
+    expect(document.rows.map(row=>row[6])).toEqual(["230 ج.م","330 ج.م"]);
   });
 
   it("FIN-07 preserves numeric-sized aggregate balances through cash reports and exports",()=>{
@@ -177,8 +177,8 @@ describe("T08.4/5 vehicle cash statement is a strict projection of cash-ledger",
       tripLookup:new Map(oversizedAggregate.trips.map(t=>[t.id,t]))
     });
     expect(document.summarySections[0]!.metrics.map(metric=>metric.value))
-      .toContain("92233720368547759.07 ج.م");
-    expect(document.rows[0]?.[6]).toBe("92233720368547759.07 ج.م");
+      .toContain("92,233,720,368,547,759 ج.م");
+    expect(document.rows[0]?.[6]).toBe("92,233,720,368,547,759 ج.م");
   });
   it("rejects reversed, malformed and pre-opening periods",()=>{
     expect(report("2026-11-06","2026-11-05").ok).toBe(false);

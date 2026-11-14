@@ -27,9 +27,9 @@ describe("visible carried contractor balance", () => {
     expect(visibleSummary).toContain('data-testid="opening-balance-summary"');
     expect(visibleSummary).toContain(owner);
     expect(visibleSummary).toContain("الصافي النهائي = الحساب السابق + شغل أحمد − شغل المقاول");
-    if (opening === "-40000") expect(visibleSummary).toContain("-400.00 + 1300.00 − 600.00 = 300.00");
+    if (opening === "-40000") expect(visibleSummary).toContain("-400 + 1,300 − 600 = 300");
   });
 });
 
 import { ContractorMoney } from "../src/features/contractor-statements/contractor-money";
-it.each([["100", "color:var(--contractor-credit)", "لأحمد", "+"], ["-100", "color:var(--contractor-debit)", "على أحمد", "-"], ["0", "color:var(--text-muted)", "متعادل", "0.00"]])("contractor identity %s", (value,color,label,sign) => { const html=renderToStaticMarkup(<ContractorMoney value={value} />); expect(html).toContain(color); expect(html).toContain(label); expect(html).toContain(sign); });
+it.each([["100", "color:var(--contractor-credit)", "لأحمد", "+"], ["-100", "color:var(--contractor-debit)", "على أحمد", "-"], ["0", "color:var(--text-muted)", "متعادل", "0"]])("contractor identity %s", (value,color,label,sign) => { const html=renderToStaticMarkup(<ContractorMoney value={value} />); expect(html).toContain(color); expect(html).toContain(label); expect(html).toContain(sign); });

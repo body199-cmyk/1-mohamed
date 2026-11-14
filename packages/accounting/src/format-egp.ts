@@ -16,7 +16,6 @@ export type FormatEgpResult =
     };
 
 const PIASTRES_PER_EGP = 100n;
-const PIASTRE_DIGITS = 2;
 
 function isValidSignedIntegerString(raw: string): boolean {
   if (raw.length === 0) {
@@ -55,7 +54,7 @@ export function formatEgpFromPiastres(piastres: string): FormatEgpResult {
   if (signedPiastres === 0n) {
     return {
       ok: true,
-      amount: "0.00",
+      amount: "0",
       currencyCode: "EGP",
     };
   }
@@ -63,16 +62,13 @@ export function formatEgpFromPiastres(piastres: string): FormatEgpResult {
   const isNegative = signedPiastres < 0n;
   const absPiastres = isNegative ? -signedPiastres : signedPiastres;
 
-  const wholeEgp = absPiastres / PIASTRES_PER_EGP;
-  const remainderPiastres = absPiastres % PIASTRES_PER_EGP;
-  const fractionStr = remainderPiastres
-    .toString()
-    .padStart(PIASTRE_DIGITS, "0");
-  const signPrefix = isNegative ? "-" : "";
+  const wholeEgp = (absPiastres + PIASTRES_PER_EGP / 2n) / PIASTRES_PER_EGP;
+  const grouped = wholeEgp.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  const signPrefix = isNegative && wholeEgp !== 0n ? "-" : "";
 
   return {
     ok: true,
-    amount: `${signPrefix}${wholeEgp.toString()}.${fractionStr}`,
+    amount: `${signPrefix}${grouped}`,
     currencyCode: "EGP",
   };
 }

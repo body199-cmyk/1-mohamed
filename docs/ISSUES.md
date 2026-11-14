@@ -183,3 +183,9 @@ Private workspace was a monolithic form and payment history did not contain earn
 
 ## DELIVERY-01 — 14 November 2026
 DELIVERY-01: login accepted credentials while APP_ENABLE_REAL_DATA was false and silently looped; ledger POST handlers compared browser Origin to internal NextRequest origin, causing valid trial writes to fail 403. Root causes fixed with dynamic activation UI and canonical configured origin; 21 focused regression cases PASS. Missing @supabase/ssr was a stale/incomplete local install, resolved by npm ci, not a new accounting defect. Hosted Windows browser cleanup hang remains unverified; no clean E2E exit claimed.
+
+
+## D19 review — whole-pound compatibility (14 November 2026)
+Policy migration exposed old backup arithmetic rejecting newly rounded trips, and demo payment editing adding .00. Fixed with versioned legacy/current archive verification and ungrouped whole-pound editing. Regression: tools/backup-core.test.mjs (15 PASS), payment-preview-stage3 browser edit case, whole-pound-policy tests. SQL raw overflow must be rejected before rounding; regression 16_whole_pound_verification.sql catches otherwise accepted raw overflow. No historical DB rewrite.
+
+Legacy test maintenance found by expanded D19 run: demo-flow.spec.ts has three timeouts using theme/textarea controls superseded by approved UI. This file is outside current CI; no application failure inferred from those stale selectors. Monetary assertions updated here; unrelated selector maintenance remains separate. No skipped/removed tests to hide failures.

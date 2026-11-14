@@ -34,7 +34,8 @@ const DECIMAL_FORMAT_REGEX = /^[0-9]+(?:\.[0-9]+)?$/;
 const WEIGHT_SCALE = 3;
 const MONEY_SCALE = 2;
 const WEIGHT_DIVISOR = 1000n;
-const HALF_WEIGHT_DIVISOR = 500n;
+const PIASTRES_PER_EGP = 100n;
+const WHOLE_POUND_DIVISOR = WEIGHT_DIVISOR * PIASTRES_PER_EGP;
 const MAX_SQL_BIGINT = 9223372036854775807n;
 
 type ParseScaleResult =
@@ -68,7 +69,9 @@ function parseScaledUnsignedDecimal(
   if (combinedDigits.length > 256) return { ok:false, code:"OUT_OF_RANGE" };
   const scaledValue = BigInt(combinedDigits);
   if (scaledValue > MAX_SQL_BIGINT) return { ok:false, code:"OUT_OF_RANGE" };
-  return {ok:true,scaledValue};
+  const rounded = maxFractionDigits === MONEY_SCALE
+    ? ((scaledValue + 50n) / 100n) * 100n : scaledValue;
+  return {ok:true,scaledValue:rounded};
 }
 
 function computeTotalPiastres(
@@ -76,10 +79,12 @@ function computeTotalPiastres(
   ratePiastres: bigint,
   expensePiastres: bigint
 ): string {
-  const unroundedProductMilliPiastres = weightMilliTonnes * ratePiastres;
-  const roundedProductPiastres =
-    (unroundedProductMilliPiastres + HALF_WEIGHT_DIVISOR) / WEIGHT_DIVISOR;
-  const totalPiastres = roundedProductPiastres + expensePiastres;
+  // Round once, after expenses, to the nearest whole pound (half upward).
+  // Keep exact scaled storage/API units without floating point or schema rewrites.
+  const exactMilliPiastres = weightMilliTonnes * ratePiastres
+    + expensePiastres * WEIGHT_DIVISOR;
+  const totalPiastres = ((exactMilliPiastres + WHOLE_POUND_DIVISOR / 2n)
+    / WHOLE_POUND_DIVISOR) * PIASTRES_PER_EGP;
   return totalPiastres.toString();
 }
 

@@ -91,6 +91,8 @@ const steps = [
   ['tests report snapshot', 'supabase/tests/14_report_snapshot_cash_verification.sql', 'CLOSEOUT: stale pages, SQL daily totals, cash work/payment reconciliation and access'],
   ['migration helper search paths', 'supabase/migrations/20261113142945_lock_helper_search_paths.sql', 'LIVE: deterministic helper search paths'],
   ['tests helper search paths', 'supabase/tests/15_helper_search_paths_verification.sql', 'LIVE: hostile search path cannot redirect money helpers'],
+  ['whole-pound policy', 'supabase/migrations/20261114190000_whole_pound_policy.sql', 'D19: whole-pound inputs and per-trip totals'],
+  ['whole-pound tests', 'supabase/tests/16_whole_pound_verification.sql', 'D19: exact boundaries and whole-pound constraints'],
 ];
 
 function describe(error) {

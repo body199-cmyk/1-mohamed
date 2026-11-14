@@ -28,10 +28,10 @@ describe("real contractor statement export release gate", () => {
     expect(() => verifyLiveStatement(report)).not.toThrow();
     const doc = liveStatementDocument(report, "مقاول تجريبي", "2026-01-05");
     expect(doc.businessName).not.toContain("بيانات تجريبية");
-    expect(doc.summary.closingBalanceText).toBe("+100.00 ج.م");
-    expect(doc.summary.counterpartyWorkText).toBe("-200.00 ج.م");
+    expect(doc.summary.closingBalanceText).toBe("+100 ج.م");
+    expect(doc.summary.counterpartyWorkText).toBe("-200 ج.م");
     expect(doc.summary.closingBeneficiaryText).toContain("أحمد");
-    expect(doc.rows.map(r => r.runningBalanceText)).toEqual(["0.00 ج.م", "+100.00 ج.م"]);
+    expect(doc.rows.map(r => r.runningBalanceText)).toEqual(["0 ج.م", "+100 ج.م"]);
   });
   it("blocks export of partial pages even when SQL totals are correct", () => {
     const partial: LiveStatementReport = {
@@ -68,6 +68,6 @@ describe("real contractor statement export release gate", () => {
       balance_magnitude_piastres: "9007199254740993123"
     };
     const doc = liveStatementDocument(huge, "Other", "2026-01-05");
-    expect(doc.summary.closingBalanceText).toBe("+90071992547409931.23 ج.م");
+    expect(doc.summary.closingBalanceText).toBe("+90,071,992,547,409,931 ج.م");
   });
 });

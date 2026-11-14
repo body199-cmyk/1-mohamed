@@ -160,7 +160,7 @@ export function MasterDataEntry({ contractors, vehicles, accounts, busy, write }
           onChange={e => setOpeningDate(e.target.value)} disabled={busy} />
         <label htmlFor="opening-amount">المبلغ بالجنيه (سالب أو موجب)</label>
         <input id="opening-amount" style={field} required inputMode="decimal"
-          placeholder="1250.50" value={openingAmount}
+          placeholder="1250" value={openingAmount}
           onChange={e => setOpeningAmount(e.target.value)} disabled={busy} />
         <button disabled={busy} type="submit">حفظ الرصيد الافتتاحي</button>
       </form>

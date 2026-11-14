@@ -247,7 +247,7 @@ export function SharedDataPanel({
               <label className={styles.label}>سعر المقاول للطن (ج.م)</label>
               <input
                 type="text"
-                placeholder="0.00"
+                placeholder="0"
                 aria-label="سعر المقاول المشترك" value={draft.contractorRateEgp}
                 onChange={(e) =>
                   dispatch({
@@ -263,7 +263,7 @@ export function SharedDataPanel({
               <label className={styles.label}>سعر السيارة للطن (ج.م)</label>
               <input
                 type="text"
-                placeholder="0.00"
+                placeholder="0"
                 aria-label="سعر العربية المشترك" value={draft.vehicleRateEgp}
                 disabled={draft.sameRate}
                 onChange={(e) =>
@@ -280,7 +280,7 @@ export function SharedDataPanel({
               <label className={styles.label}>مصاريف النقلة المشتركة (كارتات وخلافه) (ج.م)</label>
               <input
                 type="text"
-                placeholder="0.00"
+                placeholder="0"
                 aria-label="مصاريف النقلة المشتركة" value={draft.expenseEgp}
                 onChange={(e) =>
                   dispatch({

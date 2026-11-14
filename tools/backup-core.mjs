@@ -12,7 +12,7 @@
 import { createHash, randomUUID } from "node:crypto";
 
 export const BACKUP_FORMAT = "transport-ledger-business-snapshot";
-export const BACKUP_VERSION = 1;
+export const BACKUP_VERSION = 2;
 export const BACKUP_TABLES = Object.freeze([
   "contractors", "vehicles", "vehicle_accounts", "opening_balances",
   "trips", "payments", "audit_log", "idempotency_keys",
@@ -134,7 +134,8 @@ function cancelValid(row) {
 }
 function requireValid(ok, description) { if (!ok) fail(description); }
 
-export function verifyBusinessDataset(data) {
+export function verifyBusinessDataset(data, version = BACKUP_VERSION) {
+  requireValid(version === 1 || version === 2, "إصدار الحساب غير مدعوم.");
   requireValid(plain(data), "جداول النسخة ليست كائنًا.");
   const names = Object.keys(data).sort();
   requireValid(names.length === BACKUP_TABLES.length &&
@@ -227,7 +228,9 @@ export function verifyBusinessDataset(data) {
         field !== "weight_milli_tonnes"), "رقم نقلة غير صالح: " + field);
     }
     const weight = BigInt(t.weight_milli_tonnes),expense=BigInt(t.expense_piastres);
-    const due = rate => (weight * BigInt(rate) + 500n) / 1000n + expense;
+    const due = rate => version === 1
+      ? (weight * BigInt(rate) + 500n) / 1000n + expense
+      : ((weight * BigInt(rate) + expense * 1000n + 50000n) / 100000n) * 100n;
     requireValid(!t.same_rate || t.contractor_rate_piastres === t.vehicle_rate_piastres,
       "ربط السعرين يخالف البيانات.");
     requireValid(due(t.contractor_rate_piastres) === BigInt(t.contractor_total_piastres) &&
@@ -257,6 +260,17 @@ export function verifyBusinessDataset(data) {
       /^[a-fA-F0-9]{64}$/.test(k.payload_hash) &&
       ["PROCESSING","COMPLETED","FAILED"].includes(k.status),
       "معرف طلب أو حالته غير صحيح.");
+  }
+  if (version === 2) {
+    // Never silently convert historical fractional data into the current policy.
+    for (const [table, fields] of Object.entries({
+      opening_balances:["signed_piastres"], payments:["amount_piastres"],
+      trips:["contractor_rate_piastres","vehicle_rate_piastres","expense_piastres",
+        "contractor_total_piastres","vehicle_total_piastres"],
+    })) for (const row of data[table]) for (const field of fields) {
+      requireValid(BigInt(row[field]) % 100n === 0n,
+        "النسخة الحالية تتطلب مبالغ بالجنيه الكامل؛ البيانات التاريخية تحتاج ترحيلًا صريحًا.");
+    }
   }
   return Object.freeze(Object.fromEntries(
     BACKUP_TABLES.map(table => [table, data[table].length])
@@ -301,20 +315,20 @@ export function verifyBusinessBackup(raw) {
   requireValid(Object.keys(raw).sort().join("|") ===
     ["backupId","counts","createdAt","data","format","sha256","sourceEpoch","version"].sort().join("|"),
     "غلاف النسخة ناقص أو يحتوي حقولًا غير معتمدة.");
-  requireValid(raw.format === BACKUP_FORMAT && raw.version === BACKUP_VERSION,
+  requireValid(raw.format === BACKUP_FORMAT && (raw.version === 1 || raw.version === BACKUP_VERSION),
     "نوع النسخة أو إصدارها غير مدعوم.");
   requireValid(typeof raw.backupId === "string" && /^[0-9a-f-]{36}$/i.test(raw.backupId) &&
     typeof raw.createdAt === "string" && !Number.isNaN(Date.parse(raw.createdAt)) &&
     Number.isSafeInteger(raw.sourceEpoch) && raw.sourceEpoch >= 0,
     "معلومات النسخة غير صالحة.");
-  const counts = verifyBusinessDataset(raw.data);
+  const counts = verifyBusinessDataset(raw.data, raw.version);
   requireValid(plain(raw.counts) &&
     canonical(raw.counts) === canonical(counts),
     "أعداد سجلات النسخة لا تطابق البيانات.");
   const {sha256, ...body} = raw;
   requireValid(typeof sha256 === "string" && /^[a-f0-9]{64}$/.test(sha256) &&
     hash(body) === sha256, "بصمة SHA-256 للنسخة لا تطابق محتواها.");
-  return { backupId:raw.backupId, createdAt:raw.createdAt,
+  return { version:raw.version, backupId:raw.backupId, createdAt:raw.createdAt,
     sourceEpoch:raw.sourceEpoch, counts, data:clone(raw.data), sha256 };
 }
 

@@ -111,7 +111,7 @@ export function TripEntryPanel() {
       weightTonnes: tripDraft.weightTonnes,
       contractorRateEgp: tripDraft.contractorRateEgp,
       vehicleRateEgp: tripDraft.vehicleRateEgp,
-      expenseEgp: tripDraft.expenseEgp.trim() === "" ? "0.00" : tripDraft.expenseEgp,
+      expenseEgp: tripDraft.expenseEgp.trim() === "" ? "0" : tripDraft.expenseEgp,
     });
 
     if (!calc.ok) {
@@ -119,7 +119,7 @@ export function TripEntryPanel() {
         setValidationError(
           calc.error.field === "weightTonnes"
             ? "الوزن لا يقبل أكثر من 3 أرقام عشرية."
-            : "الأسعار والمبالغ لا تقبل أكثر من رقمين عشريين (قروش)."
+            : "اكتب الأسعار والمبالغ بالجنيه الصحيح."
         );
       } else {
         setValidationError("صيغة الأرقام المدخلة غير صحيحة.");
@@ -164,7 +164,7 @@ export function TripEntryPanel() {
         weightTonnes: tripDraft.weightTonnes,
         contractorRateEgp: tripDraft.contractorRateEgp,
         vehicleRateEgp: tripDraft.vehicleRateEgp,
-        expenseEgp: tripDraft.expenseEgp.trim() === "" ? "0.00" : tripDraft.expenseEgp,
+        expenseEgp: tripDraft.expenseEgp.trim() === "" ? "0" : tripDraft.expenseEgp,
         contractorTotalPiastres: calc.contractorTotalPiastres,
         vehicleTotalPiastres: calc.vehicleTotalPiastres,
         receiptNumber: tripDraft.receiptNumber,

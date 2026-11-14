@@ -34,7 +34,7 @@ export function TripPreviewCard({
           📊 معاينة الحساب المالي المباشر
         </h3>
         <p style={{ color: "var(--text-muted)", fontSize: "0.88rem", margin: "12px 0 0" }}>
-          أدخل الوزن وأسعار المقاول والسيارة لعرض الاستحقاق المالي المحسوب فورياً بدقة القروش.
+          أدخل الوزن وأسعار المقاول والسيارة لعرض الاستحقاق المالي المحسوب فورياً بالجنيه الصحيح.
         </p>
       </div>
     );
@@ -44,7 +44,7 @@ export function TripPreviewCard({
     weightTonnes,
     contractorRateEgp,
     vehicleRateEgp,
-    expenseEgp: expenseEgp.trim() === "" ? "0.00" : expenseEgp,
+    expenseEgp: expenseEgp.trim() === "" ? "0" : expenseEgp,
   });
 
   if (!calcResult.ok) {
@@ -55,7 +55,7 @@ export function TripPreviewCard({
       if (field === "weightTonnes") {
         errorMsg = "الوزن يقبل حتى 3 أرقام عشرية فقط (مثال: 25.450).";
       } else {
-        errorMsg = "المبالغ والأسعار تقبل رقمين عشريين كحد أقصى (قروش).";
+        errorMsg = "اكتب الأسعار والمبالغ بالجنيه؛ تُقرّب لأقرب جنيه صحيح.";
       }
     } else if (code === "INVALID_FORMAT") {
       errorMsg = "صيغة الرقم غير صحيحة، يرجى كتابة أرقام موجبة مفصولة بنقطة.";
@@ -86,10 +86,10 @@ export function TripPreviewCard({
 
   const contractorTotalStr = contractorFormatted.ok
     ? contractorFormatted.amount
-    : "0.00";
+    : "0";
   const vehicleTotalStr = vehicleFormatted.ok
     ? vehicleFormatted.amount
-    : "0.00";
+    : "0";
 
   return (
     <div className={styles.card} aria-live="polite">
@@ -97,7 +97,7 @@ export function TripPreviewCard({
         <h3 className={styles.cardTitle} style={{ fontSize: "1.1rem" }}>
           📊 معاينة الحساب المالي
         </h3>
-        <span className={`${styles.badge} ${styles.badgeInfo}`}>محسوب بالقرش</span>
+        <span className={`${styles.badge} ${styles.badgeInfo}`}>بالجنيه الصحيح</span>
       </div>
 
       <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>

@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { postLedgerRead } from "../../lib/ledger/transport";
 import { ContractorDetails } from "./contractor-details";
 import { ContractorMoney } from "../contractor-statements/contractor-money";
-import { piastresToPounds } from "../../lib/ledger/amounts";
+import { formatPoundsForDisplay } from "../../lib/ledger/amounts";
 import {
   type LiveStatementReport, assertSameStatementSnapshot,
   verifyLiveStatement
@@ -19,7 +19,7 @@ const field: React.CSSProperties = {
 const section: React.CSSProperties = {
   border: "1px solid #d0d7e2", borderRadius: 12, padding: 16, marginBottom: 20
 };
-const money = (input: string) => piastresToPounds(input) + " ج.م";
+const money = (input: string) => formatPoundsForDisplay(input) + " ج.م";
 const signed = (input: string) => (BigInt(input) > 0n ? "+" : "") + money(input);
 
 export function RealContractorStatement({ contractors, vehicles, revision, disabled }: Props) {

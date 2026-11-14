@@ -22,9 +22,9 @@ test.describe("H063 contractor work sign and receipt semantics",()=>{
     const plus=table.getByRole("row").filter({hasText:"TRIP-HIST-001"});
     const minus=table.getByRole("row").filter({hasText:"TRIP-HIST-003"});
     await expect(plus).not.toContainText("REC-001");
-    await expect(plus).toContainText("+300.00");
+    await expect(plus).toContainText("+300");
     await expect(minus).not.toContainText("REC-003");
-    await expect(minus).toContainText("-600.00");
+    await expect(minus).toContainText("-600");
     await expect(minus).toContainText("خصم على أحمد");
     await expect(minus).toBeVisible();
     expect(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1)).toBe(false);
@@ -34,14 +34,14 @@ test.describe("H063 contractor work sign and receipt semantics",()=>{
     await page.goto("/demo/contractors");
     const csv=await getDownload(page,"تنزيل CSV");
     const csvText=csv.bytes.toString("utf8");
-    for(const token of ["رقم النقلة","TRIP-HIST-001","TRIP-HIST-003","+300.00","-600.00"]){
+    for(const token of ["رقم النقلة","TRIP-HIST-001","TRIP-HIST-003","+300","-600"]){
       expect(csvText,token).toContain(token);
     }
     expect(csvText).not.toContain('"رقم الإيصال"');
     const xlsx=await getDownload(page,"تنزيل Excel XLSX");
     expect(xlsx.bytes.subarray(0,4).toString("hex")).toBe("504b0304");
     const xlsxXml=xlsx.bytes.toString("utf8"); // current XLSX stores XML uncompressed
-    for(const token of ["رقم النقلة","TRIP-HIST-001","TRIP-HIST-003","+300.00","-600.00"]){
+    for(const token of ["رقم النقلة","TRIP-HIST-001","TRIP-HIST-003","+300","-600"]){
       expect(xlsxXml,token).toContain(token);
     }
     expect(xlsxXml).toContain('autoFilter ref="A1:E4"');

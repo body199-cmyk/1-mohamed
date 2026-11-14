@@ -5,16 +5,16 @@ test.describe("T08.4/5 vehicle cash report uses existing payment cash ledger",()
     await page.goto("/demo/reports/vehicle-cash");
     await expect(page.getByRole("heading",{name:"كشف حساب نقد العربية"})).toBeVisible();
     const summary=page.getByRole("region",{name:"ملخص كشف نقد العربية"});
-    await expect(summary).toContainText("280.00 ج.م");
-    await expect(summary).toContainText("0.00 ج.م");
+    await expect(summary).toContainText("280 ج.م");
+    await expect(summary).toContainText("0 ج.م");
     // CASH-LABEL-01: the description shows the movement identifier, not the receipt number.
     await expect(page.getByRole("table",{name:"جدول حركات كشف العربية"})).toContainText("TRIP-HIST-001");
     await expect(page.getByRole("table",{name:"جدول حركات كشف العربية"})).not.toContainText("REC-001");
     await expect(page.getByRole("table",{name:"جدول حركات كشف العربية"})).not.toContainText("REC-002");
     await page.getByLabel("مسؤول النقد في الكشف").selectOption("K1");
-    await expect(page.getByRole("region",{name:"ملخص كشف نقد العربية"})).toContainText("0.00 ج.م");
+    await expect(page.getByRole("region",{name:"ملخص كشف نقد العربية"})).toContainText("0 ج.م");
     await page.getByLabel("عربية كشف النقد").selectOption("V3");
-    await expect(page.getByRole("region",{name:"ملخص كشف نقد العربية"})).toContainText("525.00 ج.م");
+    await expect(page.getByRole("region",{name:"ملخص كشف نقد العربية"})).toContainText("525 ج.م");
     await expect(page.getByRole("table",{name:"جدول حركات كشف العربية"})).toContainText("TRIP-HIST-003");
     await expect(page.getByRole("table",{name:"جدول حركات كشف العربية"})).not.toContainText("REC-003");
   });
@@ -28,15 +28,15 @@ test.describe("T08.4/5 vehicle cash report uses existing payment cash ledger",()
     await page.getByLabel("من تاريخ كشف العربية").fill("2026-11-03");
     await page.getByLabel("إلى تاريخ كشف العربية").fill("2026-11-05");
     const summary=page.getByRole("region",{name:"ملخص كشف نقد العربية"});
-    await expect(summary).toContainText("280.00 ج.م");
-    await expect(summary).toContainText("100.00 ج.م");
-    await expect(summary).toContainText("180.00 ج.م");
+    await expect(summary).toContainText("280 ج.م");
+    await expect(summary).toContainText("100 ج.م");
+    await expect(summary).toContainText("180 ج.م");
     const table=page.getByRole("table",{name:"جدول حركات كشف العربية"});
     await expect(table).toContainText("دفعة");
     await expect(table).not.toContainText("REC-001");
     await page.getByLabel("من تاريخ كشف العربية").fill("2026-11-04");
     await expect(page.getByRole("main").getByRole("status")).toContainText("لا توجد حركات");
-    await expect(summary).toContainText("180.00 ج.م");
+    await expect(summary).toContainText("180 ج.م");
   });
   test("reconciles cash closing with payments and carries the exact closing balance into the next period",async({page})=>{
     await page.goto("/demo/payments");
@@ -44,18 +44,18 @@ test.describe("T08.4/5 vehicle cash report uses existing payment cash ledger",()
     await paymentForm.getByLabel("تاريخ الدفع الحقيقي").fill("2026-11-03");
     await paymentForm.getByLabel("المبلغ بالجنيه").fill("25");
     await paymentForm.getByRole("button",{name:"تسجيل الدفعة"}).click();
-    await expect(page.getByRole("region",{name:"ملخص حساب نقد العربية"})).toContainText("255.00 ج.م");
+    await expect(page.getByRole("region",{name:"ملخص حساب نقد العربية"})).toContainText("255 ج.م");
     await page.getByRole("navigation",{name:"التنقل الرئيسي"}).getByRole("link",{name:"نقدية العربية",exact:true}).click();
     const summary=page.getByRole("region",{name:"ملخص كشف نقد العربية"});
     await page.getByLabel("من تاريخ كشف العربية").fill("2026-11-03");
     await page.getByLabel("إلى تاريخ كشف العربية").fill("2026-11-03");
-    await expect(summary).toContainText("280.00 ج.م");
-    await expect(summary).toContainText("25.00 ج.م");
-    await expect(summary).toContainText("255.00 ج.م");
+    await expect(summary).toContainText("280 ج.م");
+    await expect(summary).toContainText("25 ج.م");
+    await expect(summary).toContainText("255 ج.م");
     await page.getByLabel("من تاريخ كشف العربية").fill("2026-11-04");
     await page.getByLabel("إلى تاريخ كشف العربية").fill("2026-11-05");
-    await expect(summary).toContainText("255.00 ج.م");
-    await expect(summary).toContainText("0.00 ج.م");
+    await expect(summary).toContainText("255 ج.م");
+    await expect(summary).toContainText("0 ج.م");
   });
   test("archived vehicle keeps its historical report and mobile has no page overflow",async({page})=>{
     await page.setViewportSize({width:360,height:740});

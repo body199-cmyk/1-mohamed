@@ -12,7 +12,7 @@ export function CashOpeningsPanel() {
   const [contractorId, setContractorId] = useState("");
   const [vehicleId, setVehicleId] = useState("");
   const [date, setDate] = useState("2026-11-01");
-  const [amount, setAmount] = useState("0.00");
+  const [amount, setAmount] = useState("0");
   const [direction, setDirection] = useState<Direction>("ZERO");
   const [reason, setReason] = useState("");
   const [error, setError] = useState("");
@@ -24,7 +24,7 @@ export function CashOpeningsPanel() {
     const signed = record ? BigInt(record.signedPiastres) : 0n;
     setDirection(signed > 0n ? "VEHICLE" : signed < 0n ? "CONTRACTOR" : "ZERO");
     const formatted = formatEgpFromPiastres((signed < 0n ? -signed : signed).toString());
-    setAmount(formatted.ok ? formatted.amount : "0.00");
+    setAmount(formatted.ok ? formatted.amount.replace(/,/g, "") : "0");
   };
   const exists = cashOpenings.some(x => x.contractorId === contractorId && x.vehicleId === vehicleId);
   return <div className={styles.cashPanel}>

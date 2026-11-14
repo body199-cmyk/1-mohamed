@@ -31,8 +31,8 @@ const today="2026-11-05";
 
 describe("T08.3 cash ledger demo follows T08.2/D15/D16",()=>{
   it("parses Egyptian pounds and Arabic digits exactly, rejects fractions, zero and overflow",()=>{
-    expect(parsePaymentEgp("١٢٫٥٠")).toBe("1250");
-    expect(parsePaymentEgp("0.01")).toBe("1");
+    expect(parsePaymentEgp("١٢٫٥٠")).toBe("1300");
+    expect(parsePaymentEgp("0.01")).toBe(null);
     expect(parsePaymentEgp("0.001")).toBe(null);
     expect(parsePaymentEgp("0")).toBe(null);
     expect(parsePaymentEgp("92233720368547758.08")).toBe(null);
@@ -273,7 +273,7 @@ describe("T08.3 cash ledger demo follows T08.2/D15/D16",()=>{
       expect(ledger.value.balancePiastres).toBe("50000");
     }
     expect(validateDemoPayment(source,draft("500","2026-11-03"),today).ok).toBe(true);
-    expect(validateDemoPayment(source,draft("500.01","2026-11-03"),today).ok).toBe(false);
+    expect(validateDemoPayment(source,draft("501","2026-11-03"),today).ok).toBe(false);
   });
 
   it("FIN-02 blocks a past payment when a later intermediate date is underfunded",()=>{

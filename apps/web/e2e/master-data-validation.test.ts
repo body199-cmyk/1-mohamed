@@ -6,9 +6,9 @@ describe("UI-BASE-01B cash and identity validation", () => {
     expect(normalizeMasterKey("ط س ر ۱۲۳")).toBe(normalizeMasterKey("ط س ر ١٢٣"));
     expect(normalizeMasterKey("ط س ر ١٢٤")).not.toBe(normalizeMasterKey("ط س ر ١٢٣"));
   });
-  it("parses exact signed piastres, rejects rounding and bigint overflow", () => {
-    expect(parseOpeningEgp("١٢٣٫٤٥","VEHICLE")).toBe("12345");
-    expect(parseOpeningEgp("123.4","CONTRACTOR")).toBe("-12340");
+  it("rounds signed money to whole pounds and rejects unsupported precision/overflow", () => {
+    expect(parseOpeningEgp("١٢٣٫٤٥","VEHICLE")).toBe("12300");
+    expect(parseOpeningEgp("123.4","CONTRACTOR")).toBe("-12300");
     expect(parseOpeningEgp("0","ZERO")).toBe("0");
     expect(parseOpeningEgp("1.234","VEHICLE")).toBeNull();
     expect(parseOpeningEgp("-5","VEHICLE")).toBeNull();
@@ -16,11 +16,11 @@ describe("UI-BASE-01B cash and identity validation", () => {
     expect(parseOpeningEgp("9".repeat(100000),"VEHICLE")).toBeNull();
     expect(validOpeningPiastres("9".repeat(100000))).toBe(false);
     expect(parseOpeningEgp("92233720368547758.08","VEHICLE")).toBeNull();
-    expect(parseOpeningEgp("92233720368547758.07","VEHICLE")).toBe("9223372036854775807");
+    expect(parseOpeningEgp("92233720368547758.07","VEHICLE")).toBe("9223372036854775800");
     expect(validOpeningPiastres("-9223372036854775807")).toBe(true);
     expect(validOpeningPiastres("-9223372036854775808")).toBe(true);
     expect(validOpeningPiastres("-9223372036854775809")).toBe(false);
-    expect(parseOpeningEgp("92233720368547758.08","CONTRACTOR")).toBe("-9223372036854775808");
+    expect(parseOpeningEgp("92233720368547758.08","CONTRACTOR")).toBe("-9223372036854775800");
     expect(parseOpeningEgp("92233720368547758.09","CONTRACTOR")).toBeNull();
     expect(validOpeningPiastres("9223372036854775808")).toBe(false);
   });

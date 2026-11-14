@@ -40,7 +40,7 @@ describe("real operational five-format document", () => {
     expect(doc.rows[0]).toContain("عربية ١");
     expect(doc.rows[0]).toContain("المقاول الأول");
     expect(doc.rows[0]).toContain("12.500");
-    expect(doc.rows[0]).toContain("90071992547409931.23");
+    expect(doc.rows[0]).toContain("90,071,992,547,409,931");
     expect(doc.rows[0]).toContain("السويس");
   });
   it("includes SQL period opening, closing and current cash without recomputing", () => {
@@ -55,11 +55,11 @@ describe("real operational five-format document", () => {
     };
     const doc = buildRealOperationalDocument("payments.list", report, lookups,
       "2026-01-01", "2026-01-31", "2026-02-01");
-    expect(doc.rows[0]).toContain("125.00");
+    expect(doc.rows[0]).toContain("125");
     const metrics = doc.summarySections[0]!.metrics;
-    expect(metrics.find(m => m.label === "رصيد أول الفترة")?.value).toBe("100.00 ج.م");
-    expect(metrics.find(m => m.label === "رصيد آخر الفترة")?.value).toBe("-25.00 ج.م");
-    expect(metrics.find(m => m.label === "الرصيد الحالي")?.value).toBe("90071992547409931.23 ج.م");
+    expect(metrics.find(m => m.label === "رصيد أول الفترة")?.value).toBe("100 ج.م");
+    expect(metrics.find(m => m.label === "رصيد آخر الفترة")?.value).toBe("-25 ج.م");
+    expect(metrics.find(m => m.label === "الرصيد الحالي")?.value).toBe("90,071,992,547,409,931 ج.م");
     expect(() => buildRealOperationalDocument("payments.list", {
       ...report, period_closing_piastres: "1.1"
     }, lookups, "2026-01-01", "2026-01-31", "now")).toThrow();
