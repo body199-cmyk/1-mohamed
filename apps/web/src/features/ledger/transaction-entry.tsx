@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { PaymentPreview } from "./payment-preview";
 import { SearchableChoice } from "./searchable-choice";
 import { QuickRecordModal, type QuickRecordInput } from "./quick-record-modal";
@@ -20,6 +20,7 @@ type Props = {
   revision?: number;
   onExit?: () => void;
   write: (operation: WriteOperation, payload: Record<string, unknown>) => Promise<boolean>;
+  refresh: () => Promise<void>;
 };
 
 const field: React.CSSProperties = { display: "block", padding: 10, width: "100%", maxWidth: 460, margin: "6px 0 12px" };
@@ -29,7 +30,7 @@ const section: React.CSSProperties = { border: "1px solid #d0d7e2", borderRadius
  * Prepared real-data entry. SQL computes all totals and the responsible
  * contractor. Never accept browser-computed totals as authoritative.
  */
-export function TransactionEntry({ contractors, vehicles, accounts, busy, write, revision, onExit }: Props) {
+export function TransactionEntry({ contractors, vehicles, accounts, busy, write, revision, refresh, onExit }: Props) {
   const [tripVehicle, setTripVehicle] = useState("");
   const [tripCounterparty, setTripCounterparty] = useState("");
   const [direction, setDirection] = useState<"AHMED_SUPPLIES" | "OTHER_SUPPLIES">("AHMED_SUPPLIES");
@@ -51,17 +52,50 @@ export function TransactionEntry({ contractors, vehicles, accounts, busy, write,
   const submitting = useRef(false);
   const [message, setMessage] = useState("");
   const drafts = useRef(new Map<string, Record<string, unknown>>());
+  // Inline creation keeps one payload (and therefore one requestKey) per exact
+  // input, so an unresolved retry never creates a second record. The draft is
+  // dropped only on a confirmed result; changing the input starts a new draft.
+  const quickDrafts = useRef(new Map<string, Record<string, unknown>>());
 
   /** Inline creation from the choice fields; payloads keep a stable id across retries. */
   async function quickCreateVehicle(input: QuickRecordInput): Promise<string | null> {
-    const payload = { id: "VEH-" + crypto.randomUUID(),
-      plate_number: input.plate, driver_name: input.driver || null };
-    return (await write("vehicle.create", payload)) ? payload.id : null;
+    const key = "vehicle.create:" + input.plate + "|" + input.driver;
+    const cached = quickDrafts.current.get(key)
+      ?? { id: "VEH-" + crypto.randomUUID(), plate_number: input.plate, driver_name: input.driver || null };
+    quickDrafts.current.set(key, cached);
+    const confirmed = await write("vehicle.create", cached);
+    if (confirmed) quickDrafts.current.delete(key);
+    return confirmed ? String(cached.id) : null;
   }
   async function quickCreateContractor(input: QuickRecordInput): Promise<string | null> {
-    const payload = { id: "CTR-" + crypto.randomUUID(), name: input.name, start_mode: "DETAILS" };
-    return (await write("contractor.create", payload)) ? payload.id : null;
+    const key = "contractor.create:" + input.name;
+    const cached = quickDrafts.current.get(key)
+      ?? { id: "CTR-" + crypto.randomUUID(), name: input.name, start_mode: "DETAILS" };
+    quickDrafts.current.set(key, cached);
+    const confirmed = await write("contractor.create", cached);
+    if (confirmed) quickDrafts.current.delete(key);
+    return confirmed ? String(cached.id) : null;
   }
+
+  // A confirmed creation stays pending until the refreshed lists contain the
+  // record; only then is it selected and the dialog closed. A failed refresh
+  // never reports a failed creation and never re-creates the record.
+  const [pendingVehicle, setPendingVehicle] = useState<string | null>(null);
+  const [pendingContractor, setPendingContractor] = useState<string | null>(null);
+  const [pendingAccount, setPendingAccount] = useState<{ vehicleId: string; contractorId: string } | null>(null);
+  useEffect(() => {
+    if (pendingVehicle && vehicles.some(v => v.id === pendingVehicle)) {
+      setTripVehicle(pendingVehicle); setPendingVehicle(null); setQuickModal(null);
+    }
+    if (pendingContractor && contractors.some(c => c.id === pendingContractor)) {
+      setTripCounterparty(pendingContractor); setPendingContractor(null); setQuickModal(null);
+    }
+    if (pendingAccount && accounts.some(a => a.vehicle_id === pendingAccount.vehicleId
+        && a.contractor_id === pendingAccount.contractorId)) {
+      setPaymentAccount(pendingAccount.vehicleId + "|" + pendingAccount.contractorId);
+      setPendingAccount(null); setQuickModal(null);
+    }
+  }, [vehicles, contractors, accounts, pendingVehicle, pendingContractor, pendingAccount]);
 
   async function createTrip(event: FormEvent) {
     event.preventDefault();
@@ -186,12 +220,16 @@ export function TransactionEntry({ contractors, vehicles, accounts, busy, write,
       </form>
       <QuickRecordModal kind="vehicle" open={quickModal === "vehicle"} busy={busy}
         existing={vehicles.filter(v => !v.is_archived).map(v => v.plate_number)}
+        pending={quickModal === "vehicle" && pendingVehicle !== null}
+        onRefreshLists={() => void refresh()}
         onClose={() => setQuickModal(null)}
-        onCreate={quickCreateVehicle} onCreated={id => setTripVehicle(id)}/>
+        onCreate={quickCreateVehicle} onCreated={id => setPendingVehicle(id)}/>
       <QuickRecordModal kind="contractor" open={quickModal === "contractor"} busy={busy}
         existing={contractors.filter(c => !c.is_archived).map(c => c.name)}
+        pending={quickModal === "contractor" && pendingContractor !== null}
+        onRefreshLists={() => void refresh()}
         onClose={() => setQuickModal(null)}
-        onCreate={quickCreateContractor} onCreated={id => setTripCounterparty(id)}/>
+        onCreate={quickCreateContractor} onCreated={id => setPendingContractor(id)}/>
     </section>
     <section style={section}>
       <h2>تسجيل دفعة نقدية</h2>
@@ -231,7 +269,9 @@ export function TransactionEntry({ contractors, vehicles, accounts, busy, write,
         createContractor={name => quickCreateContractor({ plate: "", driver: "", name })}
         ensureAccount={(vehicleId, contractorId) =>
           write("vehicle.account.ensure", { vehicle_id: vehicleId, contractor_id: contractorId })}
-        onAccountReady={(vehicleId, contractorId) => setPaymentAccount(vehicleId + "|" + contractorId)}/>
+        onAccountReady={(vehicleId, contractorId) => setPendingAccount({ vehicleId, contractorId })}
+        pending={quickModal === "payment" && pendingAccount !== null}
+        onRefreshLists={() => void refresh()}/>
     </section>
   </>;
 }

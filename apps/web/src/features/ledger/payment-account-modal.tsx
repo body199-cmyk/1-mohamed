@@ -1,5 +1,5 @@
 "use client";
-import { useState, type FormEvent, type ReactNode } from "react";
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { useModalFocus } from "../../components/use-modal-focus";
 import { validateQuickContractorName, validateQuickPlate } from "./quick-add-validation";
 
@@ -15,17 +15,22 @@ const dialog: React.CSSProperties = {
 };
 
 type Option = { id: string; label: string };
-const FAIlURE = "لم يتم فتح الحساب. راجع رسالة النظام أعلى الصفحة.";
 
 /**
  * Opens a (vehicle × contractor) cash account for the payment form: pick existing
  * records or create them inline, then ensure the account through the ledger write path.
+ * Each creation step stores its confirmed id, so a retry resumes from the failed
+ * step and never re-creates an already-created record. Closing here does not
+ * undo confirmed creations. A synchronous ref guard blocks double submits, and
+ * Escape cannot close while a write is in flight.
  */
 export function PaymentAccountModal({ open, busy, vehicles, contractors, activePlates,
-  activeContractorNames, onClose, createVehicle, createContractor, ensureAccount, onAccountReady }: {
+  activeContractorNames, pending, onRefreshLists, onClose, createVehicle, createContractor,
+  ensureAccount, onAccountReady }: {
   open: boolean; busy: boolean;
   vehicles: readonly Option[]; contractors: readonly Option[];
   activePlates: readonly string[]; activeContractorNames: readonly string[];
+  pending?: boolean; onRefreshLists?: () => void;
   onClose: () => void;
   createVehicle: (plate: string, driver: string) => Promise<string | null>;
   createContractor: (name: string) => Promise<string | null>;
@@ -38,37 +43,65 @@ export function PaymentAccountModal({ open, busy, vehicles, contractors, activeP
   const [existingContractor, setExistingContractor] = useState("");
   const [newName, setNewName] = useState("");
   const [error, setError] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const dialogRef = useModalFocus(open, onClose);
+  const [createdVehicleId, setCreatedVehicleId] = useState<string | null>(null);
+  const [createdContractorId, setCreatedContractorId] = useState<string | null>(null);
+  const [opened, setOpened] = useState(false);
+  const inFlight = useRef(false);
+  const dialogRef = useModalFocus(open, () => { if (!inFlight.current) onClose(); });
+  useEffect(() => {
+    if (open) return;
+    setExistingVehicle(""); setNewPlate(""); setDriver("");
+    setExistingContractor(""); setNewName(""); setError("");
+    setCreatedVehicleId(null); setCreatedContractorId(null); setOpened(false);
+  }, [open]);
   if (!open) return null;
-  const locked = busy || submitting;
+  const locked = busy || inFlight.current;
+  const progress = createdVehicleId || createdContractorId
+    ? "تم إنشاء: " + [
+        createdVehicleId ? "العربية" : null,
+        createdContractorId ? "المقاول" : null,
+      ].filter(Boolean).join(" و") + ". أعد المحاولة لاستكمال الباقي."
+    : "";
 
   async function save(event: FormEvent) {
     event.preventDefault();
     if (locked) return;
-    const plateError = newPlate.trim() ? validateQuickPlate(newPlate, activePlates) : null;
+    const plateError = newPlate.trim() && !createdVehicleId
+      ? validateQuickPlate(newPlate, activePlates) : null;
     if (plateError) { setError(plateError); return; }
-    const nameError = newName.trim() ? validateQuickContractorName(newName, activeContractorNames) : null;
+    const nameError = newName.trim() && !createdContractorId
+      ? validateQuickContractorName(newName, activeContractorNames) : null;
     if (nameError) { setError(nameError); return; }
     if (!newPlate.trim() && !existingVehicle) { setError("اختر عربية أو أدخل لوحة جديدة."); return; }
     if (!newName.trim() && !existingContractor) { setError("اختر مقاولًا أو أدخل اسمًا جديدًا."); return; }
     setError("");
-    setSubmitting(true);
+    inFlight.current = true;
+    // Whether the vehicle step creates a new record in this pass (not pre-created
+    // in a previous attempt), so a later failure reports progress accurately.
+    const vehicleWasNew = createdVehicleId === null && Boolean(newPlate.trim());
     try {
-      const vehicleId = newPlate.trim()
-        ? await createVehicle(newPlate.trim(), driver.trim())
-        : existingVehicle;
-      const contractorId = newName.trim()
-        ? await createContractor(newName.trim())
-        : existingContractor;
-      if (!vehicleId || !contractorId) { setError(FAIlURE); return; }
-      if (!(await ensureAccount(vehicleId, contractorId))) { setError(FAIlURE); return; }
-      onAccountReady(vehicleId, contractorId);
-      setExistingVehicle(""); setNewPlate(""); setDriver("");
-      setExistingContractor(""); setNewName(""); setError("");
-      onClose();
+      const vehicleId = createdVehicleId
+        ?? (newPlate.trim() ? await createVehicle(newPlate.trim(), driver.trim()) : existingVehicle);
+      if (createdVehicleId === null && vehicleId !== null) setCreatedVehicleId(vehicleId);
+      if (!vehicleId) { setError("لم يتم فتح الحساب. راجع رسالة النظام أعلى الصفحة."); return; }
+      const contractorId = createdContractorId
+        ?? (newName.trim() ? await createContractor(newName.trim()) : existingContractor);
+      if (createdContractorId === null && contractorId !== null) setCreatedContractorId(contractorId);
+      if (!contractorId) {
+        setError(vehicleWasNew
+          ? "أُنشئت العربية. أعد المحاولة لاستكمال إنشاء المقاول وفتح الحساب."
+          : "لم يتم فتح الحساب. راجع رسالة النظام أعلى الصفحة.");
+        return;
+      }
+      // The ensure operation is idempotent; retrying it never duplicates the account.
+      if (!(await ensureAccount(vehicleId, contractorId))) {
+        setError("لم يتم فتح الحساب. راجع رسالة النظام أعلى الصفحة.");
+        return;
+      }
+      setOpened(true);
+      onAccountReady(vehicleId, contractorId); // Caller keeps the dialog open until the refreshed accounts contain the pair.
     } finally {
-      setSubmitting(false);
+      inFlight.current = false;
     }
   }
 
@@ -76,8 +109,12 @@ export function PaymentAccountModal({ open, busy, vehicles, contractors, activeP
     <div style={dialog} role="dialog" aria-modal="true" aria-label="فتح حساب عربية جديد">
       <h3>➕ فتح حساب عربية جديد</h3>
       <p>للدفعات النقدية: اختر العربية والمقاول المسؤول، أو أنشئهما هنا فورًا ثم يُفتح الحساب بينهما.</p>
+      {opened && <p role="status">تم فتح الحساب بنجاح. في انتظار تحديث القوائم…</p>}
+      {opened && onRefreshLists &&
+        <button type="button" onClick={onRefreshLists} disabled={busy}>تحديث القوائم</button>}
+      {progress && !opened && <p role="status">{progress}</p>}
       {error && <p role="alert">{error}</p>}
-      <form onSubmit={save}>
+      {!opened && <form onSubmit={save}>
         <label htmlFor="quick-account-vehicle">العربية الموجودة</label>
         <select id="quick-account-vehicle" style={field} value={existingVehicle}
           onChange={e => setExistingVehicle(e.target.value)} disabled={locked}>
@@ -101,7 +138,7 @@ export function PaymentAccountModal({ open, busy, vehicles, contractors, activeP
           onChange={e => setNewName(e.target.value)} disabled={locked} placeholder="مثال: مصنع النور" />
         <button type="button" onClick={onClose} disabled={locked}>إلغاء</button>{" "}
         <button type="submit" disabled={locked}>فتح الحساب</button>
-      </form>
+      </form>}
     </div>
   </div>;
 }

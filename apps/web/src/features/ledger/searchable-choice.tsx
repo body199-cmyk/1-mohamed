@@ -1,8 +1,10 @@
 "use client";
-import {useState} from 'react';
+import {useEffect,useState} from 'react';
 type Choice={id:string;label:string};
 export function SearchableChoice({id,label,choices,value,onChange,disabled,onAdd,addLabel}:{id:string;label:string;choices:Choice[];value:string;onChange:(value:string)=>void;disabled:boolean;onAdd?:()=>void;addLabel?:string}) {
   const [search,setSearch]=useState('');const [recent,setRecent]=useState<string[]>([]);
+  // Selection (manual or programmatic, e.g. right after inline creation) clears the search.
+  useEffect(()=>{ if(value) setSearch(''); },[value]);
   const filtered=choices.filter(c=>c.label.includes(search.trim())||c.id===value)
     .sort((a,b)=>{const ai=recent.indexOf(a.id),bi=recent.indexOf(b.id);return (ai<0?999:ai)-(bi<0?999:bi);});
   return <div>

@@ -30,6 +30,11 @@ function entry(page:Page){return page.getByRole('navigation').getByRole('button'
 
 test('adds a vehicle inline from the trip form and selects it',async({page})=>{
  await fixture(page);await entry(page);
+ // The trip draft must survive inline creation untouched.
+ await page.locator('#real-trip-date').fill('2026-11-14');
+ await page.locator('#real-trip-weight').fill('15');
+ // A filled search is cleared once the new record is selected programmatically.
+ await page.locator('#real-trip-vehicle-search').fill('عربية');
  await page.locator('#real-trip-vehicle-add').click();
  const created=page.waitForRequest(r=>r.url().includes('/api/ledger/operations'));
  await page.locator('#quick-plate').fill('د هـ و 1234');
@@ -40,6 +45,10 @@ test('adds a vehicle inline from the trip form and selects it',async({page})=>{
  expect(request.payload.plate_number).toBe('د هـ و 1234');
  expect(request.payload.driver_name).toBe('سائق تجربة');
  await expect(page.locator('#real-trip-vehicle')).toHaveValue(request.payload.id);
+ await expect(page.locator('#real-trip-vehicle-search')).toHaveValue('');
+ await expect(page.getByRole('dialog')).toHaveCount(0);
+ await expect(page.locator('#real-trip-date')).toHaveValue('2026-11-14');
+ await expect(page.locator('#real-trip-weight')).toHaveValue('15');
 });
 
 test('adds a contractor inline from the trip form and selects it',async({page})=>{
