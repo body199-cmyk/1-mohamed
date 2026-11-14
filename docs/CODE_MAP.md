@@ -1,5 +1,9 @@
 # خريطة الوصول السريع
 
+## SCREEN-REPORT-01 — مسارات الشاشة والتقرير
+
+`apps/web/src/components/site-shell.tsx` يختار الغلاف العام للمعاينة مقابل صفحة `/app`; الصفحة الخاصة لا تستخدم عمود شريط المعاينة غير الموجود. `apps/web/src/features/ledger/real-workspace.tsx` يملك تنقل مساحة العمل، و`real-cash-statement.tsx` يقدّم كشف العربية والرصيد الحالي. `tools/workspace-test-server.mjs` و`e2e/workspace/workspace.spec.ts` يشغلان المسار الفعلي المعزول ويثبتان العرض على أحجام سطح المكتب.
+
 ## الملفات الموجودة فعلًا — الحزم المستقلة والتطبيق التجريبي
 
 ### إضافات مراجعة H034 الفعلية
@@ -346,3 +350,6 @@
 - Current hosted activation state and blocker: `docs/STATUS.md`.
 
 Live workspace home reuses approved shortcut styles from styles/globals.css; real-workspace.tsx owns navigation and workspace.module.css supplies button sizing. 14 November 2026.
+
+Vehicle-specific cash/work report: features/ledger/real-cash-statement.tsx; menu كشف حساب عربية in real-workspace.tsx. Displays independent vehicle/responsible-contractor account, period closing and current remaining.
+

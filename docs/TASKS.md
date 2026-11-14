@@ -1,5 +1,9 @@
 # المهام
 
+## آخر تسليم — إصلاح الشاشة الكبيرة وتقرير العربية (قيد CI)
+
+النطاق محصور في غلاف صفحة `/app` واختبار تخطيط مساحة العمل، مع إبقاء فرع صلاحيات الإيميلات الإضافية منفصلًا. معيار القبول: لا ينكمش عمود المحتوى أو بطاقات التقرير عند 768/1024/1440، ويظل تقرير العربية قابلًا للوصول ويعرض الختامي والفائض الحالي من نفس قراءة البيانات. التحقق المحلي: TypeScript و7 اختبارات Edge معزولة PASS؛ لا تفعيل للبيانات الحقيقية.
+
 الحالة بتاريخ **٧ نوفمبر ٢٠٢٦ / H064**: H063/PR #26 ما زال مرجع إغلاق تقرير المقاول؛ وأُضيف H064 لمتابعة أساس E2E بعده. PR #28 دُمج في `main=433658bfc32a411dbfbbd2640a6d564f3577a1e4` بعد CI #42314459722 بنجاح (55/55 Chromium + 9/9 cross-feature regression، وكل فحوص typecheck/package/SQL/negative controls/backup/build/Auth HTTP). H064 غيّر الاختبارات وملف CI والتوثيق فقط، ولم يغيّر كود التطبيق أو المعادلات أو SQL. **هذا لا يثبت حفظًا دائمًا أو Auth حقيقيًا أو تزامن Supabase**. ما زال المشروع في وضع المعاينة، والمستودع Public حتى الآن؛ تُراجع STATUS وOFFLINE_FIRST_ROADMAP_H042 وSUPABASE_AUTH_SETUP.
 
 ## الحالات والدليل
@@ -304,3 +308,6 @@ Backup source inspection confirms tools/backup-core.mjs is an isolated core, not
 ## 14 November 2026 — workspace recovery fix
 Observed live owner requests to all three master endpoints returned HTTP 200. The UI retained a prior failed refresh notice because successful refresh never cleared it. Separate loadError from write notices; only the latest successful complete refresh clears loadError. Repeated denial remains visible and all Auth/RLS guards are unchanged. Includes approved blue home cards reused from global CSS; browser fixture now loads that same CSS.
 Validation: TypeScript PASS; isolated browser regression covers repeated 401 then recovery and real populated selectors/counts. Six workspace browser tests run with installed Edge. Separate critical diff review by the same assistant: request-token race guard preserved, partial success cannot clear error, write success notices preserved. Original transient rejection cause is not proven; this fixes the demonstrated stale notice. Live writes, backup/restore, multi-user authorization and production activation remain pending. Exact-head CI required before merge.
+
+14 November 2026 — VEHICLE-REPORT-DISCOVERY: navigation now says كشف حساب عربية, with trip/payment/remaining caption and explicit vehicle/responsible-contractor account label. Existing current_cash_balance_piastres is shown separately from period closing; no arithmetic changes or cross-contractor netting. TypeScript PASS and 6 Edge fixture tests PASS; regression distinguishes period closing 150 from current 280. Same-assistant second diff review complete. Trial live persistence, backup/restore and additional-user implementation still pending; no production activation.
+

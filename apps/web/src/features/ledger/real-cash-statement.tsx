@@ -34,9 +34,9 @@ export function RealCashStatement({contractors,vehicles,accounts,disabled,revisi
   const contractor=contractors.find(c=>c.id===report?.responsible_contractor_id)?.name??report?.responsible_contractor_id??'';
   const doc=report&&!report.next_cursor?cashStatementDocument(report,vehicle,contractor):null;
   return <section aria-label="كشف نقدية العربية">
-    <h2>كشف نقدية العربية</h2><p>الشغل والدفعات في حساب مستقل لكل عربية ومقاول مسؤول.</p>
+    <h2>كشف حساب عربية</h2><p>اختار العربية والمقاول المسؤول والفترة لعرض النقلات ومستحق الشغل والدفعات والمتبقي. لكل مقاول مسؤول حساب مستقل لنفس العربية.</p>
     <form onSubmit={load}>
-      <label htmlFor="cash-account">الحساب</label><select id="cash-account" required value={account} style={field} disabled={busy||disabled}
+      <label htmlFor="cash-account">العربية — المقاول المسؤول</label><select id="cash-account" required value={account} style={field} disabled={busy||disabled}
         onChange={e=>{setAccount(e.target.value);reset();}}><option value="">اختر الحساب</option>
         {accounts.map(a=><option key={a.vehicle_id+'|'+a.contractor_id} value={a.vehicle_id+'|'+a.contractor_id}>
           {vehicles.find(v=>v.id===a.vehicle_id)?.plate_number??a.vehicle_id} — {contractors.find(c=>c.id===a.contractor_id)?.name??a.contractor_id}
@@ -49,6 +49,7 @@ export function RealCashStatement({contractors,vehicles,accounts,disabled,revisi
     {report&&<>
       <p>أول الفترة: {piastresToPounds(report.period_opening_piastres)} — مستحق الشغل: {piastresToPounds(report.work_piastres)} — المدفوع: {piastresToPounds(report.paid_piastres)}</p>
       <p>آخر الفترة: <strong>{piastresToPounds(report.period_closing_piastres)} جنيه</strong> — {BigInt(report.period_closing_piastres)<0n?'على العربية':BigInt(report.period_closing_piastres)>0n?'للعربية':'متعادل'}</p>
+      <p>المتبقي الحالي: <strong>{piastresToPounds(report.current_cash_balance_piastres)} جنيه</strong> — {BigInt(report.current_cash_balance_piastres)<0n?'على العربية':BigInt(report.current_cash_balance_piastres)>0n?'للعربية':'متعادل'}. يشمل الحركات خارج الفترة المختارة.</p>
       <p>تم تحميل {report.rows.length} من {report.total_count} حركة.</p>
       {report.next_cursor&&<button disabled={busy||disabled} onClick={()=>void load()}>تحميل المزيد</button>}
       {doc&&!busy&&!disabled&&<ReportExportActions document={doc} fileNameBase={`vehicle-cash-${from}-${to}`}/>}
@@ -62,3 +63,4 @@ export function RealCashStatement({contractors,vehicles,accounts,disabled,revisi
     </>}
   </section>;
 }
+

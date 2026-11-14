@@ -1,5 +1,9 @@
 # وحدات التنفيذ الصغيرة
 
+## SCREEN-REPORT-01 — تخطيط الشاشة الكبيرة وتقرير العربية
+
+الحالة: قيد مراجعة CI قبل الدمج. الملفات الفعلية: `apps/web/src/components/site-shell.tsx`، `tools/workspace-test-server.mjs`، `e2e/workspace/workspace.spec.ts`، مع تغييرات تقرير العربية الموثقة في سجل 14 نوفمبر. التحقق المحلي يغطي 768/1024/1440، و7 اختبارات Edge، وفحص الأنواع. خارج النطاق: Supabase/Auth والنسخ والاسترجاع وفرع الإيميلات الإضافية.
+
 هذا تفصيل للمهام الأم في [TASKS](TASKS.md)، وليس إذنًا بالتنفيذ. **حالة كل خطوة موضحة ببطاقتها؛ ما لا يحمل دليل تنفيذ يظل لم يبدأ** وترث اعتماديات وقرارات المهمة الأم. تحديث الحالة يتم هنا لكل خطوة، وحالة الأم تُشتق من اكتمال خطواتها والتحقق المتكامل. الملفات الفعلية تُحدد قبل التنفيذ من [CODE_MAP](CODE_MAP.md) بعد D08/T04؛ النطاق أدناه وحدات مقترحة، لا أسماء ملفات مختلقة.
 
 ## شرط اكتمال مشترك لكل خطوة
@@ -544,3 +548,6 @@ Backup source inspection confirms tools/backup-core.mjs is an isolated core, not
 ## 14 November 2026 — workspace recovery fix
 Observed live owner requests to all three master endpoints returned HTTP 200. The UI retained a prior failed refresh notice because successful refresh never cleared it. Separate loadError from write notices; only the latest successful complete refresh clears loadError. Repeated denial remains visible and all Auth/RLS guards are unchanged. Includes approved blue home cards reused from global CSS; browser fixture now loads that same CSS.
 Validation: TypeScript PASS; isolated browser regression covers repeated 401 then recovery and real populated selectors/counts. Six workspace browser tests run with installed Edge. Separate critical diff review by the same assistant: request-token race guard preserved, partial success cannot clear error, write success notices preserved. Original transient rejection cause is not proven; this fixes the demonstrated stale notice. Live writes, backup/restore, multi-user authorization and production activation remain pending. Exact-head CI required before merge.
+
+14 November 2026 — VEHICLE-REPORT-DISCOVERY: navigation now says كشف حساب عربية, with trip/payment/remaining caption and explicit vehicle/responsible-contractor account label. Existing current_cash_balance_piastres is shown separately from period closing; no arithmetic changes or cross-contractor netting. TypeScript PASS and 6 Edge fixture tests PASS; regression distinguishes period closing 150 from current 280. Same-assistant second diff review complete. Trial live persistence, backup/restore and additional-user implementation still pending; no production activation.
+
