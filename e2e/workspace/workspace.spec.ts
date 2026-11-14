@@ -78,13 +78,31 @@ test('changed snapshot stops full export; complete daily report displays exact S
 });
 test('cash statement shows both sources and exports exact complete CSV',async({page})=>{
  await fixture(page);await page.route('**/api/ledger/read',route=>route.fulfill({json:{ok:true,data:{status:'OK',snapshot:'10:10',total_count:'2',next_cursor:null,
- date_from:'2026-01-02',date_to:'2026-01-02',vehicle_id:'V1',responsible_contractor_id:'K_AHMED',period_opening_piastres:'10000',work_piastres:'9000',paid_piastres:'4000',period_closing_piastres:'15000',current_cash_balance_piastres:'15000',
+ date_from:'2026-01-02',date_to:'2026-01-02',vehicle_id:'V1',responsible_contractor_id:'K_AHMED',period_opening_piastres:'10000',work_piastres:'9000',paid_piastres:'4000',period_closing_piastres:'15000',current_cash_balance_piastres:'28000',
  rows:[{id:'T1',date:'2026-01-02',movement_type:'WORK',signed_delta_piastres:'9000',running_balance_piastres:'19000',origin:'القاهرة',destination:'السويس'},
  {id:'P1',date:'2026-01-02',movement_type:'PAYMENT',signed_delta_piastres:'-4000',running_balance_piastres:'15000'}]}}}));
- await nav(page,'نقدية العربية');await page.locator('#cash-account').selectOption('V1|K_AHMED');
+ await nav(page,'كشف حساب عربية');await page.locator('#cash-account').selectOption('V1|K_AHMED');
  await page.locator('#cash-from').fill('2026-01-02');await page.locator('#cash-to').fill('2026-01-02');
  await page.getByRole('button',{name:'عرض كشف النقدية',exact:true}).click();await expect(page.getByLabel('كشف نقدية العربية')).toContainText('150.00');
+ await expect(page.getByText('المتبقي الحالي:',{exact:false})).toContainText('280.00');
  const download=page.waitForEvent('download');await page.getByRole('button',{name:'تنزيل CSV',exact:true}).click();
  const fs=await import('node:fs/promises');const text=await fs.readFile((await (await download).path())!,'utf8');
  expect(text).toContain('T1');expect(text).toContain('P1');expect(text).toContain('السويس');expect(text).toContain('150.00');
 });
+
+test('desktop workspace keeps the report content column usable at wide viewports',async({page})=>{
+ await fixture(page);
+ for(const width of [768,1024,1440]){
+  await page.setViewportSize({width,height:900});
+  const geometry=await page.evaluate(()=>{
+   const workspace=document.querySelector('[class*="workspace"]') as HTMLElement;
+   const nav=document.querySelector('[class*="nav"]') as HTMLElement;
+   const content=document.querySelector('[class*="content"]') as HTMLElement;
+   const cards=[...document.querySelectorAll('.shortcutTile')].map(node=>(node as HTMLElement).getBoundingClientRect());
+   return {width:innerWidth,workspace:workspace?.getBoundingClientRect().width,nav:nav?.getBoundingClientRect().width,content:content?.getBoundingClientRect().width,minCard:Math.min(...cards.map(card=>card.width)),maxCard:Math.max(...cards.map(card=>card.width))};
+  });
+  expect(geometry.content).toBeGreaterThan(400);
+  expect(geometry.minCard).toBeGreaterThan(180);
+ }
+});
+

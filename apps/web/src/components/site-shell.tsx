@@ -25,8 +25,7 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
         </div>
       </div>
     </EntrySessionProvider></DemoStoreProvider> :
-      <div className="appShell">
-        <main id="main-content" tabIndex={-1} className="container appMain">{children}</main>
-      </div>}
+      <main id="main-content" tabIndex={-1} className="container appMain">{children}</main>}
   </ThemeProvider>;
 }
+
