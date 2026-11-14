@@ -5,6 +5,7 @@ import { useDemoStore } from "../../demo/demo-context";
 import { StatementSummaryCard } from "./statement-summary-card";
 import { StatementTable } from "./statement-table";
 import { StatementExportActions } from "./statement-export-actions";
+import {wholeHistoryPeriod} from "../reports/report-period";
 import styles from "./statements.module.css";
 
 function cairoDate(date: Date): string {
@@ -21,7 +22,7 @@ export function ContractorStatementsView() {
   const [selectedContractorId, setSelectedContractorId] = useState<string>(
     contractors[0]?.id ?? "K1"
   );
-  const [periodMode, setPeriodMode] = useState<"all" | "range">("all");
+  const [periodMode, setPeriodMode] = useState<"all" | "range" | "history">("all");
   const [fromDate, setFromDate] = useState("2026-11-01");
   const [toDate, setToDate] = useState(() => cairoDate(new Date()));
 
@@ -30,14 +31,16 @@ export function ContractorStatementsView() {
     [contractors, selectedContractorId]
   );
 
-  const effectiveFromDate = periodMode === "all" ? (currentContractor?.openingDate ?? fromDate) : fromDate;
+  const historyPeriod=wholeHistoryPeriod(trips.filter(t=>t.counterpartyId===selectedContractorId).map(t=>t.workDate),currentContractor?.openingDate,cairoDate(new Date()));
+  const effectiveToDate=periodMode==="history"?historyPeriod.to:toDate;
+  const effectiveFromDate = periodMode === "history" ? historyPeriod.from : periodMode === "all" ? (currentContractor?.openingDate ?? fromDate) : fromDate;
 
   const statementResult = useMemo(() => {
-    if (!selectedContractorId || !effectiveFromDate || !toDate) {
+    if (!selectedContractorId || !effectiveFromDate || !effectiveToDate) {
       return null;
     }
-    return getStatementForContractor(selectedContractorId, effectiveFromDate, toDate);
-  }, [selectedContractorId, effectiveFromDate, toDate, getStatementForContractor]);
+    return getStatementForContractor(selectedContractorId, effectiveFromDate, effectiveToDate);
+  }, [selectedContractorId, effectiveFromDate, effectiveToDate, getStatementForContractor]);
 
   const tripDetailsById = useMemo(() => new Map(trips.map(trip => [trip.id, {
     vehicle: vehicles.find(vehicle => vehicle.id === trip.vehicleId)?.plateNumber ?? trip.vehicleId,
@@ -66,7 +69,7 @@ export function ContractorStatementsView() {
             </select>
           </div>
 
-          <div className={styles.formGroup}><label className={styles.label}>نطاق كشف الحساب</label><select aria-label="نطاق كشف الحساب" className={styles.select} value={periodMode} onChange={e=>setPeriodMode(e.target.value as "all" | "range")}><option value="all">من بداية حساب المقاول</option><option value="range">فترة محددة</option></select></div>
+          <div className={styles.formGroup}><label className={styles.label}>نطاق كشف الحساب</label><select aria-label="نطاق كشف الحساب" className={styles.select} value={periodMode} onChange={e=>setPeriodMode(e.target.value as "all" | "range" | "history")}><option value="all">من بداية حساب المقاول</option><option value="range">فترة محددة</option><option value="history">كل الحساب من البداية (كل التواريخ)</option></select></div>
           {/* From Date */}
           {periodMode === "range" && <div className={styles.formGroup}>
             <label className={styles.label}>من تاريخ</label>
@@ -85,6 +88,7 @@ export function ContractorStatementsView() {
             <input
               type="date"
               aria-label="إلى تاريخ"
+              disabled={periodMode === "history"}
               value={toDate}
               onChange={(e) => setToDate(e.target.value)}
               className={styles.input}
@@ -129,6 +133,7 @@ export function ContractorStatementsView() {
         </div>
       </div>
 
+      {periodMode === "history" && <p>كل الحساب من البداية: {historyPeriod.from} — {historyPeriod.to}</p>}
       {!statementResult && currentContractor && <p role="alert">حدد بداية الفترة ونهايتها لعرض الكشف والتصدير.</p>}
       {/* Statement Result rendering */}
       {!currentContractor && (

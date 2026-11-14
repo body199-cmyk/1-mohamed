@@ -5,9 +5,11 @@ import { postLedgerRead } from '../../lib/ledger/transport';
 import { formatPoundsForDisplay } from '../../lib/ledger/amounts';
 import { mergeReportPage } from './report-snapshot';
 import { cashStatementDocument,verifyCashReport,type CashReport } from './cash-statement-document';
+import { ReportHistoryScope } from "../reports/report-period";
 import { ReportExportActions } from '../reports/report-export-actions';
 const field:React.CSSProperties={display:'block',width:'100%',maxWidth:460,padding:10,margin:'6px 0 12px'};
 export function RealCashStatement({contractors,vehicles,accounts,disabled,revision}:LedgerEntities&{disabled:boolean;revision:number}) {
+  const [allHistory,setAllHistory]=useState(false);
   const [account,setAccount]=useState('');const [from,setFrom]=useState('');const [to,setTo]=useState('');
   const [report,setReport]=useState<CashReport|null>(null);const [busy,setBusy]=useState(false);const [error,setError]=useState('');
   const active=useRef(0);const query=useRef<Record<string,unknown>|null>(null);
@@ -18,8 +20,8 @@ export function RealCashStatement({contractors,vehicles,accounts,disabled,revisi
     const more=!e;const prior=more?report:null;
     if(more&&!prior?.next_cursor)return;
     const [vehicle_id,responsible_contractor_id]=account.split('|');
-    if(!vehicle_id||!responsible_contractor_id||!from||!to||from>to){setError('حدد الحساب وفترة صحيحة.');return;}
-    const payload=more?query.current!:{vehicle_id,responsible_contractor_id,date_from:from,date_to:to,limit:200};
+    if(!vehicle_id||!responsible_contractor_id||(!allHistory&&(!from||!to||from>to))){setError('حدد الحساب وفترة صحيحة.');return;}
+    const payload=more?query.current!:{vehicle_id,responsible_contractor_id,...(allHistory?{all_history:true}:{date_from:from,date_to:to}),limit:200};
     const token=active.current;setBusy(true);setError('');if(!more)setReport(null);
     try{
       const result=await postLedgerRead<CashReport>('cash.statement',{...payload,...(prior?{cursor:prior.next_cursor,snapshot:prior.snapshot}:{})});
@@ -41,18 +43,20 @@ export function RealCashStatement({contractors,vehicles,accounts,disabled,revisi
         {accounts.map(a=><option key={a.vehicle_id+'|'+a.contractor_id} value={a.vehicle_id+'|'+a.contractor_id}>
           {vehicles.find(v=>v.id===a.vehicle_id)?.plate_number??a.vehicle_id} — {contractors.find(c=>c.id===a.contractor_id)?.name??a.contractor_id}
         </option>)}</select>
-      <label htmlFor="cash-from">من تاريخ</label><input id="cash-from" type="date" required value={from} style={field} disabled={busy||disabled} onChange={e=>{setFrom(e.target.value);reset();}}/>
-      <label htmlFor="cash-to">إلى تاريخ</label><input id="cash-to" type="date" required value={to} style={field} disabled={busy||disabled} onChange={e=>{setTo(e.target.value);reset();}}/>
+      <ReportHistoryScope checked={allHistory} disabled={busy||disabled} onChange={value=>{setAllHistory(value);reset();}}/>
+      <label htmlFor="cash-from">من تاريخ</label><input id="cash-from" type="date" required={!allHistory} value={from} style={field} disabled={busy||disabled||allHistory} onChange={e=>{setFrom(e.target.value);reset();}}/>
+      <label htmlFor="cash-to">إلى تاريخ</label><input id="cash-to" type="date" required={!allHistory} value={to} style={field} disabled={busy||disabled||allHistory} onChange={e=>{setTo(e.target.value);reset();}}/>
       <button disabled={busy||disabled}>عرض كشف النقدية</button>
     </form>
     {error&&<p role="alert">{error}</p>}
     {report&&<>
+      {allHistory&&<p>كل الحساب من البداية: {report.date_from} — {report.date_to}</p>}
       <p>أول الفترة: {formatPoundsForDisplay(report.period_opening_piastres)} — مستحق الشغل: {formatPoundsForDisplay(report.work_piastres)} — المدفوع: {formatPoundsForDisplay(report.paid_piastres)}</p>
       <p>آخر الفترة: <strong>{formatPoundsForDisplay(report.period_closing_piastres)} جنيه</strong> — {BigInt(report.period_closing_piastres)<0n?'على العربية':BigInt(report.period_closing_piastres)>0n?'للعربية':'متعادل'}</p>
       <p>المتبقي الحالي: <strong>{formatPoundsForDisplay(report.current_cash_balance_piastres)} جنيه</strong> — {BigInt(report.current_cash_balance_piastres)<0n?'على العربية':BigInt(report.current_cash_balance_piastres)>0n?'للعربية':'متعادل'}. يشمل الحركات خارج الفترة المختارة.</p>
       <p>تم تحميل {report.rows.length} من {report.total_count} حركة.</p>
       {report.next_cursor&&<button disabled={busy||disabled} onClick={()=>void load()}>تحميل المزيد</button>}
-      {doc&&!busy&&!disabled&&<ReportExportActions document={doc} fileNameBase={`vehicle-cash-${from}-${to}`}/>}
+      {doc&&!busy&&!disabled&&<ReportExportActions document={doc} fileNameBase={`vehicle-cash-${report.date_from}-${report.date_to}`}/>}
       <div style={{overflowX:'auto'}}><table><thead><tr>{['التاريخ','الحركة','المبلغ','الرصيد','خط السير'].map(x=><th key={x}>{x}</th>)}</tr></thead>
       <tbody>{report.rows.map(row=><tr key={String(row.movement_type)+row.id}>
         <td>{String(row.date)}</td><td>{row.movement_type==='WORK'?'شغل':'دفعة'}</td>

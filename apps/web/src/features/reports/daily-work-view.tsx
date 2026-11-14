@@ -4,6 +4,7 @@ import React, { useMemo, useState } from "react";
 import { formatEgpFromPiastres } from "@ledger/accounting";
 import { useDemoStore } from "../../demo/demo-context";
 import { buildDailyWorkReport, type DailyWorkTotals } from "./daily-work-report";
+import {ReportHistoryScope} from "./report-period";
 import styles from "./daily-work.module.css";
 import { ReportExportActions } from "./report-export-actions";
 import { toDailyWorkOperationalReport } from "./report-export-documents";
@@ -35,34 +36,36 @@ function TotalCard({ label, totals }: { label: string; totals: DailyWorkTotals }
 
 export function DailyWorkView() {
   const { contractors, vehicles, trips } = useDemoStore();
+  const [allHistory,setAllHistory]=useState(false);
   const [workDate, setWorkDate] = useState(currentCairoDate);
   const [contractorId, setContractorId] = useState("");
   const [vehicleId, setVehicleId] = useState("");
 
   const report = useMemo(
-    () => buildDailyWorkReport(trips, { workDate, contractorId, vehicleId }),
-    [trips, workDate, contractorId, vehicleId]
+    () => buildDailyWorkReport(trips, { workDate, contractorId, vehicleId, allHistory }),
+    [trips, workDate, contractorId, vehicleId, allHistory]
   );
   const contractorNames = useMemo(() => new Map(contractors.map(c => [c.id, c.name])), [contractors]);
   const vehiclePlates = useMemo(() => new Map(vehicles.map(v => [v.id, v.plateNumber])), [vehicles]);
 
   const exportDocument = useMemo(() => report.ok ? toDailyWorkOperationalReport(report, {
-    workDate,
+    workDate, allHistory,
     contractorLabel: contractorId ? contractorNames.get(contractorId) ?? contractorId : "جميع المقاولين",
     vehicleLabel: vehicleId ? vehiclePlates.get(vehicleId) ?? vehicleId : "جميع العربيات",
     contractorNames,
     vehiclePlates,
-  }) : null, [report, workDate, contractorId, vehicleId, contractorNames, vehiclePlates]);
+  }) : null, [report, workDate, allHistory, contractorId, vehicleId, contractorNames, vehiclePlates]);
 
   return <div className={styles.page}>
     <header>
-      <h1>تقرير الشغل اليومي</h1>
+      <h1>{allHistory?"تقرير الشغل — كل الحساب":"تقرير الشغل اليومي"}</h1>
       <p className={styles.muted}>معاينة تجريبية من النقلات المسجلة في نفس الجلسة. القيم حجم شغل واستحقاقات، وليست رصيد فرق الشغل أو النقد المتبقي بعد الدفعات.</p>
     </header>
 
     <section className={styles.filters} aria-label="فلاتر التقرير اليومي">
+      <ReportHistoryScope checked={allHistory} onChange={setAllHistory}/>
       <label>تاريخ التقرير
-        <input type="date" aria-label="تاريخ التقرير" value={workDate}
+        <input type="date" disabled={allHistory} aria-label="تاريخ التقرير" value={workDate}
           onChange={e => setWorkDate(e.target.value)} />
       </label>
       <label>المقاول
@@ -83,7 +86,7 @@ export function DailyWorkView() {
       </label>
       <button type="button" className={styles.reset}
         onClick={() => { setContractorId(""); setVehicleId(""); }}>
-        عرض الجميع في اليوم
+        {allHistory?"عرض جميع المقاولين والعربيات":"عرض الجميع في اليوم"}
       </button>
     </section>
 
@@ -93,19 +96,20 @@ export function DailyWorkView() {
         : "تم إيقاف عرض المجاميع: بيانات نقلة غير متطابقة مع محرك الحساب" +
           (report.tripId ? " (" + report.tripId + ")." : ".")}
     </p> : <>
-      {exportDocument && <ReportExportActions document={exportDocument} fileNameBase={"daily-work-" + workDate + "-" + (contractorId || "all-contractors") + "-" + (vehicleId || "all-vehicles")} />}
+      {exportDocument && <ReportExportActions document={exportDocument} fileNameBase={"daily-work-" + (allHistory?"all-history":workDate) + "-" + (contractorId || "all-contractors") + "-" + (vehicleId || "all-vehicles")} />}
       <div className={styles.stats}>
-        <TotalCard label="إجمالي اليوم المحدد" totals={report.totals} />
+        <TotalCard label={allHistory?"إجمالي كل الحساب":"إجمالي اليوم المحدد"} totals={report.totals} />
         <TotalCard label="شغل أحمد للطرف الآخر" totals={report.ahmedSupplies} />
         <TotalCard label="شغل الطرف الآخر لأحمد" totals={report.otherSupplies} />
       </div>
       {report.rows.length === 0 ? <p role="status" className={styles.empty}>
-        لا توجد نقلات في اليوم والفلاتر المحددة. جرّب تاريخًا أو مقاولًا أو عربية أخرى.
+        {allHistory?"لا توجد نقلات مطابقة للفلاتر المختارة.":"لا توجد نقلات في اليوم والفلاتر المحددة. جرّب تاريخًا أو مقاولًا أو عربية أخرى."}
       </p> : <>
         <h2 className={styles.tableTitle}>تفاصيل النقلات ({report.rows.length})</h2>
         <div className={styles.tableScroll} role="region" aria-label="التمرير الأفقي لجدول النقلات" tabIndex={0}>
-          <table className={styles.table} aria-label="نقلات اليوم">
+          <table className={styles.table} aria-label={allHistory?"نقلات كل الحساب":"نقلات اليوم"}>
             <thead><tr>
+              {allHistory&&<th scope="col">التاريخ</th>}
               <th scope="col">رقم النقلة</th>
               <th scope="col">المقاول</th>
               <th scope="col">العربية</th>
@@ -116,6 +120,7 @@ export function DailyWorkView() {
               <th scope="col">مستحق العربية</th>
             </tr></thead>
             <tbody>{report.rows.map(t => <tr key={t.id}>
+              {allHistory&&<td>{t.workDate}</td>}
               <th scope="row">{t.id}</th>
               <td>{contractorNames.get(t.counterpartyId) ?? t.counterpartyId}</td>
               <td>{vehiclePlates.get(t.vehicleId) ?? t.vehicleId}</td>

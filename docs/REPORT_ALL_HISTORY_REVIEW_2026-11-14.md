@@ -1,0 +1,21 @@
+# REPORT-ALL-01 — optional whole account history (14 November 2026)
+
+User requests an additional report filter showing all old account activity for the selected contractor/vehicle, preserving existing details/date filtering, and explicitly authorizes merging to main and Vercel publication. Branch codex/report-all-history-20261114 from released main 167fbedfd7ca8709a357024f8c9246327bab5625.
+
+## Acceptance and implementation
+- Existing default date controls and contractor demo start-to-selected-end mode stay unchanged. New optional all-history checkbox on live trip/payment, contractor and cash reports; contractor demo gains a separate history option, and demo daily/cash gain the checkbox. Switching back restores the user's previous manual dates and invalidates prior exports.
+- SQL owner-only report wrapper resolves actual earliest/latest dates, starting at the account opening when present; no invented sentinel date, no lost opening balance, no relaxed financial rule. Contractor work stays separate from cash/payment history. Selected identities, cancellation settings, 200-row pagination and snapshot checks remain authoritative. Empty accounts remain valid and opening-only accounts start/end on the opening date.
+- Optional boolean all_history is additive. Non-boolean flags and unknown report operations reject; existing payloads keep existing behavior. Response carries effective dates; documents/filenames use those dates rather than disabled manual inputs. Daily all-history view/export adds transaction date because it now spans multiple days; existing single-day columns unchanged.
+- Migration 20261114190803_report_all_history.sql created using official pinned Supabase CLI 3.1.0 migration new (no services/Docker/models). Replaces only the report read wrapper, retaining owner gate, grants and deterministic search path. No financial data rewrite, new account access, permanent activation or external backup upload.
+
+## Verification and separate critical review
+Same assistant, a separate second pass; no second-human claim. Reviewed changed source/tests against accepted scope, opening boundary, empty accounts, independent work/cash identities, invalid boolean/unauthorized actor, preservation of manual dates, resolved export metadata, paginated export completeness and existing snapshot guard. Tests use HTTP boundary fixtures; real Auth/concurrent-device acceptance remains separate.
+- Local types + 223 package + 126 web tests PASS; full workspace first 31/31 PASS then independent all-history pagination added (5/5 focused cases PASS). Latest full suite/CI after final title labels still required.
+- Full isolated SQL migrations and suites PASS including every existing active opening and four report types, equivalence to the same explicit period, page continuation and non-owner denial.
+- Deliberately disabling the SQL period resolver caused the all-history suite to FAIL; restored original migration in finally. This verifies test sensitivity. A corrected fixture expectation used V1's actual single trip; no application behavior relaxed.
+- Demo browser regression PASS: all-history totals, retained contractor/vehicle filters, date in CSV, manual date restoration, cash and contractor options. Latest final-label build and CI pending.
+- Backup/preflight 19 PASS; SDK disabled-by-default owner gate PASS; diff check PASS. No new unverified delivery claim.
+
+## Release and remaining limits
+User has explicitly authorized this PR's merge/publication and necessary report-read migration on the existing trial project; do not ask again. Before applying: capture current report-function definition for rollback; verified business safety snapshot is already present locally. After exact-head CI: apply read migration, verify owner-only hosted all-history and unchanged counts/totals, merge, verify actual main/closed PR and Vercel READY at exact merge SHA, smoke published UI and save checkpoint.
+Earlier #79/#80 release is complete: main167fbed, CI43628674847 SUCCESS, Vercel dpl_9Sgf91LudnzbNjswayaBW3pBmShk READY; whole-pound migration 20261114184853 applied and verified. No permanent access activation. Overall delivery still needs encrypted offsite backup/full isolated hosted restore and remaining live/security/device gates.

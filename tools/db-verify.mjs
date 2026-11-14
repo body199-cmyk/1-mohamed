@@ -93,6 +93,8 @@ const steps = [
   ['tests helper search paths', 'supabase/tests/15_helper_search_paths_verification.sql', 'LIVE: hostile search path cannot redirect money helpers'],
   ['whole-pound policy', 'supabase/migrations/20261114190000_whole_pound_policy.sql', 'D19: whole-pound inputs and per-trip totals'],
   ['whole-pound tests', 'supabase/tests/16_whole_pound_verification.sql', 'D19: exact boundaries and whole-pound constraints'],
+  ['all-history policy', 'supabase/migrations/20261114190803_report_all_history.sql', 'Reports: resolve actual complete account period'],
+  ['all-history tests', 'supabase/tests/17_report_all_history_verification.sql', 'Reports: filters, opening, cursor and authorization'],
 ];
 
 function describe(error) {

@@ -3,7 +3,8 @@
 import { useMemo, useState } from "react";
 import { formatEgpFromPiastres } from "@ledger/accounting";
 import { useDemoStore } from "../../demo/demo-context";
-import { DEMO_PRIMARY_RESPONSIBLE_ID } from "../payments/cash-ledger";
+import {ReportHistoryScope,wholeHistoryPeriod} from "./report-period";
+import { DEMO_PRIMARY_RESPONSIBLE_ID,cashResponsibleForTrip,cairoBusinessDate } from "../payments/cash-ledger";
 import { buildVehicleCashReport } from "./vehicle-cash-report";
 import styles from "../payments/payments.module.css";
 import { ReportExportActions } from "./report-export-actions";
@@ -18,13 +19,20 @@ export function VehicleCashView() {
   const { contractors, vehicles, trips, payments, cashOpenings } = useDemoStore();
   const [responsibleId, setResponsibleId] = useState(DEMO_PRIMARY_RESPONSIBLE_ID);
   const [vehicleId, setVehicleId] = useState("V1");
+  const [allHistory,setAllHistory]=useState(false);
   const [from, setFrom] = useState("2026-11-01");
   const [to, setTo] = useState("2026-11-30");
 
+  const historyPeriod=wholeHistoryPeriod([
+    ...trips.filter(t=>t.vehicleId===vehicleId&&cashResponsibleForTrip(t)===responsibleId).map(t=>t.workDate),
+    ...payments.filter(p=>p.vehicleId===vehicleId&&p.responsibleContractorId===responsibleId).map(p=>p.paymentDate),
+  ],cashOpenings.find(o=>o.vehicleId===vehicleId&&o.contractorId===responsibleId)?.startDate,cairoBusinessDate());
+  const effectiveFrom=allHistory?historyPeriod.from:from;
+  const effectiveTo=allHistory?historyPeriod.to:to;
   const result = useMemo(() => buildVehicleCashReport(
     { trips, payments, cashOpenings },
-    { vehicleId, responsibleContractorId: responsibleId, from, to }
-  ), [trips, payments, cashOpenings, vehicleId, responsibleId, from, to]);
+    { vehicleId, responsibleContractorId: responsibleId, from:effectiveFrom, to:effectiveTo }
+  ), [trips, payments, cashOpenings, vehicleId, responsibleId, effectiveFrom, effectiveTo]);
 
   const tripLookup = useMemo(() => new Map(trips.map(trip => [trip.id, trip])), [trips]);
   const vehicle = vehicles.find(v => v.id === vehicleId);
@@ -62,23 +70,25 @@ export function VehicleCashView() {
           </option>)}
         </select>
       </label>
+      <ReportHistoryScope checked={allHistory} onChange={setAllHistory}/>
       <label>من تاريخ
-        <input aria-label="من تاريخ كشف العربية" type="date" value={from}
+        <input aria-label="من تاريخ كشف العربية" type="date" disabled={allHistory} value={from}
           onChange={e => setFrom(e.target.value)} />
       </label>
       <label>إلى تاريخ
-        <input aria-label="إلى تاريخ كشف العربية" type="date" value={to}
+        <input aria-label="إلى تاريخ كشف العربية" type="date" disabled={allHistory} value={to}
           onChange={e => setTo(e.target.value)} />
       </label>
     </section>
 
+    {allHistory&&<p>كل الحساب من البداية: {effectiveFrom} — {effectiveTo}</p>}
     <section className={styles.section} aria-label="تعريف الحساب النقدي">
       <h2>{vehicle?.plateNumber ?? "عربية غير معروفة"} — {responsibleName}</h2>
       <p className={styles.muted}>المقاول المسؤول هو صاحب التزام النقد لهذه العربية؛ أموال الشغل المتبادل بين المقاولين لا تدخل في هذا الكشف. السجلات المؤرشفة تظل ظاهرة تاريخيًا.</p>
     </section>
 
     {!result.ok ? <p className={styles.error} role="alert">{result.error}</p> : <>
-      {exportDocument && <ReportExportActions document={exportDocument} fileNameBase={"vehicle-cash-" + vehicleId + "-" + responsibleId + "-" + from + "-" + to} />}
+      {exportDocument && <ReportExportActions document={exportDocument} fileNameBase={"vehicle-cash-" + vehicleId + "-" + responsibleId + "-" + effectiveFrom + "-" + effectiveTo} />}
       <section className={styles.summary} aria-label="ملخص كشف نقد العربية">
         <div><span>الرصيد السابق للفترة</span><strong>{egp(result.value.openingPiastres)}</strong></div>
         <div><span>مستحق شغل العربية خلال الفترة</span><strong>{egp(result.value.workPiastres)}</strong></div>

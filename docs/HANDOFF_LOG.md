@@ -1248,3 +1248,7 @@ Authorized release follow-up: user approves #79/#80 publication and trial whole-
 
 
 Release verification: combined-head CI 43628200614 SUCCESS at d7e8c66104e3095f438352d53a27db8bf725d5d6. Local combined types/223 package/124 web PASS. Edge workspace initially 26/27: the test's sequential waitForRequest missed the middle request after the click; fixture already recorded all real boundary attempts. Replaced that lossy observer with its complete attempt log and an exact polled three-operation sequence, preserving payload and selected-account assertions. Separate diff review checked all remaining waits attach before click; no product code changed. Full unchanged acceptance scope now 27/27 PASS, clean exit. Latest test-fix head CI required before #80 merge.
+
+
+## REPORT-ALL-01 — 14 November 2026
+Approved additional all-history scope, preserving manual date filters and financial formulas; user explicitly requests main merge + Vercel publication. Acceptance: actual opening-to-last activity for chosen identity; no missing pages/partial export; switching off restores manual dates; default view unchanged; non-owner/invalid scope denied. Branch codex/report-all-history-20261114 from167fbed. Local acceptance in REPORT_ALL_HISTORY_REVIEW_2026-11-14.md; latest CI/hosted migration/release pending. Broader delivery/backup gates remain open.

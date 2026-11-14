@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { postLedgerRead } from "../../lib/ledger/transport";
+import { ReportHistoryScope } from "../reports/report-period";
 import { ContractorDetails } from "./contractor-details";
 import { ContractorMoney } from "../contractor-statements/contractor-money";
 import { formatPoundsForDisplay } from "../../lib/ledger/amounts";
@@ -24,6 +25,7 @@ const signed = (input: string) => (BigInt(input) > 0n ? "+" : "") + money(input)
 
 export function RealContractorStatement({ contractors, vehicles, revision, disabled }: Props) {
   const [contractorId, setContractorId] = useState("");
+  const [allHistory,setAllHistory] = useState(false);
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [report, setReport] = useState<LiveStatementReport | null>(null);
@@ -51,12 +53,12 @@ export function RealContractorStatement({ contractors, vehicles, revision, disab
 
   async function load(event: FormEvent) {
     event.preventDefault();
-    if (disabled || busy || !contractorId || !from || !to) return;
+    if (disabled || busy || !contractorId || (!allHistory && (!from || !to))) return;
     reset();
-    if (from > to) { setError("تاريخ البداية بعد تاريخ النهاية."); return; }
+    if (!allHistory && from > to) { setError("تاريخ البداية بعد تاريخ النهاية."); return; }
     const token = active.current;
     const payload = { counterparty_contractor_id: contractorId,
-      date_from: from, date_to: to, limit: 200 };
+      ...(allHistory?{all_history:true}:{date_from:from,date_to:to}), limit: 200 };
     setBusy(true);
     try {
       const result = await postLedgerRead<LiveStatementReport>("contractor.statement", payload);
@@ -111,17 +113,19 @@ export function RealContractorStatement({ contractors, vehicles, revision, disab
         {contractors.filter(c => !c.is_primary).map(c =>
           <option key={c.id} value={c.id}>{c.name}{c.is_archived ? " (مؤرشف)" : ""}</option>)}
       </select>
+      <ReportHistoryScope checked={allHistory} disabled={busy || disabled} onChange={value=>{setAllHistory(value);reset();}}/>
       <label htmlFor="real-statement-from">من تاريخ</label>
-      <input id="real-statement-from" type="date" style={field} required value={from}
-        onChange={e => { setFrom(e.target.value); reset(); }} disabled={busy || disabled} />
+      <input id="real-statement-from" type="date" style={field} required={!allHistory} value={from}
+        onChange={e => { setFrom(e.target.value); reset(); }} disabled={busy || disabled || allHistory} />
       <label htmlFor="real-statement-to">إلى تاريخ</label>
-      <input id="real-statement-to" type="date" style={field} required value={to}
-        onChange={e => { setTo(e.target.value); reset(); }} disabled={busy || disabled} />
+      <input id="real-statement-to" type="date" style={field} required={!allHistory} value={to}
+        onChange={e => { setTo(e.target.value); reset(); }} disabled={busy || disabled || allHistory} />
       <button type="submit" disabled={busy || disabled}>عرض كشف الحساب</button>
     </form>
     {error && <p role="alert">{error}</p>}
     {report && <>
       <h3>حساب {name}</h3>
+      {allHistory && <p>كل الحساب من البداية: {report.date_from} — {report.date_to}</p>}
       <p>رصيد أول الفترة: <ContractorMoney value={report.opening_balance_piastres}/></p>
       <p>شغل أحمد: <strong>+{money(report.ahmed_work_piastres)}</strong></p>
       <p>شغل المقاول: <strong>-{money(report.counterparty_work_piastres)}</strong></p>
