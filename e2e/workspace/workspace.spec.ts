@@ -38,6 +38,15 @@ async function trip(page:Page){
  await page.locator('#real-trip-date').fill('2026-01-02');await page.locator('#real-trip-weight').fill('١٫٢٥٠');
  await page.locator('#real-trip-contractor-rate').fill('١٠٠');
 }
+
+test('trip preview separates the counterparty from the cash-responsible contractor in both directions',async({page})=>{
+ await fixture(page);await trip(page);
+ await expect(page.getByTestId('trip-counterparty')).toHaveText('المقاول الطرف: المقاول الأول');
+ await expect(page.getByTestId('trip-cash-responsible')).toHaveText('المقاول المسؤول عن نقدية العربية: أحمد أبو علي');
+ await page.locator('#real-trip-direction').selectOption('OTHER_SUPPLIES');
+ await expect(page.getByTestId('trip-counterparty')).toHaveText('المقاول الطرف: المقاول الأول');
+ await expect(page.getByTestId('trip-cash-responsible')).toHaveText('المقاول المسؤول عن نقدية العربية: المقاول الأول');
+});
 test('mobile real workspace preserves draft, saves canonical Arabic input and exits',async({page})=>{
  await page.setViewportSize({width:390,height:844});await fixture(page);await trip(page);
  await nav(page,'الإعدادات');await nav(page,'تسجيل الشغل والدفعات');await expect(page.locator('#real-trip-weight')).toHaveValue('١٫٢٥٠');

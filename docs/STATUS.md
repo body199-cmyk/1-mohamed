@@ -1,3 +1,8 @@
+## Authorized release — 14 November 2026
+User explicitly approves publication of PR #79/#80 and whole-pound migration on the current trial database; permanent access must remain disabled. PR #79 merged and main verified at eee211fd281a1342044ea459b6650d702aacde4e. PR #80 code f86593a had exact-head CI 43624633097 SUCCESS (45 steps); incorporating latest main now requires combined-head CI before merge. Local verified safety snapshot and tested helper rollback are in ignored artifacts (details below); no hosted migration yet. Next: combined verification/CI, merge #80, apply approved trial migration, confirm Vercel exact merge SHA and disabled access, then save release evidence. Remaining offsite/restore/live-concurrency/device gates still block final delivery.
+
+Earlier checkpoint history (superseded where inconsistent):
+
 ## WHOLE-POUND / D19 — 14 November 2026 (in progress)
 User explicitly approves nearest whole EGP for every monetary input and per-trip result, no visible fractions, comma grouping; tonne precision unchanged. Branch codex/whole-pound-accounting-20261114 from main 15dbdc2; implementation commit 70cf5f39312a12773455e6ffa1ef5164546ae4b7. Accounting, demo/live input/output, documents, additive SQL and versioned backup validation updated. No hosted migration, historical rewrite, activation, merge or publication. Independent same-assistant review complete; 223 package, 124 web, 26 private browser cases PASS; all 80 root CI browser cases have passing evidence (one file-write error passed unchanged rerun), full isolated SQL and negative controls PASS. PR #80: prior CI 43623884433 SUCCESS at 9804464; prechange real snapshot exposed a 32-vs-64-hex request-hash checker bug, fixed with RED/GREEN regression (19 backup/preflight PASS). Local safety archive verified; no offsite/encryption/hosted restore. Latest-head CI rerun required. See WHOLE_POUND_REVIEW_2026-11-14.md. PR #79 is a separate preview-label correction and is not included here.
 
@@ -5,6 +10,8 @@ DELIVERY-01 merged PR #78 at main 15dbdc29cffb9b71780393f6fbdbd8634e2b86e7 after
 
 Earlier checkpoint history follows (superseded where inconsistent):
 
+## 14 November 2026 — DELIVERY-02 in progress
+DELIVERY-01 merged via PR #78; CI 43613280973 SUCCESS, main 15dbdc2 confirmed, authorized Vercel repair deployment READY with published permanent-access flag still disabled. Local hosted trial: contractor/vehicle/trip 100/payment 30 persisted; reload cash statement 70 confirmed. New branch codex/delivery-financial-acceptance-20261114 fixes preview-only counterparty/cash-responsible mislabel; calculations unchanged. Currency rounding choice pending; backup/restore and live acceptance incomplete. See DELIVERY_02_REVIEW_2026-11-14.md.
 ## 14 November 2026 — DELIVERY-01, local fixes verified; release still blocked
 Latest audited baseline is main 47389db, not the stale root checkout. Worktree .delivery-readiness / branch codex/delivery-readiness-20261114 fixes misleading disabled login and public-origin rejection behind an internal proxy. Clean locked install, types/205 package tests, web contracts and build pass; focused auth/origin tests 21 PASS. Hosted trial owner login and one contractor save/reload verified; primary identity initialized. No password change or production activation. Exact-head CI, live financial/concurrent/non-owner/recovery tests and hosted backup/restore remain. See DELIVERY_01_REVIEW_2026-11-14.md. Earlier stale-branch claims do not describe current main.
 

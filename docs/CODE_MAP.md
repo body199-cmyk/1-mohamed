@@ -367,3 +367,6 @@ DELIVERY-01: apps/web/src/lib/ledger/request-origin.ts owns canonical public-ori
 - supabase/migrations/20261114190000_whole_pound_policy.sql + tests/16_whole_pound_verification.sql: additive parser/totals and new-write constraints; isolated only, not applied hosted.
 - tools/backup-core.mjs: v2 whole-pound dataset verification; v1 archives retain legacy arithmetic. No hosted/offsite adapter.
 - e2e/workspace/workspace.spec.ts: million-value readability and rounding; root e2e specs retain export/device assertions with new display expectations.
+
+## DELIVERY-02 — 14 November 2026
+TripPreviewCard accepts optional responsibleContractorName separately from counterpartyName. Real TransactionEntry supplies primary or counterparty according to direction; e2e/workspace/workspace.spec.ts covers both directions.

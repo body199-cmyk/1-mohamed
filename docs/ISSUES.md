@@ -192,3 +192,6 @@ Legacy test maintenance found by expanded D19 run: demo-flow.spec.ts has three t
 
 
 Live backup prechange check: valid SQL request hashes are MD5/32 hex, but backup core accepted only 64 hex. Fixed exact 32/64-hex compatibility, preserving original digests and the archive SHA256 requirement. Regression first failed, then 16 backup / 19 backup+preflight tests PASS; actual trial eight-table snapshot now verifies from disk. No hosted restore/encryption/offsite claim.
+
+## DELIVERY-02 — 14 November 2026
+DELIVERY-02: live trip preview displayed selected counterparty as cash-responsible in AHMED_SUPPLIES while SQL correctly stored the primary contractor. Presentation fix separates identities; two-direction browser regression added before implementation. No stored financial defect observed.
