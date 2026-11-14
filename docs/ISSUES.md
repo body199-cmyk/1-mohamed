@@ -183,3 +183,7 @@ Private workspace was a monolithic form and payment history did not contain earn
 
 ## DELIVERY-01 — 14 November 2026
 DELIVERY-01: login accepted credentials while APP_ENABLE_REAL_DATA was false and silently looped; ledger POST handlers compared browser Origin to internal NextRequest origin, causing valid trial writes to fail 403. Root causes fixed with dynamic activation UI and canonical configured origin; 21 focused regression cases PASS. Missing @supabase/ssr was a stale/incomplete local install, resolved by npm ci, not a new accounting defect. Hosted Windows browser cleanup hang remains unverified; no clean E2E exit claimed.
+
+
+## DELIVERY-02 — 14 November 2026
+DELIVERY-02: live trip preview displayed selected counterparty as cash-responsible in AHMED_SUPPLIES while SQL correctly stored the primary contractor. Presentation fix separates identities; two-direction browser regression added before implementation. No stored financial defect observed.

@@ -1230,3 +1230,7 @@ Follow-up review: merged current main fd3122c; completed remaining live-ref guar
 DELIVERY-01 / 2026-11-14: corrected stale-branch audit, fixed login activation feedback and internal-proxy origin comparison; verified hosted owner login + one contractor persistence/reload. Same-assistant separate critical review, hostile-origin cases added. Password unchanged and never stored. No production activation. Review: DELIVERY_01_REVIEW_2026-11-14.md. Exact-head CI and remaining financial/restore gates pending.
 
 DELIVERY-01 follow-up: Edge suite ultimately exited 0 (25 PASS); 205 package + 124 web + 16 backup/preflight tests PASS. Updated SDK static assertion for explicit runtime activation prop; owner and secret checks unchanged. CI on final SHA still required.
+
+
+## DELIVERY-02 — 14 November 2026
+DELIVERY-01 closed: PR #78 merged to 15dbdc2 after exact-head CI SUCCESS and explicit publication approval; Vercel READY, published access remains disabled. DELIVERY-02 begins on new branch: hosted basic trip/payment/reload acceptance verified (100/30/70); preview responsibility label mismatch found and fixed locally. Currency decision and recoverable offsite backups remain open.

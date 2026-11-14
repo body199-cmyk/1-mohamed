@@ -219,6 +219,9 @@ export function TransactionEntry({ contractors, vehicles, accounts, busy, write,
         <TripPreviewCard weightTonnes={normalizeDecimalInput(weight)} contractorRateEgp={normalizeDecimalInput(contractorRate)}
           vehicleRateEgp={normalizeDecimalInput(sameRate?contractorRate:vehicleRate)} expenseEgp={normalizeDecimalInput(expense)} direction={direction}
           counterpartyName={contractors.find(c=>c.id===tripCounterparty)?.name}
+          responsibleContractorName={direction === "AHMED_SUPPLIES"
+            ? contractors.find(c=>c.is_primary)?.name
+            : contractors.find(c=>c.id===tripCounterparty)?.name}
           vehiclePlate={vehicles.find(v=>v.id===tripVehicle)?.plate_number}/>
         <button type="submit" value="new" disabled={busy}>حفظ وإضافة نقلة جديدة</button>{" "}
         <button type="submit" value="exit" disabled={busy}>حفظ وخروج</button>

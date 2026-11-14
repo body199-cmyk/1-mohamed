@@ -313,3 +313,7 @@ Validation: TypeScript PASS; isolated browser regression covers repeated 401 the
 
 ## DELIVERY-01 — 14 November 2026
 DELIVERY-01: first real Auth/write readiness fixes implemented on a separate branch; not delivery-complete. Evidence and remaining gates: DELIVERY_01_REVIEW_2026-11-14.md.
+
+
+## DELIVERY-02 — 14 November 2026
+DELIVERY-02: correct live trip preview cash-responsible identity only; financial acceptance remains partial. Currency display/rounding is a later, separate task pending user choice.

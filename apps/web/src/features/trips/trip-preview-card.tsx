@@ -14,6 +14,7 @@ interface TripPreviewCardProps {
   expenseEgp: string;
   direction: WorkDirection | null;
   counterpartyName?: string;
+  responsibleContractorName?: string;
   vehiclePlate?: string;
 }
 
@@ -24,6 +25,7 @@ export function TripPreviewCard({
   expenseEgp,
   direction,
   counterpartyName,
+  responsibleContractorName,
   vehiclePlate,
 }: TripPreviewCardProps) {
   // If required fields are empty, show initial placeholder
@@ -162,10 +164,13 @@ export function TripPreviewCard({
 
         {/* Summary note */}
         {counterpartyName && (
-          <div style={{ fontSize: "0.82rem", color: "var(--text-muted)", borderTop: "1px dashed var(--border-color)", paddingTop: "8px" }}>
-            المقاول المسؤول: <strong>{counterpartyName}</strong>
+          <div data-testid="trip-counterparty" style={{ fontSize: "0.82rem", color: "var(--text-muted)", borderTop: "1px dashed var(--border-color)", paddingTop: "8px" }}>
+            المقاول الطرف: <strong>{counterpartyName}</strong>
           </div>
         )}
+        {responsibleContractorName && <div data-testid="trip-cash-responsible" style={{ fontSize: "0.82rem", color: "var(--text-muted)" }}>
+          المقاول المسؤول عن نقدية العربية: <strong>{responsibleContractorName}</strong>
+        </div>}
       </div>
     </div>
   );
