@@ -257,7 +257,8 @@ export function verifyBusinessDataset(data, version = BACKUP_VERSION) {
   for (const k of data.idempotency_keys) {
     requireValid(string(k,"key") && string(k,"user_id") && string(k,"operation") &&
       typeof k.payload_hash === "string" &&
-      /^[a-fA-F0-9]{64}$/.test(k.payload_hash) &&
+      // SQL app_idempotency_begin uses MD5 (32 hex); older isolated archives used 64.
+      /^(?:[a-fA-F0-9]{32}|[a-fA-F0-9]{64})$/.test(k.payload_hash) &&
       ["PROCESSING","COMPLETED","FAILED"].includes(k.status),
       "معرف طلب أو حالته غير صحيح.");
   }

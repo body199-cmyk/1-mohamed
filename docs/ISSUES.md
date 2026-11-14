@@ -189,3 +189,6 @@ DELIVERY-01: login accepted credentials while APP_ENABLE_REAL_DATA was false and
 Policy migration exposed old backup arithmetic rejecting newly rounded trips, and demo payment editing adding .00. Fixed with versioned legacy/current archive verification and ungrouped whole-pound editing. Regression: tools/backup-core.test.mjs (15 PASS), payment-preview-stage3 browser edit case, whole-pound-policy tests. SQL raw overflow must be rejected before rounding; regression 16_whole_pound_verification.sql catches otherwise accepted raw overflow. No historical DB rewrite.
 
 Legacy test maintenance found by expanded D19 run: demo-flow.spec.ts has three timeouts using theme/textarea controls superseded by approved UI. This file is outside current CI; no application failure inferred from those stale selectors. Monetary assertions updated here; unrelated selector maintenance remains separate. No skipped/removed tests to hide failures.
+
+
+Live backup prechange check: valid SQL request hashes are MD5/32 hex, but backup core accepted only 64 hex. Fixed exact 32/64-hex compatibility, preserving original digests and the archive SHA256 requirement. Regression first failed, then 16 backup / 19 backup+preflight tests PASS; actual trial eight-table snapshot now verifies from disk. No hosted restore/encryption/offsite claim.

@@ -47,6 +47,17 @@ function assertInvalid(fn,needle=/BACKUP_INVALID/) {
   assert.throws(fn,needle);
 }
 
+test("snapshot preserves SQL MD5 request identities and legacy SHA256 identities, rejecting malformed digests", () => {
+  for (const digest of [createHash("md5").update("payment.create|{}").digest("hex"), "a".repeat(64)]) {
+    const data=fixture();data.idempotency_keys[0].payload_hash=digest;
+    assert.equal(verifyBusinessBackup(backup(data)).data.idempotency_keys[0].payload_hash,digest);
+  }
+  for (const digest of ["a".repeat(31),"a".repeat(33),"a".repeat(63),"a".repeat(65),"g".repeat(32)]) {
+    const data=fixture();data.idempotency_keys[0].payload_hash=digest;
+    assertInvalid(()=>backup(data));
+  }
+});
+
 test("B04 versioned verified snapshot includes every business table and exact receipt/money text",()=>{
   const data=fixture();
   const file=serializeBusinessBackup(backup(data));
