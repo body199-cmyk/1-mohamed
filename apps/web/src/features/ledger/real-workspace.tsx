@@ -12,13 +12,13 @@ import { useTheme } from "../../components/theme-provider";
 import styles from "./workspace.module.css";
 const sections = [
   ["home","الرئيسية"],["entry","تسجيل الشغل والدفعات"],["reports","النقلات واليومية"],
-  ["contractor","كشف المقاول"],["cash","نقدية العربية"],["master","البيانات الأساسية"],["settings","الإعدادات"]
+  ["contractor","كشف المقاول"],["cash","كشف حساب عربية"],["master","البيانات الأساسية"],["settings","الإعدادات"]
 ] as const;
 const shortcutDetails = {
   entry: ["🚚", "إضافة ومتابعة الشغل والدفعات"],
   reports: ["📅", "شغل اليوم بالتفصيل"],
   contractor: ["📋", "مين له ومين عليه"],
-  cash: ["🚛", "حساب كل عربية"],
+  cash: ["🚛", "النقلات والدفعات والمتبقي للعربية"],
   master: ["🗂️", "المقاولين والعربيات"],
 } as const;
 type Screen=typeof sections[number][0];
@@ -68,3 +68,4 @@ export function RealWorkspace() {
     </div>
   </div>;
 }
+
