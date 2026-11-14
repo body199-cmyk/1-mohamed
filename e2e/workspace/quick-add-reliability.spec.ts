@@ -194,7 +194,7 @@ test('report screens expose no visible inline add buttons',async({page})=>{
  // All screens stay mounted behind `hidden`; only visible buttons count here.
  await page.getByRole('navigation').getByRole('button',{name:'النقلات واليومية',exact:true}).click();
  await expect(page.locator('[id$="-add"]:visible')).toHaveCount(0);
- await page.getByRole('navigation').getByRole('button',{name:'نقدية العربية',exact:true}).click();
+ await page.getByRole('navigation').getByRole('button',{name:'كشف حساب عربية',exact:true}).click();
  await expect(page.locator('[id$="-add"]:visible')).toHaveCount(0);
 });
 
