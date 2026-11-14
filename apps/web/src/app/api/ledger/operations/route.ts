@@ -13,8 +13,10 @@ function result(body: object, status: number, session?: NextResponse) {
 }
 
 /**
- * PREPARED BUT NOT EXPOSED: proxy.ts still blocks POST requests until the
- * final connected owner/RLS verification. Every write is an audited DB RPC.
+ * Exposed: proxy.ts allowlists POST for this path (see proxy.ts API method
+ * rules), then this handler enforces CSRF-style origin checks, setup status,
+ * the write-operation allowlist, and owner verification via verifyOwnerForRoute.
+ * Every write is an audited DB RPC; real authorization is owner JWT + RLS.
  */
 export async function POST(request: NextRequest) {
   // Defense in depth: prevent browser cross-site POSTs even if a cookie is

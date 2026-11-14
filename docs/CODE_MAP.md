@@ -346,3 +346,12 @@
 - Current hosted activation state and blocker: `docs/STATUS.md`.
 
 Live workspace home reuses approved shortcut styles from styles/globals.css; real-workspace.tsx owns navigation and workspace.module.css supplies button sizing. 14 November 2026.
+
+## Inline quick-add — 14 November 2026 (فرع feat/inline-quick-add-20261114)
+- `features/ledger/quick-add-validation.ts`: validators for quick plates/contractor names using the shared normalizeMasterKey (digits/spaces/case only; hamzas are NOT unified).
+- `features/ledger/quick-record-modal.tsx`: single-record creation dialog; synchronous inFlight ref guard, Escape blocked while in flight, pending state with refresh-retry after confirmed save, full reset on close.
+- `features/ledger/payment-account-modal.tsx`: payment account dialog; existing-or-create per side, stores createdVehicleId/createdContractorId to resume after partial failure, ensure only, pending state.
+- `features/ledger/searchable-choice.tsx`: added onAdd affordance and search-clear effect on programmatic selection.
+- `features/ledger/transaction-entry.tsx`: quickDrafts map keeps one payload id per exact input across retries; pendingVehicle/pendingContractor/pendingAccount selection effect waits until the refreshed lists contain the record; dialogs live outside the trip/payment forms.
+- `e2e/workspace/quick-add.spec.ts` و`e2e/workspace/quick-add-reliability.spec.ts`: 18 quick-add tests; the complete workspace suite has 24 tests. HTTP fixtures only; `playwright.workspace.config.ts` mandatory.
+- لا تغيير في master-data أو الديمو أو المعادلات أو SQL. الحفظ عبر المسار الرسمي فقط.
