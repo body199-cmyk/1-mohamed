@@ -1,4 +1,4 @@
-import { piastresToPounds, scaledIntegerToDecimal } from "../../lib/ledger/amounts";
+import { formatPoundsForDisplay, scaledIntegerToDecimal } from "../../lib/ledger/amounts";
 
 export type LedgerReportType = "trips.list" | "payments.list";
 export type LedgerReportField = { key: string; title: string };
@@ -54,7 +54,7 @@ export function displayLedgerField(key: string, value: unknown, lookups: LedgerL
   if (key === "weight_milli_tonnes" && typeof value === "string") {
     return scaledIntegerToDecimal(value, 3);
   }
-  if (key.endsWith("_piastres") && typeof value === "string") return piastresToPounds(value);
+  if (key.endsWith("_piastres") && typeof value === "string") return formatPoundsForDisplay(value);
   return String(value);
 }
 

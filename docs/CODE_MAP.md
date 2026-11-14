@@ -361,5 +361,12 @@ Live workspace home reuses approved shortcut styles from styles/globals.css; rea
 DELIVERY-01: apps/web/src/lib/ledger/request-origin.ts owns canonical public-origin validation for both ledger POST routes. apps/web/e2e/ledger-origin.test.ts and login-activation.test.tsx cover proxy-origin and activation behavior; login/page.tsx now evaluates the runtime flag dynamically.
 
 
+## WHOLE-POUND / D19
+- packages/accounting/src/trip-amounts.ts / format-egp.ts: exact whole-EGP normalization, per-trip rounding and grouped presentation; tests/whole-pound-policy.test.ts.
+- apps/web/src/lib/ledger/amounts.ts: API canonical amounts separate from grouped display; live report/document adapters reuse it. Demo cash-ledger/master-data validators use the same policy.
+- supabase/migrations/20261114190000_whole_pound_policy.sql + tests/16_whole_pound_verification.sql: additive parser/totals and new-write constraints; isolated only, not applied hosted.
+- tools/backup-core.mjs: v2 whole-pound dataset verification; v1 archives retain legacy arithmetic. No hosted/offsite adapter.
+- e2e/workspace/workspace.spec.ts: million-value readability and rounding; root e2e specs retain export/device assertions with new display expectations.
+
 ## DELIVERY-02 — 14 November 2026
 TripPreviewCard accepts optional responsibleContractorName separately from counterpartyName. Real TransactionEntry supplies primary or counterparty according to direction; e2e/workspace/workspace.spec.ts covers both directions.

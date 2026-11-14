@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { postLedgerRead } from "../../lib/ledger/transport";
-import { piastresToPounds } from "../../lib/ledger/amounts";
+import { formatPoundsForDisplay } from "../../lib/ledger/amounts";
 import type { LedgerEntities, LedgerWrite } from "./workspace-data";
 import { projectLedgerReport } from "./report-presentation";
 import { ReportExportActions } from "../reports/report-export-actions";
@@ -156,13 +156,13 @@ export function RealReports({ contractors, vehicles, accounts, disabled, revisio
 
         <p>عدد السجلات: {report.total_count ?? report.rows?.length ?? 0}</p>
         {typeof report.period_opening_piastres === "string" && <p>
-          أول الفترة: {piastresToPounds(report.period_opening_piastres)} جنيه
+          أول الفترة: {formatPoundsForDisplay(report.period_opening_piastres)} جنيه
         </p>}
         {typeof report.period_closing_piastres === "string" && <p>
-          آخر الفترة: {piastresToPounds(report.period_closing_piastres)} جنيه
+          آخر الفترة: {formatPoundsForDisplay(report.period_closing_piastres)} جنيه
         </p>}
         {typeof report.current_cash_balance_piastres === "string" && <p>
-          الرصيد الحالي: {piastresToPounds(report.current_cash_balance_piastres)} جنيه
+          الرصيد الحالي: {formatPoundsForDisplay(report.current_cash_balance_piastres)} جنيه
         </p>}
         <p>تم تحميل {report.rows?.length ?? 0} سجل من أصل {report.total_count ?? "غير معروف"}.
           التصدير الكامل متاح بعد تحميل كل السجلات.</p>

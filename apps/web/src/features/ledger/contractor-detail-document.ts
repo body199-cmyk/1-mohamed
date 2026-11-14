@@ -1,5 +1,5 @@
 import type {OperationalReportDocument} from '@ledger/statement-export';
-import {piastresToPounds,scaledIntegerToDecimal} from '../../lib/ledger/amounts';
+import {formatPoundsForDisplay,scaledIntegerToDecimal} from '../../lib/ledger/amounts';
 import {verifyLiveStatement,type LiveStatementReport,type LiveStatementRow} from './contractor-statement-document';
 export type StatementFilters={vehicle:string;origin:string;destination:string;direction:string};
 export const emptyStatementFilters:StatementFilters={vehicle:'',origin:'',destination:'',direction:''};
@@ -12,7 +12,7 @@ export function buildDetailedContractorDocument(report:LiveStatementReport,name:
  if(report.next_cursor||BigInt(report.total_count)!==BigInt(report.rows.length))throw new Error('حمّل كل صفحات الكشف قبل الفلترة والتصدير.');
  const rows=filterStatementRows(report.rows,filters);
  const subtotal=rows.reduce((n,r)=>n+BigInt(r.signed_delta_piastres),0n).toString();
- const money=(v:string)=>(BigInt(v)>0n?'+':'')+piastresToPounds(v)+' ج.م';
+ const money=(v:string)=>(BigInt(v)>0n?'+':'')+formatPoundsForDisplay(v)+' ج.م';
  return {businessName:'أحمد أبو علي — حسابات النقل',title:'كشف حساب المقاول',subtitle:'الموجب لأحمد، السالب عليه. رصيد الحساب الكامل مستقل عن مجموع الحركات المفلترة.',
   generatedAtLabel:new Intl.DateTimeFormat('ar-EG',{timeZone:'Africa/Cairo',dateStyle:'medium',timeStyle:'short'}).format(new Date()),
   metadata:[{label:'المقاول',value:name},{label:'من تاريخ',value:report.date_from},{label:'إلى تاريخ',value:report.date_to},

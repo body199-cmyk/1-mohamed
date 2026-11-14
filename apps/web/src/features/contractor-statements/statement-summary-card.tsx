@@ -25,17 +25,17 @@ export function StatementSummaryCard({
       : statement.closingBalancePiastres
   );
 
-  const openingAmount = openingFormatted.ok ? openingFormatted.amount : "0.00";
-  const ahmedAmount = ahmedWorkFormatted.ok ? ahmedWorkFormatted.amount : "0.00";
+  const openingAmount = openingFormatted.ok ? openingFormatted.amount : "0";
+  const ahmedAmount = ahmedWorkFormatted.ok ? ahmedWorkFormatted.amount : "0";
   const counterpartyAmount = counterpartyWorkFormatted.ok
     ? counterpartyWorkFormatted.amount
-    : "0.00";
-  const closingAmount = closingFormatted.ok ? closingFormatted.amount : "0.00";
-  const closingAbsoluteAmount = closingAbsoluteFormatted.ok ? closingAbsoluteFormatted.amount : "0.00";
+    : "0";
+  const closingAmount = closingFormatted.ok ? closingFormatted.amount : "0";
+  const closingAbsoluteAmount = closingAbsoluteFormatted.ok ? closingAbsoluteFormatted.amount : "0";
 
   // Beneficiary badge presentation
   let beneficiaryBadgeClass = styles.badgeBalanced;
-  let beneficiaryText = "الحساب متعادل (0.00 ج.م)";
+  let beneficiaryText = "الحساب متعادل (0 ج.م)";
   let beneficiaryIcon = "⚖️";
 
   if (statement.beneficiary === "AHMED") {

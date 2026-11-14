@@ -13,8 +13,8 @@ test.describe("H056 offline-first design foundation with live demo data", () => 
       await expect(title).toBeVisible();
       const metrics = page.getByRole("region", { name: "المؤشرات اليومية" });
       await expect(metrics.locator("article")).toHaveCount(6);
-      await expect(metrics).toContainText("1000.00 ج.م");
-      await expect(metrics).toContainText("900.00 ج.م");
+      await expect(metrics).toContainText("1,000 ج.م");
+      await expect(metrics).toContainText("900 ج.م");
       await expect(page.getByRole("navigation", { name: "اختصارات الرئيسية" }).getByRole("link")).toHaveCount(4);
       const geometry = await page.evaluate(() => {
         const hero = document.querySelector("main header");

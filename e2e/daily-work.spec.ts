@@ -8,12 +8,12 @@ test.describe("REPORTS-01 — isolated daily work report", () => {
     const table = page.getByRole("table", { name: "نقلات اليوم" });
     await expect(table).toContainText("TRIP-HIST-002");
     await expect(table).not.toContainText("TRIP-HIST-001");
-    await expect(page.getByRole("region", { name: "إجمالي اليوم المحدد" })).toContainText("1000.00 ج.م");
-    await expect(page.getByRole("region", { name: "إجمالي اليوم المحدد" })).toContainText("900.00 ج.م");
+    await expect(page.getByRole("region", { name: "إجمالي اليوم المحدد" })).toContainText("1,000 ج.م");
+    await expect(page.getByRole("region", { name: "إجمالي اليوم المحدد" })).toContainText("900 ج.م");
     await expect(page.getByRole("region", { name: "شغل الطرف الآخر لأحمد" })).toContainText("0.000 طن");
     await page.getByLabel("تاريخ التقرير").fill("2026-11-06");
     await expect(table).toContainText("TRIP-HIST-003");
-    await expect(page.getByRole("region", { name: "شغل الطرف الآخر لأحمد" })).toContainText("600.00 ج.م");
+    await expect(page.getByRole("region", { name: "شغل الطرف الآخر لأحمد" })).toContainText("600 ج.م");
     await page.getByLabel("تاريخ التقرير").fill("2026-11-04");
     await expect(page.getByRole("main").getByRole("status")).toContainText("لا توجد نقلات");
     await expect(page.getByRole("table", { name: "نقلات اليوم" })).toHaveCount(0);

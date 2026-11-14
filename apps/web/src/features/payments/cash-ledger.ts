@@ -21,8 +21,10 @@ export function parsePaymentEgp(input: string): string | null {
   const value = normalizeArabicNumbers(input.trim());
   if (value.length > 25 || !/^[0-9]+(\.[0-9]{1,2})?$/.test(value)) return null;
   const [whole, fraction = ""] = value.split(".");
-  const result = BigInt(whole) * 100n + BigInt(fraction.padEnd(2, "0"));
-  return result > 0n && result <= MAX_PIASTRES ? result.toString() : null;
+  const exact = BigInt(whole) * 100n + BigInt(fraction.padEnd(2, "0"));
+  if (exact > MAX_PIASTRES) return null;
+  const result = ((exact + 50n) / 100n) * 100n;
+  return result > 0n ? result.toString() : null;
 }
 
 export function cashResponsibleForTrip(trip: DemoTripRecord): string {
@@ -187,7 +189,7 @@ export function validateDemoPayment(
     return { ok: false, error: "تاريخ الدفعة يسبق تاريخ افتتاحي النقد لهذا الحساب أو أن تاريخ الافتتاحي غير صالح." };
   }
   const amountText = parsePaymentEgp(draft.amountEgp);
-  if (!amountText) return { ok: false, error: "مبلغ الدفعة يجب أن يكون موجبًا، وبحد أقصى رقمين للقروش." };
+  if (!amountText) return { ok: false, error: "مبلغ الدفعة بعد التقريب لازم يكون جنيه واحد على الأقل." };
   if (draft.linkedTripId) {
     const trip = source.trips.find(t => t.id === draft.linkedTripId);
     if (!trip || trip.vehicleId !== draft.vehicleId ||

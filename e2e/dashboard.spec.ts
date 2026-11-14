@@ -12,8 +12,8 @@ test.describe("T08.6 dashboard — daily indicators and independent payments",()
     const metrics=page.getByRole("region",{name:"المؤشرات اليومية"});
     await expect(metrics).toContainText("1");
     await expect(metrics).toContainText("2.000 طن");
-    await expect(metrics).toContainText("1000.00 ج.م");
-    await expect(metrics).toContainText("900.00 ج.م");
+    await expect(metrics).toContainText("1,000 ج.م");
+    await expect(metrics).toContainText("900 ج.م");
     await expect(page.getByRole("region",{name:"آخر النقلات"})).toContainText("REC-002");
     await page.getByRole("navigation",{name:"اختصارات الرئيسية"}).getByRole("link",{name:"تقرير الشغل اليومي"}).click();
     await expect(page.getByRole("heading",{name:"تقرير الشغل اليومي"})).toBeVisible();
@@ -29,10 +29,10 @@ test.describe("T08.6 dashboard — daily indicators and independent payments",()
     await page.getByRole("navigation",{name:"التنقل الرئيسي"}).getByRole("link",{name:"لوحة المؤشرات",exact:true}).click();
     const cash=page.getByRole("region",{name:"دفعات نقد العربيات اليوم"});
     const work=page.getByRole("region",{name:"المؤشرات اليومية"});
-    await expect(cash).toContainText("100.00 ج.م");
+    await expect(cash).toContainText("100 ج.م");
     await expect(cash).toContainText("1 دفعة");
-    await expect(work).toContainText("900.00 ج.م");
-    await expect(page.getByRole("region",{name:"آخر دفعات العربيات"})).toContainText("100.00 ج.م");
+    await expect(work).toContainText("900 ج.م");
+    await expect(page.getByRole("region",{name:"آخر دفعات العربيات"})).toContainText("100 ج.م");
     expect(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1)).toBe(false);
   });
 });

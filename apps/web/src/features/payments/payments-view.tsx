@@ -15,8 +15,8 @@ function money(raw: string): string {
   return amount.ok ? amount.amount + " ج.م" : "مبلغ غير صالح";
 }
 function editMoney(raw: string): string {
-  const p = BigInt(raw);
-  return (p / 100n).toString() + "." + (p % 100n).toString().padStart(2, "0");
+  const amount = formatEgpFromPiastres(raw);
+  return amount.ok ? amount.amount.replace(/,/g, "") : "";
 }
 const blankDraft = (vehicleId: string, responsibleContractorId: string, today: string): PaymentDraft => ({
   vehicleId, responsibleContractorId, paymentDate: today,
@@ -159,7 +159,7 @@ export function PaymentsView() {
             value={draft.paymentDate} onChange={e=>setDraft({...draft,paymentDate:e.target.value})} />
         </label>
         <label>المبلغ بالجنيه
-          <input aria-label="المبلغ بالجنيه" inputMode="decimal" required placeholder="100.00"
+          <input aria-label="المبلغ بالجنيه" inputMode="decimal" required placeholder="100"
             value={draft.amountEgp} onChange={e=>setDraft({...draft,amountEgp:e.target.value})} />
         </label>
         <label className={styles.wide}>ملاحظات (اختياري)

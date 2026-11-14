@@ -255,7 +255,7 @@ export function TransactionEntry({ contractors, vehicles, accounts, busy, write,
         <input id="real-payment-date" style={field} type="date" required value={paymentDate}
           onChange={e => setPaymentDate(e.target.value)} disabled={busy} />
         <label htmlFor="real-payment-amount">المبلغ بالجنيه</label>
-        <input id="real-payment-amount" style={field} required inputMode="decimal" placeholder="100.00"
+        <input id="real-payment-amount" style={field} required inputMode="decimal" placeholder="100"
           value={paymentAmount} onChange={e => setPaymentAmount(e.target.value)} disabled={busy} />
         <button type="button" id="real-payment-account-add" onClick={() => setQuickModal("payment")}
           disabled={busy} style={{marginBottom:12}}>+ حساب جديد</button>

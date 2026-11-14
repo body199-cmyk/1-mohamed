@@ -70,7 +70,7 @@ test('retry reuses request identity; same-tick submits cannot duplicate a transa
 test('payment preview is exact and invalid amount has no after value',async({page})=>{
  await fixture(page);await nav(page,'تسجيل الشغل والدفعات');
  await page.locator('#real-payment-account').selectOption('V1|K_AHMED');await page.locator('#real-payment-amount').fill('١٠٠');
- const preview=page.getByLabel('معاينة رصيد الدفعة');await expect(preview).toContainText('280.00');await expect(preview).toContainText('180.00');
+ const preview=page.getByLabel('معاينة رصيد الدفعة');await expect(preview).toContainText('280');await expect(preview).toContainText('180');
  await page.locator('#real-payment-amount').fill('1.001');await expect(preview).not.toContainText('الرصيد المتوقع');
 });
 test('changed snapshot stops full export; complete daily report displays exact SQL totals',async({page})=>{
@@ -79,7 +79,7 @@ test('changed snapshot stops full export; complete daily report displays exact S
   return route.fulfill({json:{ok:true,data:{status:'OK',snapshot:more?'11:11':'10:10',total_count:'2',
    rows:[{...row,id:more?'T2':'T1'}],next_cursor:more?null:{date:'2026-01-02',id:'T1'},totals:{active_count:'2',weight_milli_tonnes:'2000',contractor_total_piastres:'20000',vehicle_total_piastres:'18000',ahmed_work_piastres:'20000',counterparty_work_piastres:'0'}}}});});
  await nav(page,'النقلات واليومية');await page.locator('#report-from').fill('2026-01-02');await page.locator('#report-to').fill('2026-01-02');
- await page.getByRole('button',{name:'تحميل التقرير',exact:true}).click();await expect(page.getByLabel('ملخص الشغل')).toContainText('200.00');
+ await page.getByRole('button',{name:'تحميل التقرير',exact:true}).click();await expect(page.getByLabel('ملخص الشغل')).toContainText('200');
  await expect(page.getByRole('button',{name:'تنزيل CSV',exact:true})).not.toBeVisible();
  await page.getByRole('button',{name:'تحميل 200 سجل إضافي',exact:true}).click();
  await expect(page.getByRole('alert')).toContainText('تغيرت البيانات');await expect(page.getByRole('button',{name:'تنزيل CSV',exact:true})).not.toBeVisible();
@@ -92,11 +92,11 @@ test('cash statement shows both sources and exports exact complete CSV',async({p
  {id:'P1',date:'2026-01-02',movement_type:'PAYMENT',signed_delta_piastres:'-4000',running_balance_piastres:'15000'}]}}}));
  await nav(page,'كشف حساب عربية');await page.locator('#cash-account').selectOption('V1|K_AHMED');
  await page.locator('#cash-from').fill('2026-01-02');await page.locator('#cash-to').fill('2026-01-02');
- await page.getByRole('button',{name:'عرض كشف النقدية',exact:true}).click();await expect(page.getByLabel('كشف نقدية العربية')).toContainText('150.00');
- await expect(page.getByText('المتبقي الحالي:',{exact:false})).toContainText('280.00');
+ await page.getByRole('button',{name:'عرض كشف النقدية',exact:true}).click();await expect(page.getByLabel('كشف نقدية العربية')).toContainText('150');
+ await expect(page.getByText('المتبقي الحالي:',{exact:false})).toContainText('280');
  const download=page.waitForEvent('download');await page.getByRole('button',{name:'تنزيل CSV',exact:true}).click();
  const fs=await import('node:fs/promises');const text=await fs.readFile((await (await download).path())!,'utf8');
- expect(text).toContain('T1');expect(text).toContain('P1');expect(text).toContain('السويس');expect(text).toContain('150.00');
+ expect(text).toContain('T1');expect(text).toContain('P1');expect(text).toContain('السويس');expect(text).toContain('150');
 });
 
 test('desktop workspace keeps the report content column usable at wide viewports',async({page})=>{
@@ -113,5 +113,21 @@ test('desktop workspace keeps the report content column usable at wide viewports
   expect(geometry.content).toBeGreaterThan(400);
   expect(geometry.minCard).toBeGreaterThan(180);
  }
+});
+
+test('million-pound values use grouping and whole-pound rounding in trip and payment previews',async({page})=>{
+ await fixture(page);
+ await page.route('**/api/ledger/read',route=>route.fulfill({json:{ok:true,data:{current_cash_balance_piastres:'125000000'}}}));
+ await trip(page);
+ await page.locator('#real-trip-weight').fill('2.500');
+ await page.locator('#real-trip-contractor-rate').fill('500000');
+ await expect(page.getByText('1,250,000',{exact:false}).first()).toBeVisible();
+ await expect(page.getByText('محسوب بالقرش',{exact:true})).toHaveCount(0);
+ await page.locator('#real-payment-account').selectOption('V1|K_AHMED');
+ await page.locator('#real-payment-amount').fill('1000.50');
+ const preview=page.getByLabel('معاينة رصيد الدفعة');
+ await expect(preview).toContainText('1,250,000');
+ await expect(preview).toContainText('1,248,999');
+ await expect(preview).not.toContainText('.00');
 });
 

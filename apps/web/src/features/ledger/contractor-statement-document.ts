@@ -1,5 +1,5 @@
 import type { ContractorStatementDocument } from "@ledger/statement-export";
-import { piastresToPounds } from "../../lib/ledger/amounts";
+import { formatPoundsForDisplay } from "../../lib/ledger/amounts";
 import { assertSqlMoney } from "../../lib/ledger/report-contract";
 
 export type LiveStatementRow = {
@@ -28,7 +28,7 @@ export type LiveStatementReport = {
 
 const signed = (value: string): string => {
   assertSqlMoney(value);
-  return (BigInt(value) > 0n ? "+" : "") + piastresToPounds(value) + " ج.م";
+  return (BigInt(value) > 0n ? "+" : "") + formatPoundsForDisplay(value) + " ج.م";
 };
 
 export function verifyLiveStatement(report: LiveStatementReport): void {
@@ -101,7 +101,7 @@ export function liveStatementDocument(report: LiveStatementReport, name: string,
     summary: {
       openingBalanceText: signed(report.opening_balance_piastres),
       ahmedWorkText: signed(report.ahmed_work_piastres),
-      counterpartyWorkText: "-" + piastresToPounds(report.counterparty_work_piastres) + " ج.م",
+      counterpartyWorkText: "-" + formatPoundsForDisplay(report.counterparty_work_piastres) + " ج.م",
       closingBalanceText: signed(report.closing_balance_piastres),
       closingBeneficiaryText: report.beneficiary === "AHMED" ? "لصالح أحمد أبو علي" :
         report.beneficiary === "COUNTERPARTY" ? "لصالح " + name : "الحساب متعادل",

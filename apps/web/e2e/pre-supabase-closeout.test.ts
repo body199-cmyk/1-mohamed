@@ -26,8 +26,8 @@ const cash:CashReport={status:'OK',snapshot:'1:1',total_count:'2',next_cursor:nu
 describe('cash statement document',()=>{
  it('keeps negative correction, separate source IDs and exact amounts',()=>{
   expect(()=>verifyCashReport(cash)).not.toThrow();const doc=cashStatementDocument(cash,'عربية','المقاول');
-  expect(doc.rows).toHaveLength(2);expect(doc.rows[1]).toContain('-20.00');
-  expect(doc.summarySections[0].metrics.at(-1)?.value).toBe('90071992547409931.23 ج.م');
+  expect(doc.rows).toHaveLength(2);expect(doc.rows[1]).toContain('-20');
+  expect(doc.summarySections[0].metrics.at(-1)?.value).toBe('90,071,992,547,409,931 ج.م');
  });
  it('fails closed on broken running balances and partial exports',()=>{
   expect(()=>verifyCashReport({...cash,rows:[cash.rows[0],{...cash.rows[1],running_balance_piastres:'3001'}]})).toThrow();
@@ -36,7 +36,7 @@ describe('cash statement document',()=>{
 });
 describe('Arabic canonical input',()=>{
  it('accepts Arabic/Persian digits without losing precision',()=>{
-  expect(assertDecimal('١٢٫٥٠٠',3,true)).toBe('12.500');expect(poundsToPiastres('-۱۲٫۵۰')).toBe('-1250');
+  expect(assertDecimal('١٢٫٥٠٠',3,true)).toBe('12.500');expect(poundsToPiastres('-۱۲٫۵۰')).toBe('-1300');
   expect(()=>assertDecimal('١٫٠٠١',2,true)).toThrow();expect(()=>poundsToPiastres('٩٢٢٣٣٧٢٠٣٦٨٥٤٧٧٥٨٫٠٨')).toThrow();
  });
 });
@@ -47,8 +47,8 @@ describe('contractor filtered statement',()=>{
  it('separates filtered subtotal from full debt and exports every detail',()=>{
   const doc=buildDetailedContractorDocument(statement,'المقاول',new Map([['V2','عربية ٢']]),{...emptyStatementFilters,vehicle:'V2'});
   expect(doc.rows).toHaveLength(1);expect(doc.rows[0]).toContain('عربية ٢');expect(doc.rows[0]).toContain('الفيوم');expect(doc.rows[0]).toContain('مراجعة');
-  expect(doc.summarySections[0].metrics.find(m=>m.label==='آخر الفترة')?.value).toBe('+250.00 ج.م');
-  expect(doc.summarySections[1].metrics.at(-1)?.value).toBe('-50.00 ج.م');
+  expect(doc.summarySections[0].metrics.find(m=>m.label==='آخر الفترة')?.value).toBe('+250 ج.م');
+  expect(doc.summarySections[1].metrics.at(-1)?.value).toBe('-50 ج.م');
  });
  it('never filters an incomplete history into a seemingly complete statement',()=>{
   expect(()=>buildDetailedContractorDocument({...statement,rows:[statement.rows[0]],next_cursor:{id:'T1',date:'2026-01-02'}},'K',new Map(),emptyStatementFilters)).toThrow();

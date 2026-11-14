@@ -554,5 +554,11 @@ Validation: TypeScript PASS; isolated browser regression covers repeated 401 the
 DELIVERY-01 slice: clean latest-main install; runtime-aware login; canonical-origin read/write regression and hosted contractor persistence. Acceptance pending exact-head CI; next financial/live backup slice remains unstarted.
 
 
+## WHOLE-POUND / D19 — 14 November 2026 (in progress)
+User explicitly approves nearest whole EGP for every monetary input and per-trip result, no visible fractions, comma grouping; tonne precision unchanged. Branch codex/whole-pound-accounting-20261114 from main 15dbdc2. Accounting, demo/live input/output, documents, additive SQL and versioned backup validation updated. No hosted migration, historical rewrite, activation, merge or publication. Independent same-assistant review complete; 223 package, 124 web, 26 private browser cases PASS; all 80 root CI browser cases have passing evidence (one file-write error passed unchanged rerun), full isolated SQL and negative controls PASS. Exact-head CI still required. See WHOLE_POUND_REVIEW_2026-11-14.md. PR #79 is a separate preview-label correction and is not included here.
+
 ## DELIVERY-02 — 14 November 2026
 DELIVERY-02 acceptance: both work directions show counterparty and actual cash-responsible separately; no monetary recalculation. Browser RED reproduced, full checks/CI pending. Hosted trial basic save/reload 100 - 30 = 70 verified; concurrency/restore not closed.
+
+
+Authorized release follow-up: user approves #79/#80 publication and trial whole-pound migration, retaining disabled permanent access. #79 merged eee211fd281a1342044ea459b6650d702aacde4e; latest main incorporated in #80. Code/tests merged automatically; documentation conflicts retain both histories with this latest-state override. Separate same-assistant merge review checks responsibility labels, whole-pound preview and unchanged API normalization. Combined exact-head CI remains mandatory.

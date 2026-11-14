@@ -54,13 +54,13 @@ describe("REPORTS-01 daily demo work report", () => {
 
   it("checks per-trip rounding with the original financial engine, not floats", () => {
     const micro = { ...INITIAL_TRIPS[0], workDate:"2026-11-05",
-      weightTonnes:"0.005", contractorRateEgp:"1.00", vehicleRateEgp:"1.00",
-      expenseEgp:"0.00", contractorTotalPiastres:"1", vehicleTotalPiastres:"1",
+      weightTonnes:"0.500", contractorRateEgp:"1.00", vehicleRateEgp:"1.00",
+      expenseEgp:"0.00", contractorTotalPiastres:"100", vehicleTotalPiastres:"100",
       receiptNumber:"0007" };
     const result = buildDailyWorkReport([micro],filters);
     expect(result.ok).toBe(true);
     if (result.ok) {
-      expect(result.totals.contractorTotalPiastres).toBe("1");
+      expect(result.totals.contractorTotalPiastres).toBe("100");
       expect(result.rows[0].receiptNumber).toBe("0007");
     }
   });

@@ -84,8 +84,8 @@ test.describe("H065 daily and vehicle cash exports", () => {
         title: "تقرير الشغل اليومي",
         slug: "daily-work-2026-11-05-all-contractors-all-vehicles",
         periodTokens: ["2026-11-05"],
-        movementTokens: ["TRIP-HIST-002", "محجر السويس", "العاصمة الإدارية", "2.000", "1000.00 ج.م", "900.00 ج.م"],
-        summaryTokens: ["عدد النقلات", "1", "إجمالي الوزن", "2.000 طن", "قيمة شغل المقاول", "1000.00 ج.م", "مستحق العربيات", "900.00 ج.م"],
+        movementTokens: ["TRIP-HIST-002", "محجر السويس", "العاصمة الإدارية", "2.000", "1,000 ج.م", "900 ج.م"],
+        summaryTokens: ["عدد النقلات", "1", "إجمالي الوزن", "2.000 طن", "قيمة شغل المقاول", "1,000 ج.م", "مستحق العربيات", "900 ج.م"],
         movementKey: "TRIP-HIST-002",
         receiptToken: "REC-002",
         expectedDetailRows: 1,
@@ -95,8 +95,8 @@ test.describe("H065 daily and vehicle cash exports", () => {
         title: "كشف حساب نقد العربية",
         slug: "vehicle-cash-V1-PRIMARY_AHMED-2026-11-01-2026-11-30",
         periodTokens: ["2026-11-01", "2026-11-30"],
-        movementTokens: ["2026-11-02", "مستحق نقلة", "محجر السويس", "العاصمة الإدارية", "أحمد جاب العربية", "280.00 ج.م"],
-        summaryTokens: ["الرصيد السابق للفترة", "0.00 ج.م", "مستحق شغل العربية", "280.00 ج.م", "الدفعات خلال الفترة", "0.00 ج.م", "المتبقي آخر الفترة", "280.00 ج.م", "عدد النقلات", "1", "عدد الدفعات السارية", "0"],
+        movementTokens: ["2026-11-02", "مستحق نقلة", "محجر السويس", "العاصمة الإدارية", "أحمد جاب العربية", "280 ج.م"],
+        summaryTokens: ["الرصيد السابق للفترة", "0 ج.م", "مستحق شغل العربية", "280 ج.م", "الدفعات خلال الفترة", "0 ج.م", "المتبقي آخر الفترة", "280 ج.م", "عدد النقلات", "1", "عدد الدفعات السارية", "0"],
         movementKey: "2026-11-02",
         receiptToken: "REC-001",
         expectedDetailRows: 1,
@@ -196,23 +196,23 @@ test.describe("H065 daily and vehicle cash exports", () => {
     await expect.soft(table, "cash ledger must not expose the payment receipt number").not.toContainText("000012");
     await expect.soft(table).toContainText("مستحق نقلة");
     await expect.soft(table).toContainText("دفعة نقدية");
-    await expect.soft(table).toContainText("-100.00 ج.م");
+    await expect.soft(table).toContainText("-100 ج.م");
 
     const html = await printHtml(page, "كشف حساب نقد العربية");
-    expectTokens(html, ["2026-11-01", "2026-11-30", "2026-11-02", "2026-11-03", "مستحق نقلة", "دفعة نقدية", "محجر السويس", "العاصمة الإدارية", "أحمد جاب العربية", "280.00 ج.م", "-100.00 ج.م", "180.00 ج.م"], "negative-payment HTML/Print");
+    expectTokens(html, ["2026-11-01", "2026-11-30", "2026-11-02", "2026-11-03", "مستحق نقلة", "دفعة نقدية", "محجر السويس", "العاصمة الإدارية", "أحمد جاب العربية", "280 ج.م", "-100 ج.م", "180 ج.م"], "negative-payment HTML/Print");
     expect.soft(html, "negative-payment HTML/Print must not expose payment receipt metadata").not.toContain("000012");
     await writeFile("artifacts/h065/vehicle-cash-negative-payment.html", html, "utf8");
 
     const csv = await download(page, "تنزيل CSV");
     const negativeCsv = csv.bytes.toString("utf8");
-    expectTokens(negativeCsv, ["2026-11-01", "2026-11-30", "2026-11-02", "2026-11-03", "مستحق نقلة", "دفعة نقدية", "محجر السويس", "العاصمة الإدارية", "أحمد جاب العربية", "280.00 ج.م", "'-100.00 ج.م", "180.00 ج.م"], "negative-payment CSV");
+    expectTokens(negativeCsv, ["2026-11-01", "2026-11-30", "2026-11-02", "2026-11-03", "مستحق نقلة", "دفعة نقدية", "محجر السويس", "العاصمة الإدارية", "أحمد جاب العربية", "280 ج.م", "'-100 ج.م", "180 ج.م"], "negative-payment CSV");
     expect.soft(negativeCsv, "negative-payment CSV must not expose payment receipt metadata").not.toContain("000012");
     await writeFile("artifacts/h065/vehicle-cash-negative-payment.csv", csv.bytes);
 
     const xlsx = await download(page, "تنزيل Excel XLSX");
     expect(xlsx.bytes.subarray(0, 4).toString()).toBe("PK\u0003\u0004");
     const negativeXlsx = xlsx.bytes.toString("utf8");
-    expectTokens(negativeXlsx, ["2026-11-01", "2026-11-30", "2026-11-02", "2026-11-03", "مستحق نقلة", "دفعة نقدية", "محجر السويس", "العاصمة الإدارية", "أحمد جاب العربية", "280.00 ج.م", "-100.00 ج.م", "180.00 ج.م"], "negative-payment XLSX");
+    expectTokens(negativeXlsx, ["2026-11-01", "2026-11-30", "2026-11-02", "2026-11-03", "مستحق نقلة", "دفعة نقدية", "محجر السويس", "العاصمة الإدارية", "أحمد جاب العربية", "280 ج.م", "-100 ج.م", "180 ج.م"], "negative-payment XLSX");
     expect.soft(negativeXlsx, "negative-payment XLSX must not expose payment receipt metadata").not.toContain("000012");
     await writeFile("artifacts/h065/vehicle-cash-negative-payment.xlsx", xlsx.bytes);
 
@@ -245,7 +245,7 @@ test.describe("H065 daily and vehicle cash exports", () => {
     // Navigate inside the mounted demo provider: a full page reload drops the opening.
     await page.getByRole("navigation",{name:"التنقل الرئيسي"})
       .getByRole("link",{name:"نقدية العربية",exact:true}).click();
-    const exact="92233720368548038.07";
+    const exact="92,233,720,368,548,038";
     await expect(page.getByRole("region",{name:"ملخص كشف نقد العربية"})).toContainText(exact);
     const html=await printHtml(page,"كشف حساب نقد العربية");
     expect(html).toContain(exact);

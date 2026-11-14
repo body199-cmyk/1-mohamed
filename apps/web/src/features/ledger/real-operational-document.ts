@@ -1,7 +1,7 @@
 import {
   assertOperationalReportDocument, type OperationalReportDocument
 } from "@ledger/statement-export";
-import { piastresToPounds } from "../../lib/ledger/amounts";
+import { formatPoundsForDisplay } from "../../lib/ledger/amounts";
 import { assertSqlMoney } from "../../lib/ledger/report-contract";
 import {
   displayLedgerField, reportFields, type LedgerReportType, type LedgerLookups
@@ -63,7 +63,7 @@ export function buildRealOperationalDocument(
     for (const [key,label] of [["contractor_total_piastres","قيمة شغل المقاولين"],["vehicle_total_piastres","مستحقات العربيات"],
       ["ahmed_work_piastres","شغل أحمد"],["counterparty_work_piastres","شغل المقاول"]]) {
       assertSqlMoney(report.totals[key]);
-      metrics.push({label,value:piastresToPounds(report.totals[key])+" ج.م"});
+      metrics.push({label,value:formatPoundsForDisplay(report.totals[key])+" ج.م"});
     }
     metrics.push({label:"النقلات النشطة",value:report.totals.active_count});
   }
@@ -76,7 +76,7 @@ export function buildRealOperationalDocument(
       const value = report[key];
       if (value !== undefined) {
         assertSqlMoney(value);
-        metrics.push({ label: title, value: piastresToPounds(value) + " ج.م" });
+        metrics.push({ label: title, value: formatPoundsForDisplay(value) + " ج.م" });
       }
     }
   }

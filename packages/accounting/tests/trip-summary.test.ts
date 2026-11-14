@@ -56,24 +56,24 @@ describe("summarizeTrips", () => {
           ok: true,
           tripCount: 2,
           totalWeightTonnes: "21.250",
-          contractorTotalPiastres: "211451",
-          vehicleTotalPiastres: "191451",
+          contractorTotalPiastres: "211500",
+          vehicleTotalPiastres: "191500",
         },
       },
       {
         label:
-          "4) sums already-rounded per-trip totals rather than rounding the raw sum (two 0.5-piastre trips yield 2 piastres, not 1)",
+          "4) sums already-rounded per-trip totals rather than rounding the raw sum (two half-pound trips yield 2 pounds, not 1)",
         trips: [
           {
             weightTonnes: "0.500",
-            contractorRateEgp: "0.01",
-            vehicleRateEgp: "0.01",
+            contractorRateEgp: "1",
+            vehicleRateEgp: "1",
             expenseEgp: "0",
           },
           {
             weightTonnes: "0.500",
-            contractorRateEgp: "0.01",
-            vehicleRateEgp: "0.01",
+            contractorRateEgp: "1",
+            vehicleRateEgp: "1",
             expenseEgp: "0",
           },
         ],
@@ -81,8 +81,8 @@ describe("summarizeTrips", () => {
           ok: true,
           tripCount: 2,
           totalWeightTonnes: "1.000",
-          contractorTotalPiastres: "2",
-          vehicleTotalPiastres: "2",
+          contractorTotalPiastres: "200",
+          vehicleTotalPiastres: "200",
         },
       },
       {
@@ -106,8 +106,8 @@ describe("summarizeTrips", () => {
           ok: true,
           tripCount: 2,
           totalWeightTonnes: "2.000",
-          contractorTotalPiastres: "18014398509481986",
-          vehicleTotalPiastres: "18014398509481986",
+          contractorTotalPiastres: "18014398509482000",
+          vehicleTotalPiastres: "18014398509482000",
         },
       },
       {
@@ -155,8 +155,8 @@ describe("summarizeTrips", () => {
           ok: true,
           tripCount: 2,
           totalWeightTonnes: "20.625",
-          contractorTotalPiastres: "20625",
-          vehicleTotalPiastres: "20625",
+          contractorTotalPiastres: "20600",
+          vehicleTotalPiastres: "20600",
         },
       },
     ])("computes summary: $label", ({ trips, expected }) => {
@@ -275,8 +275,8 @@ describe("summarizeTrips", () => {
         ok: true,
         tripCount: 2,
         totalWeightTonnes: "30.500",
-        contractorTotalPiastres: "158331",
-        vehicleTotalPiastres: "142572",
+        contractorTotalPiastres: "159300",
+        vehicleTotalPiastres: "142100",
       });
       expect(trips).toEqual([
         {

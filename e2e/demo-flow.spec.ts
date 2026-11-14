@@ -73,15 +73,15 @@ test.describe("أحمد أبو علي — حسابات النقل — سينار
       await sameRateCheckbox.uncheck();
     }
 
-    // Rates: contractor 150.00, vehicle 130.00, expense 50.00
-    await page.fill('input[placeholder="مثال: 120.00"]', "150.00");
-    await page.fill('input[placeholder="مثال: 110.00"]', "130.00");
-    await page.fill('input[placeholder="0.00"]', "50.00");
+    // Rates: contractor 150, vehicle 130, expense 50
+    await page.fill('input[placeholder="مثال: 120"]', "150");
+    await page.fill('input[placeholder="مثال: 110"]', "130");
+    await page.fill('input[placeholder="0"]', "50");
 
-    // Verify preview card: contractor total = 25.500 * 150 = 3825.00 + 50 = 3875.00
-    await expect(page.getByText("3875.00 ج.م", { exact: true })).toBeVisible();
-    // vehicle total = 25.500 * 130 = 3315.00 + 50 = 3365.00
-    await expect(page.getByText("3365.00 ج.م", { exact: true })).toBeVisible();
+    // Verify preview card: contractor total = 25.500 * 150 = 3,825 + 50 = 3,875
+    await expect(page.getByText("3,875 ج.م", { exact: true })).toBeVisible();
+    // vehicle total = 25.500 * 130 = 3,315 + 50 = 3,365
+    await expect(page.getByText("3,365 ج.م", { exact: true })).toBeVisible();
 
     // Submit trip
     await page.click('button:has-text("إضافة للتجربة")');
@@ -141,18 +141,18 @@ test.describe("أحمد أبو علي — حسابات النقل — سينار
       await sameRateCheckbox.check();
     }
 
-    // Enter contractor rate 200.00
-    await page.fill('input[placeholder="مثال: 120.00"]', "200.00");
+    // Enter contractor rate 200
+    await page.fill('input[placeholder="مثال: 120"]', "200");
     // Vehicle rate should be disabled and synchronized
-    const vehicleRateInput = page.locator('input[placeholder="مثال: 110.00"]');
+    const vehicleRateInput = page.locator('input[placeholder="مثال: 110"]');
     await expect(vehicleRateInput).toBeDisabled();
-    expect(await vehicleRateInput.inputValue()).toBe("200.00");
+    expect(await vehicleRateInput.inputValue()).toBe("200");
 
     // Uncheck same rate: vehicle rate becomes editable
     await sameRateCheckbox.uncheck();
     await expect(vehicleRateInput).toBeEnabled();
-    await vehicleRateInput.fill("180.00");
-    expect(await vehicleRateInput.inputValue()).toBe("180.00");
+    await vehicleRateInput.fill("180");
+    expect(await vehicleRateInput.inputValue()).toBe("180");
 
     // Scenario 5: Excess precision test
     // 4 decimal places in weight
@@ -164,9 +164,9 @@ test.describe("أحمد أبو علي — حسابات النقل — سينار
 
     // Fix weight, add 3 decimal places in contractor rate
     await page.fill('input[placeholder="مثال: 25.450"]', "15.123");
-    await page.fill('input[placeholder="مثال: 120.00"]', "150.123");
+    await page.fill('input[placeholder="مثال: 120"]', "150.123");
     await expect(
-      page.locator("text=المبالغ والأسعار تقبل رقمين عشريين كحد أقصى")
+      page.locator("text=اكتب الأسعار والمبالغ بالجنيه؛ تُقرّب لأقرب جنيه صحيح.")
     ).toBeVisible();
   });
 
@@ -225,15 +225,15 @@ test.describe("أحمد أبو علي — حسابات النقل — سينار
     await page.waitForLoadState("networkidle");
 
     // Pre-seeded trips for K1 in Nov 2026:
-    // Opening: -400.00 EGP
-    // Trip 1 (2026-11-02): +300.00
-    // Trip 2 (2026-11-05): +1000.00
-    // Trip 3 (2026-11-06): -600.00
-    // Ahmed work: 1300.00, Counterparty work: 600.00, Net closing: +300.00 EGP (لصالح أحمد)
+    // Opening: -400 EGP
+    // Trip 1 (2026-11-02): +300
+    // Trip 2 (2026-11-05): +1,000
+    // Trip 3 (2026-11-06): -600
+    // Ahmed work: 1,300, Counterparty work: 600, Net closing: +300 EGP (لصالح أحمد)
     await expect(page.locator("text=ملخص كشف حساب: المقاول أحمد علام")).toBeVisible();
-    await expect(page.locator("text=+1300.00 ج.م").first()).toBeVisible();
-    await expect(page.locator("text=-600.00 ج.م").first()).toBeVisible();
-    await expect(page.locator("text=300.00 ج.م").first()).toBeVisible();
+    await expect(page.locator("text=+1,300 ج.م").first()).toBeVisible();
+    await expect(page.locator("text=-600 ج.م").first()).toBeVisible();
+    await expect(page.locator("text=300 ج.م").first()).toBeVisible();
 
     // Capture screenshots of contractor statements viewports
     const viewports = [
@@ -275,7 +275,7 @@ test.describe("أحمد أبو علي — حسابات النقل — سينار
     // Select vehicle V1
     await page.selectOption('select:has-text("اختر السيارة")', "V1");
 
-    // Weight 10.000, rates: contractor 100.00, vehicle 90.00, expense 0.00
+    // Weight 10.000, rates: contractor 100, vehicle 90, expense 0
     await page.fill('input[placeholder="مثال: 25.450"]', "10.000");
 
     const sameRateCheckbox = page.locator('input[type="checkbox"]').first();
@@ -283,13 +283,13 @@ test.describe("أحمد أبو علي — حسابات النقل — سينار
       await sameRateCheckbox.uncheck();
     }
 
-    await page.fill('input[placeholder="مثال: 120.00"]', "100.00");
-    await page.fill('input[placeholder="مثال: 110.00"]', "90.00");
-    await page.fill('input[placeholder="0.00"]', "0.00");
+    await page.fill('input[placeholder="مثال: 120"]', "100");
+    await page.fill('input[placeholder="مثال: 110"]', "90");
+    await page.fill('input[placeholder="0"]', "0");
 
-    // Preview shows: أحمد مدين للمقاول بهذا المبلغ (1000.00 ج.م)
+    // Preview shows: أحمد مدين للمقاول بهذا المبلغ (1,000 ج.م)
     await expect(
-      page.locator("text=أحمد مدين للمقاول بهذا المبلغ (1000.00 ج.م)")
+      page.locator("text=أحمد مدين للمقاول بهذا المبلغ (1,000 ج.م)")
     ).toBeVisible();
 
     // Submit trip
@@ -299,12 +299,12 @@ test.describe("أحمد أبو علي — حسابات النقل — سينار
     // Navigate to contractor statement and verify immediate reflection!
     await page.click('a[href="/demo/contractors"]');
 
-    // Counterparty work was 600.00, now + 1000.00 = 1600.00 EGP
-    await expect(page.locator("text=-1600.00 ج.م").first()).toBeVisible();
+    // Counterparty work was 600, now + 1,000 = 1,600 EGP
+    await expect(page.locator("text=-1,600 ج.م").first()).toBeVisible();
 
-    // Closing was +300.00, now - 1000.00 = -700.00 EGP (لصالح المقاول!)
+    // Closing was +300, now - 1,000 = -700 EGP (لصالح المقاول!)
     await expect(
-      page.locator("text=صافي الرصيد لصالح المقاول (المقاول أحمد علام: -700.00 ج.م)")
+      page.locator("text=صافي الرصيد لصالح المقاول (المقاول أحمد علام: -700 ج.م)")
     ).toBeVisible();
   });
 

@@ -33,31 +33,31 @@ describe("calculateTripAmounts", () => {
       },
       {
         label:
-          "c) exact 14.5125 EGP rounds down to 1451 piastres (weight 1.250, rates 10.01, expense 2)",
+          "c) whole-pound inputs and 14.5 EGP total round to 15 pounds (weight 1.250, rates 10.01, expense 2)",
         input: {
           weightTonnes: "1.250",
           contractorRateEgp: "10.01",
           vehicleRateEgp: "10.01",
           expenseEgp: "2",
         },
-        expectedContractor: "1451",
-        expectedVehicle: "1451",
+        expectedContractor: "1500",
+        expectedVehicle: "1500",
       },
       {
         label:
-          "d) exact half-piastre (0.5 piastre) rounds up to 1 piastre (weight 0.500, rates 0.01, expense 0)",
+          "d) sub-pound rate rounds to zero (weight 0.500, rates 0.01, expense 0)",
         input: {
           weightTonnes: "0.500",
           contractorRateEgp: "0.01",
           vehicleRateEgp: "0.01",
           expenseEgp: "0",
         },
-        expectedContractor: "1",
-        expectedVehicle: "1",
+        expectedContractor: "0",
+        expectedVehicle: "0",
       },
       {
         label:
-          "e) 0.499 piastre rounds down to 0 piastres (weight 0.499, rates 0.01, expense 0)",
+          "e) sub-pound rate and total round to zero (weight 0.499, rates 0.01, expense 0)",
         input: {
           weightTonnes: "0.499",
           contractorRateEgp: "0.01",
@@ -69,15 +69,15 @@ describe("calculateTripAmounts", () => {
       },
       {
         label:
-          "f) 0.501 piastre rounds up to 1 piastre (weight 0.501, rates 0.01, expense 0)",
+          "f) sub-pound rate still rounds to zero (weight 0.501, rates 0.01, expense 0)",
         input: {
           weightTonnes: "0.501",
           contractorRateEgp: "0.01",
           vehicleRateEgp: "0.01",
           expenseEgp: "0",
         },
-        expectedContractor: "1",
-        expectedVehicle: "1",
+        expectedContractor: "0",
+        expectedVehicle: "0",
       },
       {
         label: "g) preserves full precision above Number.MAX_SAFE_INTEGER",
@@ -87,8 +87,8 @@ describe("calculateTripAmounts", () => {
           vehicleRateEgp: "90071992547409.93",
           expenseEgp: "0",
         },
-        expectedContractor: "9007199254740993",
-        expectedVehicle: "9007199254740993",
+        expectedContractor: "9007199254741000",
+        expectedVehicle: "9007199254741000",
       },
       {
         label: "h) returns '0' for both totals when all inputs are zero",
@@ -110,8 +110,8 @@ describe("calculateTripAmounts", () => {
           vehicleRateEgp: "0030.00",
           expenseEgp: "0000.50",
         },
-        expectedContractor: "82050",
-        expectedVehicle: "61550",
+        expectedContractor: "82100",
+        expectedVehicle: "61600",
       },
     ])(
       "computes expected totals for $label",
@@ -208,13 +208,13 @@ describe("calculateTripAmounts", () => {
   describe("SQL BIGINT movement parity (FIN-07)", () => {
     const base={weightTonnes:"1",contractorRateEgp:"1",vehicleRateEgp:"1",expenseEgp:"0"};
     it("accepts exact upper boundary for an individual trip",()=>{
-      expect(calculateTripAmounts({...base,contractorRateEgp:"92233720368547758.07",vehicleRateEgp:"92233720368547758.07"})).toEqual({ok:true,contractorTotalPiastres:"9223372036854775807",vehicleTotalPiastres:"9223372036854775807"});
+      expect(calculateTripAmounts({...base,contractorRateEgp:"92233720368547758.07",vehicleRateEgp:"92233720368547758.07"})).toEqual({ok:true,contractorTotalPiastres:"9223372036854775800",vehicleTotalPiastres:"9223372036854775800"});
     });
     it("rejects a scaled field one piastre above SQL BIGINT",()=>{
       expect(calculateTripAmounts({...base,contractorRateEgp:"92233720368547758.08"})).toEqual({ok:false,error:{field:"contractorRateEgp",code:"OUT_OF_RANGE"}});
     });
     it("rejects a single trip total above SQL BIGINT even when each input fits",()=>{
-      expect(calculateTripAmounts({...base,contractorRateEgp:"92233720368547758.07",expenseEgp:"0.01"})).toEqual({ok:false,error:{field:"contractorRateEgp",code:"OUT_OF_RANGE"}});
+      expect(calculateTripAmounts({...base,contractorRateEgp:"92233720368547758.07",expenseEgp:"1"})).toEqual({ok:false,error:{field:"contractorRateEgp",code:"OUT_OF_RANGE"}});
     });
     it("rejects huge digit inputs without BigInt allocation",()=>{
       expect(calculateTripAmounts({...base,weightTonnes:"9".repeat(100000)})).toEqual({ok:false,error:{field:"weightTonnes",code:"OUT_OF_RANGE"}});

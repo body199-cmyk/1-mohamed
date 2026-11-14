@@ -15,7 +15,8 @@ export function parseOpeningEgp(raw: string, direction: "VEHICLE" | "CONTRACTOR"
   const piastres = BigInt(whole) * 100n + BigInt(fraction.padEnd(2, "0"));
   // Signed SQL BIGINT permits one additional unit on the negative side.
   if (piastres > (direction === "CONTRACTOR" ? MAX_DB_BIGINT + 1n : MAX_DB_BIGINT)) return null;
-  const signed = direction === "CONTRACTOR" ? -piastres : piastres;
+  const rounded = ((piastres + 50n) / 100n) * 100n;
+  const signed = direction === "CONTRACTOR" ? -rounded : rounded;
   return signed.toString();
 }
 

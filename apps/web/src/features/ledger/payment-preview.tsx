@@ -1,7 +1,7 @@
 "use client";
 import {useEffect,useState} from 'react';
 import {postLedgerRead} from '../../lib/ledger/transport';
-import {assertDecimal,piastresToPounds,poundsToPiastres} from '../../lib/ledger/amounts';
+import {assertDecimal,formatPoundsForDisplay,poundsToPiastres} from '../../lib/ledger/amounts';
 import {assertSqlMoney} from '../../lib/ledger/report-contract';
 export function PaymentPreview({account,amount,revision=0}:{account:string;amount:string;revision?:number}) {
   const [balance,setBalance]=useState<string|null>(null);const [error,setError]=useState('');
@@ -19,8 +19,8 @@ export function PaymentPreview({account,amount,revision=0}:{account:string;amoun
   try{if(balance!==null)after=(BigInt(balance)-BigInt(poundsToPiastres(assertDecimal(amount,2,true)))).toString();}catch{/* Invalid amounts have no misleading preview. */}
   return <div aria-label="معاينة رصيد الدفعة" aria-live="polite">
     {error&&<p role="alert">{error}</p>}
-    {balance!==null&&<p>الرصيد الحالي قبل الدفع: <bdi>{piastresToPounds(balance)}</bdi> جنيه</p>}
-    {after!==null&&<p>الرصيد المتوقع بعد الدفع: <bdi>{piastresToPounds(after)}</bdi> جنيه</p>}
+    {balance!==null&&<p>الرصيد الحالي قبل الدفع: <bdi>{formatPoundsForDisplay(balance)}</bdi> جنيه</p>}
+    {after!==null&&<p>الرصيد المتوقع بعد الدفع: <bdi>{formatPoundsForDisplay(after)}</bdi> جنيه</p>}
     {after!==null&&BigInt(after)<0n&&<p role="alert">المبلغ أكبر من الرصيد الحالي.</p>}
     <small>معاينة للرصيد الحالي. الدفعة القديمة تُراجع أيضًا مقابل أرصدة الأيام اللاحقة قبل قبول الحفظ.</small>
   </div>;

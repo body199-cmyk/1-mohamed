@@ -133,15 +133,15 @@ test.describe("UI-BASE-01B — safe demo mutations", () => {
     await form.getByRole("textbox", { name: "مبلغ افتتاحي النقد" }).fill("١٢٠٫٢٥");
     await form.getByRole("textbox", { name: "سبب تعديل افتتاحي النقد" }).fill("رصيد قديم للتجربة");
     await form.getByRole("button", { name: "حفظ افتتاحي النقد التجريبي" }).click();
-    await expect(page.getByText("افتتاحي النقد: 120.25 ج.م")).toBeVisible();
+    await expect(page.getByText("افتتاحي النقد: 120 ج.م")).toBeVisible();
 
     await form.getByRole("combobox", { name: "المقاول المسؤول" }).selectOption("K2");
     await form.getByRole("combobox", { name: "اتجاه الافتتاحي النقدي" }).selectOption("CONTRACTOR");
-    await form.getByRole("textbox", { name: "مبلغ افتتاحي النقد" }).fill("20.00");
+    await form.getByRole("textbox", { name: "مبلغ افتتاحي النقد" }).fill("20");
     await form.getByRole("textbox", { name: "سبب تعديل افتتاحي النقد" }).fill("حساب مقاول مختلف");
     await form.getByRole("button", { name: "حفظ افتتاحي النقد التجريبي" }).click();
     await expect(page.getByText("الافتتاحيات النقدية التجريبية (2)")).toBeVisible();
-    await expect(page.getByText("افتتاحي النقد: -20.00 ج.م")).toBeVisible();
+    await expect(page.getByText("افتتاحي النقد: -20 ج.م")).toBeVisible();
     await expect(page.getByRole("heading", { name: /سجل التغييرات التجريبي \(2\)/ })).toBeVisible();
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1);
     expect(overflow).toBe(false);

@@ -39,7 +39,7 @@ export function QuickAddModal({
   // Contractor fields
   const [contractorName, setContractorName] = useState("");
   const [openingDate, setOpeningDate] = useState("2026-11-01");
-  const [openingBalanceEgp, setOpeningBalanceEgp] = useState("0.00");
+  const [openingBalanceEgp, setOpeningBalanceEgp] = useState("0");
   const [balanceDirection, setBalanceDirection] = useState<"AHMED" | "CONTRACTOR" | "ZERO">("ZERO");
 
   const [error, setError] = useState<string | null>(null);
@@ -73,14 +73,14 @@ export function QuickAddModal({
       }
 
       const amount = calculateTripAmounts({ weightTonnes: "0", contractorRateEgp: "0", vehicleRateEgp: "0", expenseEgp: balanceDirection === "ZERO" ? "0" : normalizeArabicNumbers(openingBalanceEgp) });
-      if (!amount.ok) { setError("أدخل مبلغًا صحيحًا بالجنيه، بحد أقصى رقمين للقروش ومن غير فواصل آلاف."); return; }
+      if (!amount.ok) { setError("أدخل مبلغًا بالجنيه؛ يُقرّب لأقرب جنيه صحيح."); return; }
       const signedPiastres = balanceDirection === "CONTRACTOR" && amount.contractorTotalPiastres !== "0"
         ? "-" + amount.contractorTotalPiastres : amount.contractorTotalPiastres;
       const checked = buildContractorStatement({ counterpartyId: "opening", opening: { startDate: openingDate, signedPiastres }, period: { from: openingDate, to: openingDate }, movements: [] });
       if (!checked.ok) { setError("راجع تاريخ بداية الحساب."); return; }
       onAddContractor(contractorName.trim(), openingDate, signedPiastres);
       setContractorName("");
-      setOpeningBalanceEgp("0.00");
+      setOpeningBalanceEgp("0");
       setBalanceDirection("ZERO");
       onClose();
     }
@@ -181,7 +181,7 @@ export function QuickAddModal({
                     <input
                       type="text"
                       required
-                      placeholder="مثال: 500.00"
+                      placeholder="مثال: 500"
                       aria-label="مبلغ الرصيد الافتتاحي" value={openingBalanceEgp}
                       onChange={(e) => setOpeningBalanceEgp(e.target.value)}
                       className={styles.input}
