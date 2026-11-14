@@ -4,6 +4,7 @@ import { useRef, useState, type FormEvent } from "react";
 import { PaymentPreview } from "./payment-preview";
 import { SearchableChoice } from "./searchable-choice";
 import { QuickRecordModal, type QuickRecordInput } from "./quick-record-modal";
+import { PaymentAccountModal } from "./payment-account-modal";
 import { TripPreviewCard } from "../trips/trip-preview-card";
 import type { WriteOperation } from "../../lib/ledger/operation-contract";
 import { poundsToPiastres, assertDecimal, normalizeDecimalInput } from "../../lib/ledger/amounts";
@@ -46,7 +47,7 @@ export function TransactionEntry({ contractors, vehicles, accounts, busy, write,
   const [paymentAmount, setPaymentAmount] = useState("");
   const [paymentNotes, setPaymentNotes] = useState("");
   const [reuseDay,setReuseDay] = useState(false);
-  const [quickModal, setQuickModal] = useState<null | "vehicle" | "contractor">(null);
+  const [quickModal, setQuickModal] = useState<null | "vehicle" | "contractor" | "payment">(null);
   const submitting = useRef(false);
   const [message, setMessage] = useState("");
   const drafts = useRef(new Map<string, Record<string, unknown>>());
@@ -212,12 +213,25 @@ export function TransactionEntry({ contractors, vehicles, accounts, busy, write,
         <label htmlFor="real-payment-amount">المبلغ بالجنيه</label>
         <input id="real-payment-amount" style={field} required inputMode="decimal" placeholder="100.00"
           value={paymentAmount} onChange={e => setPaymentAmount(e.target.value)} disabled={busy} />
+        <button type="button" id="real-payment-account-add" onClick={() => setQuickModal("payment")}
+          disabled={busy} style={{marginBottom:12}}>+ حساب جديد</button>
         <label htmlFor="real-payment-notes">ملاحظات</label>
         <input id="real-payment-notes" style={field} maxLength={400} value={paymentNotes}
           onChange={e => setPaymentNotes(e.target.value)} disabled={busy} />
         <PaymentPreview account={paymentAccount} amount={paymentAmount} revision={revision}/>
         <button type="submit" disabled={busy}>حفظ الدفعة</button>
       </form>
+      <PaymentAccountModal open={quickModal === "payment"} busy={busy}
+        vehicles={vehicles.filter(v => !v.is_archived).map(v => ({ id: v.id, label: v.plate_number }))}
+        contractors={contractors.filter(c => !c.is_archived).map(c => ({ id: c.id, label: c.name }))}
+        activePlates={vehicles.filter(v => !v.is_archived).map(v => v.plate_number)}
+        activeContractorNames={contractors.filter(c => !c.is_archived).map(c => c.name)}
+        onClose={() => setQuickModal(null)}
+        createVehicle={(plate, driver) => quickCreateVehicle({ plate, driver, name: "" })}
+        createContractor={name => quickCreateContractor({ plate: "", driver: "", name })}
+        ensureAccount={(vehicleId, contractorId) =>
+          write("vehicle.account.ensure", { vehicle_id: vehicleId, contractor_id: contractorId })}
+        onAccountReady={(vehicleId, contractorId) => setPaymentAccount(vehicleId + "|" + contractorId)}/>
     </section>
   </>;
 }

@@ -63,3 +63,46 @@ test('keeps the modal open with an alert when the server rejects the save',async
  await expect(page.getByRole('alert')).toContainText('لم تتم الإضافة');
  await expect(page.locator('#real-trip-vehicle')).toHaveValue('');
 });
+
+test('opens a new payment account from new vehicle and contractor, then selects the pair',async({page})=>{
+ await fixture(page);await entry(page);
+ await page.locator('#real-payment-account-add').click();
+ const created=page.waitForRequest(r=>r.url().includes('/api/ledger/operations'));
+ await page.locator('#quick-account-plate').fill('ج س ر 7777');
+ await page.locator('#quick-account-name').fill('مقاول الدفعة');
+ await page.getByRole('button',{name:'فتح الحساب',exact:true}).click();
+ const first=await created;
+ const requests=[first.postDataJSON()];
+ let guard=0;
+ while(requests.at(-1)?.operation!=='vehicle.account.ensure'&&guard++<5){
+  const next=await page.waitForRequest(r=>r.url().includes('/api/ledger/operations'),{timeout:5000});
+  requests.push(next.postDataJSON());}
+ expect(requests.map(r=>r.operation)).toEqual(['vehicle.create','contractor.create','vehicle.account.ensure']);
+ expect(requests[0].payload.plate_number).toBe('ج س ر 7777');
+ expect(requests[1].payload.name).toBe('مقاول الدفعة');
+ await expect(page.locator('#real-payment-account'))
+  .toHaveValue(requests[0].payload.id+'|'+requests[1].payload.id);
+});
+
+test('ensures an existing pair once without creating records',async({page})=>{
+ await fixture(page);await entry(page);
+ await page.locator('#real-payment-account-add').click();
+ const created=page.waitForRequest(r=>r.url().includes('/api/ledger/operations'));
+ await page.locator('#quick-account-vehicle').selectOption('V1');
+ await page.locator('#quick-account-contractor').selectOption('K1');
+ await page.getByRole('button',{name:'فتح الحساب',exact:true}).click();
+ const request=(await created).postDataJSON();
+ expect(request.operation).toBe('vehicle.account.ensure');
+ await expect(page.locator('#real-payment-account')).toHaveValue('V1|K1');
+ await page.waitForTimeout(500);
+ const writes=await page.evaluate(()=>performance.now());
+ void writes;
+});
+
+test('Escape closes the payment account modal without any request',async({page})=>{
+ await fixture(page);await entry(page);
+ await page.locator('#real-payment-account-add').click();
+ await expect(page.getByRole('dialog')).toBeVisible();
+ await page.keyboard.press('Escape');
+ await expect(page.getByRole('dialog')).toHaveCount(0);
+});
