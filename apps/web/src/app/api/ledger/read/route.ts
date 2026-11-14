@@ -4,6 +4,7 @@ import { verifyOwnerForRoute } from "../../../../lib/supabase/owner";
 import { carrySessionHeaders } from "../../../../lib/supabase/proxy-session";
 import { isJsonRecord, isReadOperation } from "../../../../lib/ledger/operation-contract";
 import { getSupabaseSetupStatus } from "../../../../lib/supabase/config";
+import { isAllowedLedgerOrigin } from "../../../../lib/ledger/request-origin";
 
 export const dynamic = "force-dynamic";
 
@@ -14,12 +15,11 @@ function result(body: object, status: number, session?: NextResponse) {
 
 /** Owner-only read RPC; financial bigint fields are returned as strings by SQL. */
 export async function POST(request: NextRequest) {
-  const origin = request.headers.get("origin");
-  const fetchSite = request.headers.get("sec-fetch-site");
-  if ((origin && origin !== request.nextUrl.origin) || fetchSite === "cross-site") {
+  const setup = getSupabaseSetupStatus();
+  if (!isAllowedLedgerOrigin(request.headers, setup.siteUrl)) {
     return result({ error: "طلب من مصدر غير مسموح." }, 403);
   }
-  if (!getSupabaseSetupStatus().ready) return result({ error: "القراءة الدائمة غير مفعّلة." }, 503);
+  if (!setup.ready) return result({ error: "القراءة الدائمة غير مفعّلة." }, 503);
   let input: unknown;
   try {
     const raw = await request.text();

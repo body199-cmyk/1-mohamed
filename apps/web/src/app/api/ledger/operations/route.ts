@@ -4,6 +4,7 @@ import { verifyOwnerForRoute } from "../../../../lib/supabase/owner";
 import { carrySessionHeaders } from "../../../../lib/supabase/proxy-session";
 import { isJsonRecord, isWriteOperation, validRequestKey, WRITE_OPERATIONS } from "../../../../lib/ledger/operation-contract";
 import { getSupabaseSetupStatus } from "../../../../lib/supabase/config";
+import { isAllowedLedgerOrigin } from "../../../../lib/ledger/request-origin";
 
 export const dynamic = "force-dynamic";
 
@@ -21,12 +22,11 @@ function result(body: object, status: number, session?: NextResponse) {
 export async function POST(request: NextRequest) {
   // Defense in depth: prevent browser cross-site POSTs even if a cookie is
   // accidentally sent. Real authorization still requires owner JWT + RLS.
-  const origin = request.headers.get("origin");
-  const fetchSite = request.headers.get("sec-fetch-site");
-  if ((origin && origin !== request.nextUrl.origin) || fetchSite === "cross-site") {
+  const setup = getSupabaseSetupStatus();
+  if (!isAllowedLedgerOrigin(request.headers, setup.siteUrl)) {
     return result({ error: "طلب من مصدر غير مسموح." }, 403);
   }
-  if (!getSupabaseSetupStatus().ready) return result({ error: "الحفظ الدائم غير مفعّل." }, 503);
+  if (!setup.ready) return result({ error: "الحفظ الدائم غير مفعّل." }, 503);
   if (Number(request.headers.get("content-length") ?? 0) > 32768) {
     return result({ error: "الطلب أكبر من المسموح." }, 413);
   }

@@ -309,3 +309,7 @@ Validation: TypeScript PASS; isolated browser regression covers repeated 401 the
 نطاق: إضافة عربية/مقاول فورًا من شاشة تسجيل الشغل والدفعات فقط (بحث النقلة وخانة الحساب للدفعات)، عبر مسار الكتابة الرسمي (vehicle.create / contractor.create / vehicle.account.ensure). لا أزرار إضافة في فلاتر التقارير، ولا تغيير في البيانات الأساسية أو الديمو أو المعادلات. المعاينة: docs/superpowers/specs/2026-11-14-inline-quick-add-design.md والخطة المجاورة. الأساس main 8aac8fd (بعد PR #74)، فرع feat/inline-quick-add-20261114.
 تقدم: commits 97fc0a0/e6ff965/020a348/392c5d6/f3980b5. عيوب المراجع 5a–5f عولجت في f3980b5: نجاح الحفظ منفصل عن نجاح تحديث القوائم (انتظار + زر تحديث دون إعادة إنشاء)، ثبات payload.id على retry، حارس متزامن للنقر المزدوج ومنع Escape أثناء الطلب، مسح البحث عند التحديد البرمجي، استكمال بعد فشل جزئي بلا إعادة إنشاء مكتمل.
 تحقق عند f3980b5: typecheck exit 0؛ npm run test:web 103/103؛ npx playwright test --config=playwright.workspace.config.ts quick-add 24/24 (يشمل 12 اختبار موثوقية جديد). متبقٍ: مراجعة نقدية للفرق كاملًا، تحديث CODE_MAP/HANDOFF، CI على آخر SHA، PR للمراجعة. ما لم يُختبر: حفظ حي في Supabase، Auth/RLS حقيقية وتزامن بين مستخدمين، أجهزة فعلية. لا دمج ولا نشر ولا لمس بيانات إنتاج.
+
+
+## DELIVERY-01 — 14 November 2026
+DELIVERY-01: first real Auth/write readiness fixes implemented on a separate branch; not delivery-complete. Evidence and remaining gates: DELIVERY_01_REVIEW_2026-11-14.md.

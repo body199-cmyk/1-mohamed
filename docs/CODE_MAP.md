@@ -355,3 +355,7 @@ Live workspace home reuses approved shortcut styles from styles/globals.css; rea
 - `features/ledger/transaction-entry.tsx`: quickDrafts map keeps one payload id per exact input across retries; pendingVehicle/pendingContractor/pendingAccount selection effect waits until the refreshed lists contain the record; dialogs live outside the trip/payment forms.
 - `e2e/workspace/quick-add.spec.ts` و`e2e/workspace/quick-add-reliability.spec.ts`: 18 quick-add tests; the complete workspace suite has 24 tests. HTTP fixtures only; `playwright.workspace.config.ts` mandatory.
 - لا تغيير في master-data أو الديمو أو المعادلات أو SQL. الحفظ عبر المسار الرسمي فقط.
+
+
+## DELIVERY-01 — 14 November 2026
+DELIVERY-01: apps/web/src/lib/ledger/request-origin.ts owns canonical public-origin validation for both ledger POST routes. apps/web/e2e/ledger-origin.test.ts and login-activation.test.tsx cover proxy-origin and activation behavior; login/page.tsx now evaluates the runtime flag dynamically.

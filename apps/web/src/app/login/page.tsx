@@ -6,7 +6,10 @@ export const metadata: Metadata = {
   description: "دخول الحسابات المعتمدة فقط؛ لا يوجد تسجيل عام.",
 };
 
-/** The login UI is prepared but inactive until Supabase is configured. */
+// Read the same server-only runtime gate as proxy.ts, rather than freezing
+// its value in a static login page during the build.
+export const dynamic = "force-dynamic";
+
 export default function LoginPage() {
-  return <LoginForm />;
+  return <LoginForm enabled={process.env.APP_ENABLE_REAL_DATA === "true"} />;
 }
