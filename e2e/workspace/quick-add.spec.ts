@@ -78,19 +78,14 @@ test('keeps the modal open with an alert when the server rejects the save',async
 });
 
 test('opens a new payment account from new vehicle and contractor, then selects the pair',async({page})=>{
- await fixture(page);await entry(page);
+ const requests=await fixture(page);await entry(page);
  await page.locator('#real-payment-account-add').click();
- const created=page.waitForRequest(r=>r.url().includes('/api/ledger/operations'));
  await page.locator('#quick-account-plate').fill('ج س ر 7777');
  await page.locator('#quick-account-name').fill('مقاول الدفعة');
  await page.getByRole('button',{name:'فتح الحساب',exact:true}).click();
- const first=await created;
- const requests=[first.postDataJSON()];
- let guard=0;
- while(requests.at(-1)?.operation!=='vehicle.account.ensure'&&guard++<5){
-  const next=await page.waitForRequest(r=>r.url().includes('/api/ledger/operations'),{timeout:5000});
-  requests.push(next.postDataJSON());}
- expect(requests.map(r=>r.operation)).toEqual(['vehicle.create','contractor.create','vehicle.account.ensure']);
+ // The fixture records every request before replying, including same-turn writes.
+ await expect.poll(()=>requests.map(r=>r.operation))
+  .toEqual(['vehicle.create','contractor.create','vehicle.account.ensure']);
  expect(requests[0].payload.plate_number).toBe('ج س ر 7777');
  expect(requests[1].payload.name).toBe('مقاول الدفعة');
  await expect(page.locator('#real-payment-account'))

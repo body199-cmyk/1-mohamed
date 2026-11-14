@@ -1245,3 +1245,6 @@ DELIVERY-01 closed: PR #78 merged to 15dbdc2 after exact-head CI SUCCESS and exp
 
 
 Authorized release follow-up: user approves #79/#80 publication and trial whole-pound migration, retaining disabled permanent access. #79 merged eee211fd281a1342044ea459b6650d702aacde4e; latest main incorporated in #80. Code/tests merged automatically; documentation conflicts retain both histories with this latest-state override. Separate same-assistant merge review checks responsibility labels, whole-pound preview and unchanged API normalization. Combined exact-head CI remains mandatory.
+
+
+Release verification: combined-head CI 43628200614 SUCCESS at d7e8c66104e3095f438352d53a27db8bf725d5d6. Local combined types/223 package/124 web PASS. Edge workspace initially 26/27: the test's sequential waitForRequest missed the middle request after the click; fixture already recorded all real boundary attempts. Replaced that lossy observer with its complete attempt log and an exact polled three-operation sequence, preserving payload and selected-account assertions. Separate diff review checked all remaining waits attach before click; no product code changed. Full unchanged acceptance scope now 27/27 PASS, clean exit. Latest test-fix head CI required before #80 merge.

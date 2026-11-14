@@ -195,3 +195,6 @@ Live backup prechange check: valid SQL request hashes are MD5/32 hex, but backup
 
 ## DELIVERY-02 — 14 November 2026
 DELIVERY-02: live trip preview displayed selected counterparty as cash-responsible in AHMED_SUPPLIES while SQL correctly stored the primary contractor. Presentation fix separates identities; two-direction browser regression added before implementation. No stored financial defect observed.
+
+
+Release test reliability: quick-add new-account browser scenario collected sequential requests by attaching its second listener after an awaited click, occasionally missing contractor.create despite success. Fixture attempt recorder captures every request before reply; exact three-operation sequence/payload/selection assertions retained. Full workspace 27/27 PASS after correction; CI on newest SHA required.
