@@ -25,9 +25,9 @@ const dialog: React.CSSProperties = {
  * save the dialog waits (pending) until the caller closes it, once the refreshed
  * lists contain the record; a refresh retry button is offered without re-creating.
  */
-export function QuickRecordModal({ kind, open, busy, existing, pending, onRefreshLists, onClose, onCreate, onCreated }: {
+export function QuickRecordModal({ kind, open, busy, existing, onRefreshLists, onClose, onCreate, onCreated }: {
   kind: QuickRecordKind; open: boolean; busy: boolean; existing: readonly string[];
-  pending?: boolean; onRefreshLists?: () => void;
+  onRefreshLists?: () => void;
   onClose: () => void;
   onCreate: (input: QuickRecordInput) => Promise<string | null>;
   onCreated: (id: string) => void;
@@ -50,7 +50,10 @@ export function QuickRecordModal({ kind, open, busy, existing, pending, onRefres
 
   async function save(event: FormEvent) {
     event.preventDefault();
-    if (locked) return;
+    // Guard on the live ref, not only the render-time closure: two submits
+    // dispatched in the same React flush (e.g. double requestSubmit) both see
+    // the closure's stale `locked`, but the second call still sees the ref set.
+    if (locked || inFlight.current) return;
     const message = kind === "vehicle"
       ? validateQuickPlate(plate, existing)
       : validateQuickContractorName(name, existing);
@@ -63,6 +66,7 @@ export function QuickRecordModal({ kind, open, busy, existing, pending, onRefres
         setError("لم تتم الإضافة. راجع رسالة النظام أعلى الصفحة.");
         return;
       }
+      setError(""); // A success must not keep a previous failure alert on screen.
       setSavedId(id);
       onCreated(id); // Caller keeps the dialog open until the refreshed lists select the record.
       setPlate(""); setDriver(""); setName("");

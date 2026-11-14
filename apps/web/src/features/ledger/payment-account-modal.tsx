@@ -25,12 +25,12 @@ type Option = { id: string; label: string };
  * Escape cannot close while a write is in flight.
  */
 export function PaymentAccountModal({ open, busy, vehicles, contractors, activePlates,
-  activeContractorNames, pending, onRefreshLists, onClose, createVehicle, createContractor,
+  activeContractorNames, onRefreshLists, onClose, createVehicle, createContractor,
   ensureAccount, onAccountReady }: {
   open: boolean; busy: boolean;
   vehicles: readonly Option[]; contractors: readonly Option[];
   activePlates: readonly string[]; activeContractorNames: readonly string[];
-  pending?: boolean; onRefreshLists?: () => void;
+  onRefreshLists?: () => void;
   onClose: () => void;
   createVehicle: (plate: string, driver: string) => Promise<string | null>;
   createContractor: (name: string) => Promise<string | null>;
@@ -65,7 +65,13 @@ export function PaymentAccountModal({ open, busy, vehicles, contractors, activeP
 
   async function save(event: FormEvent) {
     event.preventDefault();
-    if (locked) return;
+    // Guard on the live ref, not only the render-time closure: two submits
+    // dispatched in the same React flush (e.g. double requestSubmit) both see
+    // the closure's stale `locked`, but the second call still sees the ref set.
+    if (locked || inFlight.current) return;
+    // When both an existing choice and a new value are filled, the new value
+    // wins silently; after a partial failure the confirmed step's input is
+    // locked in and edits to that side are ignored until the dialog resets.
     const plateError = newPlate.trim() && !createdVehicleId
       ? validateQuickPlate(newPlate, activePlates) : null;
     if (plateError) { setError(plateError); return; }
@@ -99,6 +105,7 @@ export function PaymentAccountModal({ open, busy, vehicles, contractors, activeP
         return;
       }
       setOpened(true);
+      setError("");
       onAccountReady(vehicleId, contractorId); // Caller keeps the dialog open until the refreshed accounts contain the pair.
     } finally {
       inFlight.current = false;

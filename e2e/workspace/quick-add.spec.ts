@@ -7,6 +7,8 @@ async function fixture(page:Page){
   {id:'K1',name:'المقاول الأول',is_primary:false,is_archived:false,version:1}];
  const vehicles=[{id:'V1',plate_number:'عربية ١',driver_name:'السائق',notes:null,is_archived:false,version:1}];
  const accounts=[{vehicle_id:'V1',contractor_id:'K1'}];
+ /** Recorded write attempts so tests can prove request counts, not just results. */
+ const attempts:{operation:string;payload:Record<string,string>}[]=[];
  await page.route('**/api/ledger/master?**',route=>{
   const type=new URL(route.request().url()).searchParams.get('type');
   return route.fulfill({json:{ok:true,
@@ -15,6 +17,7 @@ async function fixture(page:Page){
   rows:[],total_count:'0',next_cursor:null,current_cash_balance_piastres:'0'}}}));
  await page.route('**/api/ledger/operations',route=>{
   const body=route.request().postDataJSON() as {operation:string;payload:Record<string,string>};
+  attempts.push(body);
   if(body.operation==='vehicle.create')
    vehicles.push({id:body.payload.id,plate_number:body.payload.plate_number,
     driver_name:body.payload.driver_name||null,notes:null,is_archived:false,version:1});
@@ -25,6 +28,7 @@ async function fixture(page:Page){
   return route.fulfill({json:{ok:true,data:{status:'OK'}}});});
  await page.goto('/');
  await expect(page.getByText('أهلًا بك في إدارة الشغل',{exact:true})).toBeVisible();
+ return attempts;
 }
 function entry(page:Page){return page.getByRole('navigation').getByRole('button',{name:'تسجيل الشغل والدفعات',exact:true}).click();}
 
@@ -94,18 +98,20 @@ test('opens a new payment account from new vehicle and contractor, then selects 
 });
 
 test('ensures an existing pair once without creating records',async({page})=>{
- await fixture(page);await entry(page);
+ const attempts=await fixture(page);await entry(page);
  await page.locator('#real-payment-account-add').click();
  const created=page.waitForRequest(r=>r.url().includes('/api/ledger/operations'));
  await page.locator('#quick-account-vehicle').selectOption('V1');
  await page.locator('#quick-account-contractor').selectOption('K1');
- await page.getByRole('button',{name:'فتح الحساب',exact:true}).click();
+ await page.getByRole('button',{name:'فتح الحساب',exact:true}).evaluate((button:HTMLButtonElement)=>{
+  button.form!.requestSubmit();
+  button.form!.requestSubmit();
+ });
  const request=(await created).postDataJSON();
  expect(request.operation).toBe('vehicle.account.ensure');
  await expect(page.locator('#real-payment-account')).toHaveValue('V1|K1');
- await page.waitForTimeout(500);
- const writes=await page.evaluate(()=>performance.now());
- void writes;
+ await expect(page.getByRole('dialog')).toHaveCount(0);
+ expect(attempts.map(request=>request.operation)).toEqual(['vehicle.account.ensure']);
 });
 
 test('Escape closes the payment account modal without any request',async({page})=>{

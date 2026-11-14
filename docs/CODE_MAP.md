@@ -353,5 +353,5 @@ Live workspace home reuses approved shortcut styles from styles/globals.css; rea
 - `features/ledger/payment-account-modal.tsx`: payment account dialog; existing-or-create per side, stores createdVehicleId/createdContractorId to resume after partial failure, ensure only, pending state.
 - `features/ledger/searchable-choice.tsx`: added onAdd affordance and search-clear effect on programmatic selection.
 - `features/ledger/transaction-entry.tsx`: quickDrafts map keeps one payload id per exact input across retries; pendingVehicle/pendingContractor/pendingAccount selection effect waits until the refreshed lists contain the record; dialogs live outside the trip/payment forms.
-- `e2e/workspace/quick-add.spec.ts` و`e2e/workspace/quick-add-reliability.spec.ts`: 18 fixture tests against the HTTP contract only; `playwright.workspace.config.ts` mandatory.
+- `e2e/workspace/quick-add.spec.ts` و`e2e/workspace/quick-add-reliability.spec.ts`: 18 quick-add tests; the complete workspace suite has 24 tests. HTTP fixtures only; `playwright.workspace.config.ts` mandatory.
 - لا تغيير في master-data أو الديمو أو المعادلات أو SQL. الحفظ عبر المسار الرسمي فقط.

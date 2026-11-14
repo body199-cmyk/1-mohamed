@@ -78,22 +78,27 @@ export function TransactionEntry({ contractors, vehicles, accounts, busy, write,
   }
 
   // A confirmed creation stays pending until the refreshed lists contain the
-  // record; only then is it selected and the dialog closed. A failed refresh
-  // never reports a failed creation and never re-creates the record.
+  // record; only then is it selected. A failed refresh never reports a failed
+  // creation and never re-creates the record. Each pending result closes only
+  // its own dialog, so a later refresh cannot close a dialog the user opened
+  // meanwhile.
   const [pendingVehicle, setPendingVehicle] = useState<string | null>(null);
   const [pendingContractor, setPendingContractor] = useState<string | null>(null);
   const [pendingAccount, setPendingAccount] = useState<{ vehicleId: string; contractorId: string } | null>(null);
   useEffect(() => {
     if (pendingVehicle && vehicles.some(v => v.id === pendingVehicle)) {
-      setTripVehicle(pendingVehicle); setPendingVehicle(null); setQuickModal(null);
+      setTripVehicle(pendingVehicle); setPendingVehicle(null);
+      setQuickModal(modal => modal === "vehicle" ? null : modal);
     }
     if (pendingContractor && contractors.some(c => c.id === pendingContractor)) {
-      setTripCounterparty(pendingContractor); setPendingContractor(null); setQuickModal(null);
+      setTripCounterparty(pendingContractor); setPendingContractor(null);
+      setQuickModal(modal => modal === "contractor" ? null : modal);
     }
     if (pendingAccount && accounts.some(a => a.vehicle_id === pendingAccount.vehicleId
         && a.contractor_id === pendingAccount.contractorId)) {
       setPaymentAccount(pendingAccount.vehicleId + "|" + pendingAccount.contractorId);
-      setPendingAccount(null); setQuickModal(null);
+      setPendingAccount(null);
+      setQuickModal(modal => modal === "payment" ? null : modal);
     }
   }, [vehicles, contractors, accounts, pendingVehicle, pendingContractor, pendingAccount]);
 
@@ -220,13 +225,11 @@ export function TransactionEntry({ contractors, vehicles, accounts, busy, write,
       </form>
       <QuickRecordModal kind="vehicle" open={quickModal === "vehicle"} busy={busy}
         existing={vehicles.filter(v => !v.is_archived).map(v => v.plate_number)}
-        pending={quickModal === "vehicle" && pendingVehicle !== null}
         onRefreshLists={() => void refresh()}
         onClose={() => setQuickModal(null)}
         onCreate={quickCreateVehicle} onCreated={id => setPendingVehicle(id)}/>
       <QuickRecordModal kind="contractor" open={quickModal === "contractor"} busy={busy}
         existing={contractors.filter(c => !c.is_archived).map(c => c.name)}
-        pending={quickModal === "contractor" && pendingContractor !== null}
         onRefreshLists={() => void refresh()}
         onClose={() => setQuickModal(null)}
         onCreate={quickCreateContractor} onCreated={id => setPendingContractor(id)}/>
@@ -270,7 +273,6 @@ export function TransactionEntry({ contractors, vehicles, accounts, busy, write,
         ensureAccount={(vehicleId, contractorId) =>
           write("vehicle.account.ensure", { vehicle_id: vehicleId, contractor_id: contractorId })}
         onAccountReady={(vehicleId, contractorId) => setPendingAccount({ vehicleId, contractorId })}
-        pending={quickModal === "payment" && pendingAccount !== null}
         onRefreshLists={() => void refresh()}/>
     </section>
   </>;
