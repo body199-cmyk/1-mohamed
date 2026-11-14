@@ -323,3 +323,7 @@ DELIVERY-02: correct live trip preview cash-responsible identity only; financial
 
 
 Authorized release follow-up: user approves #79/#80 publication and trial whole-pound migration, retaining disabled permanent access. #79 merged eee211fd281a1342044ea459b6650d702aacde4e; latest main incorporated in #80. Code/tests merged automatically; documentation conflicts retain both histories with this latest-state override. Separate same-assistant merge review checks responsibility labels, whole-pound preview and unchanged API normalization. Combined exact-head CI remains mandatory.
+
+
+## REPORT-ALL-01 — 14 November 2026
+Approved additional all-history scope, preserving manual date filters and financial formulas; user explicitly requests main merge + Vercel publication. Acceptance: actual opening-to-last activity for chosen identity; no missing pages/partial export; switching off restores manual dates; default view unchanged; non-owner/invalid scope denied. Branch codex/report-all-history-20261114 from167fbed. Local acceptance in REPORT_ALL_HISTORY_REVIEW_2026-11-14.md; latest CI/hosted migration/release pending. Broader delivery/backup gates remain open.

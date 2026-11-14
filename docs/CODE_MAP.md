@@ -370,3 +370,10 @@ DELIVERY-01: apps/web/src/lib/ledger/request-origin.ts owns canonical public-ori
 
 ## DELIVERY-02 — 14 November 2026
 TripPreviewCard accepts optional responsibleContractorName separately from counterpartyName. Real TransactionEntry supplies primary or counterparty according to direction; e2e/workspace/workspace.spec.ts covers both directions.
+
+
+## REPORT-ALL-01
+- features/reports/report-period.tsx: shared scope control and demo history bounds; daily-work-report/view, report-export-documents, vehicle-cash-view, contractor-statements-view adopt optional history.
+- features/ledger/real-{reports,contractor-statement,cash-statement}: optional server scope, retained manual dates, resolved export period.
+- supabase/migrations/20261114190803_report_all_history.sql + tests/17_report_all_history_verification.sql: owner-only actual history bounds using existing audited readers; tools/db-verify.mjs runs both.
+- apps/web/e2e/report-history.test.ts, e2e/workspace/all-history.spec.ts, e2e/report-all-history.spec.ts: filter identity, opening, date restore, CSV dates/rows, pagination/full export. New demo browser test is wired to CI.

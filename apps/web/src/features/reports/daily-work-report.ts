@@ -7,6 +7,7 @@ export interface DailyWorkFilters {
   readonly workDate: string;
   readonly contractorId: string;
   readonly vehicleId: string;
+  readonly allHistory?: boolean;
 }
 
 export interface DailyWorkTotals {
@@ -55,15 +56,15 @@ export function buildDailyWorkReport(
   trips: readonly DemoTripRecord[],
   filters: DailyWorkFilters
 ): DailyWorkReport {
-  if (!validOpeningDate(filters.workDate)) {
+  if (!filters.allHistory && !validOpeningDate(filters.workDate)) {
     return { ok: false, error: "INVALID_DATE" };
   }
 
   const rows = trips.filter(t =>
-    t.workDate === filters.workDate &&
+    (filters.allHistory || t.workDate === filters.workDate) &&
     (!filters.contractorId || t.counterpartyId === filters.contractorId) &&
     (!filters.vehicleId || t.vehicleId === filters.vehicleId)
-  ).sort((a, b) => a.createdAt.localeCompare(b.createdAt) || a.id.localeCompare(b.id));
+  ).sort((a, b) => a.workDate.localeCompare(b.workDate) || a.createdAt.localeCompare(b.createdAt) || a.id.localeCompare(b.id));
 
   for (const trip of rows) {
     const computed = calculateTripAmounts({
@@ -72,7 +73,7 @@ export function buildDailyWorkReport(
       vehicleRateEgp: trip.vehicleRateEgp,
       expenseEgp: trip.expenseEgp,
     });
-    if (!computed.ok ||
+    if (!validOpeningDate(trip.workDate) || !computed.ok ||
       computed.contractorTotalPiastres !== trip.contractorTotalPiastres ||
       computed.vehicleTotalPiastres !== trip.vehicleTotalPiastres ||
       (trip.direction !== "AHMED_SUPPLIES" && trip.direction !== "OTHER_SUPPLIES")) {

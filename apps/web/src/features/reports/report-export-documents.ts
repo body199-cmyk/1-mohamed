@@ -23,6 +23,7 @@ export function toDailyWorkOperationalReport(
   report: DailyWorkSuccess,
   filters: {
     readonly workDate: string;
+    readonly allHistory?: boolean;
     readonly contractorLabel: string;
     readonly vehicleLabel: string;
     readonly contractorNames: ReadonlyMap<string, string>;
@@ -40,20 +41,23 @@ export function toDailyWorkOperationalReport(
   });
   return {
     businessName: BUSINESS_NAME,
-    title: "تقرير الشغل اليومي",
+    title: filters.allHistory ? "تقرير الشغل — كل الحساب" : "تقرير الشغل اليومي",
     subtitle: "حجم شغل واستحقاقات النقلات فقط؛ لا يمثل رصيد فرق الشغل أو النقد بعد الدفعات.",
     generatedAtLabel: generatedAtCairo(),
     metadata: [
-      { label: "تاريخ التقرير", value: filters.workDate, direction: "ltr" },
+      ...(filters.allHistory ? [{label:"نطاق التقرير",value:"كل الحساب من البداية"},
+        {label:"من تاريخ",value:report.rows[0]?.workDate??"—"},{label:"إلى تاريخ",value:report.rows.at(-1)?.workDate??"—"}] :
+        [{label:"تاريخ التقرير",value:filters.workDate,direction:"ltr" as const}]),
       { label: "المقاول", value: filters.contractorLabel },
       { label: "العربية", value: filters.vehicleLabel },
     ],
     summarySections: [
-      totals("إجمالي اليوم المحدد", report.totals),
+      totals(filters.allHistory?"إجمالي كل الحساب":"إجمالي اليوم المحدد", report.totals),
       totals("شغل أحمد للطرف الآخر", report.ahmedSupplies),
       totals("شغل الطرف الآخر لأحمد", report.otherSupplies),
     ],
     columns: [
+      ...(filters.allHistory?[{label:"التاريخ",direction:"ltr" as const,widthWeight:1}]:[]),
       { label: "رقم النقلة", direction: "ltr", widthWeight: 1.05 },
       { label: "المقاول", widthWeight: 1.25 },
       { label: "العربية", widthWeight: 1.05 },
@@ -64,6 +68,7 @@ export function toDailyWorkOperationalReport(
       { label: "مستحق العربية", direction: "ltr", widthWeight: 1.2 },
     ],
     rows: report.rows.map(trip => [
+      ...(filters.allHistory?[trip.workDate]:[]),
       trip.id,
       filters.contractorNames.get(trip.counterpartyId) ?? trip.counterpartyId,
       filters.vehiclePlates.get(trip.vehicleId) ?? trip.vehicleId,
@@ -73,7 +78,7 @@ export function toDailyWorkOperationalReport(
       money(trip.contractorTotalPiastres),
       money(trip.vehicleTotalPiastres),
     ]),
-    emptyMessage: "لا توجد نقلات في اليوم والفلاتر المحددة.",
+    emptyMessage: filters.allHistory?"لا توجد نقلات مطابقة للفلاتر المختارة.":"لا توجد نقلات في اليوم والفلاتر المحددة.",
     footerNotes: [
       "كل نقلة تظهر مرة واحدة. لا تُضاف افتتاحيات النقد ولا تُخصم دفعات في هذا التقرير.",
       "التقرير من معاينة DemoStore في الجلسة الحالية؛ لا يمثل بيانات محفوظة دائمًا.",

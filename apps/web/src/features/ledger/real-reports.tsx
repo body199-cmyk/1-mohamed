@@ -8,8 +8,9 @@ import { ReportExportActions } from "../reports/report-export-actions";
 import { buildRealOperationalDocument, isFullOperationalReport } from "./real-operational-document";
 import { assertReportPage, mergeReportPage, type ReportPage } from "./report-snapshot";
 import { RecordActions } from "./record-actions";
+import { ReportHistoryScope } from "../reports/report-period";
 import { WorkTotals } from "./work-totals";
-type Report = ReportPage & { totals?: Record<string,string>; period_opening_piastres?: string;
+type Report = ReportPage & { date_from?:string; date_to?:string; totals?: Record<string,string>; period_opening_piastres?: string;
   period_closing_piastres?: string; current_cash_balance_piastres?: string; cash_balance_piastres?: string };
 type ReportType = "trips.list" | "payments.list";
 const EMPTY_ROWS: Record<string, unknown>[] = [];
@@ -21,6 +22,7 @@ export function RealReports({ contractors, vehicles, accounts, disabled, revisio
   const [notice,setNotice] = useState("");
   const reportQuery = useRef<{ type: ReportType; payload: Record<string, unknown> } | null>(null);
   const [reportType, setReportType] = useState<ReportType>("trips.list");
+  const [allHistory,setAllHistory] = useState(false);
   const [reportFrom, setReportFrom] = useState("");
   const [reportTo, setReportTo] = useState("");
   const [reportAccount, setReportAccount] = useState("");
@@ -33,12 +35,12 @@ export function RealReports({ contractors, vehicles, accounts, disabled, revisio
   useEffect(() => { active.current++; setReport(null); reportQuery.current = null; },[revision]);
   async function readReport(event: FormEvent) {
     event.preventDefault();
-    if (busy || disabled || !reportFrom || !reportTo) return;
+    if (busy || disabled || (!allHistory && (!reportFrom || !reportTo))) return;
     const token = active.current;
     setBusy(true); setNotice(""); setReport(null);
     reportQuery.current = null;
     try {
-      let payload: Record<string, unknown> = { date_from: reportFrom, date_to: reportTo,
+      let payload: Record<string, unknown> = { ...(allHistory ? {all_history:true} : {date_from:reportFrom,date_to:reportTo}),
         include_cancelled: includeCancelled, limit: 200 };
       if (reportType === "trips.list") {
         if (reportVehicle) payload.vehicle_id = reportVehicle;
@@ -90,7 +92,7 @@ export function RealReports({ contractors, vehicles, accounts, disabled, revisio
       return buildRealOperationalDocument(reportType, report, {
         vehicles: new Map(vehicles.map(v => [v.id, v.plate_number])),
         contractors: new Map(contractors.map(c => [c.id, c.name]))
-      }, reportFrom, reportTo, new Intl.DateTimeFormat("ar-EG", {
+      }, report.date_from ?? reportFrom, report.date_to ?? reportTo, new Intl.DateTimeFormat("ar-EG", {
         timeZone: "Africa/Cairo", dateStyle: "medium", timeStyle: "short"
       }).format(new Date()), {
         vehicle: reportType === "trips.list" && reportVehicle ?
@@ -139,12 +141,13 @@ export function RealReports({ contractors, vehicles, accounts, disabled, revisio
             </option>)}
           </select>
         </>}
+        <ReportHistoryScope checked={allHistory} disabled={busy} onChange={value=>{setAllHistory(value);active.current++;setReport(null);reportQuery.current=null;}}/>
         <label htmlFor="report-from">من تاريخ</label>
-        <input id="report-from" style={field} type="date" required value={reportFrom}
-          onChange={e => { setReportFrom(e.target.value); setReport(null); }} disabled={busy} />
+        <input id="report-from" style={field} type="date" required={!allHistory} value={reportFrom}
+          onChange={e => { setReportFrom(e.target.value); setReport(null); }} disabled={busy || allHistory} />
         <label htmlFor="report-to">إلى تاريخ</label>
-        <input id="report-to" style={field} type="date" required value={reportTo}
-          onChange={e => { setReportTo(e.target.value); setReport(null); }} disabled={busy} />
+        <input id="report-to" style={field} type="date" required={!allHistory} value={reportTo}
+          onChange={e => { setReportTo(e.target.value); setReport(null); }} disabled={busy || allHistory} />
         <label style={{ display: "block", marginBottom: 12 }}>
           <input type="checkbox" checked={includeCancelled} onChange={e => { setIncludeCancelled(e.target.checked); setReport(null); }} disabled={busy} />
           {" "}عرض القيود الملغاة أيضًا
@@ -152,6 +155,7 @@ export function RealReports({ contractors, vehicles, accounts, disabled, revisio
         <button disabled={busy} type="submit">تحميل التقرير</button>
       </form>
       {report && <>
+        {allHistory && <p>كل الحساب من البداية: {report.date_from} — {report.date_to}</p>}
         {reportType === "trips.list" && report.totals && <WorkTotals totals={report.totals} />}
 
         <p>عدد السجلات: {report.total_count ?? report.rows?.length ?? 0}</p>
@@ -176,7 +180,7 @@ export function RealReports({ contractors, vehicles, accounts, disabled, revisio
         {!busy && fullExportDocument && <div style={{ marginTop: 16 }}>
           <h3>تصدير التقرير الكامل بخمس صيغ ومشاركة الصورة</h3>
           <ReportExportActions document={fullExportDocument}
-            fileNameBase={`real-${reportType.replace(".", "-")}-${reportFrom}-${reportTo}`} />
+            fileNameBase={`real-${reportType.replace(".", "-")}-${report.date_from ?? reportFrom}-${report.date_to ?? reportTo}`} />
         </div>}
         {isFullOperationalReport(report) && !fullExportDocument &&
           <p role="alert">بيانات التقرير غير متسقة؛ تم إيقاف التصدير الكامل لحمايتك.</p>}
