@@ -68,6 +68,7 @@ for (const path of [
   "/app",
   "/api/ledger/master?type=contractors",
   "/api/ledger/read",
+  "/api/ledger/purge",
 ]) {
   const res = await request(path);
   assert.equal(res.status, 307, `Expected deny-all redirect for ${path}`);
@@ -83,7 +84,7 @@ for (const path of [
   assert.equal(res.headers.get("cache-control"), "no-store");
 }
 
-for (const path of ["/trips", "/payments", "/api/finance", "/api/ledger/operations", "/api/ledger/read", "/demo/trips", "/fonts/cairo.css", "/favicon.svg"]) {
+for (const path of ["/trips", "/payments", "/api/finance", "/api/ledger/operations", "/api/ledger/read", "/api/ledger/purge", "/demo/trips", "/fonts/cairo.css", "/favicon.svg"]) {
   const res = await request(path, { method: "POST", body: "test" });
   assert.equal(res.status, 503, `Expected denied POST for ${path}`);
   assert.equal(res.headers.get("location"), null);

@@ -90,7 +90,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: pre-supabase-workspace-browser
-          path: artifacts/closeout/
+          path: |
+            artifacts/closeout/
+            artifacts/deletion-settings/
           if-no-files-found: ignore
           retention-days: 7
       - name: Test approved mobile trip entry and FIN-03 opening rejection

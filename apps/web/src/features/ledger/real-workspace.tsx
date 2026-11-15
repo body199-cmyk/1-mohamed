@@ -12,6 +12,7 @@ import { useTheme } from "../../components/theme-provider";
 import styles from "./workspace.module.css";
 import ui from "./workspace-ui.module.css";
 import {WorkspaceIcon} from './workspace-icon';
+import {DataDeletionSettings} from './data-deletion-settings';
 const sections = [
   ["home","الرئيسية"],["entry","تسجيل الشغل والدفعات"],["reports","النقلات واليومية"],
   ["contractor","كشف المقاول"],["cash","كشف حساب عربية"],["master","البيانات الأساسية"],["settings","الإعدادات"]
@@ -27,8 +28,10 @@ type Screen=typeof sections[number][0];
 export function RealWorkspace() {
   const data=useWorkspaceData();
   const [screen,setScreen]=useState<Screen>("home");
+  const [dataGeneration,setDataGeneration]=useState(0);
   const {theme,toggleTheme}=useTheme();
   const blocked=data.busy||data.loading;
+  async function afterDeletion(){await data.refresh();setDataGeneration(value=>value+1);}
   if(!data.configured) return <section><h1>إدارة حسابات النقل</h1>
     <p role="status">لم يتم ربط قاعدة البيانات بعد. الحفظ الدائم غير متاح حاليًا.</p></section>;
   return <div className={styles.workspace}>
@@ -55,11 +58,11 @@ export function RealWorkspace() {
         <p>المقاولون: {data.contractors.filter(c=>!c.is_archived&&!c.is_primary).length} — العربيات: {data.vehicles.filter(v=>!v.is_archived).length}</p>
         {data.contractors.length===0&&!data.loading&&<p role="status">الحساب فارغ. ابدأ بإعداد صاحب الحساب ثم أضف المقاولين والعربيات من البيانات الأساسية.</p>}
       </section>
-      <div hidden={screen!=="entry"}><TransactionEntry {...data} busy={blocked} onExit={()=>setScreen("home")} /></div>
-      <div hidden={screen!=="reports"}><RealReports {...data} disabled={blocked} /></div>
-      <div hidden={screen!=="contractor"}><RealContractorStatement {...data} disabled={blocked} /></div>
-      <div hidden={screen!=="cash"}><RealCashStatement {...data} disabled={blocked} /></div>
-      <div hidden={screen!=="master"}>
+      <div key={"entry"+dataGeneration} hidden={screen!=="entry"}><TransactionEntry {...data} busy={blocked} onExit={()=>setScreen("home")} /></div>
+      <div key={"reports"+dataGeneration} hidden={screen!=="reports"}><RealReports {...data} disabled={blocked} /></div>
+      <div key={"contractor"+dataGeneration} hidden={screen!=="contractor"}><RealContractorStatement {...data} disabled={blocked} /></div>
+      <div key={"cash"+dataGeneration} hidden={screen!=="cash"}><RealCashStatement {...data} disabled={blocked} /></div>
+      <div key={"master"+dataGeneration} hidden={screen!=="master"}>
         <MasterDataEntry {...data} busy={blocked}/>
         <RecordActions {...data} busy={blocked} mode="master" reportType="trips.list" reportRows={[]} />
       </div>
@@ -67,6 +70,7 @@ export function RealWorkspace() {
         <h2>الإعدادات</h2><button onClick={toggleTheme}>المظهر: {theme==="dark"?"داكن":"فاتح"}</button>
         <p>تغيير كلمة المرور واستعادتها من شاشة تسجيل الدخول عبر بريد صاحب الحساب.</p>
         <p>نسخ قاعدة البيانات واستعادتها تُدار بواسطة المسؤول؛ تصدير التقرير ليس نسخة احتياطية للبرنامج.</p>
+        <DataDeletionSettings vehicles={data.vehicles} disabled={blocked} revision={data.revision} onDeleted={afterDeletion}/>
       </section>
     </div>
   </div>;

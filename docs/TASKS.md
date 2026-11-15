@@ -1,3 +1,6 @@
+## DELETE-SETTINGS-01 — 15 November 2026 / locally verified
+Authorized new controls:all business data/one vehicle/inclusive period, password + strong final confirmation. No actual deletion now; Auth/primary/audit retained. Additive migration, fresh-session challenge, exact preview/scope, atomicity and replay protection; UI/API complete. Local SQL/types/223 package/150 web/build,47 workspace+7 Auth PASS; dependency audit0, guard mutation RED and original restored. Latest-head CI/PR and specific production release approval pending. Real hosted deletion/Auth flow not tested; live1041 trips/1138 payments unchanged. STATUS/review report contain evidence.
+
 ## UI-ROLLOUT-01 — 15 November 2026 / release pending
 User approves prototype and authorizes site-wide visual consistency + reviewed/tested merge and Vercel release, preserving functions/accounting. Actual scope: workspace shell/home/settings; payment/master/opening/edit/cancel/report/contractor/cash forms; inline/account dialogs; auth theme colors.38 workspace+1 independent write-contract case and7 auth PASS; source contracts unchanged. Latest-head CI39 workspace/build and deployment pending. STATUS holds evidence.
 
