@@ -1,3 +1,9 @@
+## PASSWORD-POLICY-01 — 15 November 2026
+Remove only application12-character restriction per explicit choice; required/matching/owner/Auth guards retained. Seven Edge cases PASS; latest-head CI/release pending. UI inventory only, no design changes. STATUS is current.
+
+## AUTH-RECOVERY-01 release evidence — 15 November 2026
+PR82 merged/closed; exact-head CI43703496893 SUCCESS at922f812; main d536d066afa08991d115424694fd283e960b3afa and Vercel dpl_2Px94AUDVmwvx6uDTZ7Ep5tSS3Ad READY verified. Published HTTP guards/canonical callback pass. User confirms new recovery email opened production reset, private password change succeeded and subsequent login opened the account. Auth recovery acceptance complete based on user report. Backups deferred by user. Earlier release-pending notes below are historical.
+
 ## Active slice — AUTH-RECOVERY-01
 Repair canonical recovery URL + cross-browser default email reset, owner checks, show/hide and opt-in remembered session. Five isolated Edge cases + 133 web + build pass. Exact-head CI, merge/deploy and latest real email/user confirmation remain. No backup implementation or added accounts in this slice. Latest user approves activation and explicitly defers backups.
 

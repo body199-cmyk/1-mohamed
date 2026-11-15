@@ -43,8 +43,8 @@ export function ResetPasswordForm() {
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!configured || !canReset || busy) return;
-    if (password.length < 12 || password !== confirm) {
-      setMessage("كلمة المرور لازم تكون 12 حرفًا على الأقل، وتتطابق في الخانتين.");
+    if (password !== confirm) {
+      setMessage("كلمة المرور لازم تتطابق في الخانتين.");
       return;
     }
     setBusy(true);
@@ -56,6 +56,10 @@ export function ResetPasswordForm() {
       const owner=await client.rpc('app_is_owner');
       if(owner.error||owner.data!==true)throw new Error('unauthorized recovery');
       const { error } = await client.auth.updateUser({ password });
+      if (error?.code === 'weak_password') {
+        setMessage('خدمة تسجيل الدخول رفضت كلمة المرور دي. جرّب كلمة أطول أو مختلفة.');
+        return;
+      }
       if (error) throw error;
       await client.auth.signOut();
       router.replace("/login?reset=success");
@@ -74,9 +78,9 @@ export function ResetPasswordForm() {
     {!configured && <p role="status">استرجاع الحساب غير مفعّل قبل ربط قاعدة البيانات.</p>}
     <form onSubmit={submit}>
       <PasswordField id="new-password" label="كلمة المرور الجديدة" autoComplete="new-password"
-        minLength={12} value={password} onChange={setPassword} disabled={!configured||!canReset||busy}/>
+        value={password} onChange={setPassword} disabled={!configured||!canReset||busy}/>
       <PasswordField id="confirm-password" label="تأكيد كلمة المرور" autoComplete="new-password"
-        minLength={12} value={confirm} onChange={setConfirm} disabled={!configured||!canReset||busy}/>
+        value={confirm} onChange={setConfirm} disabled={!configured||!canReset||busy}/>
       <button type="submit" disabled={!configured || !canReset || busy} style={{width:'100%',padding:12,minHeight:48,
         border:0,borderRadius:10,background:'var(--color-primary,#175CD3)',color:'#fff',fontWeight:700}}>{busy ? "جارٍ الحفظ..." : "حفظ كلمة المرور"}</button>
     </form>
