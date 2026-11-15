@@ -1,3 +1,9 @@
+## UI-ROLLOUT-01 — 15 November 2026 / release pending
+User approves prototype and authorizes site-wide visual consistency + reviewed/tested merge and Vercel release, preserving functions/accounting. Actual scope: workspace shell/home/settings; payment/master/opening/edit/cancel/report/contractor/cash forms; inline/account dialogs; auth theme colors.38 workspace+1 independent write-contract case and7 auth PASS; source contracts unchanged. Latest-head CI39 workspace/build and deployment pending. STATUS holds evidence.
+
+## ENTRY-DESIGN-01 — 15 November 2026 / preview ready
+Approved scope: trip entry + inline vehicle/contractor dialog visual prototype only; preserve handlers/accounting, show user before generalizing. Scoped CSS and opt-in presentation;34 Edge/133 web/typecheck PASS. Actual screenshots in artifacts/entry-design. Final build PASS; visual user approval pending; no merge or production publication. STATUS holds current evidence; prior password change already released on main88a3b0e.
+
 ## PASSWORD-POLICY-01 — 15 November 2026
 Remove only application12-character restriction per explicit choice; required/matching/owner/Auth guards retained. Seven Edge cases PASS; latest-head CI/release pending. UI inventory only, no design changes. STATUS is current.
 

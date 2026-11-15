@@ -78,7 +78,7 @@ export function LoginForm({ enabled = false }: { enabled?: boolean }) {
         <label htmlFor="owner-email">البريد الإلكتروني</label>
         <input id="owner-email" type="email" required autoComplete="username" value={email}
           onChange={e => setEmail(e.target.value)} disabled={busy || !enabled || !setup.ready}
-          style={{ width: "100%", padding: 12, marginBottom: 14, display: "block" }} />
+          style={{ width: "100%", padding: 12, marginBottom: 14, display: "block", border:"1px solid var(--border-strong)",borderRadius:10,background:"var(--surface-card)",color:"var(--text-main)" }} />
         {!recovery && <>
           <PasswordField id="owner-password" label="كلمة المرور" autoComplete="current-password"
             value={password} onChange={setPassword} disabled={busy || !enabled || !setup.ready}/>
@@ -88,7 +88,7 @@ export function LoginForm({ enabled = false }: { enabled?: boolean }) {
         </>}
         <button type="submit" disabled={busy || !enabled || !setup.ready || done}
           style={{ padding: "12px 24px", cursor: "pointer",width:'100%',minHeight:48,border:0,borderRadius:10,
-            background:'var(--color-primary,#175CD3)',color:'#fff',fontWeight:700 }}>
+            background:'var(--color-primary,#175CD3)',color:'var(--color-primary-text,#fff)',fontWeight:700 }}>
           {busy ? "جارٍ التحقق..." : recovery ? "إرسال رابط الاسترجاع" : "دخول"}
         </button>
       </form>

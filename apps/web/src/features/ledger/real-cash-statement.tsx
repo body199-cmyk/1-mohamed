@@ -1,4 +1,5 @@
 "use client";
+import ui from "./workspace-ui.module.css";
 import { useEffect,useRef,useState,type FormEvent } from 'react';
 import type { LedgerEntities } from './workspace-data';
 import { postLedgerRead } from '../../lib/ledger/transport';
@@ -7,7 +8,7 @@ import { mergeReportPage } from './report-snapshot';
 import { cashStatementDocument,verifyCashReport,type CashReport } from './cash-statement-document';
 import { ReportHistoryScope } from "../reports/report-period";
 import { ReportExportActions } from '../reports/report-export-actions';
-const field:React.CSSProperties={display:'block',width:'100%',maxWidth:460,padding:10,margin:'6px 0 12px'};
+
 export function RealCashStatement({contractors,vehicles,accounts,disabled,revision}:LedgerEntities&{disabled:boolean;revision:number}) {
   const [allHistory,setAllHistory]=useState(false);
   const [account,setAccount]=useState('');const [from,setFrom]=useState('');const [to,setTo]=useState('');
@@ -35,18 +36,18 @@ export function RealCashStatement({contractors,vehicles,accounts,disabled,revisi
   const vehicle=vehicles.find(v=>v.id===report?.vehicle_id)?.plate_number??report?.vehicle_id??'';
   const contractor=contractors.find(c=>c.id===report?.responsible_contractor_id)?.name??report?.responsible_contractor_id??'';
   const doc=report&&!report.next_cursor?cashStatementDocument(report,vehicle,contractor):null;
-  return <section aria-label="كشف نقدية العربية">
+  return <section className={ui.surface} aria-label="كشف نقدية العربية">
     <h2>كشف حساب عربية</h2><p>اختار العربية والمقاول المسؤول والفترة لعرض النقلات ومستحق الشغل والدفعات والمتبقي. لكل مقاول مسؤول حساب مستقل لنفس العربية.</p>
-    <form onSubmit={load}>
-      <label htmlFor="cash-account">العربية — المقاول المسؤول</label><select id="cash-account" required value={account} style={field} disabled={busy||disabled}
+    <form className={ui.form} onSubmit={load}>
+      <div className={ui.fieldGroup}><label htmlFor="cash-account">العربية — المقاول المسؤول</label><select id="cash-account" required value={account} className={ui.control} disabled={busy||disabled}
         onChange={e=>{setAccount(e.target.value);reset();}}><option value="">اختر الحساب</option>
         {accounts.map(a=><option key={a.vehicle_id+'|'+a.contractor_id} value={a.vehicle_id+'|'+a.contractor_id}>
           {vehicles.find(v=>v.id===a.vehicle_id)?.plate_number??a.vehicle_id} — {contractors.find(c=>c.id===a.contractor_id)?.name??a.contractor_id}
-        </option>)}</select>
+        </option>)}</select></div>
       <ReportHistoryScope checked={allHistory} disabled={busy||disabled} onChange={value=>{setAllHistory(value);reset();}}/>
-      <label htmlFor="cash-from">من تاريخ</label><input id="cash-from" type="date" required={!allHistory} value={from} style={field} disabled={busy||disabled||allHistory} onChange={e=>{setFrom(e.target.value);reset();}}/>
-      <label htmlFor="cash-to">إلى تاريخ</label><input id="cash-to" type="date" required={!allHistory} value={to} style={field} disabled={busy||disabled||allHistory} onChange={e=>{setTo(e.target.value);reset();}}/>
-      <button disabled={busy||disabled}>عرض كشف النقدية</button>
+      <div className={ui.fieldGroup}><label htmlFor="cash-from">من تاريخ</label><input id="cash-from" type="date" required={!allHistory} value={from} className={ui.control} disabled={busy||disabled||allHistory} onChange={e=>{setFrom(e.target.value);reset();}}/></div>
+      <div className={ui.fieldGroup}><label htmlFor="cash-to">إلى تاريخ</label><input id="cash-to" type="date" required={!allHistory} value={to} className={ui.control} disabled={busy||disabled||allHistory} onChange={e=>{setTo(e.target.value);reset();}}/></div>
+      <div className={ui.actions}><button disabled={busy||disabled}>عرض كشف النقدية</button></div>
     </form>
     {error&&<p role="alert">{error}</p>}
     {report&&<>

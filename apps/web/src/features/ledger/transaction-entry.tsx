@@ -1,6 +1,8 @@
 "use client";
+import ui from "./workspace-ui.module.css";
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import styles from "./trip-entry-design.module.css";
 import { PaymentPreview } from "./payment-preview";
 import { SearchableChoice } from "./searchable-choice";
 import { QuickRecordModal, type QuickRecordInput } from "./quick-record-modal";
@@ -23,8 +25,8 @@ type Props = {
   refresh: () => Promise<void>;
 };
 
-const field: React.CSSProperties = { display: "block", padding: 10, width: "100%", maxWidth: 460, margin: "6px 0 12px" };
-const section: React.CSSProperties = { border: "1px solid #d0d7e2", borderRadius: 12, padding: 16, marginBottom: 20 };
+
+
 
 /**
  * Prepared real-data entry. SQL computes all totals and the responsible
@@ -163,68 +165,77 @@ export function TransactionEntry({ contractors, vehicles, accounts, busy, write,
 
   return <>
     {message && <p role="status">{message}</p>}
-    <section style={section}>
-      <h2>تسجيل نقلة</h2>
-      <p>اختر اتجاه الشغل، ثم أدخل الوزن والأسعار. يمكنك تسجيل أكثر من نقلة بأسعار مختلفة في اليوم نفسه.</p>
-      <form onSubmit={createTrip}>
-        <details open><summary>العربية والمقاول والتاريخ</summary>
-        <SearchableChoice id="real-trip-vehicle" label="العربية" value={tripVehicle} onChange={setTripVehicle} disabled={busy}
+    <section className={styles.tripSurface} aria-label="تسجيل نقلة">
+      <header className={styles.heading}><div><h2>تسجيل نقلة</h2>
+      <p>اختر اتجاه الشغل، ثم أدخل الوزن والأسعار. يمكنك تسجيل أكثر من نقلة بأسعار مختلفة في اليوم نفسه.</p></div>
+      <span className={styles.headingIcon} aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M3 6h11v11H3zM14 10h4l3 4v3h-7"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg></span></header>
+      <form onSubmit={createTrip} className={styles.tripForm}>
+        <div className={styles.entryFields}>
+        <details open><summary>العربية والمقاول والتاريخ</summary><div className={styles.fieldGrid}>
+        <SearchableChoice className={styles.choice} id="real-trip-vehicle" label="العربية" value={tripVehicle} onChange={setTripVehicle} disabled={busy}
           choices={vehicles.filter(v=>!v.is_archived).map(v=>({id:v.id,label:v.plate_number}))}
           onAdd={() => setQuickModal("vehicle")} addLabel="+ عربية جديدة"/>
-        <SearchableChoice id="real-trip-counterparty" label="المقاول الطرف" value={tripCounterparty} onChange={setTripCounterparty} disabled={busy}
+        <SearchableChoice className={styles.choice} id="real-trip-counterparty" label="المقاول الطرف" value={tripCounterparty} onChange={setTripCounterparty} disabled={busy}
           choices={contractors.filter(c=>!c.is_archived&&!c.is_primary).map(c=>({id:c.id,label:c.name}))}
           onAdd={() => setQuickModal("contractor")} addLabel="+ مقاول جديد"/>
-        <label htmlFor="real-trip-direction">اتجاه النقلة</label>
-        <select id="real-trip-direction" style={field} value={direction}
+        <div className={styles.formField}><label htmlFor="real-trip-direction">اتجاه النقلة</label>
+        <select id="real-trip-direction" className={styles.control} value={direction}
           onChange={e => setDirection(e.target.value as typeof direction)} disabled={busy}>
           <option value="AHMED_SUPPLIES">أحمد هو المورّد</option>
           <option value="OTHER_SUPPLIES">المقاول الآخر هو المورّد</option>
-        </select>
-        <label htmlFor="real-trip-date">تاريخ النقلة (يسمح بالتاريخ القديم)</label>
-        <input id="real-trip-date" style={field} type="date" required value={tripDate}
-          onChange={e => {setTripDate(e.target.value);setContractorRate("");setVehicleRate("");setExpense("0");setTripOrigin("");setTripDestination("");}} disabled={busy} />
-        </details>
-        <details open><summary>الوزن والأسعار والمصاريف</summary>
-        <label htmlFor="real-trip-weight">الوزن بالطن (3 خانات عشرية)</label>
-        <input id="real-trip-weight" style={field} required inputMode="decimal" placeholder="12.500"
-          value={weight} onChange={e => setWeight(e.target.value)} disabled={busy} />
-        <label htmlFor="real-trip-contractor-rate">سعر المقاول بالجنيه للطن</label>
-        <input id="real-trip-contractor-rate" style={field} required inputMode="decimal"
-          value={contractorRate} onChange={e => setContractorRate(e.target.value)} disabled={busy} />
-        <label style={{ display: "block", marginBottom: 12 }}>
+        </select></div>
+        <div className={styles.formField}><label htmlFor="real-trip-date">تاريخ النقلة (يسمح بالتاريخ القديم)</label>
+        <input id="real-trip-date" className={styles.control} type="date" required value={tripDate}
+          onChange={e => {setTripDate(e.target.value);setContractorRate("");setVehicleRate("");setExpense("0");setTripOrigin("");setTripDestination("");}} disabled={busy} /></div>
+        </div></details>
+        <details open><summary>الوزن والأسعار والمصاريف</summary><div className={styles.fieldGrid}>
+        <div className={styles.formField}><label htmlFor="real-trip-weight">الوزن بالطن (3 خانات عشرية)</label>
+        <input id="real-trip-weight" className={styles.control} required inputMode="decimal" placeholder="12.500"
+          value={weight} onChange={e => setWeight(e.target.value)} disabled={busy} /></div>
+        <div className={styles.formField}><label htmlFor="real-trip-contractor-rate">سعر المقاول بالجنيه للطن</label>
+        <input id="real-trip-contractor-rate" className={styles.control} required inputMode="decimal"
+          value={contractorRate} onChange={e => setContractorRate(e.target.value)} disabled={busy} /></div>
+        <label className={styles.checkboxRow}>
           <input type="checkbox" checked={sameRate} onChange={e => setSameRate(e.target.checked)} disabled={busy} />
           {" "}نفس سعر المقاول والعربية
         </label>
         {!sameRate && <>
-          <label htmlFor="real-trip-vehicle-rate">سعر العربية بالجنيه للطن</label>
-          <input id="real-trip-vehicle-rate" style={field} required inputMode="decimal"
-            value={vehicleRate} onChange={e => setVehicleRate(e.target.value)} disabled={busy} />
+          <div className={styles.formField}><label htmlFor="real-trip-vehicle-rate">سعر العربية بالجنيه للطن</label>
+          <input id="real-trip-vehicle-rate" className={styles.control} required inputMode="decimal"
+            value={vehicleRate} onChange={e => setVehicleRate(e.target.value)} disabled={busy} /></div>
         </>}
-        <label htmlFor="real-trip-expense">مصاريف النقلة بالجنيه</label>
-        <input id="real-trip-expense" style={field} required inputMode="decimal"
-          value={expense} onChange={e => setExpense(e.target.value)} disabled={busy} />
-        </details>
-        <details><summary>خط السير والملاحظات</summary>
-        <label htmlFor="real-trip-origin">من</label>
-        <input id="real-trip-origin" style={field} maxLength={200} value={tripOrigin}
-          onChange={e => setTripOrigin(e.target.value)} disabled={busy} />
-        <label htmlFor="real-trip-destination">إلى</label>
-        <input id="real-trip-destination" style={field} maxLength={200} value={tripDestination}
-          onChange={e => setTripDestination(e.target.value)} disabled={busy} />
-        <label htmlFor="real-trip-notes">ملاحظات</label>
-        <input id="real-trip-notes" style={field} maxLength={400} value={tripNotes}
-          onChange={e => setTripNotes(e.target.value)} disabled={busy} />
-        </details>
-        <label><input type="checkbox" checked={reuseDay} disabled={busy} onChange={e=>setReuseDay(e.target.checked)}/> استخدام نفس بيانات اليوم للنقلة التالية (اختياري)</label>
-        <TripPreviewCard weightTonnes={normalizeDecimalInput(weight)} contractorRateEgp={normalizeDecimalInput(contractorRate)}
+        <div className={styles.formField}><label htmlFor="real-trip-expense">مصاريف النقلة بالجنيه</label>
+        <input id="real-trip-expense" className={styles.control} required inputMode="decimal"
+          value={expense} onChange={e => setExpense(e.target.value)} disabled={busy} /></div>
+        </div></details>
+        <details><summary>خط السير والملاحظات</summary><div className={styles.fieldGrid}>
+        <div className={styles.formField}><label htmlFor="real-trip-origin">من</label>
+        <input id="real-trip-origin" className={styles.control} maxLength={200} value={tripOrigin}
+          onChange={e => setTripOrigin(e.target.value)} disabled={busy} /></div>
+        <div className={styles.formField}><label htmlFor="real-trip-destination">إلى</label>
+        <input id="real-trip-destination" className={styles.control} maxLength={200} value={tripDestination}
+          onChange={e => setTripDestination(e.target.value)} disabled={busy} /></div>
+        <div className={styles.formField}><label htmlFor="real-trip-notes">ملاحظات</label>
+        <input id="real-trip-notes" className={styles.control} maxLength={400} value={tripNotes}
+          onChange={e => setTripNotes(e.target.value)} disabled={busy} /></div>
+        </div></details>
+        <label className={styles.checkboxRow}><input type="checkbox" checked={reuseDay} disabled={busy} onChange={e=>setReuseDay(e.target.checked)}/> استخدام نفس بيانات اليوم للنقلة التالية (اختياري)</label>
+        </div><aside className={styles.summaryColumn} aria-label="معاينة النقلة">
+        <TripPreviewCard entryLayout weightTonnes={normalizeDecimalInput(weight)} contractorRateEgp={normalizeDecimalInput(contractorRate)}
           vehicleRateEgp={normalizeDecimalInput(sameRate?contractorRate:vehicleRate)} expenseEgp={normalizeDecimalInput(expense)} direction={direction}
           counterpartyName={contractors.find(c=>c.id===tripCounterparty)?.name}
           responsibleContractorName={direction === "AHMED_SUPPLIES"
             ? contractors.find(c=>c.is_primary)?.name
             : contractors.find(c=>c.id===tripCounterparty)?.name}
           vehiclePlate={vehicles.find(v=>v.id===tripVehicle)?.plate_number}/>
-        <button type="submit" value="new" disabled={busy}>حفظ وإضافة نقلة جديدة</button>{" "}
-        <button type="submit" value="exit" disabled={busy}>حفظ وخروج</button>
+        </aside>
+        <footer className={styles.actions}>
+          <p>راجع بيانات النقلة ومعاينة الحساب قبل الحفظ.</p>
+          <div className={styles.actionButtons}>
+            <button className={styles.primaryButton} type="submit" value="new" disabled={busy}>حفظ وإضافة نقلة جديدة</button>
+            <button className={styles.secondaryButton} type="submit" value="exit" disabled={busy}>حفظ وخروج</button>
+          </div>
+        </footer>
       </form>
       <QuickRecordModal kind="vehicle" open={quickModal === "vehicle"} busy={busy}
         existing={vehicles.filter(v => !v.is_archived).map(v => v.plate_number)}
@@ -237,12 +248,12 @@ export function TransactionEntry({ contractors, vehicles, accounts, busy, write,
         onClose={() => setQuickModal(null)}
         onCreate={quickCreateContractor} onCreated={id => setPendingContractor(id)}/>
     </section>
-    <section style={section}>
+    <section className={ui.surface}>
       <h2>تسجيل دفعة نقدية</h2>
       <p>لا يُسمح بصرف أكثر من الرصيد المتاح في أي تاريخ لاحق؛ الخادم يرفض أي عجز.</p>
-      <form onSubmit={createPayment}>
-        <label htmlFor="real-payment-account">حساب العربية والمقاول المسؤول</label>
-        <select id="real-payment-account" style={field} required value={paymentAccount}
+      <form className={ui.form} onSubmit={createPayment}>
+        <div className={ui.fieldGroup}><label htmlFor="real-payment-account">حساب العربية والمقاول المسؤول</label>
+        <select id="real-payment-account" className={ui.control} required value={paymentAccount}
           onChange={e => setPaymentAccount(e.target.value)} disabled={busy}>
           <option value="">اختر الحساب</option>
           {accounts.map(a => <option key={a.vehicle_id + "|" + a.contractor_id}
@@ -250,20 +261,20 @@ export function TransactionEntry({ contractors, vehicles, accounts, busy, write,
             {vehicles.find(v => v.id === a.vehicle_id)?.plate_number ?? a.vehicle_id}
             {" — "}{contractors.find(c => c.id === a.contractor_id)?.name ?? a.contractor_id}
           </option>)}
-        </select>
-        <label htmlFor="real-payment-date">تاريخ الدفع</label>
-        <input id="real-payment-date" style={field} type="date" required value={paymentDate}
-          onChange={e => setPaymentDate(e.target.value)} disabled={busy} />
-        <label htmlFor="real-payment-amount">المبلغ بالجنيه</label>
-        <input id="real-payment-amount" style={field} required inputMode="decimal" placeholder="100"
-          value={paymentAmount} onChange={e => setPaymentAmount(e.target.value)} disabled={busy} />
-        <button type="button" id="real-payment-account-add" onClick={() => setQuickModal("payment")}
-          disabled={busy} style={{marginBottom:12}}>+ حساب جديد</button>
-        <label htmlFor="real-payment-notes">ملاحظات</label>
-        <input id="real-payment-notes" style={field} maxLength={400} value={paymentNotes}
-          onChange={e => setPaymentNotes(e.target.value)} disabled={busy} />
+        </select></div>
+        <div className={ui.fieldGroup}><label htmlFor="real-payment-date">تاريخ الدفع</label>
+        <input id="real-payment-date" className={ui.control} type="date" required value={paymentDate}
+          onChange={e => setPaymentDate(e.target.value)} disabled={busy} /></div>
+        <div className={ui.fieldGroup}><label htmlFor="real-payment-amount">المبلغ بالجنيه</label>
+        <input id="real-payment-amount" className={ui.control} required inputMode="decimal" placeholder="100"
+          value={paymentAmount} onChange={e => setPaymentAmount(e.target.value)} disabled={busy} /></div>
+        <div className={ui.actions}><button type="button" id="real-payment-account-add" onClick={() => setQuickModal("payment")}
+          disabled={busy} style={{marginBottom:12}}>+ حساب جديد</button></div>
+        <div className={ui.fieldGroup}><label htmlFor="real-payment-notes">ملاحظات</label>
+        <input id="real-payment-notes" className={ui.control} maxLength={400} value={paymentNotes}
+          onChange={e => setPaymentNotes(e.target.value)} disabled={busy} /></div>
         <PaymentPreview account={paymentAccount} amount={paymentAmount} revision={revision}/>
-        <button type="submit" disabled={busy}>حفظ الدفعة</button>
+        <div className={ui.actions}><button type="submit" disabled={busy}>حفظ الدفعة</button></div>
       </form>
       <PaymentAccountModal open={quickModal === "payment"} busy={busy}
         vehicles={vehicles.filter(v => !v.is_archived).map(v => ({ id: v.id, label: v.plate_number }))}

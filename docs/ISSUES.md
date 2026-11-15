@@ -1,3 +1,7 @@
+## ENTRY-DESIGN-01 — visual defects and local font evidence
+Current trip inline-add buttons had no appearance classes and only text whitespace between them; global reset removed native button borders/background, making save/cancel look joined. Replaced with scoped primary/secondary styling and flex gap; browser measurements prove >=12px gap and >=48px height desktop/mobile, existing operational regressions remain passing. Preview only, not released.
+Windows isolated fixture fonts failed its POSIX slash prefix check: use node:path sep in safe resolved-path boundary; screenshots now use existing Cairo fonts. Production font delivery unchanged.
+
 ## AUTH-RECOVERY-01 — localhost recovery link
 Evidence: user received recovery email but it opened unreachable localhost; Supabase dashboard Site URL was http://localhost:3000 with no redirect allowlist. Fixed cloud Site URL and allowlisted production recovery callback. Default PKCE request would additionally fail on a different browser lacking its verifier; dedicated non-persisting implicit email request plus browser-only fragment handling supports default template without paid SMTP. Never store/email passwords; token fragment immediately removed, owner verified before enabling fields and again before update. Canonical callback, expiry/non-owner denial and real SDK/browser regressions pass; latest real email completion remains user-operated and unverified. Only existing account retained.
 

@@ -1,3 +1,9 @@
+## UI-ROLLOUT-01
+`features/ledger/workspace-ui.module.css`: shared surfaces, responsive field groups, actions/filter grids and payment preview. `workspace.module.css`: private shell/navigation/table/control theme; `workspace-icon.tsx`: authored SVG only. `master-data-entry`, `transaction-entry`, `record-actions`, `trip-edit`, `real-reports`, `real-contractor-statement`, `real-cash-statement`, `contractor-details`, `payment-preview`, `payment-account-modal`, `real-workspace`: layout/classes only. Paths relative to apps/web/src. Auth password/login/reset changes are colors/control size only. `e2e/workspace/design-rollout.spec.ts`:28 screen/4 modal captures, overflow/touch/spacing and original master/payment write payloads. No report document renderers/SQL/accounting/transport changes. Approved prototype entry-design tests retained.
+
+## ENTRY-DESIGN-01
+`features/ledger/trip-entry-design.module.css`: trip form/inline modal-only styles. `transaction-entry.tsx`: trip markup/classes, unchanged state/write/payment code. `quick-record-modal.tsx`: dialog markup/styles, same creation guards. `searchable-choice.tsx`: optional class and width only. `features/trips/trip-preview-card.tsx`: entryLayout presentation only, default retained. Paths relative to apps/web/src. `e2e/workspace/entry-design.spec.ts` produces real-component synthetic desktop/mobile/dark screenshots and checks layout/amounts/cancel draft preservation. `tools/workspace-test-server.mjs`: portable safe font separator for Cairo. No dependencies/production config changed.
+
 ## PASSWORD-POLICY-01
 `apps/web/src/features/auth/reset-password-form.tsx`: no app length minimum; mismatch check and provider weak-password feedback. `e2e/auth/recovery.spec.ts`: short password submission and server rejection without logout. No layout changes.
 

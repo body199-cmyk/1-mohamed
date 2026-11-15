@@ -10,9 +10,9 @@ export function PasswordField({id,label,value,onChange,disabled,autoComplete,min
   <div style={{display:'flex',alignItems:'center',gap:8,marginTop:6}}>
    <input id={id} type={visible?'text':'password'} required value={value} disabled={disabled}
     autoComplete={autoComplete} minLength={minLength} onChange={e=>onChange(e.target.value)}
-    style={{minWidth:0,flex:1,padding:12,border:'1px solid var(--border-color,#ccd4df)',borderRadius:10}}/>
+    style={{minWidth:0,flex:1,padding:12,border:'1px solid var(--border-color,#ccd4df)',borderRadius:10,background:"var(--surface-card)",color:"var(--text-main)"}}/>
    <button type="button" aria-label={(visible?'إخفاء ':'إظهار ')+label} aria-pressed={visible}
-    disabled={disabled} onClick={()=>setVisible(!visible)} style={{minWidth:44,minHeight:44,borderRadius:10}}>
+    disabled={disabled} onClick={()=>setVisible(!visible)} style={{minWidth:48,minHeight:48,borderRadius:10,border:"1px solid var(--border-strong)",background:"var(--surface-card-subtle)",color:"var(--text-main)"}}>
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true">
      <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>
      {visible&&<path d="m3 3 18 18"/>}
