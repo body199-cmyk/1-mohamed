@@ -95,6 +95,8 @@ const steps = [
   ['whole-pound tests', 'supabase/tests/16_whole_pound_verification.sql', 'D19: exact boundaries and whole-pound constraints'],
   ['all-history policy', 'supabase/migrations/20261114190803_report_all_history.sql', 'Reports: resolve actual complete account period'],
   ['all-history tests', 'supabase/tests/17_report_all_history_verification.sql', 'Reports: filters, opening, cursor and authorization'],
+  ['confirmed deletion policy', 'supabase/migrations/20261115114917_confirmed_data_deletion.sql', 'Settings: fresh-password gated atomic deletion'],
+  ['confirmed deletion tests', 'supabase/tests/18_confirmed_data_deletion_verification.sql', 'Settings: scope, stale preview, password, retries and untouched Auth'],
 ];
 
 function describe(error) {

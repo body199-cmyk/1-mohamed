@@ -57,6 +57,7 @@ const preparedServerRoutes = new Set([
   "apps/web/src/app/api/ledger/operations/route.ts",
   "apps/web/src/app/api/ledger/read/route.ts",
   "apps/web/src/app/api/ledger/master/route.ts",
+  "apps/web/src/app/api/ledger/purge/route.ts",
 ]);
 for (const path of appSourceFiles("apps/web/src/app")) {
   const file = read(path);
@@ -65,7 +66,7 @@ for (const path of appSourceFiles("apps/web/src/app")) {
       `Unreviewed Supabase import in ${path}`);
   } else {
     assert.match(file, /getSupabaseSetupStatus/);
-    if (path.includes("/api/ledger/")) assert.match(file, /verifyOwnerForRoute/);
+    if (path.replaceAll("\\", "/").includes("/api/ledger/")) assert.match(file, /verifyOwnerForRoute/);
     assert.doesNotMatch(file, /SUPABASE_SERVICE_ROLE_KEY|sb_secret_/);
   }
 }
@@ -73,6 +74,15 @@ const browser = read("apps/web/src/lib/supabase/client.ts");
 const server = read("apps/web/src/lib/supabase/server.ts");
 const owner = read("apps/web/src/lib/supabase/owner.ts");
 const session = read("apps/web/src/lib/supabase/proxy-session.ts");
+const passwordCheck=read("apps/web/src/lib/ledger/password-confirmation.ts");
+assert.match(passwordCheck,/import 'server-only'/);
+assert.match(passwordCheck,/persistSession:false/);
+assert.match(passwordCheck,/autoRefreshToken:false/);
+assert.doesNotMatch(passwordCheck,/SERVICE_ROLE|sb_secret_/);
+const purgeRoute=read("apps/web/src/app/api/ledger/purge/route.ts");
+assert.match(purgeRoute,/signInWithPassword/);
+assert.match(purgeRoute,/scope:'local'/);
+assert.doesNotMatch(purgeRoute,/\.signUp\(|\.deleteUser\(/);
 assert.match(browser, /^"use client";/);
 assert.match(browser, /createBrowserClient/);
 assert.match(server, /import "server-only"/);

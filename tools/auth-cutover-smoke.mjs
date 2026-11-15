@@ -23,12 +23,12 @@ const root = await request("/");
 assert.equal(root.status, 307);
 assert.equal(new URL(root.headers.get("location"), base).pathname, "/login");
 for (const path of ["/demo/trips", "/demo/home", "/app",
-  "/api/ledger/master?type=contractors", "/auth/reset", "/api/ledger/read"]) {
+  "/api/ledger/master?type=contractors", "/auth/reset", "/api/ledger/read", "/api/ledger/purge"]) {
   const response = await request(path);
   assert.equal(response.status, 503, `Unexpected exposure of ${path}`);
   assert.equal(response.headers.get("cache-control"), "no-store");
 }
-for (const path of ["/api/ledger/operations", "/api/ledger/read", "/demo/trips"]) {
+for (const path of ["/api/ledger/operations", "/api/ledger/read", "/api/ledger/purge", "/demo/trips"]) {
   const response = await request(path, { method: "POST", body: "{}" });
   assert.equal(response.status, 503, `Unexpected POST access to ${path}`);
 }

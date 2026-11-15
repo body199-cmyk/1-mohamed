@@ -52,6 +52,7 @@ export async function POST(request: NextRequest) {
     p_request_key: input.requestKey, p_payload: input.payload,
   });
   if (error) {
+    if(error.code==='P2005')return result({error:'السجل اتحذف نهائيًا. حدّث البيانات وابدأ طلبًا جديدًا.'},409,sessionResponse);
     // SQL error details may contain internal financial data; do not echo them.
     const conflict = error.code === "P2003" || error.code === "23505";
     return result({ error: conflict ? "تم تعديل البيانات من جلسة أخرى؛ حدّث الصفحة وأعد المحاولة." :
