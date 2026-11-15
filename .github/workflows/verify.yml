@@ -83,6 +83,8 @@ jobs:
         run: npx playwright install chromium
       - name: Test private workspace components with isolated HTTP fixtures
         run: npm run test:workspace
+      - name: Test password recovery, visibility and optional remembered sessions
+        run: npx playwright test --config=playwright.auth.config.ts
       - name: Keep private workspace browser evidence
         if: always()
         uses: actions/upload-artifact@v4

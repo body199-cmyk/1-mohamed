@@ -1,3 +1,6 @@
+## AUTH-RECOVERY-01 — localhost recovery link
+Evidence: user received recovery email but it opened unreachable localhost; Supabase dashboard Site URL was http://localhost:3000 with no redirect allowlist. Fixed cloud Site URL and allowlisted production recovery callback. Default PKCE request would additionally fail on a different browser lacking its verifier; dedicated non-persisting implicit email request plus browser-only fragment handling supports default template without paid SMTP. Never store/email passwords; token fragment immediately removed, owner verified before enabling fields and again before update. Canonical callback, expiry/non-owner denial and real SDK/browser regressions pass; latest real email completion remains user-operated and unverified. Only existing account retained.
+
 # الأخطاء والإصلاحات
 
 ## H057 — UX/A11Y-057 / بطاقة اتجاه النقلة

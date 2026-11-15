@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect,useRef,useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { createBrowserSupabaseClient } from "../../lib/supabase/client";
 import { getSupabaseSetupStatus } from "../../lib/supabase/config";
+import {PasswordField} from './password-field';
 
 export function ResetPasswordForm() {
   const router = useRouter();
@@ -12,10 +13,36 @@ export function ResetPasswordForm() {
   const [confirm, setConfirm] = useState("");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
+  const [canReset,setCanReset]=useState(false);
+  const verification=useRef<Promise<void>|null>(null);
+  useEffect(()=>{
+    if(!configured)return;
+    let active=true;
+    if(!verification.current)verification.current=(async()=>{
+    const params=new URLSearchParams(window.location.hash.slice(1));
+    const access=params.get('access_token'),refresh=params.get('refresh_token');
+    const recovery=params.get('type')==='recovery';
+    if(window.location.hash)window.history.replaceState(null,'',window.location.pathname+window.location.search);
+        const client=createBrowserSupabaseClient();
+        if(access||refresh){
+          if(!recovery||!access||!refresh)throw new Error('invalid recovery');
+          const result=await client.auth.setSession({access_token:access,refresh_token:refresh});
+          if(result.error)throw result.error;
+        }
+        const user=await client.auth.getUser();
+        if(user.error||!user.data.user)throw new Error('missing session');
+        const owner=await client.rpc('app_is_owner');
+        if(owner.error||owner.data!==true)throw new Error('not authorized');
+    })();
+    void verification.current.then(()=>{if(active)setCanReset(true);}).catch(()=>{
+      if(active)setMessage('الرابط غير صالح أو انتهت صلاحيته. اطلب رابط استرجاع جديد.');
+    });
+    return()=>{active=false;};
+  },[configured]);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!configured || busy) return;
+    if (!configured || !canReset || busy) return;
     if (password.length < 12 || password !== confirm) {
       setMessage("كلمة المرور لازم تكون 12 حرفًا على الأقل، وتتطابق في الخانتين.");
       return;
@@ -26,6 +53,8 @@ export function ResetPasswordForm() {
       const client = createBrowserSupabaseClient();
       const { data: userData, error: userError } = await client.auth.getUser();
       if (userError || !userData.user) throw new Error("invalid recovery session");
+      const owner=await client.rpc('app_is_owner');
+      if(owner.error||owner.data!==true)throw new Error('unauthorized recovery');
       const { error } = await client.auth.updateUser({ password });
       if (error) throw error;
       await client.auth.signOut();
@@ -38,20 +67,21 @@ export function ResetPasswordForm() {
     }
   }
 
-  return <section style={{ maxWidth: 440, margin: "48px auto", padding: 24 }}>
+  return <section style={{ maxWidth: 440, margin: "48px auto", padding: 24,
+    border:'1px solid var(--border-color,#d7dce5)',borderTop:'4px solid var(--color-primary,#175CD3)',
+    borderRadius:16,background:'var(--surface-card,#fff)',boxShadow:'var(--shadow-elevated)' }}>
     <h1>تعيين كلمة مرور جديدة</h1>
     {!configured && <p role="status">استرجاع الحساب غير مفعّل قبل ربط قاعدة البيانات.</p>}
     <form onSubmit={submit}>
-      <label htmlFor="new-password">كلمة المرور الجديدة</label>
-      <input id="new-password" type="password" autoComplete="new-password" required
-        minLength={12} value={password} onChange={e => setPassword(e.target.value)}
-        disabled={!configured || busy} style={{ display: "block", width: "100%", padding: 12, marginBottom: 12 }} />
-      <label htmlFor="confirm-password">تأكيد كلمة المرور</label>
-      <input id="confirm-password" type="password" autoComplete="new-password" required
-        minLength={12} value={confirm} onChange={e => setConfirm(e.target.value)}
-        disabled={!configured || busy} style={{ display: "block", width: "100%", padding: 12, marginBottom: 12 }} />
-      <button type="submit" disabled={!configured || busy}>{busy ? "جارٍ الحفظ..." : "حفظ كلمة المرور"}</button>
+      <PasswordField id="new-password" label="كلمة المرور الجديدة" autoComplete="new-password"
+        minLength={12} value={password} onChange={setPassword} disabled={!configured||!canReset||busy}/>
+      <PasswordField id="confirm-password" label="تأكيد كلمة المرور" autoComplete="new-password"
+        minLength={12} value={confirm} onChange={setConfirm} disabled={!configured||!canReset||busy}/>
+      <button type="submit" disabled={!configured || !canReset || busy} style={{width:'100%',padding:12,minHeight:48,
+        border:0,borderRadius:10,background:'var(--color-primary,#175CD3)',color:'#fff',fontWeight:700}}>{busy ? "جارٍ الحفظ..." : "حفظ كلمة المرور"}</button>
     </form>
     {message && <p role="status">{message}</p>}
+    {!canReset&&!message&&configured&&<p role="status">جارٍ التحقق من رابط الاسترجاع...</p>}
+    <p><a href="/login">الرجوع لتسجيل الدخول وطلب رابط جديد</a></p>
   </section>;
 }

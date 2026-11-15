@@ -1,3 +1,6 @@
+## Active slice — AUTH-RECOVERY-01
+Repair canonical recovery URL + cross-browser default email reset, owner checks, show/hide and opt-in remembered session. Five isolated Edge cases + 133 web + build pass. Exact-head CI, merge/deploy and latest real email/user confirmation remain. No backup implementation or added accounts in this slice. Latest user approves activation and explicitly defers backups.
+
 # وحدات التنفيذ الصغيرة
 
 هذا تفصيل للمهام الأم في [TASKS](TASKS.md)، وليس إذنًا بالتنفيذ. **حالة كل خطوة موضحة ببطاقتها؛ ما لا يحمل دليل تنفيذ يظل لم يبدأ** وترث اعتماديات وقرارات المهمة الأم. تحديث الحالة يتم هنا لكل خطوة، وحالة الأم تُشتق من اكتمال خطواتها والتحقق المتكامل. الملفات الفعلية تُحدد قبل التنفيذ من [CODE_MAP](CODE_MAP.md) بعد D08/T04؛ النطاق أدناه وحدات مقترحة، لا أسماء ملفات مختلقة.

@@ -2,8 +2,10 @@
 
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { createBrowserSupabaseClient } from "../../lib/supabase/client";
+import { createBrowserSupabaseClient,createRecoveryRequestClient } from "../../lib/supabase/client";
 import { buildAuthCallbackUrl, getSupabaseSetupStatus } from "../../lib/supabase/config";
+import {PasswordField} from './password-field';
+import {REMEMBER_COOKIE} from '../../lib/supabase/remember';
 
 /**
  * Owner-only login. There is deliberately NO public sign-up.
@@ -15,6 +17,7 @@ export function LoginForm({ enabled = false }: { enabled?: boolean }) {
   const setup = getSupabaseSetupStatus();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [remember,setRemember]=useState(false);
   const [recovery, setRecovery] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
@@ -26,13 +29,14 @@ export function LoginForm({ enabled = false }: { enabled?: boolean }) {
     setBusy(true);
     setMessage("");
     try {
+      if(!recovery)document.cookie=`${REMEMBER_COOKIE}=${remember?'1':'0'}; Path=/; SameSite=Lax${location.protocol==='https:'?'; Secure':''}${remember?'; Max-Age=2592000':''}`;
       const client = createBrowserSupabaseClient();
       if (recovery) {
         const callback = buildAuthCallbackUrl(setup.siteUrl);
         if (!callback) throw new Error("رابط استرجاع كلمة المرور غير مُعد.");
         const url = new URL(callback);
         url.searchParams.set("flow", "recovery");
-        const { error } = await client.auth.resetPasswordForEmail(email.trim(), {
+        const { error } = await createRecoveryRequestClient().auth.resetPasswordForEmail(email.trim(), {
           redirectTo: url.toString(),
         });
         if (error) throw error;
@@ -63,25 +67,28 @@ export function LoginForm({ enabled = false }: { enabled?: boolean }) {
 
   return (
     <section aria-labelledby="login-heading" style={{ maxWidth: 440, margin: "48px auto", padding: 24,
-      border: "1px solid var(--border, #d7dce5)", borderRadius: 16 }}>
+      border: "1px solid var(--border-color, #d7dce5)", borderRadius: 16,
+      background:'var(--surface-card,#fff)',boxShadow:'var(--shadow-elevated)',borderTop:'4px solid var(--color-primary,#175CD3)' }}>
+      <p style={{color:'var(--color-primary,#175CD3)',fontWeight:700}}>أحمد أبو علي — حسابات النقل</p>
       <h1 id="login-heading">{recovery ? "استرجاع كلمة المرور" : "تسجيل الدخول"}</h1>
       <p>حسابات النقل والمقاولين — الدخول للحسابات المصرّح بها فقط.</p>
       {!setup.ready && <p role="status">الربط الآمن لم يُفعّل بعد. لا تدخل كلمة مرور حقيقية الآن.</p>}
       {setup.ready && !enabled && <p role="status">الحسابات الدائمة غير مفعّلة على النسخة دي. الدخول متوقف لحد استكمال إعداد التشغيل؛ ده مش معناه إن حسابك اتمسح أو كلمة السر غلط.</p>}
-      <form onSubmit={submit}>
+      <form onSubmit={submit} autoComplete="on">
         <label htmlFor="owner-email">البريد الإلكتروني</label>
-        <input id="owner-email" type="email" required autoComplete="email" value={email}
+        <input id="owner-email" type="email" required autoComplete="username" value={email}
           onChange={e => setEmail(e.target.value)} disabled={busy || !enabled || !setup.ready}
           style={{ width: "100%", padding: 12, marginBottom: 14, display: "block" }} />
         {!recovery && <>
-          <label htmlFor="owner-password">كلمة المرور</label>
-          <input id="owner-password" type="password" required autoComplete="current-password"
-            value={password} onChange={e => setPassword(e.target.value)}
-            disabled={busy || !enabled || !setup.ready}
-            style={{ width: "100%", padding: 12, marginBottom: 14, display: "block" }} />
+          <PasswordField id="owner-password" label="كلمة المرور" autoComplete="current-password"
+            value={password} onChange={setPassword} disabled={busy || !enabled || !setup.ready}/>
+          <label style={{display:'block',marginBottom:16}}><input type="checkbox" checked={remember}
+            onChange={e=>setRemember(e.target.checked)} disabled={busy||!enabled||!setup.ready}/>{' '}تذكر دخولي على هذا المتصفح</label>
+          <p style={{fontSize:13}}>فعّل تذكّر الدخول على جهازك الشخصي فقط. حفظ كلمة المرور يتم من مدير كلمات المرور في المتصفح.</p>
         </>}
         <button type="submit" disabled={busy || !enabled || !setup.ready || done}
-          style={{ padding: "10px 24px", cursor: "pointer" }}>
+          style={{ padding: "12px 24px", cursor: "pointer",width:'100%',minHeight:48,border:0,borderRadius:10,
+            background:'var(--color-primary,#175CD3)',color:'#fff',fontWeight:700 }}>
           {busy ? "جارٍ التحقق..." : recovery ? "إرسال رابط الاسترجاع" : "دخول"}
         </button>
       </form>

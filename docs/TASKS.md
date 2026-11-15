@@ -1,3 +1,6 @@
+## Current override — AUTH-RECOVERY-01 / 15 November 2026
+Owner-only activation and password recovery/visibility/remember-session implementation locally verified; release pending. Latest user authorizes merge and Vercel production deployment, defers backups, forbids additional users. See STATUS for actual cloud state; historical preview-only statuses below are superseded. Acceptance: latest real recovery email opens production reset form; user privately changes password; unauthenticated/non-owner blocked. Local tests do not prove final email completion.
+
 # المهام
 
 الحالة بتاريخ **٧ نوفمبر ٢٠٢٦ / H064**: H063/PR #26 ما زال مرجع إغلاق تقرير المقاول؛ وأُضيف H064 لمتابعة أساس E2E بعده. PR #28 دُمج في `main=433658bfc32a411dbfbbd2640a6d564f3577a1e4` بعد CI #42314459722 بنجاح (55/55 Chromium + 9/9 cross-feature regression، وكل فحوص typecheck/package/SQL/negative controls/backup/build/Auth HTTP). H064 غيّر الاختبارات وملف CI والتوثيق فقط، ولم يغيّر كود التطبيق أو المعادلات أو SQL. **هذا لا يثبت حفظًا دائمًا أو Auth حقيقيًا أو تزامن Supabase**. ما زال المشروع في وضع المعاينة، والمستودع Public حتى الآن؛ تُراجع STATUS وOFFLINE_FIRST_ROADMAP_H042 وSUPABASE_AUTH_SETUP.

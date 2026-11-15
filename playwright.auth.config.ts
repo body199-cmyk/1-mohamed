@@ -1,0 +1,4 @@
+import{defineConfig}from'@playwright/test';
+export default defineConfig({testDir:'./e2e/auth',workers:1,retries:0,timeout:30000,
+ use:{baseURL:'http://127.0.0.1:39130',headless:true,launchOptions:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH?{executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH}:{}},
+ webServer:{command:'node tools/auth-test-server.mjs',url:'http://127.0.0.1:39130/login',reuseExistingServer:false}});
