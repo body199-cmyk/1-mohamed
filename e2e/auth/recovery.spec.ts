@@ -1,11 +1,13 @@
 import{test,expect,type Page}from'@playwright/test';
 const user={id:'00000000-0000-0000-0000-000000000001',aud:'authenticated',role:'authenticated',email:'owner@example.test',app_metadata:{},user_metadata:{},created_at:'2026-01-01T00:00:00Z'};
 const token=[Buffer.from('{"alg":"HS256","typ":"JWT"}').toString('base64url'),Buffer.from(JSON.stringify({sub:user.id,role:'authenticated',exp:9999999999})).toString('base64url'),'fixture'].join('.');
-async function network(page:Page,owner=true){
+async function network(page:Page,owner=true,rejectPassword=false){
  const requests:{path:string;method:string;body:unknown}[]=[];
  await page.route('https://fixture.supabase.co/**',route=>{
   const r=route.request(),path=new URL(r.url()).pathname;requests.push({path,method:r.method(),body:r.postDataJSON()});
-  if(path==='/auth/v1/user')return route.fulfill({json:user});
+  if(path==='/auth/v1/user')return rejectPassword&&r.method()==='PUT'
+   ?route.fulfill({status:422,json:{code:'weak_password',msg:'Password should be at least 6 characters.',weak_password:{reasons:['length']}}})
+   :route.fulfill({json:user});
   if(path==='/rest/v1/rpc/app_is_owner')return route.fulfill({json:owner});
   if(path==='/auth/v1/recover')return route.fulfill({json:{}});
   if(path==='/auth/v1/token')return route.fulfill({json:{access_token:token,refresh_token:'fixture-refresh',token_type:'bearer',expires_in:3600,user}});
@@ -62,4 +64,20 @@ test('missing session and unauthorized user never enable password reset',async({
  await page.goto('/auth/reset#access_token='+token+'&refresh_token=fixture-refresh&type=recovery');
  await expect(page.getByRole('status')).toContainText('الرابط غير صالح');
  await expect(page.getByRole('button',{name:'حفظ كلمة المرور'})).toBeDisabled();
+});
+
+for(const rejected of [false,true])test(`short matching password reaches Auth; provider rejection=${rejected}`,async({page})=>{
+ const requests=await network(page,true,rejected);
+ await page.goto('/auth/reset#access_token='+token+'&refresh_token=fixture-refresh&type=recovery');
+ const password=page.getByLabel('كلمة المرور الجديدة',{exact:true});
+ await expect(password).toBeEnabled();
+ await password.fill(rejected?'abc':'abc123');
+ await page.getByLabel('تأكيد كلمة المرور',{exact:true}).fill(rejected?'abc':'abc123');
+ await page.getByRole('button',{name:'حفظ كلمة المرور',exact:true}).click();
+ if(rejected){
+  await expect(page.getByRole('status')).toContainText('رفضت كلمة المرور');
+  await expect(page.getByRole('button',{name:'حفظ كلمة المرور',exact:true})).toBeEnabled();
+  expect(requests.filter(r=>r.path==='/auth/v1/logout')).toHaveLength(0);
+ }else await expect(page).toHaveURL(/login\?reset=success/);
+ expect(requests.filter(r=>r.method==='PUT')).toHaveLength(1);
 });

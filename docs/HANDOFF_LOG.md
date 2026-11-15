@@ -1256,3 +1256,19 @@ Approved additional all-history scope, preserving manual date filters and financ
 
 ## AUTH-RECOVERY-01 — 15 November 2026 / release pending
 Latest user approves production activation and release of owner login/recovery/visibility/remember-session changes, defers backups, forbids extra accounts. Baseline main5b00266 (#81 released); branch codex/auth-recovery-activation-20261114. Supabase canonical Site URL/allowed callback corrected; existing sole confirmed owner retained. Production flag enabled and baseline deployment dpl_3M4hhKWUzFxAhnAa8WAriN3TCRUh READY. Local typecheck/133 web/SDK guard/build and 5 Edge tests PASS; inverted owner check fails3 tests, restored. Second-pass review by same assistant checked canonical redirects, cookie deletion, session persistence and owner gates; no business calculations changed. CI/head/merge/deploy and latest email/private user password change remain. STATUS is current resume source. No credentials retained.
+
+
+## AUTH-RECOVERY-01 — release verified 15 November 2026
+Exact-head CI43703496893 SUCCESS at922f812fc2610284da16cfe532e2115099f49c0d. PR82 merged/closed; main d536d066afa08991d115424694fd283e960b3afa verified through GitHub. Vercel production dpl_2Px94AUDVmwvx6uDTZ7Ep5tSS3Ad READY with canonical alias and matching SHA. Local code diff against released main exit0. Live anonymous HTTP login200/new controls, callback303/canonical reset, reset200/no-store, master401,demo404. After release one new sole-owner recovery email request accepted by Supabase; user asked to open newest message and privately change password. No actual reset/delivery confirmation yet; no new account/password storage. User explicitly deferred backups and authorized activation/release. Final doc-only checkpoint reread against tool evidence; no extra code changes. STATUS holds current next step.
+
+
+## AUTH-RECOVERY-01 — user confirmation / 15 November 2026
+User confirms newest email opened the production reset page and password was privately changed successfully. Recovery accepted based on explicit user report; no password requested/stored. Post-change login still awaits user confirmation. No application code/cloud settings changed; backups remain deferred. STATUS updated and diff reviewed against user statement.
+
+
+## AUTH-RECOVERY-01 — post-change login accepted / 15 November 2026
+User explicitly confirms successful production login with their new password and account access. Real recovery/private change/post-change login acceptance is complete based on user report; no credentials collected. STATUS/TASKS/SUBTASKS updated, second-pass documentation diff reviewed against this report. No application changes or extra deployment; backups remain deferred, broader delivery gates remain separately unproven.
+
+
+## PASSWORD-POLICY-01 — 15 November 2026 / local verification
+User rejects12-character restriction and requests only UI-tools inventory afterward. Removed client minimum; retained required/matching/owner/provider checks. Distinct weak_password feedback prevents false expired-link report. Seven Edge cases PASS including short submission and provider422 rejection/no logout. No live password/email changes. Second-pass full diff review by same assistant checks authorization/server rejection and unchanged financial code. CI/release pending; Supabase platform policy retained. Prior confirmed recovery/login checkpoint included to reconcile stale main docs.

@@ -1,3 +1,6 @@
+## PASSWORD-POLICY-01
+`apps/web/src/features/auth/reset-password-form.tsx`: no app length minimum; mismatch check and provider weak-password feedback. `e2e/auth/recovery.spec.ts`: short password submission and server rejection without logout. No layout changes.
+
 ## AUTH-RECOVERY-01 / 15 November 2026
 Auth UI: `apps/web/src/features/auth/{login-form,reset-password-form,password-field}.tsx`. Callback: `apps/web/src/app/auth/callback/route.ts`; reset metadata: `app/auth/reset/page.tsx`. Cookie policy: `lib/supabase/remember.ts`, applied by browser/server/proxy clients. Dedicated non-persisting recovery-request SDK client uses default email templates across browsers. Regression: `apps/web/e2e/auth-recovery.test.ts`; isolated browser fixtures: `tools/auth-test-server.mjs`, `playwright.auth.config.ts`, `e2e/auth/recovery.spec.ts`. Cloud activation/current acceptance: STATUS supersedes historical preview-only descriptions below.
 
