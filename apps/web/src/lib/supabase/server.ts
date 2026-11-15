@@ -3,6 +3,7 @@ import "server-only";
 import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, type NextResponse } from "next/server";
 import { assertSupabaseConfigured } from "./config";
+import {loginCookieOptions,remembersLogin} from './remember';
 
 /**
  * H041, critical review fix:
@@ -27,7 +28,7 @@ export function createRouteHandlerSupabaseClient(
       setAll(cookiesToSet, headers) {
         for (const { name, value, options } of cookiesToSet) {
           request.cookies.set(name, value);
-          response.cookies.set(name, value, options);
+          response.cookies.set(name, value, loginCookieOptions(options,remembersLogin(request.cookies.getAll())));
         }
         for (const [name, value] of Object.entries(headers ?? {})) {
           response.headers.set(name, value);

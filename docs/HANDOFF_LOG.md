@@ -1252,3 +1252,7 @@ Release verification: combined-head CI 43628200614 SUCCESS at d7e8c66104e3095f43
 
 ## REPORT-ALL-01 — 14 November 2026
 Approved additional all-history scope, preserving manual date filters and financial formulas; user explicitly requests main merge + Vercel publication. Acceptance: actual opening-to-last activity for chosen identity; no missing pages/partial export; switching off restores manual dates; default view unchanged; non-owner/invalid scope denied. Branch codex/report-all-history-20261114 from167fbed. Local acceptance in REPORT_ALL_HISTORY_REVIEW_2026-11-14.md; latest CI/hosted migration/release pending. Broader delivery/backup gates remain open.
+
+
+## AUTH-RECOVERY-01 — 15 November 2026 / release pending
+Latest user approves production activation and release of owner login/recovery/visibility/remember-session changes, defers backups, forbids extra accounts. Baseline main5b00266 (#81 released); branch codex/auth-recovery-activation-20261114. Supabase canonical Site URL/allowed callback corrected; existing sole confirmed owner retained. Production flag enabled and baseline deployment dpl_3M4hhKWUzFxAhnAa8WAriN3TCRUh READY. Local typecheck/133 web/SDK guard/build and 5 Edge tests PASS; inverted owner check fails3 tests, restored. Second-pass review by same assistant checked canonical redirects, cookie deletion, session persistence and owner gates; no business calculations changed. CI/head/merge/deploy and latest email/private user password change remain. STATUS is current resume source. No credentials retained.

@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
 import { assertSupabaseConfigured } from "./config";
+import {loginCookieOptions,remembersLogin} from './remember';
 
 /**
  * H041: candidate session-refresh adapter for a FUTURE feature branch.
@@ -27,7 +28,7 @@ export async function refreshSupabaseSession(request: NextRequest) {
         });
         response = NextResponse.next({ request });
         cookiesToSet.forEach(({ name, value, options }) => {
-          response.cookies.set(name, value, options);
+          response.cookies.set(name, value, loginCookieOptions(options,remembersLogin(request.cookies.getAll())));
         });
         for (const [header, value] of Object.entries(headers ?? {})) {
           response.headers.set(header, value);
