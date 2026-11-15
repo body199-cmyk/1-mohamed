@@ -1,3 +1,7 @@
+## UX-REORG-01 — وثيقة عرض مستقبلية / ١٥ نوفمبر ٢٠٢٦
+- `docs/MOBILE_UX_REORGANIZATION_HANDOFF.md`: مرجع نقاش المستخدم كاملًا لإعادة تنظيم الهاتف أولًا مع حفظ الوظائف؛ قسم ١٣ يربط كل مسار فعلي بوظيفته وموضعه المستهدف. وثيقة فقط وليست UI منفذًا.
+- خط الأساس GitHub main `f7faa16` / PR84 مدموج؛ بعض حالات المخطط/المعاينة القديمة أدناه تاريخية. عند التنفيذ راجع الكود وأحدث main قبل الوثائق القديمة.
+
 ## UI-ROLLOUT-01
 `features/ledger/workspace-ui.module.css`: shared surfaces, responsive field groups, actions/filter grids and payment preview. `workspace.module.css`: private shell/navigation/table/control theme; `workspace-icon.tsx`: authored SVG only. `master-data-entry`, `transaction-entry`, `record-actions`, `trip-edit`, `real-reports`, `real-contractor-statement`, `real-cash-statement`, `contractor-details`, `payment-preview`, `payment-account-modal`, `real-workspace`: layout/classes only. Paths relative to apps/web/src. Auth password/login/reset changes are colors/control size only. `e2e/workspace/design-rollout.spec.ts`:28 screen/4 modal captures, overflow/touch/spacing and original master/payment write payloads. No report document renderers/SQL/accounting/transport changes. Approved prototype entry-design tests retained.
 

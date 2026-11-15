@@ -1,3 +1,6 @@
+## UX-REORG-01 — ١٥ نوفمبر ٢٠٢٦ / توثيق، التنفيذ مؤجل
+طلب المستخدم ملفًا مفصلًا للنموذج التالي ورفعه إلى GitHub، بلا تعديل واجهة/حسابات أو نشر. التسليم [MOBILE_UX_REORGANIZATION_HANDOFF](MOBILE_UX_REORGANIZATION_HANDOFF.md)، ومعيار القبول: حفظ كل الوظائف ودلالات الألوان، هاتف أولًا، تمييز الحالي/المستهدف، مراجعة مصادر وروابط، وفرع مرفوع مطابق للمحلي. حالات قبول التنفيذ داخل الوثيقة ليست نتائج اختبارات. STATUS للحالة وHANDOFF لدليل التسليم؛ وجود الوثيقة أو PR لا يعني بدء/اكتمال تنفيذ UX.
+
 ## UI-ROLLOUT-01 — 15 November 2026 / release pending
 User approves prototype and authorizes site-wide visual consistency + reviewed/tested merge and Vercel release, preserving functions/accounting. Actual scope: workspace shell/home/settings; payment/master/opening/edit/cancel/report/contractor/cash forms; inline/account dialogs; auth theme colors.38 workspace+1 independent write-contract case and7 auth PASS; source contracts unchanged. Latest-head CI39 workspace/build and deployment pending. STATUS holds evidence.
 
