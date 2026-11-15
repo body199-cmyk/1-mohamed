@@ -82,7 +82,7 @@ export function ResetPasswordForm() {
       <PasswordField id="confirm-password" label="تأكيد كلمة المرور" autoComplete="new-password"
         value={confirm} onChange={setConfirm} disabled={!configured||!canReset||busy}/>
       <button type="submit" disabled={!configured || !canReset || busy} style={{width:'100%',padding:12,minHeight:48,
-        border:0,borderRadius:10,background:'var(--color-primary,#175CD3)',color:'#fff',fontWeight:700}}>{busy ? "جارٍ الحفظ..." : "حفظ كلمة المرور"}</button>
+        border:0,borderRadius:10,background:'var(--color-primary,#175CD3)',color:'var(--color-primary-text,#fff)',fontWeight:700}}>{busy ? "جارٍ الحفظ..." : "حفظ كلمة المرور"}</button>
     </form>
     {message && <p role="status">{message}</p>}
     {!canReset&&!message&&configured&&<p role="status">جارٍ التحقق من رابط الاسترجاع...</p>}

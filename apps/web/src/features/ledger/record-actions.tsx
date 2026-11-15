@@ -1,4 +1,5 @@
 "use client";
+import ui from "./workspace-ui.module.css";
 
 import { useEffect, useState, type FormEvent } from "react";
 import type { WriteOperation } from "../../lib/ledger/operation-contract";
@@ -17,8 +18,8 @@ type Props = {
   busy: boolean;
   write: (operation: WriteOperation, payload: Record<string, unknown>) => Promise<boolean>;
 };
-const field: React.CSSProperties = { display: "block", padding: 10, width: "100%", maxWidth: 460, margin: "6px 0 12px" };
-const section: React.CSSProperties = { border: "1px solid #d0d7e2", borderRadius: 12, padding: 16, marginBottom: 20 };
+
+
 
 export function RecordActions({ contractors, vehicles, reportType, reportRows, busy, write, mode }: Props) {
   const [contractorId, setContractorId] = useState("");
@@ -131,100 +132,100 @@ export function RecordActions({ contractors, vehicles, reportType, reportRows, b
 
   return <>
     {feedback && <p role="status">{feedback}</p>}
-    <section style={section} hidden={mode === "financial"}>
+    <section className={ui.surface} hidden={mode === "financial"}>
       <h2>تعديل أو أرشفة المقاول</h2>
       <p>لا يمكن تعديل أو أرشفة المقاول الأساسي. كل تعديل يستخدم رقم إصدار لمنع الكتابة فوق تحديث أحدث.</p>
-      <label htmlFor="manage-contractor">المقاول</label>
-      <select id="manage-contractor" style={field} value={contractorId}
+      <div className={ui.fieldGroup}><label htmlFor="manage-contractor">المقاول</label>
+      <select id="manage-contractor" className={ui.control} value={contractorId}
         onChange={e => setContractorId(e.target.value)} disabled={busy}>
         <option value="">اختر المقاول</option>
         {contractors.filter(c => !c.is_primary).map(c =>
           <option key={c.id} value={c.id}>{c.name}{c.is_archived ? " (مؤرشف)" : ""}</option>)}
-      </select>
-      <form onSubmit={updateContractor}>
-        <label htmlFor="manage-contractor-name">الاسم الجديد</label>
-        <input id="manage-contractor-name" style={field} required maxLength={160}
-          value={contractorName} onChange={e => setContractorName(e.target.value)} disabled={busy || !contractor} />
-        <label htmlFor="manage-reason">سبب التعديل أو الأرشفة</label>
-        <input id="manage-reason" style={field} maxLength={400} value={reason}
-          onChange={e => setReason(e.target.value)} disabled={busy} />
-        <button type="submit" disabled={busy || !contractor}>حفظ تعديل المقاول</button>
+      </select></div>
+      <form className={ui.form} onSubmit={updateContractor}>
+        <div className={ui.fieldGroup}><label htmlFor="manage-contractor-name">الاسم الجديد</label>
+        <input id="manage-contractor-name" className={ui.control} required maxLength={160}
+          value={contractorName} onChange={e => setContractorName(e.target.value)} disabled={busy || !contractor} /></div>
+        <div className={ui.fieldGroup}><label htmlFor="manage-reason">سبب التعديل أو الأرشفة</label>
+        <input id="manage-reason" className={ui.control} maxLength={400} value={reason}
+          onChange={e => setReason(e.target.value)} disabled={busy} /></div>
+        <div className={ui.actions}><button type="submit" disabled={busy || !contractor}>حفظ تعديل المقاول</button>
         {" "}
         <button type="button" disabled={busy || !contractor || !reason.trim()}
           onClick={() => void archiveContractor()}>
           {contractor?.is_archived ? "إعادة تفعيل المقاول" : "أرشفة المقاول"}
-        </button>
+        </button></div>
       </form>
     </section>
-    <section style={section} hidden={mode === "financial"}>
+    <section className={ui.surface} hidden={mode === "financial"}>
       <h2>تعديل أو أرشفة العربية</h2>
-      <label htmlFor="manage-vehicle">العربية</label>
-      <select id="manage-vehicle" style={field} value={vehicleId}
+      <div className={ui.fieldGroup}><label htmlFor="manage-vehicle">العربية</label>
+      <select id="manage-vehicle" className={ui.control} value={vehicleId}
         onChange={e => setVehicleId(e.target.value)} disabled={busy}>
         <option value="">اختر العربية</option>
         {vehicles.map(v => <option key={v.id} value={v.id}>
           {v.plate_number}{v.is_archived ? " (مؤرشفة)" : ""}
         </option>)}
-      </select>
-      <form onSubmit={updateVehicle}>
-        <label htmlFor="manage-plate">اللوحة</label>
-        <input id="manage-plate" style={field} required maxLength={80} value={plate}
-          onChange={e => setPlate(e.target.value)} disabled={busy || !vehicle} />
-        <label htmlFor="manage-driver">السائق</label>
-        <input id="manage-driver" style={field} maxLength={160} value={driver}
-          onChange={e => setDriver(e.target.value)} disabled={busy || !vehicle} />
-        <label htmlFor="manage-vehicle-notes">ملاحظات العربية</label>
-        <input id="manage-vehicle-notes" style={field} maxLength={400} value={vehicleNotes}
-          onChange={e => setVehicleNotes(e.target.value)} disabled={busy || !vehicle} />
-        <button type="submit" disabled={busy || !vehicle}>حفظ تعديل العربية</button>
+      </select></div>
+      <form className={ui.form} onSubmit={updateVehicle}>
+        <div className={ui.fieldGroup}><label htmlFor="manage-plate">اللوحة</label>
+        <input id="manage-plate" className={ui.control} required maxLength={80} value={plate}
+          onChange={e => setPlate(e.target.value)} disabled={busy || !vehicle} /></div>
+        <div className={ui.fieldGroup}><label htmlFor="manage-driver">السائق</label>
+        <input id="manage-driver" className={ui.control} maxLength={160} value={driver}
+          onChange={e => setDriver(e.target.value)} disabled={busy || !vehicle} /></div>
+        <div className={ui.fieldGroup}><label htmlFor="manage-vehicle-notes">ملاحظات العربية</label>
+        <input id="manage-vehicle-notes" className={ui.control} maxLength={400} value={vehicleNotes}
+          onChange={e => setVehicleNotes(e.target.value)} disabled={busy || !vehicle} /></div>
+        <div className={ui.actions}><button type="submit" disabled={busy || !vehicle}>حفظ تعديل العربية</button>
         {" "}
         <button type="button" disabled={busy || !vehicle || !reason.trim()}
           onClick={() => void archiveVehicle()}>
           {vehicle?.is_archived ? "إعادة تفعيل العربية" : "أرشفة العربية"}
-        </button>
+        </button></div>
       </form>
     </section>
-    <section style={section} hidden={mode === "master"}>
+    <section className={ui.surface} hidden={mode === "master"}>
       <h2>إلغاء نقلة أو دفعة مع توثيق السبب</h2>
       <p>اختَر سجلًا من نتائج التقرير المحمّل. الإلغاء لا يمسح السجل؛ الخادم يراجع الرصيد والتعارضات قبل الحفظ.</p>
-      <form onSubmit={cancelFinancial}>
-        <label htmlFor="cancel-record">السجل</label>
-        <select id="cancel-record" style={field} required value={financialId}
+      <form className={ui.form} onSubmit={cancelFinancial}>
+        <div className={ui.fieldGroup}><label htmlFor="cancel-record">السجل</label>
+        <select id="cancel-record" className={ui.control} required value={financialId}
           onChange={e => { setFinancialId(e.target.value); setConfirmed(false); }} disabled={busy}>
           <option value="">اختر سجلًا نشطًا من التقرير</option>
           {rows.filter(r => !r.is_cancelled).map(r =>
             <option key={r.id} value={r.id}>{r.id} — {String(r.trip_date ?? r.payment_date ?? "")}</option>)}
-        </select>
-        <label htmlFor="cancel-reason">سبب الإلغاء (إلزامي)</label>
-        <input id="cancel-reason" style={field} required maxLength={400} value={cancelReason}
-          onChange={e => setCancelReason(e.target.value)} disabled={busy} />
+        </select></div>
+        <div className={ui.fieldGroup}><label htmlFor="cancel-reason">سبب الإلغاء (إلزامي)</label>
+        <input id="cancel-reason" className={ui.control} required maxLength={400} value={cancelReason}
+          onChange={e => setCancelReason(e.target.value)} disabled={busy} /></div>
         <label style={{ display: "block", marginBottom: 12 }}>
           <input type="checkbox" checked={confirmed}
             onChange={e => setConfirmed(e.target.checked)} disabled={busy} />
           {" "}أؤكد إلغاء هذا القيد بعد مراجعة رقمه وتاريخه
         </label>
-        <button type="submit" disabled={busy || !financial || !confirmed || !cancelReason.trim()}>
+        <div className={ui.actions}><button className={ui.danger} type="submit" disabled={busy || !financial || !confirmed || !cancelReason.trim()}>
           إلغاء القيد وتسجيل السبب
-        </button>
+        </button></div>
       </form>
       {reportType === "trips.list" && <TripEdit row={financial} contractors={contractors}
         vehicles={vehicles} busy={busy} write={write} />}
-      {reportType === "payments.list" && financial && !financial.is_cancelled && <form onSubmit={updatePayment}>
+      {reportType === "payments.list" && financial && !financial.is_cancelled && <form className={ui.form} onSubmit={updatePayment}>
         <h3>تعديل الدفعة المختارة</h3>
         <p>يتم الاحتفاظ برقم القيد والحساب المرتبط به. أي تغيير يُراجع الرصيد في قاعدة البيانات.</p>
-        <label htmlFor="payment-edit-date">التاريخ الجديد</label>
-        <input id="payment-edit-date" type="date" style={field} required value={paymentEditDate}
-          onChange={e => setPaymentEditDate(e.target.value)} disabled={busy} />
-        <label htmlFor="payment-edit-amount">المبلغ الجديد بالجنيه</label>
-        <input id="payment-edit-amount" style={field} required inputMode="decimal" value={paymentEditAmount}
-          onChange={e => setPaymentEditAmount(e.target.value)} disabled={busy} />
-        <label htmlFor="payment-edit-notes">الملاحظات</label>
-        <input id="payment-edit-notes" style={field} maxLength={400} value={paymentEditNotes}
-          onChange={e => setPaymentEditNotes(e.target.value)} disabled={busy} />
-        <label htmlFor="payment-edit-reason">سبب تعديل الدفعة (إلزامي)</label>
-        <input id="payment-edit-reason" style={field} required maxLength={400} value={paymentEditReason}
-          onChange={e => setPaymentEditReason(e.target.value)} disabled={busy} />
-        <button type="submit" disabled={busy || !paymentEditReason.trim()}>حفظ تعديل الدفعة</button>
+        <div className={ui.fieldGroup}><label htmlFor="payment-edit-date">التاريخ الجديد</label>
+        <input id="payment-edit-date" type="date" className={ui.control} required value={paymentEditDate}
+          onChange={e => setPaymentEditDate(e.target.value)} disabled={busy} /></div>
+        <div className={ui.fieldGroup}><label htmlFor="payment-edit-amount">المبلغ الجديد بالجنيه</label>
+        <input id="payment-edit-amount" className={ui.control} required inputMode="decimal" value={paymentEditAmount}
+          onChange={e => setPaymentEditAmount(e.target.value)} disabled={busy} /></div>
+        <div className={ui.fieldGroup}><label htmlFor="payment-edit-notes">الملاحظات</label>
+        <input id="payment-edit-notes" className={ui.control} maxLength={400} value={paymentEditNotes}
+          onChange={e => setPaymentEditNotes(e.target.value)} disabled={busy} /></div>
+        <div className={ui.fieldGroup}><label htmlFor="payment-edit-reason">سبب تعديل الدفعة (إلزامي)</label>
+        <input id="payment-edit-reason" className={ui.control} required maxLength={400} value={paymentEditReason}
+          onChange={e => setPaymentEditReason(e.target.value)} disabled={busy} /></div>
+        <div className={ui.actions}><button type="submit" disabled={busy || !paymentEditReason.trim()}>حفظ تعديل الدفعة</button></div>
       </form>}
     </section>
   </>;

@@ -1,4 +1,5 @@
 "use client";
+import ui from './workspace-ui.module.css';
 import {useState} from 'react';
 import {ContractorMoney} from '../contractor-statements/contractor-money';
 import {ReportExportActions} from '../reports/report-export-actions';
@@ -14,9 +15,9 @@ export function ContractorDetails({report,name,vehicleNames,disabled}:{report:Li
  const labels={vehicle:'العربية',origin:'من',destination:'إلى',direction:'اتجاه الشغل'};
  const doc=complete?buildDetailedContractorDocument(report,name,vehicleNames,filters):null;
  return <>
-  <fieldset disabled={!complete||disabled} style={{border:0,minWidth:0}}><legend>فلترة تفاصيل الشغل</legend>
-    {(Object.keys(labels) as (keyof StatementFilters)[]).map(key=><label key={key} style={{display:'inline-block',margin:8}}>
-     {labels[key]}<select aria-label={'فلتر '+labels[key]} value={filters[key]} onChange={e=>setFilters(f=>({...f,[key]:e.target.value}))}>
+  <fieldset className={ui.filterGrid} disabled={!complete||disabled} style={{border:0,minWidth:0}}><legend>فلترة تفاصيل الشغل</legend>
+    {(Object.keys(labels) as (keyof StatementFilters)[]).map(key=><label key={key} className={ui.fieldGroup}>
+     {labels[key]}<select className={ui.control} aria-label={'فلتر '+labels[key]} value={filters[key]} onChange={e=>setFilters(f=>({...f,[key]:e.target.value}))}>
       <option value="">الكل</option>{choices[key].map(value=><option key={value} value={value}>
        {key==='vehicle'?vehicleNames.get(value)??value:key==='direction'?(value==='AHMED_SUPPLIES'?'شغل أحمد':'شغل المقاول'):value}</option>)}
      </select></label>)}

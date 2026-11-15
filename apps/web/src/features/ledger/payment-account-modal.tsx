@@ -1,18 +1,8 @@
 "use client";
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
+import styles from "./trip-entry-design.module.css";
 import { useModalFocus } from "../../components/use-modal-focus";
 import { validateQuickContractorName, validateQuickPlate } from "./quick-add-validation";
-
-const field: React.CSSProperties = { display: "block", padding: 10, width: "100%", maxWidth: 460, margin: "6px 0 12px" };
-const overlay: React.CSSProperties = {
-  position: "fixed", inset: 0, background: "rgba(15,23,42,.45)", zIndex: 40,
-  display: "flex", alignItems: "center", justifyContent: "center", padding: 16,
-};
-const dialog: React.CSSProperties = {
-  background: "var(--surface-color,#fff)", color: "var(--text-color,#111)",
-  border: "1px solid var(--border-color,#d0d7e2)", borderRadius: 12, padding: 16,
-  width: "100%", maxWidth: 500, maxHeight: "90vh", overflow: "auto",
-};
 
 type Option = { id: string; label: string };
 
@@ -112,39 +102,38 @@ export function PaymentAccountModal({ open, busy, vehicles, contractors, activeP
     }
   }
 
-  return <div ref={dialogRef} style={overlay}>
-    <div style={dialog} role="dialog" aria-modal="true" aria-label="فتح حساب عربية جديد">
-      <h3>➕ فتح حساب عربية جديد</h3>
-      <p>للدفعات النقدية: اختر العربية والمقاول المسؤول، أو أنشئهما هنا فورًا ثم يُفتح الحساب بينهما.</p>
+  return <div ref={dialogRef} className={styles.overlay}>
+    <div className={styles.dialog} role="dialog" aria-modal="true" aria-label="فتح حساب عربية جديد">
+      <header className={styles.dialogHeading}><h3>فتح حساب عربية جديد</h3>
+      <p>للدفعات النقدية: اختر العربية والمقاول المسؤول، أو أنشئهما هنا فورًا ثم يُفتح الحساب بينهما.</p></header>
       {opened && <p role="status">تم فتح الحساب بنجاح. في انتظار تحديث القوائم…</p>}
       {opened && onRefreshLists &&
-        <button type="button" onClick={onRefreshLists} disabled={busy}>تحديث القوائم</button>}
+        <button className={styles.secondaryButton} type="button" onClick={onRefreshLists} disabled={busy}>تحديث القوائم</button>}
       {progress && !opened && <p role="status">{progress}</p>}
       {error && <p role="alert">{error}</p>}
-      {!opened && <form onSubmit={save}>
+      {!opened && <form className={styles.dialogForm} onSubmit={save}>
         <label htmlFor="quick-account-vehicle">العربية الموجودة</label>
-        <select id="quick-account-vehicle" style={field} value={existingVehicle}
+        <select id="quick-account-vehicle" className={styles.control} value={existingVehicle}
           onChange={e => setExistingVehicle(e.target.value)} disabled={locked}>
           <option value="">اختر العربية</option>
           {vehicles.map(v => <option key={v.id} value={v.id}>{v.label}</option>)}
         </select>
         <label htmlFor="quick-account-plate">لوحة عربية جديدة (اختياري)</label>
-        <input id="quick-account-plate" style={field} value={newPlate}
+        <input id="quick-account-plate" className={styles.control} value={newPlate}
           onChange={e => setNewPlate(e.target.value)} disabled={locked} placeholder="مثال: ج س ر 7777" />
         <label htmlFor="quick-account-driver">اسم السائق (اختياري، مع اللوحة الجديدة)</label>
-        <input id="quick-account-driver" style={field} value={driver}
+        <input id="quick-account-driver" className={styles.control} value={driver}
           onChange={e => setDriver(e.target.value)} disabled={locked} />
         <label htmlFor="quick-account-contractor">المقاول الموجود</label>
-        <select id="quick-account-contractor" style={field} value={existingContractor}
+        <select id="quick-account-contractor" className={styles.control} value={existingContractor}
           onChange={e => setExistingContractor(e.target.value)} disabled={locked}>
           <option value="">اختر المقاول</option>
           {contractors.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
         </select>
         <label htmlFor="quick-account-name">اسم مقاول جديد (اختياري)</label>
-        <input id="quick-account-name" style={field} value={newName}
+        <input id="quick-account-name" className={styles.control} value={newName}
           onChange={e => setNewName(e.target.value)} disabled={locked} placeholder="مثال: مصنع النور" />
-        <button type="button" onClick={onClose} disabled={locked}>إلغاء</button>{" "}
-        <button type="submit" disabled={locked}>فتح الحساب</button>
+        <footer className={styles.dialogActions}><button className={styles.primaryButton} type="submit" disabled={locked}>فتح الحساب</button><button className={styles.secondaryButton} type="button" onClick={onClose} disabled={locked}>إلغاء</button></footer>
       </form>}
     </div>
   </div>;

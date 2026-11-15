@@ -1,4 +1,5 @@
 "use client";
+import ui from "./workspace-ui.module.css";
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import styles from "./trip-entry-design.module.css";
@@ -24,8 +25,8 @@ type Props = {
   refresh: () => Promise<void>;
 };
 
-const field: React.CSSProperties = { display: "block", padding: 10, width: "100%", maxWidth: 460, margin: "6px 0 12px" };
-const section: React.CSSProperties = { border: "1px solid #d0d7e2", borderRadius: 12, padding: 16, marginBottom: 20 };
+
+
 
 /**
  * Prepared real-data entry. SQL computes all totals and the responsible
@@ -247,12 +248,12 @@ export function TransactionEntry({ contractors, vehicles, accounts, busy, write,
         onClose={() => setQuickModal(null)}
         onCreate={quickCreateContractor} onCreated={id => setPendingContractor(id)}/>
     </section>
-    <section style={section}>
+    <section className={ui.surface}>
       <h2>تسجيل دفعة نقدية</h2>
       <p>لا يُسمح بصرف أكثر من الرصيد المتاح في أي تاريخ لاحق؛ الخادم يرفض أي عجز.</p>
-      <form onSubmit={createPayment}>
-        <label htmlFor="real-payment-account">حساب العربية والمقاول المسؤول</label>
-        <select id="real-payment-account" style={field} required value={paymentAccount}
+      <form className={ui.form} onSubmit={createPayment}>
+        <div className={ui.fieldGroup}><label htmlFor="real-payment-account">حساب العربية والمقاول المسؤول</label>
+        <select id="real-payment-account" className={ui.control} required value={paymentAccount}
           onChange={e => setPaymentAccount(e.target.value)} disabled={busy}>
           <option value="">اختر الحساب</option>
           {accounts.map(a => <option key={a.vehicle_id + "|" + a.contractor_id}
@@ -260,20 +261,20 @@ export function TransactionEntry({ contractors, vehicles, accounts, busy, write,
             {vehicles.find(v => v.id === a.vehicle_id)?.plate_number ?? a.vehicle_id}
             {" — "}{contractors.find(c => c.id === a.contractor_id)?.name ?? a.contractor_id}
           </option>)}
-        </select>
-        <label htmlFor="real-payment-date">تاريخ الدفع</label>
-        <input id="real-payment-date" style={field} type="date" required value={paymentDate}
-          onChange={e => setPaymentDate(e.target.value)} disabled={busy} />
-        <label htmlFor="real-payment-amount">المبلغ بالجنيه</label>
-        <input id="real-payment-amount" style={field} required inputMode="decimal" placeholder="100"
-          value={paymentAmount} onChange={e => setPaymentAmount(e.target.value)} disabled={busy} />
-        <button type="button" id="real-payment-account-add" onClick={() => setQuickModal("payment")}
-          disabled={busy} style={{marginBottom:12}}>+ حساب جديد</button>
-        <label htmlFor="real-payment-notes">ملاحظات</label>
-        <input id="real-payment-notes" style={field} maxLength={400} value={paymentNotes}
-          onChange={e => setPaymentNotes(e.target.value)} disabled={busy} />
+        </select></div>
+        <div className={ui.fieldGroup}><label htmlFor="real-payment-date">تاريخ الدفع</label>
+        <input id="real-payment-date" className={ui.control} type="date" required value={paymentDate}
+          onChange={e => setPaymentDate(e.target.value)} disabled={busy} /></div>
+        <div className={ui.fieldGroup}><label htmlFor="real-payment-amount">المبلغ بالجنيه</label>
+        <input id="real-payment-amount" className={ui.control} required inputMode="decimal" placeholder="100"
+          value={paymentAmount} onChange={e => setPaymentAmount(e.target.value)} disabled={busy} /></div>
+        <div className={ui.actions}><button type="button" id="real-payment-account-add" onClick={() => setQuickModal("payment")}
+          disabled={busy} style={{marginBottom:12}}>+ حساب جديد</button></div>
+        <div className={ui.fieldGroup}><label htmlFor="real-payment-notes">ملاحظات</label>
+        <input id="real-payment-notes" className={ui.control} maxLength={400} value={paymentNotes}
+          onChange={e => setPaymentNotes(e.target.value)} disabled={busy} /></div>
         <PaymentPreview account={paymentAccount} amount={paymentAmount} revision={revision}/>
-        <button type="submit" disabled={busy}>حفظ الدفعة</button>
+        <div className={ui.actions}><button type="submit" disabled={busy}>حفظ الدفعة</button></div>
       </form>
       <PaymentAccountModal open={quickModal === "payment"} busy={busy}
         vehicles={vehicles.filter(v => !v.is_archived).map(v => ({ id: v.id, label: v.plate_number }))}

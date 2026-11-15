@@ -1,4 +1,5 @@
 "use client";
+import ui from "./workspace-ui.module.css";
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { postLedgerRead } from "../../lib/ledger/transport";
@@ -14,12 +15,8 @@ import {
 type Contractor = { id: string; name: string; is_primary: boolean; is_archived: boolean };
 type Vehicle = { id: string; plate_number: string };
 type Props = { contractors: Contractor[]; vehicles: Vehicle[]; revision: number; disabled: boolean };
-const field: React.CSSProperties = {
-  display: "block", padding: 10, width: "100%", maxWidth: 460, margin: "6px 0 12px"
-};
-const section: React.CSSProperties = {
-  border: "1px solid #d0d7e2", borderRadius: 12, padding: 16, marginBottom: 20
-};
+
+
 const money = (input: string) => formatPoundsForDisplay(input) + " ج.م";
 const signed = (input: string) => (BigInt(input) > 0n ? "+" : "") + money(input);
 
@@ -102,25 +99,25 @@ export function RealContractorStatement({ contractors, vehicles, revision, disab
     } finally { setBusy(false); }
   }
 
-  return <section style={section} aria-label="كشف حساب المقاول الحقيقي">
+  return <section className={ui.surface} aria-label="كشف حساب المقاول الحقيقي">
     <h2>كشف حساب المقاول — بيانات محفوظة</h2>
     <p>الموجب لصالح أحمد، والسالب لصالح المقاول. النقدية المدفوعة للعربية لا تدخل في فرق شغل المقاول.</p>
-    <form onSubmit={load}>
-      <label htmlFor="real-statement-contractor">المقاول</label>
-      <select id="real-statement-contractor" style={field} required value={contractorId}
+    <form className={ui.form} onSubmit={load}>
+      <div className={ui.fieldGroup}><label htmlFor="real-statement-contractor">المقاول</label>
+      <select id="real-statement-contractor" className={ui.control} required value={contractorId}
         onChange={e => { setContractorId(e.target.value); reset(); }} disabled={busy || disabled}>
         <option value="">اختر المقاول</option>
         {contractors.filter(c => !c.is_primary).map(c =>
           <option key={c.id} value={c.id}>{c.name}{c.is_archived ? " (مؤرشف)" : ""}</option>)}
-      </select>
+      </select></div>
       <ReportHistoryScope checked={allHistory} disabled={busy || disabled} onChange={value=>{setAllHistory(value);reset();}}/>
-      <label htmlFor="real-statement-from">من تاريخ</label>
-      <input id="real-statement-from" type="date" style={field} required={!allHistory} value={from}
-        onChange={e => { setFrom(e.target.value); reset(); }} disabled={busy || disabled || allHistory} />
-      <label htmlFor="real-statement-to">إلى تاريخ</label>
-      <input id="real-statement-to" type="date" style={field} required={!allHistory} value={to}
-        onChange={e => { setTo(e.target.value); reset(); }} disabled={busy || disabled || allHistory} />
-      <button type="submit" disabled={busy || disabled}>عرض كشف الحساب</button>
+      <div className={ui.fieldGroup}><label htmlFor="real-statement-from">من تاريخ</label>
+      <input id="real-statement-from" type="date" className={ui.control} required={!allHistory} value={from}
+        onChange={e => { setFrom(e.target.value); reset(); }} disabled={busy || disabled || allHistory} /></div>
+      <div className={ui.fieldGroup}><label htmlFor="real-statement-to">إلى تاريخ</label>
+      <input id="real-statement-to" type="date" className={ui.control} required={!allHistory} value={to}
+        onChange={e => { setTo(e.target.value); reset(); }} disabled={busy || disabled || allHistory} /></div>
+      <div className={ui.actions}><button type="submit" disabled={busy || disabled}>عرض كشف الحساب</button></div>
     </form>
     {error && <p role="alert">{error}</p>}
     {report && <>

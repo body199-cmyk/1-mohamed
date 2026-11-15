@@ -1,4 +1,5 @@
 "use client";
+import ui from "./workspace-ui.module.css";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { postLedgerRead } from "../../lib/ledger/transport";
 import { formatPoundsForDisplay } from "../../lib/ledger/amounts";
@@ -15,8 +16,8 @@ type Report = ReportPage & { date_from?:string; date_to?:string; totals?: Record
 type ReportType = "trips.list" | "payments.list";
 const EMPTY_ROWS: Record<string, unknown>[] = [];
 const asText = (value: unknown) => typeof value === "string" ? value : value == null ? "" : String(value);
-const field: React.CSSProperties = { display: "block", padding: 10, width: "100%", maxWidth: 460, margin: "6px 0 12px" };
-const section: React.CSSProperties = { border: "1px solid var(--border-color)", borderRadius: 12, padding: 16, marginBottom: 20 };
+
+
 export function RealReports({ contractors, vehicles, accounts, disabled, revision, write }: LedgerEntities & {disabled:boolean; revision:number; write:LedgerWrite}) {
   const [busy,setBusy] = useState(false);
   const [notice,setNotice] = useState("");
@@ -105,33 +106,33 @@ export function RealReports({ contractors, vehicles, accounts, disabled, revisio
 
   return <fieldset disabled={disabled} style={{border:0,padding:0,minWidth:0}}>
     {notice && <p role="alert">{notice}</p>}
-    <section style={section}>
+    <section className={ui.surface}>
       <h2>النقلات والتقرير اليومي والمدفوعات</h2>
-      <form onSubmit={readReport}>
-        <label htmlFor="report-type">التقرير</label>
-        <select id="report-type" style={field} value={reportType}
+      <form className={ui.form} onSubmit={readReport}>
+        <div className={ui.fieldGroup}><label htmlFor="report-type">التقرير</label>
+        <select id="report-type" className={ui.control} value={reportType}
           onChange={e => { setReportType(e.target.value as ReportType); setReport(null); }} disabled={busy}>
           <option value="trips.list">النقلات</option>
           <option value="payments.list">مدفوعات وحساب نقدية عربية</option>
-        </select>
+        </select></div>
         {reportType === "trips.list" && <>
-          <label htmlFor="report-trip-vehicle">العربية (اختياري)</label>
-          <select id="report-trip-vehicle" style={field} value={reportVehicle}
+          <div className={ui.fieldGroup}><label htmlFor="report-trip-vehicle">العربية (اختياري)</label>
+          <select id="report-trip-vehicle" className={ui.control} value={reportVehicle}
             onChange={e => { setReportVehicle(e.target.value); setReport(null); }} disabled={busy}>
             <option value="">كل العربيات</option>
             {vehicles.map(v => <option key={v.id} value={v.id}>{v.plate_number}</option>)}
-          </select>
-          <label htmlFor="report-trip-contractor">المقاول الطرف (اختياري)</label>
-          <select id="report-trip-contractor" style={field} value={reportCounterparty}
+          </select></div>
+          <div className={ui.fieldGroup}><label htmlFor="report-trip-contractor">المقاول الطرف (اختياري)</label>
+          <select id="report-trip-contractor" className={ui.control} value={reportCounterparty}
             onChange={e => { setReportCounterparty(e.target.value); setReport(null); }} disabled={busy}>
             <option value="">كل المقاولين</option>
             {contractors.filter(c => !c.is_primary).map(c =>
               <option key={c.id} value={c.id}>{c.name}</option>)}
-          </select>
+          </select></div>
         </>}
         {reportType === "payments.list" && <>
-          <label htmlFor="report-account">حساب العربية والمقاول</label>
-          <select id="report-account" style={field} required value={reportAccount}
+          <div className={ui.fieldGroup}><label htmlFor="report-account">حساب العربية والمقاول</label>
+          <select id="report-account" className={ui.control} required value={reportAccount}
             onChange={e => { setReportAccount(e.target.value); setReport(null); }} disabled={busy}>
             <option value="">اختر الحساب</option>
             {accounts.map(a => <option key={a.vehicle_id + "|" + a.contractor_id}
@@ -139,20 +140,20 @@ export function RealReports({ contractors, vehicles, accounts, disabled, revisio
               {vehicles.find(v => v.id === a.vehicle_id)?.plate_number ?? a.vehicle_id}
               {" — "}{contractors.find(c => c.id === a.contractor_id)?.name ?? a.contractor_id}
             </option>)}
-          </select>
+          </select></div>
         </>}
         <ReportHistoryScope checked={allHistory} disabled={busy} onChange={value=>{setAllHistory(value);active.current++;setReport(null);reportQuery.current=null;}}/>
-        <label htmlFor="report-from">من تاريخ</label>
-        <input id="report-from" style={field} type="date" required={!allHistory} value={reportFrom}
-          onChange={e => { setReportFrom(e.target.value); setReport(null); }} disabled={busy || allHistory} />
-        <label htmlFor="report-to">إلى تاريخ</label>
-        <input id="report-to" style={field} type="date" required={!allHistory} value={reportTo}
-          onChange={e => { setReportTo(e.target.value); setReport(null); }} disabled={busy || allHistory} />
+        <div className={ui.fieldGroup}><label htmlFor="report-from">من تاريخ</label>
+        <input id="report-from" className={ui.control} type="date" required={!allHistory} value={reportFrom}
+          onChange={e => { setReportFrom(e.target.value); setReport(null); }} disabled={busy || allHistory} /></div>
+        <div className={ui.fieldGroup}><label htmlFor="report-to">إلى تاريخ</label>
+        <input id="report-to" className={ui.control} type="date" required={!allHistory} value={reportTo}
+          onChange={e => { setReportTo(e.target.value); setReport(null); }} disabled={busy || allHistory} /></div>
         <label style={{ display: "block", marginBottom: 12 }}>
           <input type="checkbox" checked={includeCancelled} onChange={e => { setIncludeCancelled(e.target.checked); setReport(null); }} disabled={busy} />
           {" "}عرض القيود الملغاة أيضًا
         </label>
-        <button disabled={busy} type="submit">تحميل التقرير</button>
+        <div className={ui.actions}><button disabled={busy} type="submit">تحميل التقرير</button></div>
       </form>
       {report && <>
         {allHistory && <p>كل الحساب من البداية: {report.date_from} — {report.date_to}</p>}
@@ -190,7 +191,7 @@ export function RealReports({ contractors, vehicles, accounts, disabled, revisio
               <th key={index} scope="col" style={{ padding: 8, borderBottom: "1px solid #ccc" }}>{header}</th>)}</tr></thead>
             <tbody>{projected?.rows.map((row, index) => <tr key={asText(report.rows[index]?.id) || index}>
               {row.map((value, column) =>
-                <td key={column} style={{ padding: 8, borderBottom: "1px solid #ddd" }}>
+                <td key={column} >
                   {value}</td>)}
             </tr>)}</tbody>
           </table>

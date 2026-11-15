@@ -1,9 +1,10 @@
 "use client";
+import ui from "./workspace-ui.module.css";
 import { useRef, useState, type FormEvent } from "react";
 import type { LedgerEntities, LedgerWrite } from "./workspace-data";
 import { poundsToPiastres } from "../../lib/ledger/amounts";
-const field: React.CSSProperties = { display: "block", padding: 10, width: "100%", maxWidth: 460, margin: "6px 0 12px" };
-const section: React.CSSProperties = { border: "1px solid var(--border-color)", borderRadius: 12, padding: 16, marginBottom: 20 };
+
+
 const short = (value: string) => value.length > 80 ? value.slice(0, 80) + "…" : value;
 export function MasterDataEntry({ contractors, vehicles, accounts, busy, write }: LedgerEntities & {busy: boolean; write: LedgerWrite}) {
   const [notice,setNotice] = useState("");
@@ -80,89 +81,89 @@ export function MasterDataEntry({ contractors, vehicles, accounts, busy, write }
 
   return <>
     {notice && <p role="status">{notice}</p>}
-    <section style={section}>
+    <section className={ui.surface}>
       <h2>المقاولون ({contractors.length})</h2>
       <ul>{contractors.map(c => <li key={c.id}>{short(c.name)} {c.is_primary ? "(الأساسي)" : ""} {c.is_archived ? "(مؤرشف)" : ""}</li>)}</ul>
-      <form onSubmit={createContractor}>
-        <label htmlFor="contractor-name">إضافة مقاول جديد</label>
-        <input id="contractor-name" style={field} value={contractorName} required maxLength={160}
-          onChange={e => setContractorName(e.target.value)} disabled={busy} />
-        <button disabled={busy} type="submit">حفظ المقاول</button>
+      <form className={ui.form} onSubmit={createContractor}>
+        <div className={ui.fieldGroup}><label htmlFor="contractor-name">إضافة مقاول جديد</label>
+        <input id="contractor-name" className={ui.control} value={contractorName} required maxLength={160}
+          onChange={e => setContractorName(e.target.value)} disabled={busy} /></div>
+        <div className={ui.actions}><button disabled={busy} type="submit">حفظ المقاول</button></div>
       </form>
     </section>
-    <section style={section}>
+    <section className={ui.surface}>
       <h2>العربيات ({vehicles.length})</h2>
       <ul>{vehicles.map(v => <li key={v.id}>{short(v.plate_number)} {v.driver_name ? " — " + short(v.driver_name) : ""}</li>)}</ul>
-      <form onSubmit={createVehicle}>
-        <label htmlFor="vehicle-plate">رقم اللوحة</label>
-        <input id="vehicle-plate" style={field} required value={plate} maxLength={80}
-          onChange={e => setPlate(e.target.value)} disabled={busy} />
-        <label htmlFor="vehicle-driver">السائق</label>
-        <input id="vehicle-driver" style={field} value={driver} maxLength={160}
-          onChange={e => setDriver(e.target.value)} disabled={busy} />
-        <label htmlFor="vehicle-contractor">المقاول المسؤول (اختياري)</label>
-        <select id="vehicle-contractor" style={field} value={vehicleContractor}
+      <form className={ui.form} onSubmit={createVehicle}>
+        <div className={ui.fieldGroup}><label htmlFor="vehicle-plate">رقم اللوحة</label>
+        <input id="vehicle-plate" className={ui.control} required value={plate} maxLength={80}
+          onChange={e => setPlate(e.target.value)} disabled={busy} /></div>
+        <div className={ui.fieldGroup}><label htmlFor="vehicle-driver">السائق</label>
+        <input id="vehicle-driver" className={ui.control} value={driver} maxLength={160}
+          onChange={e => setDriver(e.target.value)} disabled={busy} /></div>
+        <div className={ui.fieldGroup}><label htmlFor="vehicle-contractor">المقاول المسؤول (اختياري)</label>
+        <select id="vehicle-contractor" className={ui.control} value={vehicleContractor}
           onChange={e => setVehicleContractor(e.target.value)} disabled={busy}>
           <option value="">بدون حساب عند الإنشاء</option>
           {contractors.filter(c => !c.is_archived).map(c =>
             <option key={c.id} value={c.id}>{c.name}</option>)}
-        </select>
-        <button disabled={busy} type="submit">حفظ العربية</button>
+        </select></div>
+        <div className={ui.actions}><button disabled={busy} type="submit">حفظ العربية</button></div>
       </form>
     </section>
-    <section style={section}>
+    <section className={ui.surface}>
       <h2>ربط عربية بمقاول ({accounts.length} حساب)</h2>
-      <form onSubmit={ensureAccount}>
-        <label htmlFor="account-vehicle">العربية</label>
-        <select id="account-vehicle" style={field} required value={accountVehicle}
+      <form className={ui.form} onSubmit={ensureAccount}>
+        <div className={ui.fieldGroup}><label htmlFor="account-vehicle">العربية</label>
+        <select id="account-vehicle" className={ui.control} required value={accountVehicle}
           onChange={e => setAccountVehicle(e.target.value)} disabled={busy}>
           <option value="">اختر العربية</option>
           {vehicles.filter(v => !v.is_archived).map(v => <option key={v.id} value={v.id}>{v.plate_number}</option>)}
-        </select>
-        <label htmlFor="account-contractor">المقاول المسؤول</label>
-        <select id="account-contractor" style={field} required value={accountContractor}
+        </select></div>
+        <div className={ui.fieldGroup}><label htmlFor="account-contractor">المقاول المسؤول</label>
+        <select id="account-contractor" className={ui.control} required value={accountContractor}
           onChange={e => setAccountContractor(e.target.value)} disabled={busy}>
           <option value="">اختر المقاول</option>
           {contractors.filter(c => !c.is_archived).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-        </select>
-        <button disabled={busy} type="submit">تأكيد ربط الحساب</button>
+        </select></div>
+        <div className={ui.actions}><button disabled={busy} type="submit">تأكيد ربط الحساب</button></div>
       </form>
     </section>
-    <section style={section}>
+    <section className={ui.surface}>
       <h2>الرصيد الافتتاحي — لا تكرر الحركات التاريخية</h2>
       <p>اختر رصيدًا إجماليًا عند بداية الفترة أو أدخل الحركات التاريخية بالتفصيل، ولا تجمع الطريقتين لنفس الفترة.</p>
-      <form onSubmit={createOpening}>
-        <label htmlFor="opening-type">نوع الرصيد</label>
-        <select id="opening-type" style={field} value={openingType}
+      <form className={ui.form} onSubmit={createOpening}>
+        <div className={ui.fieldGroup}><label htmlFor="opening-type">نوع الرصيد</label>
+        <select id="opening-type" className={ui.control} value={openingType}
           onChange={e => { setOpeningType(e.target.value as typeof openingType); setOpeningContractor(""); setOpeningVehicle(""); }} disabled={busy}>
           <option value="CONTRACTOR_WORK">فرق شغل المقاول</option>
           <option value="VEHICLE_CASH">نقدية عربية مع مقاول</option>
-        </select>
-        <label htmlFor="opening-contractor">المقاول</label>
-        <select id="opening-contractor" style={field} required value={openingContractor}
+        </select></div>
+        <div className={ui.fieldGroup}><label htmlFor="opening-contractor">المقاول</label>
+        <select id="opening-contractor" className={ui.control} required value={openingContractor}
           onChange={e => setOpeningContractor(e.target.value)} disabled={busy}>
           <option value="">اختر المقاول</option>
           {contractors.filter(c => !c.is_archived && (openingType === "VEHICLE_CASH" || !c.is_primary)).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-        </select>
+        </select></div>
         {openingType === "VEHICLE_CASH" && <>
-          <label htmlFor="opening-vehicle">العربية المرتبطة بالمقاول</label>
-          <select id="opening-vehicle" style={field} required value={openingVehicle}
+          <div className={ui.fieldGroup}><label htmlFor="opening-vehicle">العربية المرتبطة بالمقاول</label>
+          <select id="opening-vehicle" className={ui.control} required value={openingVehicle}
             onChange={e => setOpeningVehicle(e.target.value)} disabled={busy}>
             <option value="">اختر العربية</option>
             {accounts.filter(a => a.contractor_id === openingContractor).map(a => {
               const v = vehicles.find(v => v.id === a.vehicle_id);
               return <option key={a.vehicle_id} value={a.vehicle_id}>{v?.plate_number ?? a.vehicle_id}</option>;
             })}
-          </select>
+          </select></div>
         </>}
-        <label htmlFor="opening-date">تاريخ بداية الرصيد</label>
-        <input id="opening-date" type="date" style={field} required value={openingDate}
-          onChange={e => setOpeningDate(e.target.value)} disabled={busy} />
-        <label htmlFor="opening-amount">المبلغ بالجنيه (سالب أو موجب)</label>
-        <input id="opening-amount" style={field} required inputMode="decimal"
+        <div className={ui.fieldGroup}><label htmlFor="opening-date">تاريخ بداية الرصيد</label>
+        <input id="opening-date" type="date" className={ui.control} required value={openingDate}
+          onChange={e => setOpeningDate(e.target.value)} disabled={busy} /></div>
+        <div className={ui.fieldGroup}><label htmlFor="opening-amount">المبلغ بالجنيه (سالب أو موجب)</label>
+        <input id="opening-amount" className={ui.control} required inputMode="decimal"
           placeholder="1250" value={openingAmount}
-          onChange={e => setOpeningAmount(e.target.value)} disabled={busy} />
-        <button disabled={busy} type="submit">حفظ الرصيد الافتتاحي</button>
+          onChange={e => setOpeningAmount(e.target.value)} disabled={busy} /></div>
+        <div className={ui.actions}><button disabled={busy} type="submit">حفظ الرصيد الافتتاحي</button></div>
       </form>
     </section>
   </>;

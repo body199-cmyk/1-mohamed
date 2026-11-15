@@ -1,4 +1,5 @@
 "use client";
+import ui from "./workspace-ui.module.css";
 
 import { useEffect, useState, type FormEvent } from "react";
 import type { WriteOperation } from "../../lib/ledger/operation-contract";
@@ -33,8 +34,7 @@ const empty: Draft = { vehicle_id: "", counterparty_contractor_id: "",
   direction: "AHMED_SUPPLIES", trip_date: "", weight_tonnes: "",
   contractor_rate_egp: "", vehicle_rate_egp: "", same_rate: true,
   expense_egp: "0", origin: "", destination: "", notes: "" };
-const field: React.CSSProperties = { display: "block", padding: 10, width: "100%",
-  maxWidth: 460, margin: "6px 0 12px" };
+
 
 function isTrip(row: Record<string, unknown> | undefined): row is TripRow {
   return !!row && typeof row.id === "string" && Number.isSafeInteger(row.version)
@@ -99,65 +99,65 @@ export function TripEdit({ row, contractors, vehicles, busy, write }: Props) {
   }
 
   if (!trip) return null;
-  return <form onSubmit={submit} style={{ marginTop: 20, borderTop: "1px solid #ddd", paddingTop: 12 }}>
+  return <form className={ui.form} onSubmit={submit} style={{ marginTop: 20, borderTop: "1px solid #ddd", paddingTop: 12 }}>
     <h3>تعديل النقلة المختارة</h3>
     <p>رقم النقلة: {trip.id} — الإصدار: {trip.version}.
       تغيير تاريخ أو اتجاه أو حساب النقلة قد يؤثر على النقدية، والخادم يرفض أي تعارض.</p>
-    <label htmlFor="edit-trip-vehicle">العربية</label>
-    <select id="edit-trip-vehicle" style={field} required value={draft.vehicle_id}
+    <div className={ui.fieldGroup}><label htmlFor="edit-trip-vehicle">العربية</label>
+    <select id="edit-trip-vehicle" className={ui.control} required value={draft.vehicle_id}
       onChange={e => change("vehicle_id", e.target.value)} disabled={busy}>
       {vehicles.map(v => <option key={v.id} value={v.id}>
         {v.plate_number}{v.is_archived ? " (مؤرشفة)" : ""}
       </option>)}
-    </select>
-    <label htmlFor="edit-trip-contractor">المقاول الطرف</label>
-    <select id="edit-trip-contractor" style={field} required value={draft.counterparty_contractor_id}
+    </select></div>
+    <div className={ui.fieldGroup}><label htmlFor="edit-trip-contractor">المقاول الطرف</label>
+    <select id="edit-trip-contractor" className={ui.control} required value={draft.counterparty_contractor_id}
       onChange={e => change("counterparty_contractor_id", e.target.value)} disabled={busy}>
       {contractors.map(c => <option key={c.id} value={c.id}>
         {c.name}{c.is_archived ? " (مؤرشف)" : ""}
       </option>)}
-    </select>
-    <label htmlFor="edit-trip-direction">اتجاه النقلة</label>
-    <select id="edit-trip-direction" style={field} value={draft.direction}
+    </select></div>
+    <div className={ui.fieldGroup}><label htmlFor="edit-trip-direction">اتجاه النقلة</label>
+    <select id="edit-trip-direction" className={ui.control} value={draft.direction}
       onChange={e => change("direction", e.target.value as Draft["direction"])} disabled={busy}>
       <option value="AHMED_SUPPLIES">أحمد هو المورّد</option>
       <option value="OTHER_SUPPLIES">المقاول الآخر هو المورّد</option>
-    </select>
-    <label htmlFor="edit-trip-date">تاريخ النقلة</label>
-    <input id="edit-trip-date" type="date" style={field} required value={draft.trip_date}
-      onChange={e => change("trip_date", e.target.value)} disabled={busy} />
-    <label htmlFor="edit-trip-weight">الوزن بالطن</label>
-    <input id="edit-trip-weight" style={field} inputMode="decimal" required value={draft.weight_tonnes}
-      onChange={e => change("weight_tonnes", e.target.value)} disabled={busy} />
-    <label htmlFor="edit-trip-cr">سعر المقاول بالجنيه للطن</label>
-    <input id="edit-trip-cr" style={field} inputMode="decimal" required value={draft.contractor_rate_egp}
-      onChange={e => change("contractor_rate_egp", e.target.value)} disabled={busy} />
+    </select></div>
+    <div className={ui.fieldGroup}><label htmlFor="edit-trip-date">تاريخ النقلة</label>
+    <input id="edit-trip-date" type="date" className={ui.control} required value={draft.trip_date}
+      onChange={e => change("trip_date", e.target.value)} disabled={busy} /></div>
+    <div className={ui.fieldGroup}><label htmlFor="edit-trip-weight">الوزن بالطن</label>
+    <input id="edit-trip-weight" className={ui.control} inputMode="decimal" required value={draft.weight_tonnes}
+      onChange={e => change("weight_tonnes", e.target.value)} disabled={busy} /></div>
+    <div className={ui.fieldGroup}><label htmlFor="edit-trip-cr">سعر المقاول بالجنيه للطن</label>
+    <input id="edit-trip-cr" className={ui.control} inputMode="decimal" required value={draft.contractor_rate_egp}
+      onChange={e => change("contractor_rate_egp", e.target.value)} disabled={busy} /></div>
     <label style={{ display: "block", marginBottom: 12 }}>
       <input type="checkbox" checked={draft.same_rate}
         onChange={e => change("same_rate", e.target.checked)} disabled={busy} />
       {" "}نفس سعر المقاول والعربية
     </label>
     {!draft.same_rate && <>
-      <label htmlFor="edit-trip-vr">سعر العربية بالجنيه للطن</label>
-      <input id="edit-trip-vr" style={field} inputMode="decimal" required value={draft.vehicle_rate_egp}
-        onChange={e => change("vehicle_rate_egp", e.target.value)} disabled={busy} />
+      <div className={ui.fieldGroup}><label htmlFor="edit-trip-vr">سعر العربية بالجنيه للطن</label>
+      <input id="edit-trip-vr" className={ui.control} inputMode="decimal" required value={draft.vehicle_rate_egp}
+        onChange={e => change("vehicle_rate_egp", e.target.value)} disabled={busy} /></div>
     </>}
-    <label htmlFor="edit-trip-expense">مصاريف النقلة بالجنيه</label>
-    <input id="edit-trip-expense" style={field} inputMode="decimal" required value={draft.expense_egp}
-      onChange={e => change("expense_egp", e.target.value)} disabled={busy} />
-    <label htmlFor="edit-trip-origin">من</label>
-    <input id="edit-trip-origin" style={field} maxLength={200} value={draft.origin}
-      onChange={e => change("origin", e.target.value)} disabled={busy} />
-    <label htmlFor="edit-trip-destination">إلى</label>
-    <input id="edit-trip-destination" style={field} maxLength={200} value={draft.destination}
-      onChange={e => change("destination", e.target.value)} disabled={busy} />
-    <label htmlFor="edit-trip-notes">ملاحظات</label>
-    <input id="edit-trip-notes" style={field} maxLength={400} value={draft.notes}
-      onChange={e => change("notes", e.target.value)} disabled={busy} />
-    <label htmlFor="edit-trip-reason">سبب التعديل (إلزامي)</label>
-    <input id="edit-trip-reason" style={field} maxLength={400} required value={reason}
-      onChange={e => setReason(e.target.value)} disabled={busy} />
-    <button type="submit" disabled={busy || !reason.trim()}>حفظ تعديل النقلة</button>
+    <div className={ui.fieldGroup}><label htmlFor="edit-trip-expense">مصاريف النقلة بالجنيه</label>
+    <input id="edit-trip-expense" className={ui.control} inputMode="decimal" required value={draft.expense_egp}
+      onChange={e => change("expense_egp", e.target.value)} disabled={busy} /></div>
+    <div className={ui.fieldGroup}><label htmlFor="edit-trip-origin">من</label>
+    <input id="edit-trip-origin" className={ui.control} maxLength={200} value={draft.origin}
+      onChange={e => change("origin", e.target.value)} disabled={busy} /></div>
+    <div className={ui.fieldGroup}><label htmlFor="edit-trip-destination">إلى</label>
+    <input id="edit-trip-destination" className={ui.control} maxLength={200} value={draft.destination}
+      onChange={e => change("destination", e.target.value)} disabled={busy} /></div>
+    <div className={ui.fieldGroup}><label htmlFor="edit-trip-notes">ملاحظات</label>
+    <input id="edit-trip-notes" className={ui.control} maxLength={400} value={draft.notes}
+      onChange={e => change("notes", e.target.value)} disabled={busy} /></div>
+    <div className={ui.fieldGroup}><label htmlFor="edit-trip-reason">سبب التعديل (إلزامي)</label>
+    <input id="edit-trip-reason" className={ui.control} maxLength={400} required value={reason}
+      onChange={e => setReason(e.target.value)} disabled={busy} /></div>
+    <div className={ui.actions}><button type="submit" disabled={busy || !reason.trim()}>حفظ تعديل النقلة</button></div>
     {message && <p role="status">{message}</p>}
   </form>;
 }
