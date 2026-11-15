@@ -4,7 +4,7 @@
 import {build} from 'esbuild';
 import {createServer} from 'node:http';
 import {readFile} from 'node:fs/promises';
-import {resolve,extname} from 'node:path';
+import {resolve,extname,sep} from 'node:path';
 const root=process.cwd();
 const result=await build({stdin:{contents:`import React from 'react';
 import {createRoot} from 'react-dom/client';
@@ -34,7 +34,7 @@ createServer(async(req,res)=>{
  if(url.pathname==='/app.css'){res.setHeader('content-type','text/css');return res.end(css);}
  if(url.pathname.startsWith('/fonts/')){
    const base=resolve(root,'apps/web/public/fonts'),file=resolve(base,'.'+url.pathname.slice(6));
-   if(file.startsWith(base+'/'))try{res.setHeader('content-type',extname(file)==='.css'?'text/css':'font/woff2');return res.end(await readFile(file));}catch{}
+   if(file.startsWith(base+sep))try{res.setHeader('content-type',extname(file)==='.css'?'text/css':'font/woff2');return res.end(await readFile(file));}catch{}
  }
  res.statusCode=404;res.end('Fixture route not found');
 }).listen(39126,'127.0.0.1',()=>console.log('Isolated workspace fixture ready'));

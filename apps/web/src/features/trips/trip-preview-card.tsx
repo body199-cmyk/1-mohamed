@@ -16,6 +16,7 @@ interface TripPreviewCardProps {
   counterpartyName?: string;
   responsibleContractorName?: string;
   vehiclePlate?: string;
+  entryLayout?: boolean;
 }
 
 export function TripPreviewCard({
@@ -27,6 +28,7 @@ export function TripPreviewCard({
   counterpartyName,
   responsibleContractorName,
   vehiclePlate,
+  entryLayout = false,
 }: TripPreviewCardProps) {
   // If required fields are empty, show initial placeholder
   if (!weightTonnes || !contractorRateEgp || !vehicleRateEgp) {
@@ -95,11 +97,11 @@ export function TripPreviewCard({
 
   return (
     <div className={styles.card} aria-live="polite">
-      <div className={styles.cardHeader} style={{ marginBottom: "14px", paddingBottom: "10px" }}>
-        <h3 className={styles.cardTitle} style={{ fontSize: "1.1rem" }}>
+      <div className={styles.cardHeader} style={{ marginBottom: "14px", paddingBottom: "10px", flexWrap:entryLayout?'wrap':undefined, gap:entryLayout?8:undefined }}>
+        <h3 className={styles.cardTitle} style={{ fontSize: entryLayout?"1rem":"1.1rem" }}>
           📊 معاينة الحساب المالي
         </h3>
-        <span className={`${styles.badge} ${styles.badgeInfo}`}>بالجنيه الصحيح</span>
+        <span className={`${styles.badge} ${styles.badgeInfo}`} style={entryLayout?{whiteSpace:'nowrap',color:'var(--color-primary)',background:'var(--color-primary-bg)'}:undefined}>بالجنيه الصحيح</span>
       </div>
 
       <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
@@ -112,7 +114,7 @@ export function TripPreviewCard({
             border: "1px solid var(--border-color)",
           }}
         >
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: entryLayout?"flex-start":"center", flexDirection:entryLayout?'column':undefined,gap:entryLayout?8:undefined }}>
             <span style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>
               قيمة شغل المقاول:
             </span>
@@ -123,7 +125,7 @@ export function TripPreviewCard({
 
           <div style={{ marginTop: "6px", fontSize: "0.82rem" }}>
             {direction === "AHMED_SUPPLIES" && (
-              <span style={{ color: "var(--color-success)", fontWeight: 600 }}>
+              <span style={{ color: entryLayout?"var(--contractor-credit)":"var(--color-success)", fontWeight: 600 }}>
                 ✓ شغل أحمد: المقاول مدين لأحمد بهذا المبلغ (+{contractorTotalStr} ج.م)
               </span>
             )}
@@ -149,7 +151,7 @@ export function TripPreviewCard({
             border: "1px solid var(--border-color)",
           }}
         >
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: entryLayout?"flex-start":"center", flexDirection:entryLayout?'column':undefined,gap:entryLayout?8:undefined }}>
             <span style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>
               مستحق السيارة {vehiclePlate ? `(${vehiclePlate})` : ""}:
             </span>

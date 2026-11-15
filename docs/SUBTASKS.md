@@ -1,3 +1,6 @@
+## ENTRY-DESIGN-01 — 15 November 2026 / preview ready
+Approved scope: trip entry + inline vehicle/contractor dialog visual prototype only; preserve handlers/accounting, show user before generalizing. Scoped CSS and opt-in presentation;34 Edge/133 web/typecheck PASS. Actual screenshots in artifacts/entry-design. Final build PASS; visual user approval pending; no merge or production publication. STATUS holds current evidence; prior password change already released on main88a3b0e.
+
 ## PASSWORD-POLICY-01 — 15 November 2026
 Remove only application12-character restriction per explicit choice; required/matching/owner/Auth guards retained. Seven Edge cases PASS; latest-head CI/release pending. UI inventory only, no design changes. STATUS is current.
 

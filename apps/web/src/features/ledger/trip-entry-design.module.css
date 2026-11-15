@@ -1,0 +1,75 @@
+.tripSurface {
+  --entry-accent: var(--color-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 18px;
+  margin: 16px 0 24px;
+  box-shadow: var(--shadow-elevated);
+  color: var(--text-main);
+}
+.heading { display:flex; align-items:center; justify-content:space-between; gap:24px; padding:28px 28px 24px; border-bottom:1px solid var(--border-color); }
+.heading h2 { font-size:1.55rem; font-weight:800; margin:0 0 8px; line-height:1.5; }
+.heading p { color:var(--text-muted); font-size:.9rem; max-width:62ch; line-height:1.9; }
+.headingIcon { display:grid; place-items:center; width:56px; height:56px; flex:none; border-radius:16px; background:var(--color-primary-bg); color:var(--entry-accent); }
+.headingIcon svg { width:32px; height:32px; }
+.tripForm { display:grid; grid-template-columns:minmax(0,1fr) 290px; gap:0 28px; padding:0 28px; }
+.entryFields { min-width:0; }
+.tripSurface .entryFields details { border:0; border-radius:0; padding:0 0 22px; margin:0; border-bottom:1px solid var(--border-color); }
+.tripSurface .entryFields summary { padding:24px 0 18px; font-size:1rem; font-weight:750; cursor:pointer; }
+.fieldGrid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:20px 18px; }
+.formField,.choice { min-width:0; }
+.formField label,.choice label,.dialogForm label { display:block; font-size:.86rem; font-weight:650; margin-bottom:8px; }
+.tripSurface .control,.dialog .control,.choice input,.choice select {
+  display:block; width:100%; min-width:0; min-height:48px; padding:11px 13px;
+  border:1px solid var(--border-strong); border-radius:10px; background:var(--surface-card);
+  color:var(--text-main); font-size:.94rem; line-height:1.6; caret-color:var(--color-primary);
+  transition:border-color 160ms ease,background-color 160ms ease;
+}
+.control::placeholder,.choice input::placeholder { color:var(--text-muted); opacity:1; }
+.control:hover,.choice input:hover,.choice select:hover { border-color:var(--color-primary); }
+.tripSurface :is(input,select,button,summary):focus-visible,.dialog :is(input,button):focus-visible { outline:3px solid var(--border-focus); outline-offset:3px; }
+.control:disabled,.choice input:disabled,.choice select:disabled { opacity:.6; cursor:not-allowed; }
+.choice { display:grid; grid-template-columns:minmax(0,1fr) auto; align-content:start; }
+.choice label { grid-column:1/-1; }
+.choice input { grid-column:1; border-start-end-radius:0; border-end-end-radius:0; }
+.choice button { grid-column:2; grid-row:2; margin:0 0 12px !important; padding:8px 12px; border:1px solid var(--border-strong); border-inline-start:0; border-start-start-radius:0; border-end-start-radius:0; background:var(--surface-card-subtle); color:var(--entry-accent); font-size:.8rem; font-weight:750; white-space:nowrap; }
+.choice button:hover { background:var(--color-primary-bg); }
+.choice select { grid-column:1/-1; margin:0 !important; }
+.checkboxRow { grid-column:1/-1; display:flex; align-items:flex-start; gap:10px; padding:14px; border:1px solid var(--border-color); border-radius:10px; background:var(--surface-card-subtle); font-size:.85rem; line-height:1.8; }
+.entryFields > .checkboxRow { margin:20px 0 24px; }
+.checkboxRow input { width:18px; height:18px; flex:none; margin-top:3px; accent-color:var(--color-primary); }
+.summaryColumn { align-self:start; position:sticky; top:20px; padding-top:24px; min-width:0; }
+.actions { grid-column:1/-1; display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:16px; padding:22px 0; border-top:1px solid var(--border-color); }
+.actions p { color:var(--text-muted); font-size:.82rem; }
+.actionButtons,.dialogActions { display:flex; flex-wrap:wrap; gap:12px; }
+.tripSurface .primaryButton,.tripSurface .secondaryButton,.dialog .primaryButton,.dialog .secondaryButton { display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:48px; padding:12px 20px; border-radius:10px; border-width:1px; border-style:solid; font-size:.9rem; line-height:1.5; font-weight:750; cursor:pointer; transition:background-color 160ms ease,border-color 160ms ease; }
+.primaryButton { background:var(--color-primary); color:var(--color-primary-text); border-color:var(--color-primary); box-shadow:0 3px 7px rgba(15,35,65,.1); }
+.primaryButton:hover:not(:disabled) { background:var(--color-primary-hover); }
+.secondaryButton { background:var(--surface-card); color:var(--text-main); border-color:var(--border-strong); }
+.secondaryButton:hover:not(:disabled) { background:var(--surface-hover); }
+.primaryButton:disabled,.secondaryButton:disabled { opacity:.55; cursor:not-allowed; box-shadow:none; }
+.overlay { position:fixed; inset:0; z-index:60; display:flex; align-items:center; justify-content:center; padding:24px; background:rgba(13,26,44,.56); }
+.dialog { width:100%; max-width:500px; max-height:calc(100dvh - 48px); overflow-y:auto; overscroll-behavior:contain; background:var(--surface-card); color:var(--text-main); border:1px solid var(--border-color); border-radius:18px; padding:28px; box-shadow:0 24px 64px rgba(8,20,40,.24); }
+.dialogHeading { padding-bottom:22px; margin-bottom:24px; border-bottom:1px solid var(--border-color); }
+.dialogHeading h3 { margin:0 0 8px; font-size:1.3rem; line-height:1.6; font-weight:800; }
+.dialogHeading p { color:var(--text-muted); font-size:.86rem; line-height:1.8; }
+.dialogForm .control { margin-bottom:20px; }
+.dialogActions { border-top:1px solid var(--border-color); padding-top:22px; margin-top:6px; }
+.dialogActions .primaryButton { flex:1; }
+.dialogActions .secondaryButton { min-width:100px; }
+.dialog [role=alert] { color:var(--color-danger); background:var(--color-danger-bg); padding:12px; margin-bottom:16px; border-radius:8px; }
+@media(max-width:1100px) { .tripForm { grid-template-columns:minmax(0,1fr); } .summaryColumn { position:static; padding:0 0 24px; } }
+@media(max-width:600px) {
+  .tripSurface { border-radius:14px; margin-top:12px; }
+  .heading { padding:20px; gap:12px; align-items:flex-start; }
+  .heading h2 { font-size:1.3rem; }
+  .headingIcon { width:44px; height:44px; border-radius:12px; }
+  .headingIcon svg { width:26px; height:26px; }
+  .tripForm { padding:0 18px; }
+  .fieldGrid { grid-template-columns:minmax(0,1fr); gap:18px; }
+  .actions { align-items:stretch; }
+  .actionButtons { width:100%; flex-direction:column; }
+  .actionButtons button { width:100%; }
+  .overlay { padding:16px; }
+  .dialog { padding:22px; border-radius:16px; max-height:calc(100dvh - 32px); }
+}
+@media(prefers-reduced-motion:reduce) { .tripSurface *,.dialog * { transition:none !important; } }
