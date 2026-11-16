@@ -115,16 +115,17 @@ export function TransactionEntry({ contractors, vehicles, accounts, busy, write,
   // its own dialog, so a later refresh cannot close a dialog the user opened
   // meanwhile.
   const [pendingVehicle, setPendingVehicle] = useState<string | null>(null);
-  const [pendingContractor, setPendingContractor] = useState<string | null>(null);
+  const [pendingContractor, setPendingContractor] = useState<{id:string;target:"shared"|"trip"}|null>(null);
   const [pendingAccount, setPendingAccount] = useState<{ vehicleId: string; contractorId: string } | null>(null);
   useEffect(() => {
     if (pendingVehicle && vehicles.some(v => v.id === pendingVehicle)) {
       setTripVehicle(pendingVehicle); setPendingVehicle(null);
       setQuickModal(modal => modal === "vehicle" ? null : modal);
     }
-    if (pendingContractor && contractors.some(c => c.id === pendingContractor)) {
-      if(sharedContractorCreation.current){setCreatedSharedContractor(pendingContractor);sharedContractorCreation.current=false;}
-      else setTripCounterparty(pendingContractor);
+    if (pendingContractor && contractors.some(c => c.id === pendingContractor.id)) {
+      if(pendingContractor.target==='shared')setCreatedSharedContractor(pendingContractor.id);
+      else setTripCounterparty(pendingContractor.id);
+      sharedContractorCreation.current=false;
       setPendingContractor(null);
       setQuickModal(modal => modal === "contractor" ? null : modal);
     }
@@ -259,8 +260,8 @@ export function TransactionEntry({ contractors, vehicles, accounts, busy, write,
       <QuickRecordModal kind="contractor" open={quickModal === "contractor"} busy={busy}
         existing={contractors.filter(c => !c.is_archived).map(c => c.name)}
         onRefreshLists={() => void refresh()}
-        onClose={() => {sharedContractorCreation.current=false;setQuickModal(null);}}
-        onCreate={quickCreateContractor} onCreated={id => setPendingContractor(id)}/>
+        onClose={() => {sharedContractorCreation.current=false;setPendingContractor(null);setQuickModal(null);}}
+        onCreate={quickCreateContractor} onCreated={id => setPendingContractor({id,target:sharedContractorCreation.current?"shared":"trip"})}/>
     </section>
     <PaymentEntry accounts={accounts} vehicles={vehicles} contractors={contractors} busy={busy} revision={revision}
       paymentAccount={paymentAccount} setPaymentAccount={setPaymentAccount} setMessage={setMessage}

@@ -31,7 +31,7 @@ async function fixture(page:Page){
   return route.fulfill({json:{ok:true,data:{status:'OK'}}});
  });
  await page.goto('/');await expect(page.locator('#shared-contractor option[value="C1"]')).toHaveCount(1);
- return {attempts,rows};
+ return {attempts,rows,contractors,vehicles};
 }
 async function shared(page:Page,rate='100',expectApplied=true){
  await page.locator('#shared-contractor').selectOption('C1');
@@ -132,4 +132,30 @@ test('save and exit retains common context and daily history opens the same date
  await page.getByRole('button',{name:'فتح هذا اليوم في التقارير للتعديل أو الإلغاء'}).click();
  await expect(page.getByTestId('workspace-title')).toHaveText('التقارير والكشوف');
  await expect(page.locator('#report-from')).toHaveValue('2026-11-16');await expect(page.locator('#report-to')).toHaveValue('2026-11-16');
+});
+
+
+test('confirmed shared creation with failed refresh cannot retarget a trip after pending modal cancellation',async({page})=>{
+ const {contractors,vehicles}=await fixture(page);await shared(page);await nextTrip(page);let fail=false;
+ await page.route('**/api/ledger/master?**',route=>{
+  if(fail)return route.fulfill({status:500,json:{ok:false,error:'تعذر التحديث التجريبي'}});
+  const kind=new URL(route.request().url()).searchParams.get('type');
+  return route.fulfill({json:{ok:true,data:kind==='contractors'?contractors:kind==='vehicles'?vehicles:[],hasMore:false}});
+ });
+ await page.route('**/api/ledger/operations',route=>{
+  const body=route.request().postDataJSON();
+  contractors.push({id:body.payload.id,name:body.payload.name,is_primary:false,is_archived:false,version:1});
+  fail=true;return route.fulfill({json:{ok:true,data:{status:'OK'}}});
+ });
+ await page.getByRole('button',{name:'تغيير بيانات الشغل',exact:true}).click();
+ await page.getByRole('button',{name:'+ مقاول جديد للمشترك',exact:true}).click();
+ await page.locator('#quick-name').fill('شركة تأخر تحديثها');
+ await page.getByRole('dialog').getByRole('button',{name:'حفظ وإضافة',exact:true}).click();
+ await expect(page.getByRole('dialog')).toContainText('في انتظار تحديث القوائم');
+ await page.keyboard.press('Escape');await expect(page.getByRole('dialog')).toHaveCount(0);
+ fail=false;await page.getByRole('button',{name:'تحديث البيانات',exact:true}).click();
+ await expect(page.locator('#shared-contractor option')).toHaveCount(3);
+ await expect(page.locator('#real-trip-counterparty')).toHaveValue('C1');
+ await expect(page.locator('#real-trip-weight')).toHaveValue('2');
+ await expect(page.getByLabel('ملخص الشغل المعتمد')).toContainText('شركة النور');
 });
