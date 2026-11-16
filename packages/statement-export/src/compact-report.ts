@@ -15,7 +15,7 @@ export function reportLines(text:string,width:number,size=26):string[]{
  return lines;
 }
 function widths(table:OperationalReportDetailSection){const sum=table.columns.reduce((n,c)=>n+c.widthWeight,0);return table.columns.map(c=>SPAN*c.widthWeight/sum);}
-function tableHeight(table:OperationalReportDetailSection){const w=widths(table);return (table.rows.length?table.rows:[[table.emptyMessage]]).map(row=>Math.max(78,24+Math.max(...row.map((v,i)=>reportLines(v,(w[i]??SPAN)-24).length))*37));}
+function tableHeight(table:OperationalReportDetailSection){const w=widths(table);return (table.rows.length?table.rows:[[table.emptyMessage]]).map(row=>Math.max(78,24+Math.max(...row.map((v,i)=>table.columns[i]?.direction==='ltr'?1:reportLines(v,(w[i]??SPAN)-24).length))*37));}
 export function createCompactReportLayout(doc:OperationalReportDocument,options:{fixedHeight?:number;pageLabel?:string}):CompactReportLayout {
  const metadataRows=Math.ceil(doc.metadata.length/3);
  const summaryStart=234+metadataRows*66;let y=summaryStart;
@@ -57,7 +57,7 @@ export function paintCompactReport(ctx:CanvasRenderingContext2D,layout:CompactRe
   let rowY=t.top+124;const rows=t.rows.length?t.rows:[[t.emptyMessage]];
   rows.forEach((row,i)=>{const h=t.heights[i]!;ctx.fillStyle=i%2?'#f5f7fa':'#fff';ctx.fillRect(LEFT,rowY,SPAN,h);let right=RIGHT;
    if(!t.rows.length)text(ctx,t.emptyMessage,RIGHT-18,rowY+48,26,MUTED,false,SPAN-36);
-   else row.forEach((v,j)=>{const col=t.columns[j]!;const color=t.rowTones?.[i]?COLORS[t.rowTones[i]!]:(j===row.length-1?BLUE:INK);const lines=reportLines(v,t.widths[j]!-24);lines.forEach((line,k)=>text(ctx,line,right-12,rowY+42+k*37,26,color,j===row.length-1,t.widths[j]!-24,col.direction==='ltr'));right-=t.widths[j]!;});
+   else row.forEach((v,j)=>{const col=t.columns[j]!;const color=t.rowTones?.[i]?COLORS[t.rowTones[i]!]:(j===row.length-1?BLUE:INK);const lines=col.direction==='ltr'?[v]:reportLines(v,t.widths[j]!-24);lines.forEach((line,k)=>text(ctx,line,right-12,rowY+42+k*37,26,color,j===row.length-1,t.widths[j]!-24,col.direction==='ltr'));right-=t.widths[j]!;});
    rule(ctx,rowY+h-1);rowY+=h;
   });
   if(t.total){ctx.fillStyle='#eef3fb';ctx.fillRect(LEFT,rowY,SPAN,64);text(ctx,t.total,RIGHT-18,rowY+42,25,BLUE,true,SPAN-36);}
