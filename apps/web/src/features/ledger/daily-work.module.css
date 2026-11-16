@@ -28,3 +28,5 @@
 .layout{display:grid;grid-template-columns:minmax(0,1fr);align-items:start;gap:0}.layout>[hidden]{display:none!important}@media(min-width:1600px){.layout{grid-template-columns:minmax(0,1fr) minmax(320px,.65fr);gap:18px}}
 
 .paymentArea{grid-column:1/-1}.paymentJump{display:inline-flex;align-items:center;min-height:48px;color:var(--color-primary);font-weight:700;font-size:.85rem;text-underline-offset:4px}
+
+.restoreHint{margin:8px 0 16px;color:var(--text-muted);font-size:.82rem;line-height:1.8}.sharedNote{overflow-wrap:anywhere}.optionalDefaults{grid-column:1/-1}.optionalDefaults summary{cursor:pointer;min-height:44px;padding:10px 0;font-weight:650}.optionalDefaults p{margin:0;color:var(--text-muted);font-size:.82rem;line-height:1.8}

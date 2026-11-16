@@ -69,18 +69,18 @@ export function TransactionEntry({ contractors, vehicles, accounts, busy, write,
   const [customize,setCustomize]=useState(false);
   const [createdSharedContractor,setCreatedSharedContractor]=useState('');
   const sharedContractorCreation=useRef(false);
-  const hasOverrides=!!appliedShared&&(tripCounterparty!==appliedShared.contractor||direction!==appliedShared.direction||tripDate!==appliedShared.date||contractorRate!==appliedShared.contractorRate||vehicleRate!==appliedShared.vehicleRate||sameRate!==appliedShared.sameRate||tripOrigin!==appliedShared.origin||tripDestination!==appliedShared.destination);
-  const tripDirty=hasOverrides||!!(tripVehicle||weight||tripNotes||expense!=='0'||(!appliedShared&&(tripCounterparty||tripDate||direction!=="AHMED_SUPPLIES"||contractorRate||vehicleRate||!sameRate||tripOrigin||tripDestination)));
+  const hasOverrides=!!appliedShared&&(tripCounterparty!==appliedShared.contractor||direction!==appliedShared.direction||tripDate!==appliedShared.date||contractorRate!==appliedShared.contractorRate||vehicleRate!==appliedShared.vehicleRate||sameRate!==appliedShared.sameRate||tripOrigin!==appliedShared.origin||tripDestination!==appliedShared.destination||expense!==appliedShared.expense||tripNotes!==appliedShared.notes);
+  const tripDirty=hasOverrides||!!(tripVehicle||weight||(!appliedShared&&(tripNotes||expense!=='0'||tripCounterparty||tripDate||direction!=="AHMED_SUPPLIES"||contractorRate||vehicleRate||!sameRate||tripOrigin||tripDestination)));
   useEffect(()=>{if(tripDate)onDateChange?.(tripDate);},[tripDate,onDateChange]);
   function copyShared(value:SharedWorkValues){
     setTripCounterparty(value.contractor);setDirection(value.direction);setTripDate(value.date);
     setContractorRate(value.contractorRate);setVehicleRate(value.vehicleRate);setSameRate(value.sameRate);
-    setTripOrigin(value.origin);setTripDestination(value.destination);
+    setTripOrigin(value.origin);setTripDestination(value.destination);setExpense(value.expense);setTripNotes(value.notes);
   }
-  function clearTrip(){setTripVehicle('');setWeight('');setExpense('0');setTripNotes('');setCustomize(false);}
+  function clearTrip(){setTripVehicle('');setWeight('');setCustomize(false);}
   function applyShared(value:SharedWorkValues){setAppliedShared(value);copyShared(value);clearTrip();setReuseDay(true);requestAnimationFrame(()=>document.getElementById('real-trip-vehicle')?.focus());}
   function newShared(){
-    setAppliedShared(null);clearTrip();setTripDate('');setTripCounterparty('');setContractorRate('');setVehicleRate('');
+    setAppliedShared(null);clearTrip();setExpense('0');setTripNotes('');setTripDate('');setTripCounterparty('');setContractorRate('');setVehicleRate('');
     setTripOrigin('');setTripDestination('');setReuseDay(false);setDirection('AHMED_SUPPLIES');setSameRate(true);
   }
   const [quickModal, setQuickModal] = useState<null | "vehicle" | "contractor" | "payment">(null);

@@ -1,4 +1,5 @@
 import {test,expect,type Page} from '@playwright/test';
+import {mkdir} from 'node:fs/promises';
 import {calculateTripAmounts} from '../../packages/accounting/src/trip-amounts';
 
 type Request={operation:string;payload:Record<string,string>;requestKey:string};
@@ -176,4 +177,74 @@ test('same vehicle on same day with different contractors remains two report rec
  await page.getByRole('button',{name:'تحميل التقرير',exact:true}).click();
  await expect(page.getByLabel('ملخص سجلات التقرير').locator('li')).toHaveCount(2);
  await expect(page.getByLabel('ملخص سجلات التقرير')).toContainText('شركة النور');await expect(page.getByLabel('ملخص سجلات التقرير')).toContainText('شركة ثانية');
+});
+
+test('shared date defaults to Cairo today even before UTC midnight and stays editable',async({page})=>{
+ await page.clock.install({time:new Date('2026-11-16T23:30:00Z')});await fixture(page);
+ await expect(page.locator('#shared-date')).toHaveValue('2026-11-17');
+ await page.locator('#shared-date').fill('2026-11-10');await expect(page.locator('#shared-date')).toHaveValue('2026-11-10');
+});
+
+async function optionalDefaults(page:Page,expense='20',notes='شغل موقع النور'){
+ await page.getByText('مصاريف وملاحظة مشتركة — اختياري',{exact:true}).click();
+ await page.locator('#shared-expense').fill(expense);await page.locator('#shared-notes').fill(notes);
+}
+test('shared expense and note apply per trip, allow overrides and restore defaults only after success',async({page})=>{
+ const {attempts}=await fixture(page);await optionalDefaults(page);await shared(page);
+ await expect(page.getByLabel('ملخص الشغل المعتمد')).toContainText('مصاريف كل نقلة: 20');
+ await nextTrip(page);await page.locator('#real-trip-expense').fill('35');await overrides(page);await page.locator('#real-trip-notes').fill('استثناء للعربية');
+ await save(page).click();await expect(page.locator('#real-trip-weight')).toHaveValue('');
+ await expect(page.locator('#real-trip-expense')).toHaveValue('20');await expect(page.locator('#real-trip-notes')).toHaveValue('شغل موقع النور');
+ await nextTrip(page);await save(page).click();await expect.poll(()=>attempts.length).toBe(2);
+ expect(attempts[0].payload).toMatchObject({expense_egp:'35',notes:'استثناء للعربية'});
+ expect(attempts[1].payload).toMatchObject({expense_egp:'20',notes:'شغل موقع النور'});
+});
+test('invalid shared expense never applies or writes; failed trip retains expense/note and retry identity',async({page})=>{
+ const {attempts}=await fixture(page);await optionalDefaults(page,'-5');await shared(page,'100',false);
+ await expect(page.getByRole('alert')).toBeVisible();expect(attempts).toHaveLength(0);
+ await page.locator('#shared-expense').fill('20');await page.getByRole('button',{name:'اعتماد بيانات الشغل',exact:true}).click();await nextTrip(page);
+ await overrides(page);await page.locator('#real-trip-notes').fill('ملاحظة خاصة');const writes:Request[]=[];
+ await page.route('**/api/ledger/operations',route=>{writes.push(route.request().postDataJSON());return route.fulfill(writes.length===1?{status:401,json:{ok:false,error:'غير مصرح بالدخول.'}}:{json:{ok:true,data:{status:'OK'}}});});
+ await save(page).click();await expect(page.getByText('غير مصرح بالدخول.',{exact:true})).toBeVisible();
+ await expect(page.locator('#real-trip-expense')).toHaveValue('20');await expect(page.locator('#real-trip-notes')).toHaveValue('ملاحظة خاصة');
+ await save(page).click();await expect.poll(()=>writes.length).toBe(2);expect(writes[0]).toEqual(writes[1]);
+ await expect(page.locator('#real-trip-notes')).toHaveValue('شغل موقع النور');
+});
+test('last approved work restores as a guarded draft with today date and no vehicle/weight/write',async({page})=>{
+ await page.clock.install({time:new Date('2026-11-20T12:00:00Z')});const {attempts}=await fixture(page);
+ await optionalDefaults(page);await shared(page);await nextTrip(page);
+ await page.getByRole('button',{name:'استخدام بيانات آخر شغل',exact:true}).click();
+ await page.getByRole('button',{name:'الاحتفاظ بالمسودة'}).click();await expect(page.locator('#real-trip-weight')).toHaveValue('2');
+ await page.getByRole('button',{name:'استخدام بيانات آخر شغل',exact:true}).click();await page.getByRole('button',{name:'تأكيد استبدال المسودة'}).click();
+ await expect(page.locator('#shared-date')).toHaveValue('2026-11-20');await expect(page.locator('#real-trip-date')).toHaveValue('2026-11-16');
+ await expect(page.locator('#real-trip-weight')).toHaveValue('2');expect(attempts).toHaveLength(0);
+ await page.getByRole('button',{name:'اعتماد بيانات الشغل',exact:true}).click();await page.getByRole('button',{name:'تأكيد استبدال المسودة'}).click();
+ await expect(page.locator('#real-trip-weight')).toHaveValue('');await expect(page.locator('#real-trip-vehicle')).toHaveValue('');
+ await expect(page.locator('#real-trip-date')).toHaveValue('2026-11-20');await expect(page.locator('#real-trip-expense')).toHaveValue('20');
+ await page.getByRole('button',{name:'بدء شغل ببيانات مختلفة',exact:true}).click();
+ await expect(page.locator('#real-trip-expense')).toHaveValue('0');await expect(page.locator('#real-trip-notes')).toHaveValue('');
+ await page.getByRole('button',{name:'استخدام بيانات آخر شغل',exact:true}).click();
+ await expect(page.locator('#shared-contractor')).toHaveValue('C1');expect(attempts).toHaveLength(0);
+});
+test('restoring archived last contractor requires choosing an active contractor before approval',async({page})=>{
+ const {contractors,attempts}=await fixture(page);await shared(page);
+ contractors.find(c=>c.id==='C1')!.is_archived=true;
+ await page.getByRole('button',{name:'تحديث البيانات',exact:true}).click();
+ await page.getByRole('button',{name:'استخدام بيانات آخر شغل',exact:true}).click();
+ await expect(page.locator('#shared-contractor')).toHaveValue('');await expect(page.getByRole('alert')).toContainText('لم يعد متاحًا');
+ await page.getByRole('button',{name:'اعتماد بيانات الشغل',exact:true}).click();expect(attempts).toHaveLength(0);
+});
+
+for(const mobile of [true,false])for(const dark of [false,true])test(`shared defaults review / ${mobile?'mobile':'desktop'} / ${dark?'dark':'light'}`,async({page})=>{
+ await page.setViewportSize(mobile?{width:390,height:844}:{width:1440,height:1000});
+ const {attempts}=await fixture(page);if(dark)await page.getByRole('button',{name:'تبديل الوضع الفاتح/الداكن'}).click();
+ await optionalDefaults(page);await shared(page);
+ await page.getByRole('button',{name:'استخدام بيانات آخر شغل',exact:true}).click();
+ await page.getByText('مصاريف وملاحظة مشتركة — اختياري',{exact:true}).click();
+ const folder='artifacts/ui-review-87/shared-defaults';await mkdir(folder,{recursive:true});
+ await page.evaluate(()=>document.fonts.ready);
+ await expect(page.locator('#shared-expense')).toHaveValue('20');await expect(page.locator('#shared-notes')).toHaveValue('شغل موقع النور');
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ await page.getByLabel('بيانات الشغل المشتركة',{exact:true}).screenshot({path:`${folder}/${mobile?'mobile':'desktop'}-${dark?'dark':'light'}.png`});
+ expect(attempts).toHaveLength(0);
 });
