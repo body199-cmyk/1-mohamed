@@ -140,7 +140,7 @@ test('cash statement shows both sources and exports exact complete CSV',async({p
  await expect(summary.locator('p',{hasText:'المتبقي الحالي:'})).toContainText('280');
  const download=page.waitForEvent('download');await page.getByRole('button',{name:'تنزيل CSV',exact:true}).click();
  const fs=await import('node:fs/promises');const text=await fs.readFile((await (await download).path())!,'utf8');
- expect(text).toContain('T1');expect(text).toContain('P1');expect(text).toContain('السويس');expect(text).toContain('150');
+ expect(text).not.toContain('T1');expect(text).not.toContain('P1');expect(text).toContain('السويس');expect(text).toContain('150');expect(text).toContain('الدفعات المستلمة');expect(text).toContain('40 ج.م');
 });
 
 test('desktop workspace keeps the report content column usable at wide viewports',async({page})=>{

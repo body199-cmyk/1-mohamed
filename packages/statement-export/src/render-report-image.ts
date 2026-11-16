@@ -6,6 +6,8 @@ import type {
 } from "./document-types";
 import { assertOperationalReportDocument } from "./report-document-validation";
 
+import {createCompactReportLayout,paintCompactReport,type CompactReportLayout} from "./compact-report";
+
 const WIDTH = 1440;
 const HEIGHT = 2036;
 const LEFT = 80;
@@ -45,6 +47,7 @@ export function createOperationalReportImageLayout(
   options: { readonly fixedHeight?: number; readonly pageLabel?: string } = {},
 ): OperationalReportImageLayout {
   assertOperationalReportDocument(doc);
+  if(doc.presentation==="compact-statement")return createCompactReportLayout(doc,options);
   const metadataRows = Math.ceil(doc.metadata.length / 2);
   const summaryStart = 220 + metadataRows * 48 + 14;
   let summaryBottom = summaryStart;
@@ -189,6 +192,7 @@ export function paintOperationalReportImage(
   ctx: CanvasRenderingContext2D,
   layout: OperationalReportImageLayout,
 ): void {
+  if("compactTables" in layout){paintCompactReport(ctx,layout as CompactReportLayout);return;}
   ctx.fillStyle = "#ffffff";
   ctx.fillRect(0, 0, layout.width, layout.height);
   ctx.fillStyle = BLUE;

@@ -44,10 +44,10 @@ const statement:LiveStatementReport={status:'OK',snapshot:'1:1',counterparty_con
  {id:'T1',trip_date:'2026-01-02',vehicle_id:'V1',origin:'القاهرة',destination:'السويس',notes:null,direction:'AHMED_SUPPLIES',weight_milli_tonnes:'1000',contractor_total_piastres:'20000',signed_delta_piastres:'20000',running_balance_piastres:'30000'},
  {id:'T2',trip_date:'2026-01-03',vehicle_id:'V2',origin:'الجيزة',destination:'الفيوم',notes:'مراجعة',direction:'OTHER_SUPPLIES',weight_milli_tonnes:'1000',contractor_total_piastres:'5000',signed_delta_piastres:'-5000',running_balance_piastres:'25000'}]};
 describe('contractor filtered statement',()=>{
- it('separates filtered subtotal from full debt and exports every detail',()=>{
+ it('separates filtered subtotal from full debt and exports clean work fields without internal IDs or notes',()=>{
   const doc=buildDetailedContractorDocument(statement,'المقاول',new Map([['V2','عربية ٢']]),{...emptyStatementFilters,vehicle:'V2'});
-  expect(doc.rows).toHaveLength(1);expect(doc.rows[0]).toContain('عربية ٢');expect(doc.rows[0]).toContain('الفيوم');expect(doc.rows[0]).toContain('مراجعة');
-  expect(doc.summarySections[0].metrics.find(m=>m.label==='آخر الفترة')?.value).toBe('+250 ج.م');
+  expect(doc.rows).toHaveLength(1);expect(doc.rows[0]).toContain('عربية ٢');expect(doc.rows[0]).toContain('الفيوم');expect(doc.rows[0]).not.toContain('مراجعة');expect(doc.rows[0]).not.toContain('T2');
+  expect(doc.summarySections[0].metrics.find(m=>m.label==='الصافي لصالح أحمد')?.value).toBe('250 ج.م');
   expect(doc.summarySections[1].metrics.at(-1)?.value).toBe('-50 ج.م');
  });
  it('never filters an incomplete history into a seemingly complete statement',()=>{

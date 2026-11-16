@@ -72,6 +72,12 @@ export function createOperationalReportXlsxParts(
     for (const metric of section.metrics) summaryRows.push([metric.label, metric.value]);
     summaryRows.push([]);
   }
+  for(const section of doc.detailSections??[]){
+    summaryRows.push([section.title]);headerRows.push(summaryRows.length);
+    summaryRows.push(section.columns.map(c=>c.label));headerRows.push(summaryRows.length);
+    summaryRows.push(...(section.rows.length?section.rows.map(r=>[...r]):[[section.emptyMessage]]));
+    summaryRows.push([]);
+  }
   for (const note of doc.footerNotes) summaryRows.push(["ملاحظة", note]);
   const detailRows: string[][] = [
     doc.columns.map(column => column.label),

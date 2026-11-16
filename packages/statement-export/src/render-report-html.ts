@@ -19,6 +19,7 @@ export function renderOperationalReportHtml(doc: OperationalReportDocument): str
     (item.direction === "ltr" ? ' ltr-token' : '') + '">' +
     escapeHtmlText(item.value) + '</span></div>'
   ).join("\n");
+  if(doc.presentation==='compact-statement')return compactHtml(doc);
   const summaries = doc.summarySections.map(section => {
     const rows = section.metrics.map(metric =>
       '          <tr' + (metric.emphasis ? ' class="summary-closing-row"' : '') + '>' +
@@ -77,4 +78,16 @@ export function renderOperationalReportHtml(doc: OperationalReportDocument): str
     "</body>",
     "</html>",
   ].join("\n");
+}
+
+function compactHtml(doc:OperationalReportDocument):string {
+ const e=escapeHtmlText;
+ const metadata=doc.metadata.map(m=>'<div class="meta-item"><span class="meta-label">'+e(m.label)+'</span><span class="meta-value">'+e(m.value)+'</span></div>').join('');
+ const summary=doc.summarySections.map((s,i)=>'<section class="compact-summary '+(i===0?'primary':'counts')+'"><h2>'+e(s.title)+'</h2><div class="metrics">'+s.metrics.map(m=>'<div class="metric '+(m.tone??'neutral')+'"><span>'+e(m.label)+'</span><strong>'+e(m.value)+'</strong></div>').join('')+'</div></section>').join('');
+ const sections=[{title:doc.detailsTitle??'تفاصيل التقرير',columns:doc.columns,rows:doc.rows,rowTones:doc.rowTones,emptyMessage:doc.emptyMessage},...(doc.detailSections??[])];
+ const tables=sections.map((s,index)=>{const w=s.columns.reduce((n,c)=>n+c.widthWeight,0);return '<section class="details-section"><h2 class="section-heading">'+e(s.title)+'</h2><table class="details-table"><colgroup>'+s.columns.map(c=>'<col style="width:'+c.widthWeight/w*100+'%">').join('')+'</colgroup><thead><tr>'+s.columns.map(c=>'<th>'+e(c.label)+'</th>').join('')+'</tr></thead><tbody>'+(s.rows.length?s.rows.map((r,i)=>'<tr class="'+(s.rowTones?.[i]??'')+'">'+r.map((v,j)=>'<td><span'+cellClass(s.columns[j]!.direction)+'>'+e(v)+'</span></td>').join('')+'</tr>').join(''):'<tr><td colspan="'+s.columns.length+'">'+e(s.emptyMessage)+'</td></tr>')+'</tbody></table>'+(index===0&&doc.detailsTotal?'<p class="table-total">'+e(doc.detailsTotal)+'</p>':'')+'</section>';}).join('');
+ return '<!doctype html>\n<html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=1000"><title>'+e(doc.title)+'</title><style>'+STATEMENT_PRINT_STYLES+`
+ .table-total{background:#eef3fb;color:#2446ad;padding:12px;font-weight:700}.statement-page{width:190mm;max-width:none}.statement-header{text-align:center}.business-name{font-size:23px;color:#2446ad}.report-title{font-size:19px}.meta-grid{background:white;border:0;padding:8px 0;text-align:right;gap:10px}
+ .compact-summary{break-inside:avoid;margin:16px 0 24px}.compact-summary h2{font-size:14px}.primary h2{display:none}.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.metric{padding:13px 8px}.primary .metric{background:#f1f6ff;border:1px solid #7c98d2;border-radius:6px}.metric span{display:block;font-size:11px;color:#526171}.metric strong{display:block;font-size:18px;color:#2446ad;margin-top:6px}.primary .credit{background:#effaf3;border-color:#69ac84}.primary .debit{background:#fff3f3;border-color:#d17d83}.credit strong,.details-table .credit td{color:#147344}.debit strong,.details-table .debit td{color:#b3343c}.counts .metric{padding:0}.counts strong{font-size:15px}.details-table{border:0}.details-table th{background:#2446ad;color:white;font-size:11px}.details-table td{font-size:12px}.details-table td,.details-table th{border:0;border-bottom:1px solid #d9e0e7;padding:10px 6px}.details-table tbody tr:nth-child(even){background:#f5f7fa}.section-heading{border-color:#2446ad}.statement-footer{font-size:11px}
+ </style></head><body><main class="statement-page"><header class="statement-header"><p class="business-name">`+e(doc.businessName)+'</p><h1 class="report-title">'+e(doc.title)+'</h1><p>'+e(doc.subtitle)+'</p><p class="meta-label">تاريخ الإعداد: '+e(doc.generatedAtLabel)+'</p><div class="meta-grid">'+metadata+'</div></header>'+summary+tables+'<footer class="statement-footer">'+doc.footerNotes.map(n=>'<p>'+e(n)+'</p>').join('')+'</footer></main></body></html>';
 }

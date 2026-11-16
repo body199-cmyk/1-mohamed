@@ -1,23 +1,29 @@
 import {cashStatementDocument,type CashReport} from './cash-statement-document';
 import type {VehicleTrip} from './vehicle-statement-data';
+import type {OperationalReportDocument} from '@ledger/statement-export';
 import {formatPoundsForDisplay,scaledIntegerToDecimal} from '../../lib/ledger/amounts';
-export function vehicleStatementDocument(report:CashReport,vehicle:string,contractor:string,trips:ReadonlyMap<string,VehicleTrip>){
+export function vehicleStatementDocument(report:CashReport,vehicle:string,contractor:string,trips:ReadonlyMap<string,VehicleTrip>):OperationalReportDocument {
  const base=cashStatementDocument(report,vehicle,contractor);
  const money=(v:string)=>formatPoundsForDisplay(v)+' ج.م';
- const values=[...trips.values()];
- const tonnes=scaledIntegerToDecimal(values.reduce((n,r)=>n+BigInt(r.weight_milli_tonnes),0n).toString(),3);
- return {...base,title:'كشف حساب العربية — '+vehicle,subtitle:'حساب العربية عند '+contractor+'؛ دفعاتها مستقلة عن فرق شغل المقاولين.',
- summarySections:[{title:'المستحق والمدفوع والباقي',metrics:[
+ const work=report.rows.filter(r=>r.movement_type==='WORK');
+ const payments=report.rows.filter(r=>r.movement_type==='PAYMENT');
+ const tonnes=scaledIntegerToDecimal(work.reduce((n,r)=>{const t=trips.get(String(r.id));if(!t)throw new Error('تفاصيل نقلة ناقصة؛ أعد تحميل الكشف.');return n+BigInt(t.weight_milli_tonnes);},0n).toString(),3);
+ const closing=BigInt(report.period_closing_piastres);
+ return {...base,presentation:'compact-statement',title:'كشف حساب العربية — '+vehicle,
+ subtitle:'حساب العربية لدى '+contractor,
+ summarySections:[{title:'ملخص حساب العربية',metrics:[
   {label:'رصيد أول الفترة',value:money(report.period_opening_piastres)},
-  {label:'شغل الفترة',value:money(report.work_piastres)},
-  {label:'المدفوع خلال الفترة',value:money(report.paid_piastres)},
-  {label:BigInt(report.period_closing_piastres)<0n?'على العربية آخر الفترة':'الباقي للعربية آخر الفترة',value:money((BigInt(report.period_closing_piastres)<0n?-BigInt(report.period_closing_piastres):BigInt(report.period_closing_piastres)).toString()),emphasis:true},
-  {label:'الرصيد الحالي (كل الحساب)',value:money(report.current_cash_balance_piastres)},
-  {label:'النقلات',value:String(values.length)},{label:'إجمالي الأطنان',value:tonnes}]}],
- columns:['التاريخ','الحركة والمرجع','خط السير','الأطنان','سعر طن العربية','المصاريف','مبلغ الحركة','الرصيد','ملاحظات'].map((label,i)=>({label,widthWeight:[1,1.7,1.8,.8,1,.9,1.1,1.1,1.3][i]})),
- rows:report.rows.map(r=>{const t=r.movement_type==='WORK'?trips.get(String(r.id)):undefined;return [String(r.date),(r.movement_type==='WORK'?'نقلة ':'دفعة ')+r.id,
- [r.origin,r.destination].filter(Boolean).join(' ← '),t?scaledIntegerToDecimal(t.weight_milli_tonnes,3):'—',t?money(t.vehicle_rate_piastres):'—',t?money(t.expense_piastres):'—',
- money(String(r.signed_delta_piastres)),money(String(r.running_balance_piastres)),String(r.notes??t?.notes??'')];}),
- footerNotes:[...base.footerNotes,`إجمالي النقلات: ${values.length} — الأطنان: ${tonnes} — شغل الفترة: ${money(report.work_piastres)} — المدفوع: ${money(report.paid_piastres)} — رصيد آخر الفترة: ${money(report.period_closing_piastres)}`,
- 'سعر الطن غير إجمالي النقلة؛ المصاريف ضمن إجمالي مستحقها وليست خصمًا. لا توزيع تلقائي للدفعة على نقلة بعينها.']};
+  {label:'مستحق الشغل',value:money(report.work_piastres),tone:'credit'},
+  {label:'المدفوع للعربية',value:money(report.paid_piastres),tone:'debit'},
+  {label:closing<0n?'على العربية':closing===0n?'الحساب متعادل':'الباقي للعربية',value:money((closing<0n?-closing:closing).toString()),emphasis:true,tone:closing<0n?'debit':'neutral'}]},
+  {title:'ملخص النقلات',metrics:[{label:'عدد النقلات',value:String(work.length)},{label:'إجمالي الأطنان',value:tonnes+' طن'}]}],
+ detailsTitle:'تفاصيل النقلات',
+ detailsTotal:`إجمالي الكشف كاملًا: ${work.length} نقلة — ${tonnes} طن — المستحق ${money(report.work_piastres)}`,
+ columns:['تاريخ النقلة','من','إلى','الأطنان','سعر الطن','المصاريف','إجمالي النقلة'].map((label,i)=>({label,widthWeight:[1.2,1.4,1.4,.8,1,1,1.2][i],direction:i===0||i>=3?'ltr' as const:'rtl' as const})),
+ rows:work.map(r=>{const t=trips.get(String(r.id));if(!t)throw new Error('تفاصيل نقلة ناقصة؛ أعد تحميل الكشف.');return [String(r.date),String(t.origin??''),String(t.destination??''),scaledIntegerToDecimal(t.weight_milli_tonnes,3),money(t.vehicle_rate_piastres),money(t.expense_piastres),money(String(r.signed_delta_piastres))];}),
+ detailSections:[{title:'الدفعات المستلمة',columns:[{label:'تاريخ الدفعة',widthWeight:1,direction:'ltr'},{label:'المبلغ المستلم',widthWeight:1,direction:'ltr'}],rows:payments.map(r=>[String(r.date),money((-BigInt(String(r.signed_delta_piastres))).toString())]),emptyMessage:'لا توجد دفعات خلال الفترة.'}],
+ footerNotes:[`إجمالي النقلات: ${work.length} — الأطنان: ${tonnes} — إجمالي المستحق: ${money(report.work_piastres)}`,
+ `إجمالي المدفوع: ${money(report.paid_piastres)} — رصيد آخر الفترة: ${money(report.period_closing_piastres)}`,
+ `الرصيد الحالي (كل الحساب): ${money(report.current_cash_balance_piastres)}`,
+ 'المصاريف مضافة لمستحق النقلة. دفعات العربية مستقلة عن حساب شغل المقاولين.']};
 }

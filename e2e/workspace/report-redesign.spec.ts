@@ -30,14 +30,14 @@ test('SQL: payment changes only vehicle cash, both work directions and complete 
 });
 
 for(const mobile of [true,false])for(const dark of [false,true])test(`report redesign SQL evidence / ${mobile?'mobile':'desktop'} / ${dark?'dark':'light'}`,async({page})=>{
- await payment();await page.setViewportSize(mobile?{width:390,height:844}:{width:1440,height:1000});await page.emulateMedia({reducedMotion:'reduce'});await enter(page);if(dark)await page.getByRole('button',{name:'تبديل الوضع الفاتح/الداكن'}).click();
+ await payment();await page.clock.setFixedTime(new Date('2026-11-16T12:00:00Z'));await page.setViewportSize(mobile?{width:390,height:844}:{width:1440,height:1000});await page.emulateMedia({reducedMotion:'reduce'});await enter(page);if(dark)await page.getByRole('button',{name:'تبديل الوضع الفاتح/الداكن'}).click();
  const dir=`artifacts/ui-review-87/reports-redesign/${mobile?'mobile':'desktop'}-${dark?'dark':'light'}`;await mkdir(dir,{recursive:true});
  async function capture(name:string,target:ReturnType<Page['locator']>){await target.evaluate(el=>el.scrollIntoView({block:'start'}));await page.evaluate(()=>document.fonts.ready);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await page.screenshot({path:dir+'/'+name+'.png'});}
  await cash(page);await capture('01-vehicle-summary',page.getByLabel('ملخص نقدية العربية'));
  await capture('02-vehicle-trips',page.getByText('نقلات العربية',{exact:true}));await capture('03-vehicle-total',page.getByLabel('إجمالي كشف العربية'));
- if(mobile&&!dark){for(const [label,ext] of [['تنزيل CSV','csv'],['تنزيل Excel XLSX','xlsx'],['تنزيل صورة PNG','png'],['تنزيل PDF مباشر','pdf']] as const){const d=page.waitForEvent('download');await page.getByRole('button',{name:label,exact:true}).click();const file=await d;await file.saveAs(dir+'/vehicle.'+ext);expect(await file.failure()).toBeNull();}}
+ {for(const [label,ext] of [['تنزيل CSV','csv'],['تنزيل Excel XLSX','xlsx'],['تنزيل صورة PNG','png'],['تنزيل PDF مباشر','pdf']] as const){const d=page.waitForEvent('download');await page.getByRole('button',{name:label,exact:true}).click();const file=await d;await file.saveAs(dir+'/vehicle.'+ext);expect(await file.failure()).toBeNull();}}
  await contractor(page);await capture('04-contractor-summary',page.getByLabel('ملخص حساب المقاول'));await capture('05-contractor-work',page.locator('article[data-tone="credit"]').first());
- if(mobile&&!dark){
+ {
   for(const [label,ext] of [['تنزيل CSV','csv'],['تنزيل Excel XLSX','xlsx'],['تنزيل صورة PNG','png'],['تنزيل PDF مباشر','pdf']] as const){const d=page.waitForEvent('download');await page.getByRole('button',{name:label,exact:true}).click();const download=await d;await download.saveAs(dir+'/contractor.'+ext);expect(await download.failure()).toBeNull();}
   const popup=page.waitForEvent('popup');await page.getByRole('button',{name:'طباعة / حفظ PDF',exact:true}).click();const print=await popup;await expect(print.locator('body')).toContainText('دفعات العربيات');await writeFile(dir+'/contractor-print.html',await print.content());await print.close();
   const text=await (await import('node:fs/promises')).readFile(dir+'/contractor.csv','utf8');expect(text).toContain('شغل على أحمد أبو علي');expect(text).toContain('شغل لأحمد أبو علي');
@@ -54,4 +54,24 @@ for(const state of ['zero','negative'] as const)test(`SQL report balance state $
 test('snapshot mismatch in supplementary trip read blocks mixed report and exports',async({page})=>{
  await enter(page);await page.route('**/api/ledger/read',async route=>{const b=route.request().postDataJSON();if(b.operation==='trips.list'&&b.payload.snapshot)return route.fulfill({json:{ok:true,data:{status:'OK',snapshot:'999:999',total_count:'0',rows:[],next_cursor:null}}});return route.fallback();});
  await page.getByRole('navigation').getByRole('button',{name:'حسابات العربيات والدفعات',exact:true}).click();await page.locator('#cash-account').selectOption('V1|K_AHMED');await page.locator('#cash-from').fill('2026-11-01');await page.locator('#cash-to').fill('2026-11-16');await page.getByRole('button',{name:'عرض كشف النقدية',exact:true}).click();await expect(page.getByRole('alert')).toContainText('تغيرت البيانات');await expect(page.getByRole('button',{name:'تنزيل CSV',exact:true})).toHaveCount(0);
+});
+
+
+test('export PNG and PDF bytes stay identical across mobile/desktop and light/dark',async({page})=>{
+ await payment();await page.clock.setFixedTime(new Date('2026-11-16T12:00:00Z'));await enter(page);
+ const fs=await import('node:fs/promises');const crypto=await import('node:crypto');const evidence:Record<string,unknown>[]=[];
+ const expected=new Map<string,string>();
+ for(const device of ['mobile','desktop'])for(const theme of ['light','dark']){
+  await page.setViewportSize(device==='mobile'?{width:390,height:844}:{width:1440,height:1000});
+  await page.evaluate(value=>document.documentElement.setAttribute('data-theme',value),theme);
+  for(const report of ['vehicle','contractor']){
+   if(report==='vehicle')await cash(page);else await contractor(page);
+   for(const [label,ext] of [['تنزيل صورة PNG','png'],['تنزيل PDF مباشر','pdf']] as const){
+    const event=page.waitForEvent('download');await page.getByRole('button',{name:label,exact:true}).click();const d=await event;expect(await d.failure()).toBeNull();const bytes=await fs.readFile((await d.path())!);const hash=crypto.createHash('sha256').update(bytes).digest('hex');const key=report+'.'+ext;
+    if(expected.has(key))expect(hash,key+' must not reflow by viewport/theme').toBe(expected.get(key));else expected.set(key,hash);
+    evidence.push({device,theme,report,ext,bytes:bytes.length,sha256:hash});
+   }
+  }
+ }
+ await fs.mkdir('artifacts/ui-review-87/reports-redesign',{recursive:true});await fs.writeFile('artifacts/ui-review-87/reports-redesign/export-device-invariance.json',JSON.stringify(evidence,null,2));
 });
