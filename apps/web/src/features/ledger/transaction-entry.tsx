@@ -4,6 +4,7 @@ import ui from "./workspace-ui.module.css";
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import styles from "./trip-entry-design.module.css";
 import daily from "./daily-work.module.css";
+import { RepeatedVehicleNotice } from "./repeated-vehicle-notice";
 import { PaymentEntry } from "./payment-entry";
 import type {QuickOpening} from "./quick-opening-fields";
 import { SharedWorkPanel, type SharedWorkValues } from "./shared-work-panel";
@@ -67,6 +68,7 @@ export function TransactionEntry({ contractors, vehicles, accounts, busy, write,
   const [reuseDay,setReuseDay] = useState(false);
   const [appliedShared,setAppliedShared]=useState<SharedWorkValues|null>(null);
   const [customize,setCustomize]=useState(false);
+  const [editExpense,setEditExpense]=useState(false);
   const [createdSharedContractor,setCreatedSharedContractor]=useState('');
   const sharedContractorCreation=useRef(false);
   const hasOverrides=!!appliedShared&&(tripCounterparty!==appliedShared.contractor||direction!==appliedShared.direction||tripDate!==appliedShared.date||contractorRate!==appliedShared.contractorRate||vehicleRate!==appliedShared.vehicleRate||sameRate!==appliedShared.sameRate||tripOrigin!==appliedShared.origin||tripDestination!==appliedShared.destination||expense!==appliedShared.expense||tripNotes!==appliedShared.notes);
@@ -77,7 +79,7 @@ export function TransactionEntry({ contractors, vehicles, accounts, busy, write,
     setContractorRate(value.contractorRate);setVehicleRate(value.vehicleRate);setSameRate(value.sameRate);
     setTripOrigin(value.origin);setTripDestination(value.destination);setExpense(value.expense);setTripNotes(value.notes);
   }
-  function clearTrip(){setTripVehicle('');setWeight('');setCustomize(false);}
+  function clearTrip(){setTripVehicle('');setWeight('');setCustomize(false);setEditExpense(false);}
   function applyShared(value:SharedWorkValues){setAppliedShared(value);copyShared(value);clearTrip();setReuseDay(true);requestAnimationFrame(()=>document.getElementById('real-trip-vehicle')?.focus());}
   function newShared(){
     setAppliedShared(null);clearTrip();setExpense('0');setTripNotes('');setTripDate('');setTripCounterparty('');setContractorRate('');setVehicleRate('');
@@ -213,10 +215,13 @@ export function TransactionEntry({ contractors, vehicles, accounts, busy, write,
         <div className={styles.formField}><label htmlFor="real-trip-weight">الوزن بالطن (3 خانات عشرية)</label>
         <input id="real-trip-weight" className={styles.control} required inputMode="decimal" placeholder="12.500"
           value={weight} onChange={e => setWeight(e.target.value)} disabled={busy} /></div>
-        <div className={styles.formField}><label htmlFor="real-trip-expense">مصاريف النقلة بالجنيه</label>
+        <details className={daily.expenseDetails} open={!appliedShared||editExpense} onToggle={e=>{if(appliedShared)setEditExpense(e.currentTarget.open);}}>
+         <summary>المصاريف: <bdi>{expense||'—'}</bdi> ج.م — تعديل</summary>
+         <div className={styles.formField}><label htmlFor="real-trip-expense">مصاريف النقلة بالجنيه</label>
         <input id="real-trip-expense" className={styles.control} required inputMode="decimal"
-          value={expense} onChange={e => setExpense(e.target.value)} disabled={busy} /></div>
+          value={expense} onChange={e => setExpense(e.target.value)} disabled={busy} /></div></details>
         </div>
+        <RepeatedVehicleNotice vehicleId={tripVehicle} date={tripDate} revision={revision} disabled={busy}/>
         <details open={!appliedShared||customize} onToggle={e=>{if(appliedShared)setCustomize(e.currentTarget.open);}}>
           <summary>{appliedShared?'تفاصيل وأسعار مختلفة لهذه النقلة فقط':'بيانات النقلة والأسعار'}{hasOverrides?' — توجد تعديلات خاصة':''}</summary><div className={styles.fieldGrid}>
         <SearchableChoice className={styles.choice} id="real-trip-counterparty" label="المقاول الطرف" value={tripCounterparty} onChange={setTripCounterparty} disabled={busy}

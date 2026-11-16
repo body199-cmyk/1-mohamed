@@ -38,14 +38,14 @@ test('vehicle opening retries only the unfinished opening with stable identity a
  await save.click();await expect(page.getByRole('dialog')).toHaveCount(0);
  expect(writes.map(x=>x.operation)).toEqual(['vehicle.create','opening.create','opening.create']);
  expect(writes[1]).toEqual(writes[2]);expect(writes[0].payload.contractor_id).toBe('OWNER');
- expect(writes[1].payload).toMatchObject({balance_type:'VEHICLE_CASH',contractor_id:'OWNER',vehicle_id:writes[0].payload.id,signed_piastres:'1000000',start_date:'2026-11-01'});
+ expect(writes[1].payload).toMatchObject({balance_type:'VEHICLE_CASH',contractor_id:'OWNER',vehicle_id:writes[0].payload.id,signed_piastres:1000000,start_date:'2026-11-01'});
  await expect(page.locator('#real-trip-weight')).toHaveValue('25');await expect(page.locator('#real-trip-vehicle')).toHaveValue(String(writes[0].payload.id));
 });
 for(const side of ['OWED_TO_CONTRACTOR','OWED_TO_AHMED'])test('contractor create includes atomic old work balance '+side,async({page})=>{
  const writes=await fixture(page);await page.locator('#real-trip-counterparty-add').click();
  await page.locator('#quick-name').fill('مقاول برصيد قديم');await opening(page);await page.locator('#quick-opening-direction').selectOption(side);
  await page.getByRole('dialog').getByRole('button',{name:'حفظ وإضافة',exact:true}).click();await expect(page.getByRole('dialog')).toHaveCount(0);
- expect(writes).toHaveLength(1);expect(writes[0].payload).toMatchObject({start_mode:'TOTAL',opening:{start_date:'2026-11-01',signed_piastres:side==='OWED_TO_CONTRACTOR'?'-1000000':'1000000'}});
+ expect(writes).toHaveLength(1);expect(writes[0].payload).toMatchObject({start_mode:'TOTAL',opening:{start_date:'2026-11-01',signed_piastres:side==='OWED_TO_CONTRACTOR'?-1000000:1000000}});
 });
 test('negative vehicle opening creates no vehicle or balance',async({page})=>{
  const writes=await fixture(page);await page.locator('#real-trip-vehicle-add').click();await page.locator('#quick-plate').fill('س د 9999');await opening(page);

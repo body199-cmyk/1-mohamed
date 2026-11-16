@@ -1,3 +1,4 @@
+import {openTripExpense,restoreShared} from './support/entry-controls';
 import {test,expect,type Page} from '@playwright/test';
 import {mkdir,writeFile} from 'node:fs/promises';
 
@@ -89,7 +90,7 @@ for(const mobile of [true,false])for(const dark of [false,true]){
   await expect(page.getByLabel('ملخص الشغل المعتمد')).toBeVisible();
   await page.locator('#real-trip-vehicle').selectOption('V1');
   await page.locator('#real-trip-weight').fill('25');
-  await page.locator('#real-trip-expense').fill('500');
+  await openTripExpense(page);await page.locator('#real-trip-expense').fill('500');
   await page.evaluate(()=>scrollTo(0,0));
   await capture('01-daily');
   await page.screenshot({path:`${folder}/01-daily-full.png`,fullPage:true});

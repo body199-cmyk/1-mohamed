@@ -1,3 +1,4 @@
+import {openTripExpense,restoreShared} from './support/entry-controls';
 import {test,expect,type Page} from '@playwright/test';
 import {mkdir} from 'node:fs/promises';
 import {calculateTripAmounts} from '../../packages/accounting/src/trip-amounts';
@@ -52,7 +53,7 @@ test('ten independent trips reuse common data, accept one override, and reset pr
  const {attempts,rows}=await fixture(page);await shared(page);
  for(let i=0;i<10;i++){
   await nextTrip(page);
-  if(i===3){await overrides(page);await page.locator('#real-trip-contractor-rate').fill('150');await page.locator('#real-trip-expense').fill('10');}
+  if(i===3){await overrides(page);await page.locator('#real-trip-contractor-rate').fill('150');await openTripExpense(page);await page.locator('#real-trip-expense').fill('10');}
   await save(page).click();await expect.poll(()=>attempts.length).toBe(i+1);
   await expect(page.locator('#real-trip-vehicle')).toHaveValue('');await expect(page.locator('#real-trip-weight')).toHaveValue('');
   await expect(page.locator('#real-trip-expense')).toHaveValue('0');await expect(page.locator('#real-trip-contractor-rate')).toHaveValue('100');
@@ -192,7 +193,7 @@ async function optionalDefaults(page:Page,expense='20',notes='شغل موقع ا
 test('shared expense and note apply per trip, allow overrides and restore defaults only after success',async({page})=>{
  const {attempts}=await fixture(page);await optionalDefaults(page);await shared(page);
  await expect(page.getByLabel('ملخص الشغل المعتمد')).toContainText('مصاريف كل نقلة: 20');
- await nextTrip(page);await page.locator('#real-trip-expense').fill('35');await overrides(page);await page.locator('#real-trip-notes').fill('استثناء للعربية');
+ await nextTrip(page);await openTripExpense(page);await page.locator('#real-trip-expense').fill('35');await overrides(page);await page.locator('#real-trip-notes').fill('استثناء للعربية');
  await save(page).click();await expect(page.locator('#real-trip-weight')).toHaveValue('');
  await expect(page.locator('#real-trip-expense')).toHaveValue('20');await expect(page.locator('#real-trip-notes')).toHaveValue('شغل موقع النور');
  await nextTrip(page);await save(page).click();await expect.poll(()=>attempts.length).toBe(2);
@@ -213,9 +214,9 @@ test('invalid shared expense never applies or writes; failed trip retains expens
 test('last approved work restores as a guarded draft with today date and no vehicle/weight/write',async({page})=>{
  await page.clock.install({time:new Date('2026-11-20T12:00:00Z')});const {attempts}=await fixture(page);
  await optionalDefaults(page);await shared(page);await nextTrip(page);
- await page.getByRole('button',{name:'استخدام بيانات آخر شغل',exact:true}).click();
+ await restoreShared(page);
  await page.getByRole('button',{name:'الاحتفاظ بالمسودة'}).click();await expect(page.locator('#real-trip-weight')).toHaveValue('2');
- await page.getByRole('button',{name:'استخدام بيانات آخر شغل',exact:true}).click();await page.getByRole('button',{name:'تأكيد استبدال المسودة'}).click();
+ await restoreShared(page);await page.getByRole('button',{name:'تأكيد استبدال المسودة'}).click();
  await expect(page.locator('#shared-date')).toHaveValue('2026-11-20');await expect(page.locator('#real-trip-date')).toHaveValue('2026-11-16');
  await expect(page.locator('#real-trip-weight')).toHaveValue('2');expect(attempts).toHaveLength(0);
  await page.getByRole('button',{name:'اعتماد بيانات الشغل',exact:true}).click();await page.getByRole('button',{name:'تأكيد استبدال المسودة'}).click();
@@ -223,14 +224,14 @@ test('last approved work restores as a guarded draft with today date and no vehi
  await expect(page.locator('#real-trip-date')).toHaveValue('2026-11-20');await expect(page.locator('#real-trip-expense')).toHaveValue('20');
  await page.getByRole('button',{name:'بدء شغل ببيانات مختلفة',exact:true}).click();
  await expect(page.locator('#real-trip-expense')).toHaveValue('0');await expect(page.locator('#real-trip-notes')).toHaveValue('');
- await page.getByRole('button',{name:'استخدام بيانات آخر شغل',exact:true}).click();
+ await restoreShared(page);
  await expect(page.locator('#shared-contractor')).toHaveValue('C1');expect(attempts).toHaveLength(0);
 });
 test('restoring archived last contractor requires choosing an active contractor before approval',async({page})=>{
  const {contractors,attempts}=await fixture(page);await shared(page);
  contractors.find(c=>c.id==='C1')!.is_archived=true;
  await page.getByRole('button',{name:'تحديث البيانات',exact:true}).click();
- await page.getByRole('button',{name:'استخدام بيانات آخر شغل',exact:true}).click();
+ await restoreShared(page);
  await expect(page.locator('#shared-contractor')).toHaveValue('');await expect(page.getByRole('alert')).toContainText('لم يعد متاحًا');
  await page.getByRole('button',{name:'اعتماد بيانات الشغل',exact:true}).click();expect(attempts).toHaveLength(0);
 });
@@ -239,7 +240,7 @@ for(const mobile of [true,false])for(const dark of [false,true])test(`shared def
  await page.setViewportSize(mobile?{width:390,height:844}:{width:1440,height:1000});
  const {attempts}=await fixture(page);if(dark)await page.getByRole('button',{name:'تبديل الوضع الفاتح/الداكن'}).click();
  await optionalDefaults(page);await shared(page);
- await page.getByRole('button',{name:'استخدام بيانات آخر شغل',exact:true}).click();
+ await restoreShared(page);
  await page.getByText('مصاريف وملاحظة مشتركة — اختياري',{exact:true}).click();
  const folder='artifacts/ui-review-87/shared-defaults';await mkdir(folder,{recursive:true});
  await page.evaluate(()=>document.fonts.ready);

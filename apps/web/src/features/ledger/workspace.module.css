@@ -445,7 +445,7 @@
   .workspace {
     display: block;
     margin: 8px auto 0;
-    padding-bottom: 0;
+    padding-bottom: calc(96px + env(safe-area-inset-bottom));
   }
 
   .header {

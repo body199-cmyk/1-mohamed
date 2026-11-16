@@ -1,16 +1,18 @@
 import {assertDecimal,poundsToPiastres} from '../../lib/ledger/amounts';
 import styles from './trip-entry-design.module.css';
 
-export type QuickOpening={date:string;signedPiastres:string;contractorId?:string};
+export type QuickOpening={date:string;signedPiastres:number;contractorId?:string};
 export type OpeningDraft={enabled:boolean;amount:string;date:string;direction:''|'OWED_TO_CONTRACTOR'|'OWED_TO_AHMED';contractorId:string};
 export const emptyOpening=():OpeningDraft=>({enabled:false,amount:'',date:'',direction:'',contractorId:''});
 export function parseQuickOpening(kind:'vehicle'|'contractor',draft:OpeningDraft):QuickOpening|undefined{
  if(!draft.enabled)return undefined;
  if(!draft.date)throw new Error('حدد تاريخ بداية الرصيد القديم.');
  const positive=poundsToPiastres(assertDecimal(draft.amount,2,true));
+ // Existing SQL requires a JSON number. Reject outside exact JS JSON range rather than round money.
+ if(BigInt(positive)>BigInt(Number.MAX_SAFE_INTEGER))throw new Error('قيمة الرصيد تتجاوز حد النقل الرقمي الدقيق. راجع المبلغ.');
  if(kind==='vehicle'&&!draft.contractorId)throw new Error('اختر المقاول المسؤول عن نقدية العربية.');
  if(kind==='contractor'&&!draft.direction)throw new Error('حدد هل الرصيد للمقاول أم عليه.');
- return {date:draft.date,signedPiastres:kind==='contractor'&&draft.direction==='OWED_TO_CONTRACTOR'?(-BigInt(positive)).toString():positive,
+ return {date:draft.date,signedPiastres:kind==='contractor'&&draft.direction==='OWED_TO_CONTRACTOR'?-Number(positive):Number(positive),
   ...(kind==='vehicle'?{contractorId:draft.contractorId}:{})};
 }
 export function QuickOpeningFields({kind,draft,onChange,disabled,contractors}:{kind:'vehicle'|'contractor';draft:OpeningDraft;

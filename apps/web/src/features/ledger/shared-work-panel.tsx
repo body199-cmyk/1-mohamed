@@ -66,13 +66,17 @@ export function SharedWorkPanel({contractors,busy,applied,dirty,onApply,onNew,on
    {!applied&&<button type="button" disabled={busy||confirmation!==null} onClick={()=>request('manual')}>إدخال نقلة منفردة</button>}
   </header>
   {applied&&<div className={styles.sharedSummary} aria-label="ملخص الشغل المعتمد">
-   <strong>{name} — {applied.direction==='AHMED_SUPPLIES'?'أحمد هو المورّد':'المقاول الآخر هو المورّد'}</strong>
+   <strong>{name}</strong>
    <span>{applied.date} · {[applied.origin,applied.destination].filter(Boolean).join(' ← ')||'بدون خط سير محدد'}</span>
+   <details key={String(editing)+JSON.stringify(applied)} className={styles.appliedDetails}><summary>عرض تفاصيل الشغل المعتمد</summary><div className={styles.appliedBody}>
+    <span>{applied.direction==='AHMED_SUPPLIES'?'أحمد هو المورّد':'المقاول الآخر هو المورّد'}</span>
    <span>سعر المقاول: <bdi>{applied.contractorRate}</bdi> ج.م/طن · سعر العربية: <bdi>{applied.vehicleRate}</bdi> ج.م/طن</span>
    <span>مصاريف كل نقلة: <bdi>{applied.expense}</bdi> ج.م</span>
    {applied.notes&&<span className={styles.sharedNote}>الملاحظة المشتركة: {applied.notes}</span>}
+   {!editing&&<><button type="button" disabled={busy||confirmation!==null} onClick={()=>request('restore')}>استخدام بيانات آخر شغل</button><p className={styles.restoreHint}>آخر بيانات اعتمدتها في الجلسة دي؛ تُسترجع بتاريخ النهارده للمراجعة والاعتماد.</p></>}
+   </div></details>
   </div>}
-  {lastWork&&<><button type="button" disabled={busy||confirmation!==null} onClick={()=>request('restore')}>استخدام بيانات آخر شغل</button><p className={styles.restoreHint}>آخر بيانات اعتمدتها في الجلسة دي؛ تُسترجع بتاريخ النهارده للمراجعة والاعتماد.</p></>}
+  {lastWork&&editing&&<><button type="button" disabled={busy||confirmation!==null} onClick={()=>request('restore')}>استخدام بيانات آخر شغل</button><p className={styles.restoreHint}>آخر بيانات اعتمدتها في الجلسة دي؛ تُسترجع بتاريخ النهارده للمراجعة والاعتماد.</p></>}
   {!editing&&<div className={styles.sharedActions}>
    <button type="button" disabled={busy||confirmation!==null} onClick={()=>{setDraft(applied??emptySharedWork());setEditing(true);}}>تغيير بيانات الشغل</button>
    <button type="button" disabled={busy||confirmation!==null} onClick={()=>request('new')}>بدء شغل ببيانات مختلفة</button>
