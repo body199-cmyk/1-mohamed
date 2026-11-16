@@ -11,6 +11,8 @@ import { useWorkspaceData } from "./workspace-data";
 import { useTheme } from "../../components/theme-provider";
 import styles from "./workspace.module.css";
 import ui from "./workspace-ui.module.css";
+import dailyStyles from "./daily-work.module.css";
+import { DailyTripList } from "./daily-trip-list";
 import { WorkspaceIcon } from "./workspace-icon";
 
 const primarySections = [
@@ -33,6 +35,9 @@ const allSections = [...primarySections, ...secondarySections];
 
 export function RealWorkspace() {
   const data = useWorkspaceData();
+  const [dailyDate,setDailyDate]=useState('');
+  const [recordedCount,setRecordedCount]=useState<string|null>(null);
+  const [reportPeriod,setReportPeriod]=useState<{id:number;date:string}|null>(null);
   const [screen, setScreen] = useState<Screen>("daily");
   // TransactionEntry calls onExit only after a successful write; return to the daily landing here.
   const [dailyEntryVisible, setDailyEntryVisible] = useState(true);
@@ -151,19 +156,20 @@ export function RealWorkspace() {
         <span>العربيات: <strong>{data.vehicles.filter(v => !v.is_archived).length}</strong></span>
       </div>
 
-      <div hidden={screen !== "daily"}>
+      <div hidden={screen !== "daily"} className={dailyStyles.layout}>
         {data.contractors.length === 0 && !data.loading && (
           <section className={ui.surface + " " + styles.emptyState}>
             <p role="status">الحساب فارغ. ابدأ بإعداد صاحب الحساب ثم أضف المقاولين والعربيات من إدارة البيانات.</p>
             <button type="button" onClick={() => setScreen("master")}>إدارة البيانات</button>
           </section>
         )}
-        {dailyEntryVisible ? (
-          <TransactionEntry {...data} busy={blocked} tripCounterpartyRequest={tripContextRequest} paymentAccountRequest={paymentContextRequest} onExit={() => {
+        <div hidden={!dailyEntryVisible}>
+          <TransactionEntry {...data} busy={blocked} onDateChange={setDailyDate} recordedCount={recordedCount} tripCounterpartyRequest={tripContextRequest} paymentAccountRequest={paymentContextRequest} onExit={() => {
             setDailyEntryVisible(false);
             setDailyExitNotice(true);
           }} />
-        ) : (
+        </div>
+        {!dailyEntryVisible&&(
           <section className={ui.surface + " " + styles.dailyLanding}>
             <p role="status">{dailyExitNotice ? "تم حفظ النقلة والخروج من نموذج الإدخال." : "اليومية جاهزة لمتابعة الشغل والدفعات."}</p>
             <button type="button" onClick={() => {
@@ -172,8 +178,11 @@ export function RealWorkspace() {
             }}>تسجيل شغل أو دفعة</button>
           </section>
         )}
+        <DailyTripList {...data} date={dailyDate} onCountChange={setRecordedCount} disabled={blocked} onReviewDay={date=>{
+          setReportPeriod({id:++contextRequestId.current,date});setScreen('reports');
+        }}/>
       </div>
-      <div hidden={screen !== "reports"}><RealReports {...data} disabled={blocked} /></div>
+      <div hidden={screen !== "reports"}><RealReports {...data} disabled={blocked} periodRequest={reportPeriod}/></div>
       <div hidden={screen !== "contractor"}><RealContractorStatement {...data} disabled={blocked} onRegisterWork={contractorId => openDailyAt("trip", contractorId)} /></div>
       <div hidden={screen !== "cash"}><RealCashStatement {...data} disabled={blocked} onRegisterPayment={account => openDailyAt("payment", account)} /></div>
       <div hidden={screen !== "master"}>

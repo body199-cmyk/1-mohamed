@@ -405,3 +405,5 @@ TripPreviewCard accepts optional responsibleContractorName separately from count
 
 
 `e2e/workspace/ui-review.spec.ts`: actual-component synthetic populated screenshot review, phone390/desktop1440, two themes, zero writes; `.github/workflows/verify.yml` publishes `artifacts/ui-review-87/` as `pr87-exact-head-ui-review` for the exact run SHA.
+
+UX-REORG-01.2: `features/ledger/shared-work-panel.tsx` owns shared draft/apply/new-session confirmation UI; `transaction-entry.tsx` applies snapshots to actual trip controls and performs confirmed-success resets with existing write payload/id/key path; `payment-entry.tsx` extracts the unchanged payment handler. `daily-trip-list.tsx` owns day-scoped reader, snapshot pagination and visible saved rows; `real-workspace.tsx` retains hidden entry context and routes selected day to reports. `operational-rows.tsx` preserves report fields in compact records/details/full table; `work-totals.module.css` and `daily-work.module.css` supply scoped theme-aware presentation. `e2e/workspace/shared-work.spec.ts` verifies workflow and write contracts; `ui-review.spec.ts` captures setup/applied/saved views in the existing CI artifact.

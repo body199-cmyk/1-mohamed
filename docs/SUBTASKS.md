@@ -1,3 +1,6 @@
+## UX-REORG-01.2 — complete shared daily workflow
+Current slice replaces the missing live shared-data flow, not a new financial feature. Draft versus applied values, confirmation and focus, session changes, individual overrides, per-trip success reset, server-backed saved-day rows/pagination and same-date report navigation. Payment extraction preserves the same handler and shared submission lock. Independent precommit review corrections and exact-head acceptance pending are in STATUS. The inherited demo remains separate and unchanged.
+
 ## UX-REORG-01.1 — ١٦ نوفمبر ٢٠٢٦ — غلاف التنقل الموبايل أولًا
 - **الإذن:** المستخدم طلب صراحةً استكمال مشروع محمد وبدء التنفيذ بعد تأكيد ملف التصميم.
 - **الخط الأساس:** main `f7faa16e77698cdb8e63455e622c03741a58711b`; PR84 مدموج. مواصفات UX-REORG-01 من `docs/MOBILE_UX_REORGANIZATION_HANDOFF.md` على سلسلة PR85.

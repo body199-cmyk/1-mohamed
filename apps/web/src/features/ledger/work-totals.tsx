@@ -1,7 +1,8 @@
+import styles from "./work-totals.module.css";
 import { formatPoundsForDisplay, scaledIntegerToDecimal } from "../../lib/ledger/amounts";
 export function WorkTotals({totals}:{totals:Record<string,string>}) {
   try {
-    return <section aria-label="ملخص الشغل" className="ledgerMetrics">
+    return <section aria-label="ملخص الشغل" className={styles.metrics}>
       <p>النقلات النشطة <strong>{totals.active_count}</strong></p>
       <p>الوزن بالطن <strong>{scaledIntegerToDecimal(totals.weight_milli_tonnes,3)}</strong></p>
       <p>قيمة شغل المقاولين <strong>{formatPoundsForDisplay(totals.contractor_total_piastres)} ج.م</strong></p>

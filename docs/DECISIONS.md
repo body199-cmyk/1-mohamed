@@ -86,3 +86,4 @@ Approved 13 November 2026: multiple separately authenticated, explicitly approve
 ## D21 — نمط تنقل الهاتف (معتمد ١٦ نوفمبر ٢٠٢٦)
 وافق المستخدم صراحةً على شريط سفلي ثابت بأربع وجهات: اليومية، المقاولون، العربيات، التقارير، مع قائمة «المزيد» لإدارة البيانات والإعدادات. يُطبق على الهاتف مع قائمة جانبية على الكمبيوتر. لا تغيير للحسابات أو API أو الصلاحيات؛ يظل الدمج والنشر خاضعين لاجتياز CI والمراجعة وقبول الشكل الكامل.
 
+UX-REORG-01.2 / 16 November 2026: user reconfirmed original shared-work-first daily design and explicitly instructed completion. Shared values are approved input defaults, never a new database/business entity or a batch financial write. One per-trip request remains authoritative. Applied-mode successful-save reset intentionally clears vehicle/weight/private expense/notes and restores common defaults; single-entry reuseDay remains available. Approved report number hierarchy and distinct save buttons; no merge/production/Auth/SQL scope added.

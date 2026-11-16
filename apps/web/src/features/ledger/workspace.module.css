@@ -292,7 +292,7 @@
   border-color: var(--color-primary);
 }
 
-.content button[type="submit"],
+.content button[type="submit"]:not([data-secondary]),
 .content form button:not([type]) {
   background: var(--color-primary);
   color: var(--color-primary-text);
@@ -300,7 +300,7 @@
   font-weight: 800;
 }
 
-.content button[type="submit"]:hover:not(:disabled),
+.content button[type="submit"]:not([data-secondary]):hover:not(:disabled),
 .content form button:not([type]):hover:not(:disabled) {
   background: var(--color-primary-hover);
   border-color: var(--color-primary-hover);

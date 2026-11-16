@@ -73,3 +73,7 @@
   .dialog { padding:22px; border-radius:16px; max-height:calc(100dvh - 32px); }
 }
 @media(prefers-reduced-motion:reduce) { .tripSurface *,.dialog * { transition:none !important; } }
+
+.tripSurface button.secondaryButton[type="submit"]{background:var(--surface-card);color:var(--text-main);border-color:var(--border-strong);box-shadow:none}
+.tripSurface button.secondaryButton[type="submit"]:hover:not(:disabled){background:var(--surface-hover);border-color:var(--color-primary)}
+@media(min-width:601px){.choice{grid-template-columns:minmax(0,1fr)}.choice input{grid-column:1;border-radius:10px}.choice button{grid-column:1;grid-row:auto;justify-self:start;border:1px solid var(--border-strong);border-radius:8px}.choice select{grid-column:1}}

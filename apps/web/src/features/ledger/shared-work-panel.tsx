@@ -1,0 +1,93 @@
+"use client";
+import {useEffect,useRef,useState,type FormEvent} from 'react';
+import {assertDecimal} from '../../lib/ledger/amounts';
+import ui from './workspace-ui.module.css';
+import styles from './daily-work.module.css';
+
+export type SharedWorkValues={contractor:string;direction:'AHMED_SUPPLIES'|'OTHER_SUPPLIES';date:string;
+ contractorRate:string;vehicleRate:string;sameRate:boolean;origin:string;destination:string};
+export const emptySharedWork=(date=''):SharedWorkValues=>({contractor:'',direction:'AHMED_SUPPLIES',date,
+ contractorRate:'',vehicleRate:'',sameRate:true,origin:'',destination:''});
+type Props={contractors:{id:string;name:string;is_primary:boolean;is_archived:boolean}[];busy:boolean;
+ applied:SharedWorkValues|null;dirty:boolean;onApply:(value:SharedWorkValues)=>void;onNew:()=>void;
+ onManual:()=>void;onAddContractor:()=>void;createdContractor?:string};
+
+export function SharedWorkPanel({contractors,busy,applied,dirty,onApply,onNew,onManual,onAddContractor,createdContractor}:Props){
+ const [draft,setDraft]=useState<SharedWorkValues>(()=>emptySharedWork());
+ const [editing,setEditing]=useState(true);
+ useEffect(()=>{if(createdContractor){setDraft(old=>({...old,contractor:createdContractor}));setEditing(true);}},[createdContractor]);
+ const [error,setError]=useState('');
+ const confirmButton=useRef<HTMLButtonElement>(null);
+ const returnFocus=useRef<HTMLElement|null>(null);
+ const [confirmation,setConfirmation]=useState<'apply'|'new'|'manual'|null>(null);
+ const [pending,setPending]=useState<SharedWorkValues|null>(null);
+ useEffect(()=>{if(confirmation)confirmButton.current?.focus();},[confirmation]);
+ function confirm(action:'apply'|'new'|'manual'){returnFocus.current=document.activeElement as HTMLElement;setConfirmation(action);}
+ function cancelConfirmation(){setConfirmation(null);setPending(null);requestAnimationFrame(()=>returnFocus.current?.focus());}
+ const draftChanged=JSON.stringify(draft)!==JSON.stringify(applied??emptySharedWork());
+ const change=<K extends keyof SharedWorkValues>(key:K,value:SharedWorkValues[K])=>setDraft(old=>({...old,[key]:value}));
+ function finish(action:'apply'|'new'|'manual',value:SharedWorkValues|null=pending){
+  if(action==='apply'&&value){onApply(value);setDraft(value);setEditing(false);}
+  if(action==='new'){setDraft(emptySharedWork(applied?.date??draft.date));setEditing(true);onNew();}
+  if(action==='manual'){onManual();setEditing(false);}
+  setError('');setPending(null);setConfirmation(null);
+ }
+ function request(action:'new'|'manual'){
+  if(dirty||(editing&&draftChanged)){confirm(action);return;}
+  finish(action);
+ }
+ function apply(event:FormEvent){
+  event.preventDefault();setError('');
+  try{
+   if(!contractors.some(c=>c.id===draft.contractor&&!c.is_primary&&!c.is_archived)||!draft.date)
+    throw new Error('اختر المقاول والتاريخ أولًا.');
+   const contractorRate=assertDecimal(draft.contractorRate,2,false);
+   const vehicleRate=draft.sameRate?contractorRate:assertDecimal(draft.vehicleRate,2,false);
+   const value={...draft,contractorRate,vehicleRate,origin:draft.origin.trim(),destination:draft.destination.trim()};
+   if(dirty){setPending(value);confirm('apply');return;}
+   finish('apply',value);
+  }catch(cause){setError(cause instanceof Error?cause.message:'راجع بيانات الشغل.');}
+ }
+ const name=contractors.find(c=>c.id===applied?.contractor)?.name;
+ return <section className={ui.surface+' '+styles.shared} aria-label="بيانات الشغل المشتركة">
+  <header className={styles.sectionHeader}><div><h2>بيانات الشغل المشتركة</h2>
+   <p>{applied?'معتمدة للنقلات التالية؛ المحفوظ سابقًا لا يتغير.':'اضبطها مرة، وبعدها سجّل العربيات واحدة وراء التانية.'}</p></div>
+   <span className={styles.state}>{applied?'المشترك مفعّل':'لم يُعتمد بعد'}</span>
+   {!applied&&<button type="button" disabled={busy||confirmation!==null} onClick={()=>request('manual')}>إدخال نقلة منفردة</button>}
+  </header>
+  {applied&&<div className={styles.sharedSummary} aria-label="ملخص الشغل المعتمد">
+   <strong>{name} — {applied.direction==='AHMED_SUPPLIES'?'أحمد هو المورّد':'المقاول الآخر هو المورّد'}</strong>
+   <span>{applied.date} · {[applied.origin,applied.destination].filter(Boolean).join(' ← ')||'بدون خط سير محدد'}</span>
+   <span>سعر المقاول: <bdi>{applied.contractorRate}</bdi> ج.م/طن · سعر العربية: <bdi>{applied.vehicleRate}</bdi> ج.م/طن</span>
+  </div>}
+  {!editing&&<div className={styles.sharedActions}>
+   <button type="button" disabled={busy||confirmation!==null} onClick={()=>{setDraft(applied??emptySharedWork());setEditing(true);}}>تغيير بيانات الشغل</button>
+   <button type="button" disabled={busy||confirmation!==null} onClick={()=>request('new')}>بدء شغل ببيانات مختلفة</button>
+  </div>}
+  {editing&&<form className={ui.form} onSubmit={apply}>
+   <div className={ui.fieldGroup}><label htmlFor="shared-contractor">المقاول المشترك</label>
+    <select id="shared-contractor" className={ui.control} required disabled={busy||confirmation!==null} value={draft.contractor} onChange={e=>change('contractor',e.target.value)}>
+     <option value="">اختر المقاول</option>{contractors.filter(c=>!c.is_primary&&!c.is_archived).map(c=><option key={c.id} value={c.id}>{c.name}</option>)}
+    </select><button type="button" disabled={busy||confirmation!==null} onClick={onAddContractor}>+ مقاول جديد للمشترك</button></div>
+   <div className={ui.fieldGroup}><label htmlFor="shared-direction">اتجاه الشغل المشترك</label>
+    <select id="shared-direction" className={ui.control} disabled={busy||confirmation!==null} value={draft.direction} onChange={e=>change('direction',e.target.value as SharedWorkValues['direction'])}>
+     <option value="AHMED_SUPPLIES">أحمد هو المورّد</option><option value="OTHER_SUPPLIES">المقاول الآخر هو المورّد</option>
+    </select></div>
+   <div className={ui.fieldGroup}><label htmlFor="shared-date">تاريخ الشغل المشترك</label><input id="shared-date" type="date" className={ui.control} required disabled={busy||confirmation!==null} value={draft.date} onChange={e=>change('date',e.target.value)}/></div>
+   <div className={ui.fieldGroup}><label htmlFor="shared-contractor-rate">سعر المقاول المشترك للطن</label><input id="shared-contractor-rate" className={ui.control} inputMode="decimal" required disabled={busy||confirmation!==null} value={draft.contractorRate} onChange={e=>change('contractorRate',e.target.value)}/></div>
+   <label className={styles.check}><input type="checkbox" disabled={busy||confirmation!==null} checked={draft.sameRate} onChange={e=>change('sameRate',e.target.checked)}/> نفس سعر المقاول والعربية في المشترك</label>
+   {!draft.sameRate&&<div className={ui.fieldGroup}><label htmlFor="shared-vehicle-rate">سعر العربية المشترك للطن</label><input id="shared-vehicle-rate" className={ui.control} inputMode="decimal" required disabled={busy||confirmation!==null} value={draft.vehicleRate} onChange={e=>change('vehicleRate',e.target.value)}/></div>}
+   <div className={ui.fieldGroup}><label htmlFor="shared-origin">من — للشغل المشترك</label><input id="shared-origin" className={ui.control} maxLength={200} disabled={busy||confirmation!==null} value={draft.origin} onChange={e=>change('origin',e.target.value)}/></div>
+   <div className={ui.fieldGroup}><label htmlFor="shared-destination">إلى — للشغل المشترك</label><input id="shared-destination" className={ui.control} maxLength={200} disabled={busy||confirmation!==null} value={draft.destination} onChange={e=>change('destination',e.target.value)}/></div>
+   {error&&<p role="alert">{error}</p>}
+   <div className={ui.actions}><button type="submit" disabled={busy||confirmation!==null}>اعتماد بيانات الشغل</button>
+    {applied&&<button type="button" disabled={busy||confirmation!==null} onClick={()=>{setDraft(applied);setEditing(false);setError('');setConfirmation(null);}}>إلغاء تعديل المشترك</button>}
+    {applied&&<button type="button" disabled={busy||confirmation!==null} onClick={()=>request('manual')}>إدخال نقلة منفردة</button>}</div>
+  </form>}
+  {confirmation&&<div className={styles.confirmation} role="region" aria-label="تأكيد استبدال المسودة">
+   <p role="alert">فيه بيانات غير محفوظة. المتابعة تستبدل مسودة النقلة أو بيانات المشترك الجاري تعديلها، من غير تغيير أي نقلة محفوظة.</p>
+   <div className={ui.actions}><button ref={confirmButton} type="button" disabled={busy} onClick={()=>finish(confirmation)}>تأكيد استبدال المسودة</button>
+    <button type="button" disabled={busy} onClick={cancelConfirmation}>الاحتفاظ بالمسودة</button></div>
+  </div>}
+ </section>;
+}

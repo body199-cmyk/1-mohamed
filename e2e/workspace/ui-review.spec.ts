@@ -10,7 +10,7 @@ const vehicles=[{id:'V1',plate_number:'د هـ و 5678',driver_name:'محمود 
 const accounts=[{vehicle_id:'V1',contractor_id:'OWNER'},{vehicle_id:'V1',contractor_id:'C1'}];
 const base={status:'OK',snapshot:'10:10',total_count:'1',next_cursor:null,
  date_from:'2026-11-01',date_to:'2026-11-16'};
-const trip={id:'TR-101',trip_date:'2026-11-15',vehicle_id:'V1',counterparty_contractor_id:'C1',
+const trip={id:'TR-101',trip_date:'2026-11-16',vehicle_id:'V1',counterparty_contractor_id:'C1',
  responsible_contractor_id:'OWNER',direction:'AHMED_SUPPLIES',weight_milli_tonnes:'25000',
  contractor_rate_piastres:'120000',vehicle_rate_piastres:'110000',expense_piastres:'50000',
  contractor_total_piastres:'3050000',vehicle_total_piastres:'2800000',is_cancelled:false,version:1,
@@ -27,7 +27,7 @@ const statement={...base,counterparty_contractor_id:'C1',opening_balance_piastre
 const cash={...base,vehicle_id:'V1',responsible_contractor_id:'OWNER',period_opening_piastres:'500000',
  work_piastres:'2800000',paid_piastres:'1200000',period_closing_piastres:'2100000',
  current_cash_balance_piastres:'2100000',total_count:'2',rows:[
-  {id:'TR-101',date:'2026-11-15',movement_type:'WORK',signed_delta_piastres:'2800000',
+  {id:'TR-101',date:'2026-11-16',movement_type:'WORK',signed_delta_piastres:'2800000',
    running_balance_piastres:'3300000',origin:'بني سويف',destination:'القاهرة'},
   {id:'PAY-101',date:'2026-11-16',movement_type:'PAYMENT',signed_delta_piastres:'-1200000',
    running_balance_piastres:'2100000',notes:'دفعة تجريبية'}
@@ -79,11 +79,16 @@ for(const mobile of [true,false])for(const dark of [false,true]){
    await expect(page.getByTestId('workspace-title')).toHaveText(title);
    await page.evaluate(()=>scrollTo(0,0));
   }
+  await page.locator('#shared-contractor').selectOption('C1');
+  await page.locator('#shared-date').fill('2026-11-16');
+  await page.locator('#shared-contractor-rate').fill('1200');
+  await page.locator('#shared-origin').fill('بني سويف');
+  await page.locator('#shared-destination').fill('القاهرة');
+  await page.evaluate(()=>scrollTo(0,0));await capture('00-shared-setup');
+  await page.getByRole('button',{name:'اعتماد بيانات الشغل',exact:true}).click();
+  await expect(page.getByLabel('ملخص الشغل المعتمد')).toBeVisible();
   await page.locator('#real-trip-vehicle').selectOption('V1');
-  await page.locator('#real-trip-counterparty').selectOption('C1');
-  await page.locator('#real-trip-date').fill('2026-11-16');
   await page.locator('#real-trip-weight').fill('25');
-  await page.locator('#real-trip-contractor-rate').fill('1200');
   await page.locator('#real-trip-expense').fill('500');
   await page.evaluate(()=>scrollTo(0,0));
   await capture('01-daily');
@@ -131,6 +136,10 @@ for(const mobile of [true,false])for(const dark of [false,true]){
   await page.getByLabel('ملخص الشغل').scrollIntoViewIfNeeded();
   await capture('10-reports-summary');
   await page.screenshot({path:`${folder}/10-reports-full.png`,fullPage:true});
+  await nav('اليومية');
+  const recorded=page.getByLabel('النقلات المسجلة في اليومية');
+  await expect(recorded).toContainText('TR-101');
+  await recorded.scrollIntoViewIfNeeded();await capture('11-daily-recorded');
   expect(writes()).toBe(0);
   await writeFile(`${folder}/capture-context.json`,JSON.stringify({
    synthetic:true,liveSupabase:false,writes:writes(),source:'actual private-workspace components',geometry
