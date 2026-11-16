@@ -49,10 +49,10 @@ async function fixture(page:Page, options:FixtureOptions={}){
    accounts.push({vehicle_id:body.payload.vehicle_id,contractor_id:body.payload.contractor_id});
   return route.fulfill({json:{ok:true,data:{status:'OK'}}});});
  await page.goto('/');
- await expect(page.getByText('أهلًا بك في إدارة الشغل',{exact:true})).toBeVisible();
+ await expect(page.getByTestId('workspace-title')).toHaveText('اليومية');
  return {attempts,vehicles,contractors,accounts};
 }
-function entry(page:Page){return page.getByRole('navigation').getByRole('button',{name:'تسجيل الشغل والدفعات',exact:true}).click();}
+function entry(page:Page){return page.getByRole('navigation').getByRole('button',{name:'اليومية',exact:true}).click();}
 function saveVehicle(page:Page){
  return page.getByRole('button',{name:'حفظ وإضافة',exact:true}).click();
 }
@@ -192,9 +192,9 @@ test('ahmed the primary contractor may own a payment account',async({page})=>{
 test('report screens expose no visible inline add buttons',async({page})=>{
  await fixture(page);
  // All screens stay mounted behind `hidden`; only visible buttons count here.
- await page.getByRole('navigation').getByRole('button',{name:'النقلات واليومية',exact:true}).click();
+ await page.getByRole('navigation').getByRole('button',{name:'التقارير والكشوف',exact:true}).click();
  await expect(page.locator('[id$="-add"]:visible')).toHaveCount(0);
- await page.getByRole('navigation').getByRole('button',{name:'كشف حساب عربية',exact:true}).click();
+ await page.getByRole('navigation').getByRole('button',{name:'حسابات العربيات والدفعات',exact:true}).click();
  await expect(page.locator('[id$="-add"]:visible')).toHaveCount(0);
 });
 

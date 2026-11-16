@@ -20,7 +20,7 @@ type Props = { contractors: Contractor[]; vehicles: Vehicle[]; revision: number;
 const money = (input: string) => formatPoundsForDisplay(input) + " ج.م";
 const signed = (input: string) => (BigInt(input) > 0n ? "+" : "") + money(input);
 
-export function RealContractorStatement({ contractors, vehicles, revision, disabled }: Props) {
+export function RealContractorStatement({ contractors, vehicles, revision, disabled, onRegisterWork }: Props & { onRegisterWork: (contractorId: string) => void }) {
   const [contractorId, setContractorId] = useState("");
   const [allHistory,setAllHistory] = useState(false);
   const [from, setFrom] = useState("");
@@ -100,8 +100,11 @@ export function RealContractorStatement({ contractors, vehicles, revision, disab
   }
 
   return <section className={ui.surface} aria-label="كشف حساب المقاول الحقيقي">
-    <h2>كشف حساب المقاول — بيانات محفوظة</h2>
-    <p>الموجب لصالح أحمد، والسالب لصالح المقاول. النقدية المدفوعة للعربية لا تدخل في فرق شغل المقاول.</p>
+    <header className={ui.sectionHeading}>
+      <div><h2>كشف حساب المقاول — بيانات محفوظة</h2>
+      <p>الموجب لصالح أحمد، والسالب لصالح المقاول. النقدية المدفوعة للعربية لا تدخل في فرق شغل المقاول.</p></div>
+      <button type="button" onClick={() => onRegisterWork(contractorId)} disabled={disabled}>تسجيل شغل جديد</button>
+    </header>
     <form className={ui.form} onSubmit={load}>
       <div className={ui.fieldGroup}><label htmlFor="real-statement-contractor">المقاول</label>
       <select id="real-statement-contractor" className={ui.control} required value={contractorId}
@@ -123,11 +126,18 @@ export function RealContractorStatement({ contractors, vehicles, revision, disab
     {report && <>
       <h3>حساب {name}</h3>
       {allHistory && <p>كل الحساب من البداية: {report.date_from} — {report.date_to}</p>}
-      <p>رصيد أول الفترة: <ContractorMoney value={report.opening_balance_piastres}/></p>
-      <p>شغل أحمد: <strong>+{money(report.ahmed_work_piastres)}</strong></p>
-      <p>شغل المقاول: <strong>-{money(report.counterparty_work_piastres)}</strong></p>
-      <p>رصيد آخر الفترة: <ContractorMoney value={report.closing_balance_piastres}/></p>
-      <p>{report.beneficiary === "AHMED" ? "المبلغ لصالح أحمد" :
+      <div className={ui.statementSummary} aria-label="ملخص حساب المقاول">
+        <div className={ui.statementHero} data-tone={report.beneficiary.toLowerCase()}>
+          <span>رصيد آخر الفترة</span>
+          <strong><ContractorMoney value={report.closing_balance_piastres}/></strong>
+        </div>
+        <div className={ui.statementMetrics}>
+          <div className={ui.summaryMetric}><span>رصيد أول الفترة</span><strong><ContractorMoney value={report.opening_balance_piastres}/></strong></div>
+          <div className={ui.summaryMetric}><span>شغل أحمد</span><strong><bdi dir="ltr">+{money(report.ahmed_work_piastres)}</bdi></strong></div>
+          <div className={ui.summaryMetric}><span>شغل المقاول</span><strong><bdi dir="ltr">-{money(report.counterparty_work_piastres)}</bdi></strong></div>
+        </div>
+      </div>
+      <p className={ui.summaryNote}>{report.beneficiary === "AHMED" ? "المبلغ لصالح أحمد" :
         report.beneficiary === "COUNTERPARTY" ? "المبلغ لصالح " + name : "الحساب متعادل"}</p>
       <p>تم تحميل {report.rows.length} من أصل {report.total_count} نقلة.</p>
       {report.next_cursor && <button type="button" onClick={() => void more()} disabled={busy || disabled}>

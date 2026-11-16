@@ -1,3 +1,16 @@
+## UX-REORG-01.1 — 16 November 2026
+- `apps/web/src/features/ledger/real-workspace.tsx`: private workspace screen selection; default daily view; four primary destinations; secondary master/settings access; header theme control; save-and-exit landing; contextual focus and preselection when statement actions return to daily entry. Existing handlers remain the same.
+- `apps/web/src/features/ledger/workspace.module.css`: polished RTL desktop sidebar and approved four-item fixed mobile bottom navigation with safe-area padding; compact secondary menu; 48px header controls; semantic-token surfaces, focus, reduced-motion, statement summary cards and responsive layout.
+- `apps/web/src/features/ledger/workspace-icon.tsx`: typed, module-hoisted SVG path map for daily, reports, contractor, cash, master, settings, more, sun, moon and refresh.
+- `apps/web/src/features/ledger/transaction-entry.tsx`: optional context requests preselect the contractor/account when opened from a statement; existing write handlers and payload construction are unchanged.
+- `apps/web/src/features/ledger/real-contractor-statement.tsx` / `real-cash-statement.tsx`: clearer summary-card hierarchy and direct actions to daily entry, carrying the selected contractor/account.
+- `e2e/workspace/design-rollout.spec.ts`: six-destination desktop/mobile/light/dark layout coverage, accessible header theme toggle, four-item mobile navigation, and existing master/vehicle/account/payment write-payload assertions.
+- No accounting, data operations, SQL, Auth, report document/export, or dependencies changed.
+
+## UX-REORG-01 — وثيقة عرض مستقبلية / ١٥ نوفمبر ٢٠٢٦
+- `docs/MOBILE_UX_REORGANIZATION_HANDOFF.md`: مرجع نقاش المستخدم كاملًا لإعادة تنظيم الهاتف أولًا مع حفظ الوظائف؛ قسم ١٣ يربط كل مسار فعلي بوظيفته وموضعه المستهدف. وثيقة فقط وليست UI منفذًا.
+- خط الأساس GitHub main `f7faa16` / PR84 مدموج؛ بعض حالات المخطط/المعاينة القديمة أدناه تاريخية. عند التنفيذ راجع الكود وأحدث main قبل الوثائق القديمة.
+
 ## UI-ROLLOUT-01
 `features/ledger/workspace-ui.module.css`: shared surfaces, responsive field groups, actions/filter grids and payment preview. `workspace.module.css`: private shell/navigation/table/control theme; `workspace-icon.tsx`: authored SVG only. `master-data-entry`, `transaction-entry`, `record-actions`, `trip-edit`, `real-reports`, `real-contractor-statement`, `real-cash-statement`, `contractor-details`, `payment-preview`, `payment-account-modal`, `real-workspace`: layout/classes only. Paths relative to apps/web/src. Auth password/login/reset changes are colors/control size only. `e2e/workspace/design-rollout.spec.ts`:28 screen/4 modal captures, overflow/touch/spacing and original master/payment write payloads. No report document renderers/SQL/accounting/transport changes. Approved prototype entry-design tests retained.
 

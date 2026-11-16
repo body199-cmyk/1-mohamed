@@ -27,10 +27,10 @@ async function fixture(page:Page){
    accounts.push({vehicle_id:body.payload.vehicle_id,contractor_id:body.payload.contractor_id});
   return route.fulfill({json:{ok:true,data:{status:'OK'}}});});
  await page.goto('/');
- await expect(page.getByText('أهلًا بك في إدارة الشغل',{exact:true})).toBeVisible();
+ await expect(page.getByTestId('workspace-title')).toHaveText('اليومية');
  return attempts;
 }
-function entry(page:Page){return page.getByRole('navigation').getByRole('button',{name:'تسجيل الشغل والدفعات',exact:true}).click();}
+function entry(page:Page){return page.getByRole('navigation').getByRole('button',{name:'اليومية',exact:true}).click();}
 
 test('adds a vehicle inline from the trip form and selects it',async({page})=>{
  await fixture(page);await entry(page);

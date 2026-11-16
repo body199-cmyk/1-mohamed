@@ -1,3 +1,15 @@
+## UX-REORG-01.1 — ١٦ نوفمبر ٢٠٢٦ — غلاف التنقل الموبايل أولًا
+- **الإذن:** المستخدم طلب صراحةً استكمال مشروع محمد وبدء التنفيذ بعد تأكيد ملف التصميم.
+- **الخط الأساس:** main `f7faa16e77698cdb8e63455e622c03741a58711b`; PR84 مدموج. مواصفات UX-REORG-01 من `docs/MOBILE_UX_REORGANIZATION_HANDOFF.md` على سلسلة PR85.
+- **النتيجة المحددة:** اليومية هي شاشة البداية؛ أربع وجهات أساسية؛ إدارة البيانات والإعدادات تظلان متاحتين؛ مفتاح الثيم يظهر في الرأس؛ أربعة أزرار ثابتة أسفل الهاتف، مع قائمة «المزيد» للإدارة.
+- **الملفات:** `apps/web/src/features/ledger/real-workspace.tsx`, `workspace.module.css`, `workspace-icon.tsx`, و`e2e/workspace/design-rollout.spec.ts`.
+- **القبول:** ست وجهات قابلة للوصول؛ 360/390/412/768/1280 دون تجاوز أفقي؛ الوضعان؛ زر ثيم مسمى؛ «حفظ وخروج» بعد نجاح الحفظ يعرض لوحة اليومية وإعادة فتح الإدخال، وفشل الحفظ لا يغلق الإدخال؛ بقاء اختبارات payloads للكتابة؛ لا تغيير للحساب/الحفظ/API.
+- **الاستثناءات:** لا SQL أو migrations أو بيانات أو Auth أو تصدير أو نشر. لا تُضم تغييرات PR86.
+- **الحالة:** المستخدم اعتمد شريط التنقل السفلي بأربع وجهات وقائمة «المزيد» في ١٦ نوفمبر. أضيفت بطاقات ملخص للكشفين وروابط سياقية إلى اليومية تحمل الاختيار. التنفيذ والاختبارات على فرع مستقل؛ CI ناجح 47/47 على الرأس `8108b509` قبل أحدث التغييرات، ويلزم CI نهائي ومراجعة نقدية على الرأس الحالي قبل أي دمج. لا نشر إنتاجي.
+
+## UX-REORG-01 — ١٥ نوفمبر ٢٠٢٦ / شريحة التوثيق وحدها
+النطاق الحالي: حفظ الاتفاقات والجرد ومراجعة الوثيقة ورفعها؛ لا تعديل كود ولا تنفيذ خطوة UI. المرجع [MOBILE_UX_REORGANIZATION_HANDOFF](MOBILE_UX_REORGANIZATION_HANDOFF.md). عند إذن تنفيذ لاحق: تحقق من أحدث main وجرد ما تغير بعد f7faa16 ثم اختر شريحة واحدة وفق PROMPTS؛ لا حذف لوظيفة ولا تنفيذ تلقائي بسبب هذا التسليم. فروق الافتتاحي السياقي وإعادة ضبط الحقول والحسابات عند غير أحمد موثقة وتُراجع دون تغيير محاسبي صامت.
+
 ## UI-ROLLOUT-01 — 15 November 2026 / release pending
 User approves prototype and authorizes site-wide visual consistency + reviewed/tested merge and Vercel release, preserving functions/accounting. Actual scope: workspace shell/home/settings; payment/master/opening/edit/cancel/report/contractor/cash forms; inline/account dialogs; auth theme colors.38 workspace+1 independent write-contract case and7 auth PASS; source contracts unchanged. Latest-head CI39 workspace/build and deployment pending. STATUS holds evidence.
 

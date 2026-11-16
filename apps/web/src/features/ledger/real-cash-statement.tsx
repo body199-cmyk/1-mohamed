@@ -9,7 +9,7 @@ import { cashStatementDocument,verifyCashReport,type CashReport } from './cash-s
 import { ReportHistoryScope } from "../reports/report-period";
 import { ReportExportActions } from '../reports/report-export-actions';
 
-export function RealCashStatement({contractors,vehicles,accounts,disabled,revision}:LedgerEntities&{disabled:boolean;revision:number}) {
+export function RealCashStatement({contractors,vehicles,accounts,disabled,revision,onRegisterPayment}:LedgerEntities&{disabled:boolean;revision:number;onRegisterPayment:(account:string)=>void}) {
   const [allHistory,setAllHistory]=useState(false);
   const [account,setAccount]=useState('');const [from,setFrom]=useState('');const [to,setTo]=useState('');
   const [report,setReport]=useState<CashReport|null>(null);const [busy,setBusy]=useState(false);const [error,setError]=useState('');
@@ -36,8 +36,15 @@ export function RealCashStatement({contractors,vehicles,accounts,disabled,revisi
   const vehicle=vehicles.find(v=>v.id===report?.vehicle_id)?.plate_number??report?.vehicle_id??'';
   const contractor=contractors.find(c=>c.id===report?.responsible_contractor_id)?.name??report?.responsible_contractor_id??'';
   const doc=report&&!report.next_cursor?cashStatementDocument(report,vehicle,contractor):null;
+  const closingBalance=report?BigInt(report.period_closing_piastres):0n;
+  const closingAmount=closingBalance<0n?-closingBalance:closingBalance;
+  const closingTone=closingBalance>0n?'positive':closingBalance<0n?'negative':'neutral';
+  const closingLabel=closingBalance>0n?'الباقي للعربية آخر الفترة':closingBalance<0n?'المبلغ على العربية آخر الفترة':'الحساب متعادل آخر الفترة';
   return <section className={ui.surface} aria-label="كشف نقدية العربية">
-    <h2>كشف حساب عربية</h2><p>اختار العربية والمقاول المسؤول والفترة لعرض النقلات ومستحق الشغل والدفعات والمتبقي. لكل مقاول مسؤول حساب مستقل لنفس العربية.</p>
+    <header className={ui.sectionHeading}>
+      <div><h2>كشف حساب عربية</h2><p>اختار العربية والمقاول المسؤول والفترة لعرض النقلات ومستحق الشغل والدفعات والمتبقي. لكل مقاول مسؤول حساب مستقل لنفس العربية.</p></div>
+      <button type="button" onClick={() => onRegisterPayment(account)} disabled={disabled}>تسجيل دفعة</button>
+    </header>
     <form className={ui.form} onSubmit={load}>
       <div className={ui.fieldGroup}><label htmlFor="cash-account">العربية — المقاول المسؤول</label><select id="cash-account" required value={account} className={ui.control} disabled={busy||disabled}
         onChange={e=>{setAccount(e.target.value);reset();}}><option value="">اختر الحساب</option>
@@ -52,9 +59,20 @@ export function RealCashStatement({contractors,vehicles,accounts,disabled,revisi
     {error&&<p role="alert">{error}</p>}
     {report&&<>
       {allHistory&&<p>كل الحساب من البداية: {report.date_from} — {report.date_to}</p>}
-      <p>أول الفترة: {formatPoundsForDisplay(report.period_opening_piastres)} — مستحق الشغل: {formatPoundsForDisplay(report.work_piastres)} — المدفوع: {formatPoundsForDisplay(report.paid_piastres)}</p>
-      <p>آخر الفترة: <strong>{formatPoundsForDisplay(report.period_closing_piastres)} جنيه</strong> — {BigInt(report.period_closing_piastres)<0n?'على العربية':BigInt(report.period_closing_piastres)>0n?'للعربية':'متعادل'}</p>
-      <p>المتبقي الحالي: <strong>{formatPoundsForDisplay(report.current_cash_balance_piastres)} جنيه</strong> — {BigInt(report.current_cash_balance_piastres)<0n?'على العربية':BigInt(report.current_cash_balance_piastres)>0n?'للعربية':'متعادل'}. يشمل الحركات خارج الفترة المختارة.</p>
+      <div className={ui.cashSummary} aria-label="ملخص نقدية العربية">
+        <div className={ui.cashHero} data-tone={closingTone}>
+          <span>{closingLabel}</span>
+          <strong><bdi dir="ltr">{formatPoundsForDisplay(closingAmount.toString())}</bdi> جنيه</strong>
+        </div>
+        <div className={ui.cashMetrics}>
+          <div className={ui.cashMetric}><span>رصيد أول الفترة</span><strong>{formatPoundsForDisplay(report.period_opening_piastres)} ج.م</strong></div>
+          <div className={ui.cashMetric}><span>مستحق الشغل خلال الفترة</span><strong>{formatPoundsForDisplay(report.work_piastres)} ج.م</strong></div>
+          <div className={ui.cashMetric}><span>المدفوع خلال الفترة</span><strong>{formatPoundsForDisplay(report.paid_piastres)} ج.م</strong></div>
+        </div>
+        <p className={ui.cashCurrent}>
+          <span>المتبقي الحالي:</span> <strong>{formatPoundsForDisplay(report.current_cash_balance_piastres)} جنيه</strong> — {BigInt(report.current_cash_balance_piastres)<0n?'على العربية':BigInt(report.current_cash_balance_piastres)>0n?'للعربية':'متعادل'}. يشمل الحركات خارج الفترة المختارة.
+        </p>
+      </div>
       <p>تم تحميل {report.rows.length} من {report.total_count} حركة.</p>
       {report.next_cursor&&<button disabled={busy||disabled} onClick={()=>void load()}>تحميل المزيد</button>}
       {doc&&!busy&&!disabled&&<ReportExportActions document={doc} fileNameBase={`vehicle-cash-${report.date_from}-${report.date_to}`}/>}

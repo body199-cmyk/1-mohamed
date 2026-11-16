@@ -23,6 +23,8 @@ type Props = {
   onExit?: () => void;
   write: (operation: WriteOperation, payload: Record<string, unknown>) => Promise<boolean>;
   refresh: () => Promise<void>;
+  tripCounterpartyRequest?: { id: number; value: string } | null;
+  paymentAccountRequest?: { id: number; value: string } | null;
 };
 
 
@@ -32,7 +34,7 @@ type Props = {
  * Prepared real-data entry. SQL computes all totals and the responsible
  * contractor. Never accept browser-computed totals as authoritative.
  */
-export function TransactionEntry({ contractors, vehicles, accounts, busy, write, revision, refresh, onExit }: Props) {
+export function TransactionEntry({ contractors, vehicles, accounts, busy, write, revision, refresh, onExit, tripCounterpartyRequest, paymentAccountRequest }: Props) {
   const [tripVehicle, setTripVehicle] = useState("");
   const [tripCounterparty, setTripCounterparty] = useState("");
   const [direction, setDirection] = useState<"AHMED_SUPPLIES" | "OTHER_SUPPLIES">("AHMED_SUPPLIES");
@@ -46,6 +48,12 @@ export function TransactionEntry({ contractors, vehicles, accounts, busy, write,
   const [tripOrigin, setTripOrigin] = useState("");
   const [tripDestination, setTripDestination] = useState("");
   const [paymentAccount, setPaymentAccount] = useState("");
+  useEffect(() => {
+    if (tripCounterpartyRequest?.value) setTripCounterparty(tripCounterpartyRequest.value);
+  }, [tripCounterpartyRequest?.id]);
+  useEffect(() => {
+    if (paymentAccountRequest?.value) setPaymentAccount(paymentAccountRequest.value);
+  }, [paymentAccountRequest?.id]);
   const [paymentDate, setPaymentDate] = useState("");
   const [paymentAmount, setPaymentAmount] = useState("");
   const [paymentNotes, setPaymentNotes] = useState("");
@@ -248,7 +256,7 @@ export function TransactionEntry({ contractors, vehicles, accounts, busy, write,
         onClose={() => setQuickModal(null)}
         onCreate={quickCreateContractor} onCreated={id => setPendingContractor(id)}/>
     </section>
-    <section className={ui.surface}>
+    <section className={ui.surface} id="real-payment-form" aria-label="تسجيل دفعة نقدية">
       <h2>تسجيل دفعة نقدية</h2>
       <p>لا يُسمح بصرف أكثر من الرصيد المتاح في أي تاريخ لاحق؛ الخادم يرفض أي عجز.</p>
       <form className={ui.form} onSubmit={createPayment}>

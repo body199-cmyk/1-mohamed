@@ -1280,3 +1280,41 @@ User requests trip-entry and inline-add visual prototype before generalizing; no
 
 ## UI-ROLLOUT-01 — 15 November 2026 / reviewed implementation
 User approves prototype and authorizes full visual rollout/main merge/Vercel after tests; prior preview-only prohibition superseded. Branch codex/workspace-design-rollout-20261115 from approved prototype968437d, baseline main88a3b0e. Shared form/surface/actions CSS, theme-aware shell/table/controls, consistent SVGs, payment/master/opening/edit/cancel/report/cash/contractor fields, account modal and auth theme colors. No business handlers/calculations/SQL/transport/export changes.11 component handler-prefix/control-contract comparisons identical to main; same-assistant independent second pass checks full changed markup/styles and negative cases.38 full workspace Edge PASS plus independent master/vehicle/account/payment write-contract PASS;7 Auth Edge PASS; package223/web133/typecheck/build PASS before final color-only edits. New visual test incorrectly assumed select initial focus; existing hook prefers first input, assertion corrected without changing product. Two visual rounds desktop/mobile/light/dark, synthetic data, local artifacts/design-rollout. Latest-head full CI required; no merge/release yet. No actual financial writes/password/email changes or dependency additions. Backups deferred.
+
+## UX-REORG-01 — ١٥ نوفمبر ٢٠٢٦ — توثيق إعادة التنظيم، لا تنفيذ
+- طلب المستخدم: ملف Markdown مفصل للنموذج التالي يشمل اتفاقات الحوار ووظائف المحلي والحفظ ودلالات الألوان، مع أولوية الهاتف ٩٠٪ ورفع GitHub. لا صور مطلوبة ولا إذن تنفيذ/نشر.
+- النطاق: `docs/MOBILE_UX_REORGANIZATION_HANDOFF.md`؛ ربط TASKS/SUBTASKS/CODE_MAP/DECISIONS وSTATUS بهذا المرجع، دون إنشاء موجز جلسة بديل. فصل حساب شغل المقاول عن نقد العربية، اليومية المتكررة/التفصيلية، البحث والإضافة والافتتاحيات، التصحيح، كل الكشوف والتصدير، ثيم الرأس وأخضر/أحمر/رمادي، وحالات قبول التنفيذ.
+- Git: نسخة `.ux-handoff` على `codex/mobile-ux-handoff-20261115` من أحدث `origin/main=f7faa16e77698cdb8e63455e622c03741a58711b` وقت الإنشاء؛ GitHub PR84 verified merged/closed لنفس SHA، فيصحح وصف release-pending التاريخي أعلاه. لا تحقق نشر جديد في هذه الجلسة.
+- الحماية: لم يُضم شغل `codex/confirmed-data-deletion-20261115` غير الملتزم به في `.delivery-readiness` ولم يُعدّل. حداثة `main` تعاد مراجعتها لاحقًا ولا نفترض اكتمال ميزة جارية.
+- المراجعة: قراءة ثانية منفصلة بنفس المساعد وفق docs-guard، مقارنة بالمتطلبات والمصادر. حفظ فروق demo/live والافتتاحي السياقي و`reuseDay` وحماية المسودة ونطاق غير أحمد. تصحيح اللون الأزرق في معاينات فرق المقاول والمعادلة المقلوبة بصريًا. لا ادعاء مراجع ثانٍ.
+- التحقق المحلي: قارئ Node للنص تحقّق من ٤ روابط و٢٨ إحالة مصدر بلا مسار مفقود، ومن الأمثلة الحسابية ومحاور المتطلبات PASS؛ `git diff --check` PASS. قراءة ثانية للوثيقة والفروقات المساندة؛ النطاق سبعة ملفات Markdown فقط. بعد الرفع يلزم إثبات SHA/blob مطابقين. لا اختبارات تطبيق/SQL/هواتف حية لأنها لم تتغير؛ التنفيذ المستقبلي له حالات تحقق داخل الوثيقة، وليست نجاحات من هذه الجلسة.
+- التالي: تسليم رابط GitHub والفرع للنموذج التالي؛ لا بدء تنفيذ تلقائيًا. النسخ مؤجل كما كان. الملف يؤطر العرض ولا يبدل مصدر المعادلات.
+- دليل الرفع اللاحق: push نجح عند `8ef8047d44060d0fad2e01f7608a46f8a9e4090c` وGitHub أكد هذا head في [PR85](https://github.com/body199-cmyk/1-mohamed/pull/85) المفتوح كمسودة (٧ Markdown، بلا كود). `github.fetch_file` أعاد blob الوثيقة `c06ca92c0ef7379dc30f9f05c8bbabb56abd0e2d` وهو مطابق لـ`git rev-parse HEAD:docs/MOBILE_UX_REORGANIZATION_HANDOFF.md`؛ `git diff HEAD --exit-code` وstatus النظيف أثبتا التطابق المحلي عندها. فحص SSH read-only داخل sandbox تعذر بسبب known_hosts؛ تحقق GitHub connector نجح وأثبت SHA/blob، دون تعديل إعداد SSH. لم يُدمج PR أو يُنشر تطبيق أو يُدَّع CI ناجح. إضافة الدليل هذه فقط تتبع برفع commit توثيق، مع بقاء blob الوثيقة ثابتًا.
+
+
+## UX-REORG-01.1 — ١٦ نوفمبر ٢٠٢٦ — بدء تنفيذ غلاف التنقل
+- بدأ التنفيذ بناءً على إذن المستخدم الصريح بعد مراجعة ملف `docs/MOBILE_UX_REORGANIZATION_HANDOFF.md`.
+- الأساس: main `f7faa16e77698cdb8e63455e622c03741a58711b`؛ PR84 مدموج؛ PR85 يسلّم وثيقة التصميم؛ PR86 منفصل ومفتوح ولم يُضم.
+- التغيير: تحويل اليومية إلى شاشة البداية؛ أربع وجهات رئيسية؛ إبقاء إدارة البيانات والإعدادات عبر قائمة ثانوية؛ إظهار زر الثيم في الرأس؛ معاينة تنقل سفلي للهاتف مع دعم الشريط الجانبي للكمبيوتر؛ الشريط السفلي وقائمة «المزيد» لم يُعتمدا بعد لأن الوثيقة تصفهما كمرشح. حُفظ معنى «حفظ وخروج»: لا يغادر نموذج النقلة إلا بعد نجاح الكتابة، ثم تظهر لوحة يومية بسيطة وزر لإعادة فتح الإدخال.
+- الاختبارات: تحديث `e2e/workspace/design-rollout.spec.ts` ليختبر الوجهات الستة في الهاتف/الكمبيوتر والفاتح/الداكن، ونقاط 360/390/412/768/1280، وزر الثيم، وأربع وجهات الهاتف، وسلوك حفظ وخروج النقلة بعد نجاح الكتابة وبقاء النموذج مفتوحًا عند فشلها، مع الإبقاء على assertions الخاصة بعمليات المقاول والعربية والحساب والدفعة. لم تُشغّل الفحوص بعد على الرأس النهائي.
+- الحدود: لا تغيير لحساب أو API أو SQL أو Auth أو بيانات؛ لا دمج أو نشر إنتاجي. يلزم فحص CI ومراجعة الفروقات كاملة قبل أي دمج.
+
+
+
+## UX-REORG-01.1 — ١٦ نوفمبر ٢٠٢٦ — اعتماد التنقل وتشطيب الغلاف
+- وافق المستخدم صراحةً على شريط الهاتف الثابت بأربع وجهات (اليومية، المقاولون، العربيات، التقارير) وقائمة «المزيد» لإدارة البيانات والإعدادات؛ القرار سُجل في D21.
+- تحسين الغلاف باستخدام هوية Cairo/RTL/Operational Blue الحالية والتوكنز الموجودة، دون إطار واجهة جديد: تنسيق الرأس، أزرار لمس 48px، شريط سفلي مع safe-area، حالات hover/focus/active، وضع reduced-motion، وأيقونة تحديث موحدة.
+- أضيف إغلاق قائمة «المزيد» بمفتاح Escape مع إعادة التركيز إلى زر القائمة، واختبار متصفح لذلك.
+- تحديث اختبارات E2E القديمة لتبدأ من اليومية وتستخدم الوجهات الجديدة مع الحفاظ على اختبارات payloads للمقاول والعربية والحساب والدفعة، وحفظ وخروج.
+- دليل CI: run `43866070755` SUCCESS، 47/47 خطوة على SHA `8108b50922a46c660f43099ad6a863847b69fd6e`. هذا الرأس سبق آخر تحسينات CSS/الأيقونات/لوحة المفاتيح؛ يلزم CI على الرأس النهائي الحالي.
+- PR #87 Draft مستقل؛ لا دمج ولا نشر إنتاجي. معاينة Vercel تُراجع بعد READY. قبول المستخدم البصري لباقي الشاشات/الجهاز الحقيقي ما زال منفصلًا.
+
+
+
+## UX-REORG-01.2 — ١٦ نوفمبر ٢٠٢٦ — تحسين الكشوف والانتقال السياقي
+- أُعيد ترتيب ملخص كشف المقاول إلى رصيد ختامي بارز وثلاث بطاقات: رصيد أول الفترة، شغل أحمد، شغل المقاول، مع بقاء ContractorMoney ودلالات الأخضر/الأحمر/الرمادي.
+- أُعيد ترتيب كشف نقد العربية إلى رصيد ختامي واضح «للعربية/على العربية/متعادل»، وبطاقات الرصيد السابق ومستحق الشغل والمدفوع، مع إبقاء المتبقي الحالي منفصلًا.
+- أضيف «تسجيل شغل جديد» من كشف المقاول و«تسجيل دفعة» من كشف العربية. يعيدان اليومية ويفتحان النموذج مع تركيز الحقل المناسب، ويحملان المقاول أو حساب العربية المختار إلى النموذج. لا تغيير في المعادلات أو API أو عمليات الحفظ.
+- اختبارات E2E تغطي ملخصات الكشفين، وإعادة فتح اليومية بعد «حفظ وخروج»، وحمل المقاول/الحساب والتركيز الصحيح.
+- حالة CI على SHA الحالي ستُسجل بعد اكتمال التشغيل النهائي؛ لا دمج ولا نشر إنتاجي قبلها.
+

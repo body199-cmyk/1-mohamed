@@ -19,7 +19,7 @@ async function fixture(page:Page){
    closing_balance_piastres:'0',balance_magnitude_piastres:'0',beneficiary:'BALANCED',
    period_opening_piastres:'0',period_closing_piastres:'0',current_cash_balance_piastres:'0',work_piastres:'0',paid_piastres:'0'}}});
  });
- await page.goto('/');await expect(page.getByText('أهلًا بك في إدارة الشغل',{exact:true})).toBeVisible();
+ await page.goto('/');await expect(page.getByTestId('workspace-title')).toHaveText('اليومية');
  return attempts;
 }
 
@@ -34,7 +34,7 @@ test('whole-history pagination retains filters and blocks partial exports',async
    rows:[{id:more?'NEW':'OLD',trip_date:more?'2026-11-14':'2001-02-03',vehicle_id:'V1',
     counterparty_contractor_id:'K1',contractor_total_piastres:'10000',weight_milli_tonnes:'1000'}]}}});
  });
- await page.getByRole('navigation').getByRole('button',{name:'النقلات واليومية',exact:true}).click();
+ await page.getByRole('navigation').getByRole('button',{name:'التقارير والكشوف',exact:true}).click();
  await page.locator('#report-trip-vehicle').selectOption('V1');
  await page.locator('#report-trip-contractor').selectOption('K1');
  await page.getByRole('checkbox',{name:'كل الحساب من البداية',exact:true}).check();
@@ -52,7 +52,7 @@ test('whole-history pagination retains filters and blocks partial exports',async
 for(const kind of ['trips','payments','contractor','cash'] as const){
  test(`${kind}: whole history preserves identity, manual dates, and resolved export period`,async({page})=>{
   const attempts=await fixture(page);
-  await page.getByRole('navigation').getByRole('button',{name:kind==='contractor'?'كشف المقاول':kind==='cash'?'كشف حساب عربية':'النقلات واليومية',exact:true}).click();
+  await page.getByRole('navigation').getByRole('button',{name:kind==='contractor'?'حساب شغل المقاولين':kind==='cash'?'حسابات العربيات والدفعات':'التقارير والكشوف',exact:true}).click();
   const prefix=kind==='contractor'?'real-statement':kind==='cash'?'cash':'report';
   if(kind==='contractor')await page.locator('#real-statement-contractor').selectOption('K1');
   else if(kind==='cash')await page.locator('#cash-account').selectOption('V1|K_AHMED');
@@ -74,6 +74,13 @@ for(const kind of ['trips','payments','contractor','cash'] as const){
   expect(attempts[0].payload).toMatchObject(kind==='contractor'?{counterparty_contractor_id:'K1'}:
    kind==='trips'?{vehicle_id:'V1',counterparty_contractor_id:'K1'}:{vehicle_id:'V1',responsible_contractor_id:'K_AHMED'});
   await expect(page.getByText('كل الحساب من البداية: 2001-02-03 — 2026-11-14')).toBeVisible();
+  if(kind==='contractor'){
+   const summary=page.getByLabel('ملخص حساب المقاول');
+   await expect(summary).toContainText('رصيد آخر الفترة');
+   await expect(summary).toContainText('رصيد أول الفترة');
+   await expect(summary).toContainText('شغل أحمد');
+   await expect(summary).toContainText('شغل المقاول');
+  }
   const download=page.waitForEvent('download');await page.getByRole('button',{name:'تنزيل CSV',exact:true}).click();
   const fs=await import('node:fs/promises');
   expect(await fs.readFile((await (await download).path())!,'utf8')).toContain('2001-02-03');
