@@ -210,3 +210,5 @@ UX-REORG-01.2 browser regression: CI43889427494 exposed next-vehicle focus attem
 
 ## UX-REORG-01.5 / quick-opening SQL numeric contract
 New Daily quick openings incorrectly sent signed_piastres as a JSON string. Mock-only tests accepted it, but actual app_exact_bigint rejects non-number JSON with22023. Fixed quick-opening parser to emit exactly representable JSON integers with explicit MAX_SAFE_INTEGER guard, updated unit/wire assertions, and added browser-to-real-SQL persisted opening checks for contractor both directions and vehicle account. No SQL function or formula changed. Existing separate MasterDataEntry opening path remains outside this Daily patch and also uses a string; tracked for separate correction, not claimed accepted.
+
+UX-REORG-01.5 desktop submit overlap: exact browser hit-test found the sticky preview column could paint over the submit button while scrolling. Kept preview layout and made the column static. Geometry and actual SQL saves remain mandatory on desktop light/dark and mobile normal/short viewport. Test-only exact summary selector corrected to retain the existing override suffix.

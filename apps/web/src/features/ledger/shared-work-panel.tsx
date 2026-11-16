@@ -61,7 +61,7 @@ export function SharedWorkPanel({contractors,busy,applied,dirty,onApply,onNew,on
  const name=contractors.find(c=>c.id===applied?.contractor)?.name;
  return <section className={ui.surface+' '+styles.shared} aria-label="بيانات الشغل المشتركة">
   <header className={styles.sectionHeader}><div><h2>بيانات الشغل المشتركة</h2>
-   <p>{applied?'معتمدة للنقلات التالية؛ المحفوظ سابقًا لا يتغير.':'اضبطها مرة، وبعدها سجّل العربيات واحدة وراء التانية.'}</p></div>
+   {(!applied||editing)&&<p>{applied?'معتمدة للنقلات التالية؛ المحفوظ سابقًا لا يتغير.':'اضبطها مرة، وبعدها سجّل العربيات واحدة وراء التانية.'}</p>}</div>
    <span className={styles.state}>{applied?'المشترك مفعّل':'لم يُعتمد بعد'}</span>
    {!applied&&<button type="button" disabled={busy||confirmation!==null} onClick={()=>request('manual')}>إدخال نقلة منفردة</button>}
   </header>

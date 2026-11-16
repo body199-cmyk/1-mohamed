@@ -32,3 +32,5 @@
 .restoreHint{margin:8px 0 16px;color:var(--text-muted);font-size:.82rem;line-height:1.8}.sharedNote{overflow-wrap:anywhere}.optionalDefaults{grid-column:1/-1}.optionalDefaults summary{cursor:pointer;min-height:44px;padding:10px 0;font-weight:650}.optionalDefaults p{margin:0;color:var(--text-muted);font-size:.82rem;line-height:1.8}
 
 .appliedDetails summary,.expenseDetails summary{cursor:pointer;min-height:44px;padding:10px 0;font-weight:650}.appliedBody{display:grid;gap:8px;padding-top:10px}.appliedDetails button{justify-self:start}.repeatNotice{padding:10px 0;margin:0 0 12px;color:var(--text-muted);font-size:.85rem;line-height:1.9;overflow-wrap:anywhere}.expenseDetails{align-self:start}.expenseDetails input{margin-top:8px}
+
+.sharedSummary .appliedDetails{border:0;padding:0;margin:0;background:transparent;box-shadow:none}.sharedSummary .appliedDetails summary{padding:6px 0;font-size:.85rem}

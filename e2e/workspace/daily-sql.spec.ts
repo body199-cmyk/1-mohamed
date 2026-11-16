@@ -19,7 +19,7 @@ async function common(page:Page){
 }
 async function trip(page:Page,weight='2.5'){await page.locator('#real-trip-vehicle').selectOption('V1');await page.locator('#real-trip-weight').fill(weight);}
 const save=(page:Page)=>page.getByRole('button',{name:'حفظ وإضافة نقلة جديدة',exact:true});
-const details=(page:Page)=>page.getByText('تفاصيل وأسعار مختلفة لهذه النقلة فقط',{exact:true});
+const details=(page:Page)=>page.locator('summary').filter({hasText:'تفاصيل وأسعار مختلفة لهذه النقلة فقط'});
 async function saved(count:number){await expect.poll(async()=>Number((await sql.rows('select count(*)::text as n from trips'))[0].n)).toBe(count);}
 
 test('SQL: every shared field and individual override persists, repeated vehicle remains independent after reload',async({page})=>{
@@ -111,17 +111,18 @@ test('SQL: invalid/unauthorized writes cannot persist; committed response loss r
 });
 
 for(const mobile of [true,false])for(const dark of [false,true])test(`SQL compact daily evidence / ${mobile?'mobile':'desktop'} / ${dark?'dark':'light'}`,async({page})=>{
- await page.setViewportSize(mobile?{width:390,height:844}:{width:1440,height:1000});await enter(page);
+ await page.setViewportSize(mobile?{width:390,height:844}:{width:1440,height:1000});await page.emulateMedia({reducedMotion:'reduce'});await enter(page);
  if(dark)await page.getByRole('button',{name:'تبديل الوضع الفاتح/الداكن'}).click();await common(page);await trip(page);await save(page).click();await saved(1);await expect(page.locator('#real-trip-weight')).toHaveValue('');await trip(page);
  await expect(page.getByLabel('نقلات العربية في اليوم المختار')).toContainText('1 نقلة');
  const folder=`artifacts/ui-review-87/daily-final/${mobile?'mobile':'desktop'}-${dark?'dark':'light'}`;await mkdir(folder,{recursive:true});
  await page.getByLabel('بيانات الشغل المشتركة',{exact:true}).evaluate(el=>el.scrollIntoView({block:'start'}));await page.evaluate(()=>document.fonts.ready);await page.screenshot({path:folder+'/01-compact.png'});
+ await page.getByLabel('نقلات العربية في اليوم المختار').evaluate(el=>el.scrollIntoView({block:'center'}));await page.screenshot({path:folder+'/01b-entry.png'});
  await openTripExpense(page);await page.locator('#real-trip-expense').fill('30');await expect(page.locator('#real-trip-expense')).toHaveValue('30');
  for(const height of mobile?[844,520]:[1000]){
   if(mobile)await page.setViewportSize({width:390,height});await page.locator('#real-trip-weight').focus();
-  await save(page).evaluate(el=>el.scrollIntoView({block:'center'}));
+  await save(page).evaluate(el=>el.scrollIntoView({block:'center'}));await page.evaluate(()=>new Promise(requestAnimationFrame));
   const geometry=await save(page).evaluate(el=>{const r=el.getBoundingClientRect();return {top:r.top,bottom:r.bottom,height:innerHeight,visible:el===document.elementFromPoint(r.x+r.width/2,r.y+r.height/2)};});
-  expect(geometry.visible).toBe(true);expect(geometry.top).toBeGreaterThanOrEqual(0);expect(geometry.bottom).toBeLessThanOrEqual(geometry.height);
+  expect(geometry.visible,JSON.stringify(geometry)).toBe(true);expect(geometry.top).toBeGreaterThanOrEqual(0);expect(geometry.bottom).toBeLessThanOrEqual(geometry.height);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await page.screenshot({path:folder+`/02-save-${height}.png`});
  }
  await save(page).click();await saved(2);
