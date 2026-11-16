@@ -593,3 +593,6 @@ Authorized release follow-up: user approves #79/#80 publication and trial whole-
 
 ## REPORT-ALL-01 — 14 November 2026
 Approved additional all-history scope, preserving manual date filters and financial formulas; user explicitly requests main merge + Vercel publication. Acceptance: actual opening-to-last activity for chosen identity; no missing pages/partial export; switching off restores manual dates; default view unchanged; non-owner/invalid scope denied. Branch codex/report-all-history-20261114 from167fbed. Local acceptance in REPORT_ALL_HISTORY_REVIEW_2026-11-14.md; latest CI/hosted migration/release pending. Broader delivery/backup gates remain open.
+
+
+Visual evidence continuation: `e2e/workspace/ui-review.spec.ts` plus `.github/workflows/verify.yml` artifact `pr87-exact-head-ui-review`; populated phone/desktop light/dark screenshots, no writes. UI source unchanged from3b4ec46; exact capture-head CI and user review remain pending.

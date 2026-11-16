@@ -402,3 +402,6 @@ TripPreviewCard accepts optional responsibleContractorName separately from count
 - features/ledger/real-{reports,contractor-statement,cash-statement}: optional server scope, retained manual dates, resolved export period.
 - supabase/migrations/20261114190803_report_all_history.sql + tests/17_report_all_history_verification.sql: owner-only actual history bounds using existing audited readers; tools/db-verify.mjs runs both.
 - apps/web/e2e/report-history.test.ts, e2e/workspace/all-history.spec.ts, e2e/report-all-history.spec.ts: filter identity, opening, date restore, CSV dates/rows, pagination/full export. New demo browser test is wired to CI.
+
+
+`e2e/workspace/ui-review.spec.ts`: actual-component synthetic populated screenshot review, phone390/desktop1440, two themes, zero writes; `.github/workflows/verify.yml` publishes `artifacts/ui-review-87/` as `pr87-exact-head-ui-review` for the exact run SHA.

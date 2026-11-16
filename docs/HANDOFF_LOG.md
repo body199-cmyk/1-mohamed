@@ -1318,3 +1318,6 @@ User approves prototype and authorizes full visual rollout/main merge/Vercel aft
 - اختبارات E2E تغطي ملخصات الكشفين، وإعادة فتح اليومية بعد «حفظ وخروج»، وحمل المقاول/الحساب والتركيز الصحيح.
 - حالة CI على SHA الحالي ستُسجل بعد اكتمال التشغيل النهائي؛ لا دمج ولا نشر إنتاجي قبلها.
 
+
+
+16 November2026 — PR87 resumed at3b4ec46; verified CI43869619246 SUCCESS and Vercel READY exact SHA. Hosted preview ends at disabled app login; no hosted authenticated workspace claims. Added test-only populated screenshots/artifact to obtain real UI evidence. Local browser launch blocked by socket permissions, requiring remote CI. No UI/accounting/save/Auth/SQL changes; no merge/production/main writes. Re-reviewed full evidence diff separately against user constraints; fixtures reconcile and operations abort. New capture-head CI/results pending; STATUS is current.
