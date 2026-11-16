@@ -265,3 +265,5 @@ User explicitly confirmed existing project is trial-only and empty of real data,
 Late independent review correction: pending contractor selection now stores immutable shared/trip provenance alongside the ID, and canceling its pending dialog clears selection intent. Regression covers confirmed creation, failed master refresh, Escape, later successful refresh with active trip unchanged.
 
 Layout acceptance: daily order is shared data → per-vehicle entry → recorded trips → payment. A direct payment jump remains available, and wide layouts place recorded trips next to entry when space permits; hidden entry preserves state on save-and-exit.
+
+UX-REORG-01.2 browser regression: CI43889427494 exposed next-vehicle focus attempting while its DOM control was still disabled during React's save-completion update. Pending focus now runs after the enabled render, covered by the ten-trip test. Four capture assertions also needed exact report-summary label matching after the new shared-summary label was added. These failures are not accepted as a passing final head; full CI will rerun after correction.

@@ -205,3 +205,5 @@ DELIVERY-02: live trip preview displayed selected counterparty as cash-responsib
 
 
 Release test reliability: quick-add new-account browser scenario collected sequential requests by attaching its second listener after an awaited click, occasionally missing contractor.create despite success. Fixture attempt recorder captures every request before reply; exact three-operation sequence/payload/selection assertions retained. Full workspace 27/27 PASS after correction; CI on newest SHA required.
+
+UX-REORG-01.2 browser regression: CI43889427494 exposed next-vehicle focus attempting while its DOM control was still disabled during React's save-completion update. Pending focus now runs after the enabled render, covered by the ten-trip test. Four capture assertions also needed exact report-summary label matching after the new shared-summary label was added. These failures are not accepted as a passing final head; full CI will rerun after correction.

@@ -84,6 +84,10 @@ export function TransactionEntry({ contractors, vehicles, accounts, busy, write,
   }
   const [quickModal, setQuickModal] = useState<null | "vehicle" | "contractor" | "payment">(null);
   const submitting = useRef(false);
+  const pendingTripFocus=useRef(false);
+  useEffect(()=>{
+    if(!busy&&pendingTripFocus.current){pendingTripFocus.current=false;document.getElementById('real-trip-vehicle')?.focus();}
+  },[busy,weight,tripVehicle]);
   const [message, setMessage] = useState("");
   const drafts = useRef(new Map<string, Record<string, unknown>>());
   // Inline creation keeps one payload (and therefore one requestKey) per exact
@@ -162,13 +166,13 @@ export function TransactionEntry({ contractors, vehicles, accounts, busy, write,
       drafts.current.set(signature, payload);
       if (await write("trip.create", payload)) {
         drafts.current.delete(signature);
+        const button = (event.nativeEvent as SubmitEvent).submitter as HTMLButtonElement | null;
+        pendingTripFocus.current=button?.value!=="exit";
         if(appliedShared){copyShared(appliedShared);clearTrip();}
         else {setWeight("");setTripNotes("");}
         if (!appliedShared && !reuseDay) {setTripOrigin("");setTripDestination("");setContractorRate("");setVehicleRate("");setExpense("0");setTripVehicle("");setTripCounterparty("");}
-        const button = (event.nativeEvent as SubmitEvent).submitter as HTMLButtonElement | null;
         if (button?.value === "exit") onExit?.();
         setMessage("تم حفظ النقلة بنجاح.");
-        if(button?.value!=="exit") document.getElementById('real-trip-vehicle')?.focus();
       }
     } catch (error) { setMessage(error instanceof Error ? error.message : "بيانات النقلة غير صالحة."); }
     finally { submitting.current = false; }

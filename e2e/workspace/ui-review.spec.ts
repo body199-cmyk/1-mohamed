@@ -131,9 +131,9 @@ for(const mobile of [true,false])for(const dark of [false,true]){
   await page.locator('#report-from').fill('2026-11-01');
   await page.locator('#report-to').fill('2026-11-16');
   await page.getByRole('button',{name:'تحميل التقرير',exact:true}).click();
-  await expect(page.getByLabel('ملخص الشغل')).toContainText('30,500');
+  await expect(page.getByLabel('ملخص الشغل',{exact:true})).toContainText('30,500');
   await page.evaluate(()=>scrollTo(0,0));await capture('09-reports-filters');
-  await page.getByLabel('ملخص الشغل').scrollIntoViewIfNeeded();
+  await page.getByLabel('ملخص الشغل',{exact:true}).scrollIntoViewIfNeeded();
   await capture('10-reports-summary');
   await page.screenshot({path:`${folder}/10-reports-full.png`,fullPage:true});
   await nav('اليومية');
