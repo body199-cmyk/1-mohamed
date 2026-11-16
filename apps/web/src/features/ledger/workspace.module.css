@@ -414,9 +414,26 @@
   margin: 0;
 }
 
+.dailyLanding p {
+  color: var(--text-main);
+  font-weight: 750;
+}
+
 .emptyState button,
 .dailyLanding button {
   flex: none;
+}
+
+.dailyLanding button {
+  background: var(--color-primary);
+  color: var(--color-primary-text);
+  border-color: var(--color-primary);
+  font-weight: 800;
+}
+
+.dailyLanding button:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+  border-color: var(--color-primary-hover);
 }
 
 .workspace :focus-visible {
