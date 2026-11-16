@@ -11,7 +11,6 @@ import { useWorkspaceData } from "./workspace-data";
 import { useTheme } from "../../components/theme-provider";
 import styles from "./workspace.module.css";
 import ui from "./workspace-ui.module.css";
-import dailyStyles from "./daily-work.module.css";
 import { DailyTripList } from "./daily-trip-list";
 import { WorkspaceIcon } from "./workspace-icon";
 
@@ -156,19 +155,13 @@ export function RealWorkspace() {
         <span>العربيات: <strong>{data.vehicles.filter(v => !v.is_archived).length}</strong></span>
       </div>
 
-      <div hidden={screen !== "daily"} className={dailyStyles.layout}>
+      <div hidden={screen !== "daily"}>
         {data.contractors.length === 0 && !data.loading && (
           <section className={ui.surface + " " + styles.emptyState}>
             <p role="status">الحساب فارغ. ابدأ بإعداد صاحب الحساب ثم أضف المقاولين والعربيات من إدارة البيانات.</p>
             <button type="button" onClick={() => setScreen("master")}>إدارة البيانات</button>
           </section>
         )}
-        <div hidden={!dailyEntryVisible}>
-          <TransactionEntry {...data} busy={blocked} onDateChange={setDailyDate} recordedCount={recordedCount} tripCounterpartyRequest={tripContextRequest} paymentAccountRequest={paymentContextRequest} onExit={() => {
-            setDailyEntryVisible(false);
-            setDailyExitNotice(true);
-          }} />
-        </div>
         {!dailyEntryVisible&&(
           <section className={ui.surface + " " + styles.dailyLanding}>
             <p role="status">{dailyExitNotice ? "تم حفظ النقلة والخروج من نموذج الإدخال." : "اليومية جاهزة لمتابعة الشغل والدفعات."}</p>
@@ -178,9 +171,15 @@ export function RealWorkspace() {
             }}>تسجيل شغل أو دفعة</button>
           </section>
         )}
+          <TransactionEntry {...data} entryVisible={dailyEntryVisible} busy={blocked} onDateChange={setDailyDate} recordedCount={recordedCount} tripCounterpartyRequest={tripContextRequest} paymentAccountRequest={paymentContextRequest} onExit={() => {
+            setDailyEntryVisible(false);
+            setDailyExitNotice(true);
+          }}>
         <DailyTripList {...data} date={dailyDate} onCountChange={setRecordedCount} disabled={blocked} onReviewDay={date=>{
           setReportPeriod({id:++contextRequestId.current,date});setScreen('reports');
         }}/>
+          </TransactionEntry>
+
       </div>
       <div hidden={screen !== "reports"}><RealReports {...data} disabled={blocked} periodRequest={reportPeriod}/></div>
       <div hidden={screen !== "contractor"}><RealContractorStatement {...data} disabled={blocked} onRegisterWork={contractorId => openDailyAt("trip", contractorId)} /></div>

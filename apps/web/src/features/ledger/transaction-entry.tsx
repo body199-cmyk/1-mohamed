@@ -1,7 +1,7 @@
 "use client";
 import ui from "./workspace-ui.module.css";
 
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import styles from "./trip-entry-design.module.css";
 import daily from "./daily-work.module.css";
 import { PaymentEntry } from "./payment-entry";
@@ -27,6 +27,8 @@ type Props = {
   refresh: () => Promise<void>;
   onDateChange?: (date: string) => void;
   recordedCount?:string|null;
+  entryVisible?:boolean;
+  children?:ReactNode;
   tripCounterpartyRequest?: { id: number; value: string } | null;
   paymentAccountRequest?: { id: number; value: string } | null;
 };
@@ -38,7 +40,7 @@ type Props = {
  * Prepared real-data entry. SQL computes all totals and the responsible
  * contractor. Never accept browser-computed totals as authoritative.
  */
-export function TransactionEntry({ contractors, vehicles, accounts, busy, write, revision, refresh, onExit, tripCounterpartyRequest, paymentAccountRequest, onDateChange, recordedCount }: Props) {
+export function TransactionEntry({ contractors, vehicles, accounts, busy, write, revision, refresh, onExit, tripCounterpartyRequest, paymentAccountRequest, onDateChange, recordedCount, entryVisible=true, children }: Props) {
   const [tripVehicle, setTripVehicle] = useState("");
   const [tripCounterparty, setTripCounterparty] = useState("");
   const [direction, setDirection] = useState<"AHMED_SUPPLIES" | "OTHER_SUPPLIES">("AHMED_SUPPLIES");
@@ -173,7 +175,9 @@ export function TransactionEntry({ contractors, vehicles, accounts, busy, write,
   }
 
 
-  return <>
+  return <div className={entryVisible?daily.layout:undefined}>
+    <div hidden={!entryVisible}>
+    <a className={daily.paymentJump} href="#real-payment-form">الانتقال لتسجيل دفعة نقدية</a>
     {message && <p role="status">{message}</p>}
     <SharedWorkPanel contractors={contractors} busy={busy} applied={appliedShared} dirty={tripDirty}
       createdContractor={createdSharedContractor} onApply={applyShared} onNew={newShared}
@@ -263,6 +267,9 @@ export function TransactionEntry({ contractors, vehicles, accounts, busy, write,
         onClose={() => {sharedContractorCreation.current=false;setPendingContractor(null);setQuickModal(null);}}
         onCreate={quickCreateContractor} onCreated={id => setPendingContractor({id,target:sharedContractorCreation.current?"shared":"trip"})}/>
     </section>
+    </div>
+    {children}
+    <div hidden={!entryVisible} className={daily.paymentArea}>
     <PaymentEntry accounts={accounts} vehicles={vehicles} contractors={contractors} busy={busy} revision={revision}
       paymentAccount={paymentAccount} setPaymentAccount={setPaymentAccount} setMessage={setMessage}
       write={write} submitting={submitting} onAddAccount={() => setQuickModal("payment")}/>
@@ -278,5 +285,6 @@ export function TransactionEntry({ contractors, vehicles, accounts, busy, write,
           write("vehicle.account.ensure", { vehicle_id: vehicleId, contractor_id: contractorId })}
         onAccountReady={(vehicleId, contractorId) => setPendingAccount({ vehicleId, contractorId })}
         onRefreshLists={() => void refresh()}/>
-  </>;
+    </div>
+  </div>;
 }

@@ -26,3 +26,5 @@
 .sharedActions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.sharedActions button{font-size:.8rem;line-height:1.7;padding:8px}
 
 .layout{display:grid;grid-template-columns:minmax(0,1fr);align-items:start;gap:0}.layout>[hidden]{display:none!important}@media(min-width:1600px){.layout{grid-template-columns:minmax(0,1fr) minmax(320px,.65fr);gap:18px}}
+
+.paymentArea{grid-column:1/-1}.paymentJump{display:inline-flex;align-items:center;min-height:48px;color:var(--color-primary);font-weight:700;font-size:.85rem;text-underline-offset:4px}
