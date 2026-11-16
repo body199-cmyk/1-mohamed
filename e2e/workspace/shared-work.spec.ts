@@ -159,3 +159,21 @@ test('confirmed shared creation with failed refresh cannot retarget a trip after
  await expect(page.locator('#real-trip-weight')).toHaveValue('2');
  await expect(page.getByLabel('ملخص الشغل المعتمد')).toContainText('شركة النور');
 });
+
+
+test('same vehicle on same day with different contractors remains two report records and one vehicle',async({page})=>{
+ const {contractors,attempts}=await fixture(page);
+ contractors.push({id:'C2',name:'شركة ثانية',is_primary:false,is_archived:false,version:1});
+ await page.getByRole('button',{name:'تحديث البيانات',exact:true}).click();
+ await shared(page);await nextTrip(page);await save(page).click();await expect(page.locator('#real-trip-weight')).toHaveValue('');
+ await page.getByRole('button',{name:'تغيير بيانات الشغل',exact:true}).click();await page.locator('#shared-contractor').selectOption('C2');
+ await page.getByRole('button',{name:'اعتماد بيانات الشغل',exact:true}).click();await nextTrip(page);await save(page).click();
+ await expect(page.locator('#real-trip-weight')).toHaveValue('');
+ expect(attempts.map(r=>r.payload.counterparty_contractor_id)).toEqual(['C1','C2']);
+ expect(attempts[0].payload.id).not.toBe(attempts[1].payload.id);
+ const recorded=page.getByLabel('النقلات المسجلة في اليومية');await expect(recorded).toContainText('2 نقلة');await expect(recorded).toContainText('1 عربية ظاهرة');
+ await page.getByRole('button',{name:'فتح هذا اليوم في التقارير للتعديل أو الإلغاء'}).click();
+ await page.getByRole('button',{name:'تحميل التقرير',exact:true}).click();
+ await expect(page.getByLabel('ملخص سجلات التقرير').locator('li')).toHaveCount(2);
+ await expect(page.getByLabel('ملخص سجلات التقرير')).toContainText('شركة النور');await expect(page.getByLabel('ملخص سجلات التقرير')).toContainText('شركة ثانية');
+});

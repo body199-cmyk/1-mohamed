@@ -77,3 +77,5 @@
 .tripSurface button.secondaryButton[type="submit"]{background:var(--surface-card);color:var(--text-main);border-color:var(--border-strong);box-shadow:none}
 .tripSurface button.secondaryButton[type="submit"]:hover:not(:disabled){background:var(--surface-hover);border-color:var(--color-primary)}
 @media(min-width:601px){.choice{grid-template-columns:minmax(0,1fr)}.choice input{grid-column:1;border-radius:10px}.choice button{grid-column:1;grid-row:auto;justify-self:start;border:1px solid var(--border-strong);border-radius:8px}.choice select{grid-column:1}}
+
+.openingFields{border:1px solid var(--border-color);border-radius:10px;padding:16px;margin:6px 0 20px;min-width:0}.openingFields legend{font-size:.94rem;font-weight:750;padding:0 6px}.openingFields p{font-size:.82rem;line-height:1.9;color:var(--text-muted);margin:12px 0}.openingCheck{display:flex!important;align-items:center;gap:10px;min-height:44px}.openingCheck input{width:18px;height:18px;accent-color:var(--color-primary)}.dialog select.control{font:inherit;margin-bottom:20px}

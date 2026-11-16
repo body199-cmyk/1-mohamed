@@ -1,3 +1,6 @@
+## UX-REORG-01.3 — optional quick-add opening
+Implement only existing Daily quick-record modal + existing RPC payload adapters, typed fields and canonical units; protect partial-created vehicle state and immutable opening retry identity. Existing payment-account modal unchanged. Source and tests mapped in CODE_MAP; current evidence and next step in STATUS.
+
 ## UX-REORG-01.2 — complete shared daily workflow
 Current slice replaces the missing live shared-data flow, not a new financial feature. Draft versus applied values, confirmation and focus, session changes, individual overrides, per-trip success reset, server-backed saved-day rows/pagination and same-date report navigation. Payment extraction preserves the same handler and shared submission lock. Independent precommit review corrections and exact-head acceptance pending are in STATUS. The inherited demo remains separate and unchanged.
 

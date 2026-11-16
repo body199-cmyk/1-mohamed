@@ -5,6 +5,7 @@ import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "rea
 import styles from "./trip-entry-design.module.css";
 import daily from "./daily-work.module.css";
 import { PaymentEntry } from "./payment-entry";
+import type {QuickOpening} from "./quick-opening-fields";
 import { SharedWorkPanel, type SharedWorkValues } from "./shared-work-panel";
 import { SearchableChoice } from "./searchable-choice";
 import { QuickRecordModal, type QuickRecordInput } from "./quick-record-modal";
@@ -97,22 +98,34 @@ export function TransactionEntry({ contractors, vehicles, accounts, busy, write,
 
   /** Inline creation from the choice fields; payloads keep a stable id across retries. */
   async function quickCreateVehicle(input: QuickRecordInput): Promise<string | null> {
-    const key = "vehicle.create:" + input.plate + "|" + input.driver;
+    const key = "vehicle.create:" + JSON.stringify([input.plate,input.driver,input.opening??null]);
     const cached = quickDrafts.current.get(key)
-      ?? { id: "VEH-" + crypto.randomUUID(), plate_number: input.plate, driver_name: input.driver || null };
+      ?? { id: "VEH-" + crypto.randomUUID(), plate_number: input.plate, driver_name: input.driver || null,...(input.opening?{contractor_id:input.opening.contractorId}:{}) };
     quickDrafts.current.set(key, cached);
     const confirmed = await write("vehicle.create", cached);
     if (confirmed) quickDrafts.current.delete(key);
     return confirmed ? String(cached.id) : null;
   }
   async function quickCreateContractor(input: QuickRecordInput): Promise<string | null> {
-    const key = "contractor.create:" + input.name;
+    const key = "contractor.create:" + JSON.stringify([input.name,input.opening??null]);
     const cached = quickDrafts.current.get(key)
-      ?? { id: "CTR-" + crypto.randomUUID(), name: input.name, start_mode: "DETAILS" };
+      ?? { id: "CTR-" + crypto.randomUUID(), name: input.name, start_mode: input.opening?'TOTAL':'DETAILS',
+        ...(input.opening?{opening:{start_date:input.opening.date,signed_piastres:input.opening.signedPiastres}}:{}) };
     quickDrafts.current.set(key, cached);
     const confirmed = await write("contractor.create", cached);
     if (confirmed) quickDrafts.current.delete(key);
     return confirmed ? String(cached.id) : null;
+  }
+
+  async function createVehicleOpening(vehicleId:string,opening:QuickOpening):Promise<boolean>{
+    const signature='vehicle.opening:'+JSON.stringify([vehicleId,opening]);
+    const payload=quickDrafts.current.get(signature)??{id:'OPEN-'+crypto.randomUUID(),balance_type:'VEHICLE_CASH',
+      vehicle_id:vehicleId,contractor_id:opening.contractorId,start_date:opening.date,
+      signed_piastres:opening.signedPiastres,start_mode:'TOTAL'};
+    quickDrafts.current.set(signature,payload);
+    const confirmed=await write('opening.create',payload);
+    if(confirmed)quickDrafts.current.delete(signature);
+    return confirmed;
   }
 
   // A confirmed creation stays pending until the refreshed lists contain the
@@ -260,7 +273,7 @@ export function TransactionEntry({ contractors, vehicles, accounts, busy, write,
           </div>
         </footer>
       </form>
-      <QuickRecordModal kind="vehicle" open={quickModal === "vehicle"} busy={busy}
+      <QuickRecordModal onCreateOpening={createVehicleOpening} contractors={contractors.filter(c=>!c.is_archived)} kind="vehicle" open={quickModal === "vehicle"} busy={busy}
         existing={vehicles.filter(v => !v.is_archived).map(v => v.plate_number)}
         onRefreshLists={() => void refresh()}
         onClose={() => setQuickModal(null)}
