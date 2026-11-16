@@ -30,6 +30,7 @@ export interface OperationalReportImageLayout {
   readonly summarySections: readonly OperationalReportSummarySection[];
   readonly columns: readonly OperationalReportColumn[];
   readonly rows: readonly (readonly string[])[];
+  readonly rowTones?: OperationalReportDocument["rowTones"];
   readonly emptyMessage: string;
   readonly footerNotes: readonly string[];
   readonly summaryStart: number;
@@ -64,7 +65,7 @@ export function createOperationalReportImageLayout(
     width: WIDTH, height, businessName: doc.businessName, title: doc.title,
     subtitle: doc.subtitle, generatedAtLabel: doc.generatedAtLabel,
     metadata: doc.metadata, summarySections: doc.summarySections, columns: doc.columns,
-    rows: doc.rows, emptyMessage: doc.emptyMessage, footerNotes: doc.footerNotes,
+    rows: doc.rows, rowTones:doc.rowTones, emptyMessage: doc.emptyMessage, footerNotes: doc.footerNotes,
     summaryStart, tableTitleY, headerY, rowsTop, pageLabel: options.pageLabel,
   };
 }
@@ -161,7 +162,8 @@ function paintTable(
     : [[layout.emptyMessage, ...layout.columns.slice(1).map(() => "")]];
   rows.forEach((values, rowIndex) => {
     const y = layout.rowsTop + rowIndex * ROW_HEIGHT;
-    ctx.fillStyle = rowIndex % 2 === 0 ? "#ffffff" : STRIPE;
+    const tone=layout.rowTones?.[rowIndex];
+    ctx.fillStyle = tone==='credit'?'#f0fdf4':tone==='debit'?'#fef2f2':rowIndex % 2 === 0 ? "#ffffff" : STRIPE;
     ctx.fillRect(LEFT, y, CONTENT_WIDTH, ROW_HEIGHT);
     ctx.strokeStyle = BORDER;
     ctx.beginPath();
@@ -175,7 +177,7 @@ function paintTable(
       const value = values[columnIndex] ?? "";
       write(ctx, value, right - 8, y + 34, {
         size: fontSize, maxWidth: width - 14, ltr: column.direction === "ltr",
-        color: value.startsWith("-") && column.direction === "ltr" ? "#a34a20" : NAVY,
+        color: tone==='credit'?'#166534':tone==='debit'?'#991b1b':value.startsWith("-") && column.direction === "ltr" ? "#a34a20" : NAVY,
       });
       right -= width;
     }

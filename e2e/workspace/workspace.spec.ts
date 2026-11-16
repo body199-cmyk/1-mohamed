@@ -125,10 +125,10 @@ test('changed snapshot stops full export; complete daily report displays exact S
  expect(more).toBe(true);
 });
 test('cash statement shows both sources and exports exact complete CSV',async({page})=>{
- await fixture(page);await page.route('**/api/ledger/read',route=>route.fulfill({json:{ok:true,data:{status:'OK',snapshot:'10:10',total_count:'2',next_cursor:null,
+ await fixture(page);await page.route('**/api/ledger/read',route=>{if(route.request().postDataJSON().operation==='trips.list')return route.fulfill({json:{ok:true,data:{status:'OK',snapshot:'10:10',total_count:'1',next_cursor:null,rows:[row]}}});return route.fulfill({json:{ok:true,data:{status:'OK',snapshot:'10:10',total_count:'2',next_cursor:null,
  date_from:'2026-01-02',date_to:'2026-01-02',vehicle_id:'V1',responsible_contractor_id:'K_AHMED',period_opening_piastres:'10000',work_piastres:'9000',paid_piastres:'4000',period_closing_piastres:'15000',current_cash_balance_piastres:'28000',
  rows:[{id:'T1',date:'2026-01-02',movement_type:'WORK',signed_delta_piastres:'9000',running_balance_piastres:'19000',origin:'القاهرة',destination:'السويس'},
- {id:'P1',date:'2026-01-02',movement_type:'PAYMENT',signed_delta_piastres:'-4000',running_balance_piastres:'15000'}]}}}));
+ {id:'P1',date:'2026-01-02',movement_type:'PAYMENT',signed_delta_piastres:'-4000',running_balance_piastres:'15000'}]}}});});
  await nav(page,'كشف حساب عربية');await page.locator('#cash-account').selectOption('V1|K_AHMED');
  await page.locator('#cash-from').fill('2026-01-02');await page.locator('#cash-to').fill('2026-01-02');
  await page.getByRole('button',{name:'عرض كشف النقدية',exact:true}).click();await expect(page.getByLabel('كشف نقدية العربية')).toContainText('150');

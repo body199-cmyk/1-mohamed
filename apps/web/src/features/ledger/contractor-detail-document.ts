@@ -13,7 +13,7 @@ export function buildDetailedContractorDocument(report:LiveStatementReport,name:
  const rows=filterStatementRows(report.rows,filters);
  const subtotal=rows.reduce((n,r)=>n+BigInt(r.signed_delta_piastres),0n).toString();
  const money=(v:string)=>(BigInt(v)>0n?'+':'')+formatPoundsForDisplay(v)+' ج.م';
- return {businessName:'أحمد أبو علي — حسابات النقل',title:'كشف حساب المقاول',subtitle:'الموجب لأحمد، السالب عليه. رصيد الحساب الكامل مستقل عن مجموع الحركات المفلترة.',
+ return {businessName:'أحمد أبو علي — حسابات النقل',title:'كشف حساب المقاول',subtitle:'شغل أحمد أبو علي مع '+name+'؛ دفعات العربيات مستقلة عن فرق الشغل.',
   generatedAtLabel:new Intl.DateTimeFormat('ar-EG',{timeZone:'Africa/Cairo',dateStyle:'medium',timeStyle:'short'}).format(new Date()),
   metadata:[{label:'المقاول',value:name},{label:'من تاريخ',value:report.date_from},{label:'إلى تاريخ',value:report.date_to},
    {label:'العربية',value:vehicles.get(filters.vehicle)??(filters.vehicle||'الكل')},{label:'من',value:filters.origin||'الكل'},
@@ -21,12 +21,13 @@ export function buildDetailedContractorDocument(report:LiveStatementReport,name:
   summarySections:[{title:'حساب الفترة الكامل',metrics:[{label:'الحساب السابق',value:money(report.opening_balance_piastres)},
    {label:'شغل أحمد',value:money(report.ahmed_work_piastres)},{label:'شغل المقاول',value:money((-BigInt(report.counterparty_work_piastres)).toString())},
    {label:'آخر الفترة',value:money(report.closing_balance_piastres)},
-   {label:'صاحب الحق',value:report.beneficiary==='AHMED'?'أحمد أبو علي':report.beneficiary==='COUNTERPARTY'?name:'متعادل'}]},
+   {label:'صاحب الحق',value:report.beneficiary==='AHMED'?'لأحمد أبو علي عند '+name:report.beneficiary==='COUNTERPARTY'?'على أحمد أبو علي لصالح '+name:'الحساب متعادل'}]},
    {title:'الحركات المطابقة للفلاتر — ليست رصيد الدين',metrics:[{label:'النقلات',value:String(rows.length)},
     {label:'العربيات',value:String(new Set(rows.map(r=>r.vehicle_id)).size)},
-    {label:'الأيام',value:String(new Set(rows.map(r=>r.trip_date)).size)},{label:'صافي الشغل المحدد',value:money(subtotal)}]}],
+    {label:'الأيام',value:String(new Set(rows.map(r=>r.trip_date)).size)},{label:'الأطنان',value:scaledIntegerToDecimal(rows.reduce((n,r)=>n+BigInt(r.weight_milli_tonnes),0n).toString(),3)},{label:'صافي الشغل المحدد',value:money(subtotal)}]}],
   columns:['التاريخ','رقم النقلة','العربية','من','إلى','الوزن (طن)','الاتجاه','قيمة الشغل','رصيد الحساب الكامل','ملاحظات'].map(label=>({label,widthWeight:1})),
   rows:rows.map(r=>[r.trip_date,r.id,vehicles.get(r.vehicle_id)??r.vehicle_id,r.origin??'',r.destination??'',
-   scaledIntegerToDecimal(r.weight_milli_tonnes,3),r.direction==='AHMED_SUPPLIES'?'شغل أحمد':'شغل المقاول',money(r.signed_delta_piastres),money(r.running_balance_piastres),r.notes??'']),
-  emptyMessage:'لا توجد نقلات مطابقة.',footerNotes:['دفعات العربيات لا تدخل في فرق شغل المقاول.','الفلاتر تخص تفاصيل الشغل؛ الحساب السابق والختامي يظلان لحساب الفترة بالكامل.']};
+   scaledIntegerToDecimal(r.weight_milli_tonnes,3),r.direction==='AHMED_SUPPLIES'?'شغل لأحمد أبو علي':'شغل على أحمد أبو علي',money(r.signed_delta_piastres),money(r.running_balance_piastres),r.notes??'']),
+  rowTones:rows.map(r=>r.direction==='AHMED_SUPPLIES'?'credit' as const:'debit' as const),
+  emptyMessage:'لا توجد نقلات مطابقة.',footerNotes:[`إجمالي الشغل المطابق: ${rows.length} نقلة — صافي الشغل ${money(subtotal)}؛ رصيد الدين الكامل ${money(report.closing_balance_piastres)}.`, 'دفعات العربيات لا تدخل في فرق شغل المقاول.','الفلاتر تخص تفاصيل الشغل؛ الحساب السابق والختامي يظلان لحساب الفترة بالكامل.']};
 }

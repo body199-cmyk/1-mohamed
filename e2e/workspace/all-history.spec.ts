@@ -84,6 +84,7 @@ for(const kind of ['trips','payments','contractor','cash'] as const){
   const download=page.waitForEvent('download');await page.getByRole('button',{name:'تنزيل CSV',exact:true}).click();
   const fs=await import('node:fs/promises');
   expect(await fs.readFile((await (await download).path())!,'utf8')).toContain('2001-02-03');
+  if(kind==='contractor'||kind==='cash')await page.getByText(kind==='cash'?'تغيير العربية أو فترة الكشف':'تغيير المقاول أو فترة الكشف',{exact:true}).click();
   await scope.uncheck();await expect(page.locator(`#${prefix}-from`)).toHaveValue('2026-10-01');
   await expect(page.locator(`#${prefix}-to`)).toHaveValue('2026-10-31');
   await expect(page.getByRole('button',{name:'تنزيل CSV',exact:true})).toHaveCount(0);

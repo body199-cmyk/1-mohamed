@@ -69,4 +69,6 @@ export interface OperationalReportDocument {
   readonly rows: readonly (readonly string[])[];
   readonly emptyMessage: string;
   readonly footerNotes: readonly string[];
+  /** Optional per-row work direction; never inferred from closing balance. */
+  readonly rowTones?: readonly ("credit" | "debit" | "neutral")[];
 }

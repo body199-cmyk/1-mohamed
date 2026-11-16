@@ -20,6 +20,7 @@ export function assertOperationalReportDocument(doc: OperationalReportDocument):
       !Array.isArray(doc.footerNotes) || doc.footerNotes.length > 10) {
     throw new Error("أقسام التقرير تتجاوز الحدود المدعومة.");
   }
+  if(doc.rowTones!==undefined&&(!Array.isArray(doc.rowTones)||doc.rowTones.length!==doc.rows.length||doc.rowTones.some(t=>!['credit','debit','neutral'].includes(t))))throw new Error('ألوان صفوف التقرير لا تطابق بياناته.');
   let weightTotal = 0;
   for (const column of doc.columns) {
     if (!column || typeof column.label !== "string" ||

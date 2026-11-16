@@ -18,7 +18,7 @@ const EMPTY_ROWS: Record<string, unknown>[] = [];
 
 
 
-export function RealReports({ contractors, vehicles, accounts, disabled, revision, write, periodRequest }: LedgerEntities & {disabled:boolean; revision:number; write:LedgerWrite; periodRequest?:{id:number;date:string}|null}) {
+export function RealReports({ contractors, vehicles, accounts, disabled, revision, write, periodRequest, onOpenStatement }: LedgerEntities & {disabled:boolean; revision:number; write:LedgerWrite; onOpenStatement?:(screen:"cash"|"contractor")=>void; periodRequest?:{id:number;date:string}|null}) {
   const [busy,setBusy] = useState(false);
   const [notice,setNotice] = useState("");
   const reportQuery = useRef<{ type: ReportType; payload: Record<string, unknown> } | null>(null);
@@ -109,7 +109,9 @@ export function RealReports({ contractors, vehicles, accounts, disabled, revisio
   return <fieldset disabled={disabled} style={{border:0,padding:0,minWidth:0}}>
     {notice && <p role="alert">{notice}</p>}
     <section className={ui.surface}>
-      <h2>النقلات والتقرير اليومي والمدفوعات</h2>
+      <h2>التقارير والكشوف</h2>
+      {onOpenStatement&&<div className={ui.actions} aria-label="فتح كشف حساب"><button type="button" onClick={()=>onOpenStatement('cash')}>فتح كشف العربية</button><button type="button" onClick={()=>onOpenStatement('contractor')}>فتح كشف المقاول</button></div>}
+      <h3>سجل النقلات والدفعات — للمراجعة والتعديل</h3>
       <form className={ui.form} onSubmit={readReport}>
         <div className={ui.fieldGroup}><label htmlFor="report-type">التقرير</label>
         <select id="report-type" className={ui.control} value={reportType}

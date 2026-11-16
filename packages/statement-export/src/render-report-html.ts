@@ -37,7 +37,7 @@ export function renderOperationalReportHtml(doc: OperationalReportDocument): str
     '<th scope="col">' + escapeHtmlText(column.label) + '</th>'
   ).join("");
   const body = doc.rows.length
-    ? doc.rows.map(row => '<tr>' + row.map((value, index) =>
+    ? doc.rows.map((row,rowIndex) => '<tr'+(doc.rowTones?.[rowIndex]==='credit'?' style="color:#166534;background:#f0fdf4"':doc.rowTones?.[rowIndex]==='debit'?' style="color:#991b1b;background:#fef2f2"':'')+'>' + row.map((value, index) =>
         '<td' + cellClass(doc.columns[index]!.direction) + '>' +
         escapeHtmlText(value) + '</td>'
       ).join("") + '</tr>').join("\n")

@@ -19,6 +19,7 @@ export function paginateOperationalReportForPdf(
   return Array.from({ length: count }, (_, index) => ({
     ...doc,
     rows: doc.rows.slice(index * ROWS_PER_PAGE, (index + 1) * ROWS_PER_PAGE),
+    ...(doc.rowTones?{rowTones:doc.rowTones.slice(index * ROWS_PER_PAGE, (index + 1) * ROWS_PER_PAGE)}:{}),
   }));
 }
 

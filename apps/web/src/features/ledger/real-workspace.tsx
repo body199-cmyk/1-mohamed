@@ -181,7 +181,7 @@ export function RealWorkspace() {
           </TransactionEntry>
 
       </div>
-      <div hidden={screen !== "reports"}><RealReports {...data} disabled={blocked} periodRequest={reportPeriod}/></div>
+      <div hidden={screen !== "reports"}><RealReports {...data} disabled={blocked} periodRequest={reportPeriod} onOpenStatement={setScreen}/></div>
       <div hidden={screen !== "contractor"}><RealContractorStatement {...data} disabled={blocked} onRegisterWork={contractorId => openDailyAt("trip", contractorId)} /></div>
       <div hidden={screen !== "cash"}><RealCashStatement {...data} disabled={blocked} onRegisterPayment={account => openDailyAt("payment", account)} /></div>
       <div hidden={screen !== "master"}>
