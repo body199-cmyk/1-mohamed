@@ -4,12 +4,13 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 import { pathToFileURL } from "node:url";
+import { backupFolderParts, prepareRcloneBackup } from "./google-drive-rclone.mjs";
 
 export const EXPECTED_PROJECT_REF = "sskkuniskphlawivzudw";
 export const EXPECTED_PUBLIC_TABLES = Object.freeze(["app_members","app_owner","audit_log","backup_history","business_settings","contractors","idempotency_keys","opening_balances","payments","trips","vehicle_accounts","vehicles"]);
 export const EXPECTED_PUBLIC_DATA_TABLES = EXPECTED_PUBLIC_TABLES;
 export const BACKUP_FOLDER_NAME = "1-mohamed-backups";
-export const RETENTION_DAYS = 15;
+export const RETENTION_DAYS = 30;
 
 function assert(ok, message) { if (!ok) throw new Error("BACKUP_INVALID: " + message); }
 export function cairoDate(value) {
@@ -29,8 +30,10 @@ export function filesToPrune(files,today) {
   return files.filter(file=>{const m=/^1-mohamed-(\d{4}-\d{2}-\d{2})\.tar\.gz\.age$/.exec(file.name||"");return m&&m[1]<cutoff;});
 }
 export function validateBackupEnvironment(env) {
-  for(const name of ["SUPABASE_DB_URL","AGE_RECIPIENT","GOOGLE_DRIVE_CLIENT_ID","GOOGLE_DRIVE_CLIENT_SECRET","GOOGLE_DRIVE_REFRESH_TOKEN"])
+  for(const name of ["SUPABASE_DB_URL","AGE_RECIPIENT"])
     assert(typeof env[name]==="string"&&env[name].trim(),"Missing required environment setting: "+name);
+  const legacyOauth = ["GOOGLE_DRIVE_CLIENT_ID","GOOGLE_DRIVE_CLIENT_SECRET","GOOGLE_DRIVE_REFRESH_TOKEN"].every(name=>typeof env[name]==="string"&&env[name].trim());
+  assert(legacyOauth || (typeof env.RCLONE_CONFIG_DRIVE_TOKEN==="string"&&env.RCLONE_CONFIG_DRIVE_TOKEN.trim()),"Missing Google Drive authorization: configure RCLONE_CONFIG_DRIVE_TOKEN or the existing OAuth credentials.");
   assert(/^age1[0-9a-z]+$/.test(env.AGE_RECIPIENT),"AGE_RECIPIENT must be an age public recipient, never a private identity.");
   let url; try{url=new URL(env.SUPABASE_DB_URL);}catch{throw new Error("BACKUP_INVALID: SUPABASE_DB_URL is invalid.");}
   assert(["postgres:","postgresql:"].includes(url.protocol),"SUPABASE_DB_URL must use PostgreSQL.");
@@ -74,16 +77,40 @@ async function drive(url,token,options={}) {
   if(!r.ok)throw new Error("Google Drive API failed with HTTP "+r.status+": "+(await r.text()).slice(0,1000));
   return r.status===204?null:r.json();
 }
-async function folder(token) {
-  const q=new URLSearchParams({q:"name = '"+BACKUP_FOLDER_NAME+"' and mimeType = 'application/vnd.google-apps.folder' and trashed = false",spaces:"drive",pageSize:"100",fields:"files(id,name)"});
+async function ensureFolder(token,name,parentId) {
+  const safeName=name.replace(/'/g,"\\'");
+  const filter="name = '"+safeName+"' and mimeType = 'application/vnd.google-apps.folder' and trashed = false"+(parentId?" and '"+parentId+"' in parents":"");
+  const q=new URLSearchParams({q:filter,spaces:"drive",pageSize:"100",fields:"files(id,name),nextPageToken"});
   const result=await drive("https://www.googleapis.com/drive/v3/files?"+q,token);
-  const found=result.files?.find(f=>f.name===BACKUP_FOLDER_NAME);if(found)return found.id;
-  const made=await drive("https://www.googleapis.com/drive/v3/files?fields=id,name",token,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({name:BACKUP_FOLDER_NAME,mimeType:"application/vnd.google-apps.folder"})});
+  assert(!result.nextPageToken,"Ambiguous Drive folder lookup.");
+  const found=result.files?.find(f=>f.name===name);
+  if(found)return found.id;
+  const meta={name,mimeType:"application/vnd.google-apps.folder"};
+  if(parentId)meta.parents=[parentId];
+  const made=await drive("https://www.googleapis.com/drive/v3/files?fields=id,name",token,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(meta)});
   assert(made.id,"Could not create Google Drive backup folder.");return made.id;
 }
-async function listFiles(token,folderId) {
-  const q=new URLSearchParams({q:"'"+folderId+"' in parents and trashed = false and name contains '1-mohamed-'",pageSize:"1000",orderBy:"createdTime desc",fields:"files(id,name,size,md5Checksum,createdTime,webViewLink),nextPageToken"});
-  const r=await drive("https://www.googleapis.com/drive/v3/files?"+q,token);assert(!r.nextPageToken,"More than 1000 Drive files; retention cleanup stopped.");return r.files||[];
+async function folder(token,today) {
+  const parts=backupFolderParts(today);
+  const rootId=await ensureFolder(token,parts[0]);
+  const yearId=await ensureFolder(token,parts[1],rootId);
+  const monthId=await ensureFolder(token,parts[2],yearId);
+  return {rootId,monthId};
+}
+async function listFiles(token,rootId) {
+  const results=[], pending=[rootId];
+  while(pending.length) {
+    const id=pending.pop();
+    const q=new URLSearchParams({q:"'"+id+"' in parents and trashed = false",pageSize:"1000",fields:"files(id,name,mimeType,size,md5Checksum,createdTime,webViewLink),nextPageToken"});
+    const r=await drive("https://www.googleapis.com/drive/v3/files?"+q,token);
+    assert(!r.nextPageToken,"More than 1000 entries in one Drive backup folder; cleanup stopped.");
+    for(const file of r.files||[]) {
+      if(file.mimeType==="application/vnd.google-apps.folder")pending.push(file.id);
+      else if(/^1-mohamed-\d{4}-\d{2}-\d{2}\.tar\.gz\.age$/.test(file.name||""))results.push(file);
+    }
+    assert(pending.length<500&&results.length<10000,"Drive backup folder traversal exceeded safety limit.");
+  }
+  return results;
 }
 async function upload(token,folderId,path,name) {
   const bytes=readFileSync(path), md5=await digest(path,"md5"), sha=await digest(path,"sha256"), boundary="mohamed_"+sha.slice(0,24);
@@ -98,7 +125,7 @@ async function upload(token,folderId,path,name) {
 async function prune(token,folderId,today) {
   const files=await listFiles(token,folderId), expired=filesToPrune(files,today);
   for(const f of expired)await drive("https://www.googleapis.com/drive/v3/files/"+encodeURIComponent(f.id),token,{method:"DELETE"});
-  return {retained:files.length-expired.length,trashed:expired.length};
+  return {retained:files.length-expired.length,deleted:expired.length};
 }
 function quote(value){return "'"+String(value).replace(/'/g,"'\\''")+"'";}
 async function history(env,manifest,file,archiveBytes,archiveSha) {
@@ -142,12 +169,19 @@ export async function runOffsiteBackup(env=process.env) {
     const tar=join(work,"1-mohamed.tar.gz");run("tar",["-czf",tar,"-C",work,"roles.sql","schema.sql","data.sql","manifest.json"]);
     const finalEncrypted=tar+".age";run("age",["-r",env.AGE_RECIPIENT,"-o",finalEncrypted,tar]);
     const finalSha=await digest(finalEncrypted,"sha256"),finalSize=statSync(finalEncrypted).size;
-    const token=await accessToken(env),folderId=await folder(token),existing=await listFiles(token,folderId);
-    assert(!existing.some(f=>f.name===fileName),"A backup for "+today+" already exists; refusing a second daily snapshot.");
-    const uploaded=await upload(token,folderId,finalEncrypted,fileName);
+    let uploaded,finishRetention;
+    if(env.RCLONE_CONFIG_DRIVE_TOKEN) {
+      const cloud=await prepareRcloneBackup(env,finalEncrypted,fileName,today,filesToPrune);
+      uploaded=cloud.file;finishRetention=cloud.prune;
+    } else {
+      const token=await accessToken(env),folders=await folder(token,today),existing=await listFiles(token,folders.rootId);
+      assert(!existing.some(f=>f.name===fileName),"A backup for "+today+" already exists; refusing a second daily snapshot.");
+      uploaded=await upload(token,folders.monthId,finalEncrypted,fileName);
+      finishRetention=()=>prune(token,folders.rootId,today);
+    }
     await history(env,finalManifest,uploaded,finalSize,finalSha);
-    const retention=await prune(token,folderId,today);
-    summary(["## Google Drive backup completed","- Cairo date: "+today,"- File: "+fileName,"- Encrypted size: "+finalSize+" bytes","- SHA-256: "+finalSha,"- Drive upload: verified","- Retention: 15 calendar days; expired files trashed: "+retention.trashed,"- Public tables: 12; Auth user records and owner/member mappings included; users must re-authenticate after a project restore","- Storage objects: 0",""]);
+    const retention=await finishRetention();
+    summary(["## Google Drive backup completed","- Cairo date: "+today,"- File: "+fileName,"- Encrypted size: "+finalSize+" bytes","- SHA-256: "+finalSha,"- Drive upload: verified","- Retention: 30 calendar days; expired files permanently deleted: "+retention.deleted,"- Public tables: 12; Auth user records and owner/member mappings included; users must re-authenticate after a project restore","- Storage objects: 0",""]);
     return {today,fileName,size:finalSize,sha256:finalSha,driveFileId:uploaded.id,retention};
   } finally {rmSync(work,{recursive:true,force:true});}
 }
