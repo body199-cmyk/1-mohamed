@@ -31,7 +31,7 @@ function exactKeys(value, expected, label) {
 export function validateBackupEnvironment(env) {
   const required = [
     "SUPABASE_DB_URL", "AGE_RECIPIENT", "AWS_BACKUP_BUCKET", "AWS_BACKUP_REGION",
-    "R2_ACCOUNT_ID", "R2_BACKUP_BUCKET", "R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY",
+    "R2_ACCOUNT_ID", "R2_BACKUP_BUCKET", "R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY", "R2_LOCK_API_TOKEN",
   ];
   for (const name of required) {
     assert(typeof env[name] === "string" && env[name].trim().length > 0,
@@ -61,6 +61,34 @@ export function verifyS3BucketProtection(versioning, lockConfiguration) {
   assert(retention?.Mode === "GOVERNANCE" && Number(retention.Days) >= 30,
     "S3 bucket must enforce at least 30 days of Governance retention.");
   return true;
+}
+
+export function verifyR2BucketProtection(lockConfiguration) {
+  const rules = lockConfiguration?.rules;
+  assert(Array.isArray(rules), "Cloudflare R2 lock rules could not be read.");
+  const requiredPrefix = "1-mohamed/daily/";
+  const protectedPrefix = rules.some((rule) => {
+    const prefix = typeof rule.prefix === "string" ? rule.prefix : "";
+    return rule.enabled === true &&
+      requiredPrefix.startsWith(prefix) &&
+      rule.condition?.type === "Age" &&
+      Number(rule.condition.maxAgeSeconds) >= 30 * 24 * 60 * 60;
+  });
+  assert(protectedPrefix, "R2 must have an enabled Bucket Lock rule covering 1-mohamed/daily/ for at least 30 days.");
+  return true;
+}
+
+async function verifyR2BucketProtectionFromApi(env) {
+  const url = "https://api.cloudflare.com/client/v4/accounts/" + env.R2_ACCOUNT_ID +
+    "/r2/buckets/" + encodeURIComponent(env.R2_BACKUP_BUCKET) + "/lock";
+  const response = await fetch(url, {
+    method: "GET",
+    headers: { Authorization: "Bearer " + env.R2_LOCK_API_TOKEN },
+  });
+  assert(response.ok, "Cloudflare R2 lock configuration request failed with HTTP " + response.status + ".");
+  const payload = await response.json();
+  assert(payload.success === true, "Cloudflare R2 did not confirm the bucket lock configuration.");
+  return verifyR2BucketProtection(payload.result);
 }
 
 export function verifyArchiveToc(tocText) {
@@ -186,6 +214,7 @@ export async function runOffsiteBackup(env = process.env) {
     "--region", env.AWS_BACKUP_REGION, "--output", "json",
   ]));
   verifyS3BucketProtection(s3Versioning, s3Lock.ObjectLockConfiguration);
+  await verifyR2BucketProtectionFromApi(env);
 
   const work = mkdtempSync(join(env.RUNNER_TEMP || tmpdir(), "mohamed-backup-"));
   try {

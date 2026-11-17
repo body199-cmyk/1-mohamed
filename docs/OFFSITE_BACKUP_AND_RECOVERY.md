@@ -79,6 +79,7 @@ Create a GitHub Environment named `offsite-backup` and restrict its deployment b
 - `SUPABASE_DB_URL`: Supabase Session Pooler connection string (port 5432) or direct connection string, with `sslmode=require`. Do not use the transaction pooler for `pg_dump`.
 - `R2_ACCESS_KEY_ID`
 - `R2_SECRET_ACCESS_KEY`
+- `R2_LOCK_API_TOKEN`: Cloudflare API token with read-only R2 bucket-configuration access, used only to verify the Bucket Lock rule.
 
 **Environment variables**
 - `AGE_RECIPIENT`: age public recipient beginning with `age1` (not the private key).
@@ -93,13 +94,13 @@ Create a GitHub Environment named `offsite-backup` and restrict its deployment b
 
 The AWS IAM OIDC trust policy must restrict the subject to `repo:body199-cmyk/1-mohamed:environment:offsite-backup`; the GitHub Environment itself must restrict deployments to `main`. Its permissions should be limited to `s3:PutObject`, `s3:AbortMultipartUpload`, and `s3:GetObject` on `arn:aws:s3:::<bucket>/1-mohamed/daily/*`, plus `s3:GetBucketObjectLockConfiguration` and `s3:GetBucketVersioning` on that bucket. Do not grant `s3:DeleteObject`, `s3:BypassGovernanceRetention`, or bucket-administration permissions to the workflow role.
 
-The AWS bucket must have Object Lock enabled, Versioning enabled, and a default Governance retention of at least 30 days. The R2 token must be limited to the dedicated backup bucket. Configure R2 Bucket Lock for the same prefix and retention window.
+The AWS bucket must have Object Lock enabled, Versioning enabled, and a default Governance retention of at least 30 days. The R2 S3 token must be limited to the dedicated backup bucket. Configure R2 Bucket Lock for the same prefix and retention window; the workflow verifies the rule through the separate read-only `R2_LOCK_API_TOKEN` before it connects to Supabase.
 
 ### One-time activation sequence
 
 1. Generate an age key pair locally. Keep the private identity offline in two separate secure locations; add only its public `age1...` recipient to the GitHub Environment variable.
 2. Create the AWS bucket with Object Lock + Versioning; configure the restricted OIDC role and trust policy.
-3. Create the R2 bucket and bucket-lock rule; generate a bucket-scoped API token.
+3. Create the R2 bucket and bucket-lock rule; generate a bucket-scoped S3 API token plus a separate read-only Cloudflare API token for checking the lock rule.
 4. Add the connection string and R2 credentials directly to GitHub Environment secrets. Do not send them in chat.
 5. Run GitHub Actions → **Encrypted offsite database backup** → **Run workflow** on `main`.
 6. Confirm both destinations show the same encrypted object and matching checksum. Only then set the repository variable `BACKUP_ENABLED=true` to enable the four-times-daily schedule.

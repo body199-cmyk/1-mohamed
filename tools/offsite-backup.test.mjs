@@ -3,7 +3,7 @@ import { test } from "node:test";
 import {
   EXPECTED_PROJECT_REF, EXPECTED_PUBLIC_TABLES, EXCLUDED_TABLE_DATA,
   ARCHIVED_DATA_TABLES, buildBackupObjectKey, buildBackupManifest,
-  validateBackupEnvironment, verifyArchiveToc, verifyS3BucketProtection,
+  validateBackupEnvironment, verifyArchiveToc, verifyS3BucketProtection, verifyR2BucketProtection,
 } from "./offsite-backup.mjs";
 
 const counts = Object.fromEntries(EXPECTED_PUBLIC_TABLES.map((name) => [name, 0]));
@@ -78,6 +78,24 @@ test("T10 requires S3 versioning and a 30-day non-bypass Governance lock", () =>
     { ObjectLockEnabled: "Enabled", Rule: { DefaultRetention: { Mode: "COMPLIANCE", Days: 30 } } }), /Governance/);
 });
 
+test("T10 requires an enabled R2 bucket-lock rule covering the backup prefix for 30 days", () => {
+  assert.equal(verifyR2BucketProtection({ rules: [
+    { enabled: true, prefix: "1-mohamed/daily/", condition: { type: "Age", maxAgeSeconds: 2592000 } },
+  ] }), true);
+  assert.equal(verifyR2BucketProtection({ rules: [
+    { enabled: true, prefix: "", condition: { type: "Age", maxAgeSeconds: 31536000 } },
+  ] }), true);
+  assert.throws(() => verifyR2BucketProtection({ rules: [
+    { enabled: false, prefix: "1-mohamed/daily/", condition: { type: "Age", maxAgeSeconds: 31536000 } },
+  ] }), /Bucket Lock rule/);
+  assert.throws(() => verifyR2BucketProtection({ rules: [
+    { enabled: true, prefix: "other-prefix/", condition: { type: "Age", maxAgeSeconds: 31536000 } },
+  ] }), /Bucket Lock rule/);
+  assert.throws(() => verifyR2BucketProtection({ rules: [
+    { enabled: true, prefix: "1-mohamed/daily/", condition: { type: "Age", maxAgeSeconds: 86400 } },
+  ] }), /30 days/);
+});
+
 test("T10 environment validation rejects wrong project, private age key and invalid R2 account", () => {
   const env = {
     SUPABASE_DB_URL: "postgresql://postgres." + EXPECTED_PROJECT_REF + ":password@aws-0-eu-central-1.pooler.supabase.com:5432/postgres?sslmode=require",
@@ -88,6 +106,7 @@ test("T10 environment validation rejects wrong project, private age key and inva
     R2_BACKUP_BUCKET: "mohamed-backups-copy",
     R2_ACCESS_KEY_ID: "test-access",
     R2_SECRET_ACCESS_KEY: "test-secret",
+    R2_LOCK_API_TOKEN: "read-only-token",
   };
   assert.equal(validateBackupEnvironment(env), true);
   assert.throws(() => validateBackupEnvironment({ ...env, SUPABASE_DB_URL: env.SUPABASE_DB_URL.replace(EXPECTED_PROJECT_REF, "wrongproject") }), /does not identify/);

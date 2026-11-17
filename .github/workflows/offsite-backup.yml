@@ -37,10 +37,11 @@ jobs:
           R2_BACKUP_BUCKET: ${{ vars.R2_BACKUP_BUCKET }}
           R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_LOCK_API_TOKEN: ${{ secrets.R2_LOCK_API_TOKEN }}
         run: |
           set -eu
           for name in SUPABASE_DB_URL AGE_RECIPIENT AWS_BACKUP_BUCKET AWS_BACKUP_REGION \
-            AWS_BACKUP_ROLE_ARN R2_ACCOUNT_ID R2_BACKUP_BUCKET R2_ACCESS_KEY_ID R2_SECRET_ACCESS_KEY; do
+            AWS_BACKUP_ROLE_ARN R2_ACCOUNT_ID R2_BACKUP_BUCKET R2_ACCESS_KEY_ID R2_SECRET_ACCESS_KEY R2_LOCK_API_TOKEN; do
             eval "value=\${$name:-}"
             if [ -z "$value" ]; then
               echo "::error::Missing required backup setting: $name"
