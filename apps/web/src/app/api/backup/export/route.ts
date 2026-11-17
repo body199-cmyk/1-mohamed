@@ -10,6 +10,19 @@ export const dynamic="force-dynamic";
 export const runtime="nodejs";
 const PAGE_SIZE=1000;
 function result(body:object,status:number,session?:NextResponse){const response=NextResponse.json(body,{status,headers:{"cache-control":"no-store"}});return session?carrySessionHeaders(response,session):response;}
+async function readOneTable(client:any,table:PortableBackupTable){
+ const rows:unknown[]=[];
+ for(let offset=0;offset<=50000;offset+=PAGE_SIZE){
+  let query=client.from(table).select("*");
+  for(const key of BACKUP_ORDER[table])query=query.order(key,{ascending:true});
+  const {data,error}=await query.range(offset,offset+PAGE_SIZE-1);
+  if(error||!data)throw new Error("تعذّر تصدير جدول "+table+".");
+  rows.push(...data);
+  if(data.length<PAGE_SIZE)break;
+  if(offset+PAGE_SIZE>=50000)throw new Error("حجم البيانات تجاوز الحد الآمن للتصدير المحلي.");
+ }
+ return rows;
+}
 async function readAllTables(client:any){
  const tables:Record<string,unknown[]>={};
  for(const table of PORTABLE_BACKUP_TABLES){
@@ -38,8 +51,8 @@ export async function GET(request:NextRequest){
   const table=request.nextUrl.searchParams.get("table") as PortableBackupTable|null;
   if(!table||!(PORTABLE_BACKUP_TABLES as readonly string[]).includes(table))return result({error:"اختر جدولًا صحيحًا للتصدير."},400,session);
   try{
-   const all=await readAllTables(client);
-   const response=new NextResponse(serializeTableCsv(table,all[table] as Record<string,unknown>[]),{status:200,headers:{"content-type":"text/csv; charset=utf-8","content-disposition":'attachment; filename="'+table+'-1-mohamed.csv"',"cache-control":"no-store"}});
+   const rows=await readOneTable(client,table);
+   const response=new NextResponse(serializeTableCsv(table,rows as Record<string,unknown>[]),{status:200,headers:{"content-type":"text/csv; charset=utf-8","content-disposition":'attachment; filename="'+table+'-1-mohamed.csv"',"cache-control":"no-store"}});
    return carrySessionHeaders(response,session);
   }catch(error){return result({error:error instanceof Error?error.message:"تعذّر تصدير البيانات."},422,session);}
  }

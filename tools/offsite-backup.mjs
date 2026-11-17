@@ -98,9 +98,10 @@ async function prune(token,folderId,today) {
 }
 function quote(value){return "'"+String(value).replace(/'/g,"'\\''")+"'";}
 async function history(env,manifest,file,archiveBytes,archiveSha) {
-  const vals=[manifest.cairo_backup_date,manifest.format,file.name,file.id,file.webViewLink||"",String(archiveBytes),archiveSha,JSON.stringify(manifest.public_table_counts)];
+  const vals=[manifest.cairo_backup_date,manifest.format,file.name,file.id,file.webViewLink||"",String(archiveBytes),archiveSha,JSON.stringify(manifest.public_table_counts),retentionCutoff(manifest.cairo_backup_date)];
   const sql="insert into public.backup_history (backup_date,format,file_name,drive_file_id,drive_web_view_link,size_bytes,sha256,table_counts) values (:'d',:'f',:'n',:'i',nullif(:'u',''),:'s'::bigint,:'h',:'c'::jsonb) on conflict (backup_date) do update set file_name=excluded.file_name,drive_file_id=excluded.drive_file_id,drive_web_view_link=excluded.drive_web_view_link,size_bytes=excluded.size_bytes,sha256=excluded.sha256,table_counts=excluded.table_counts,created_at=now()";
-  const script="psql \"$SUPABASE_DB_URL\" -X -v ON_ERROR_STOP=1 "+vals.map((v,i)=>"-v "+["d","f","n","i","u","s","h","c"][i]+"="+quote(v)).join(" ")+" -c "+quote(sql)+" && psql \"$SUPABASE_DB_URL\" -X -v ON_ERROR_STOP=1 -c "+quote("delete from public.backup_history where backup_date < current_date - interval '14 days'");
+  const params=["d","f","n","i","u","s","h","c","cutoff"];
+  const script="psql \"$SUPABASE_DB_URL\" -X -v ON_ERROR_STOP=1 "+vals.map((v,i)=>"-v "+params[i]+"="+quote(v)).join(" ")+" -c "+quote(sql)+" && psql \"$SUPABASE_DB_URL\" -X -v ON_ERROR_STOP=1 -v cutoff="+quote(vals[8])+" -c "+quote("delete from public.backup_history where backup_date < :'cutoff'::date");
   run("docker",["run","--rm","--network","host","-e","SUPABASE_DB_URL","postgres:17.11-bookworm","sh","-ceu",script],{env});
 }
 function summary(lines){if(process.env.GITHUB_STEP_SUMMARY)appendFileSync(process.env.GITHUB_STEP_SUMMARY,lines.join("\n")+"\n","utf8");}

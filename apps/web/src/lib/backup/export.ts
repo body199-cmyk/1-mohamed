@@ -46,7 +46,7 @@ export function createPortableBackup(tables:Record<PortableBackupTable,unknown[]
 }
 function csvCell(value:unknown):string {
   let text= value===null||value===undefined ? "" : typeof value==="object" ? JSON.stringify(value) : String(value);
-  if(/^[=+@]/.test(text)) text="'"+text;
+  if(/^[=+\-@\t\r]/.test(text)) text="'"+text;
   return /[",\r\n]/.test(text) ? '"'+text.replace(/"/g,'""')+'"' : text;
 }
 export function serializeTableCsv(table:PortableBackupTable,rows:Record<string,unknown>[]):string {
