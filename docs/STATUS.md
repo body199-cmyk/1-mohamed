@@ -1,3 +1,11 @@
+## GOOGLE-DRIVE-BACKUP-03 — 17 November 2026 — restore safety gates
+
+Resumed owner-authorized PR #93 at 5e0ee06e1f0f864f0312766d92804d9b8799f44c on feat/offsite-backup-t10-20261117; GitHub exact-head CI 44160850974 succeeded and main remains 145ec99845caf64b6132af273148ff9c9dd2f746. Y: was unavailable in this session; a clean clone is in the session visualization workspace under 1-mohamed.
+
+Added fail-closed restore/history/retention activation gates, manual branch dispatch, Node 22, exact managed archive paths, shortcut exclusion for rclone, encrypted download SHA-256 verification, and credential-safe subprocess errors. Default trial does not write production history or delete anything. Same-assistant second full diff review completed; 28 backup/core tests and syntax/diff checks passed. Latest full CI and live upload/decrypt/isolated Supabase restore are still required. Existing source validates 12 public tables and Auth users/identities; live dump completeness is unproven. backup_history migration may still be absent in production: never apply it without explicit authorization. No production/Drive/secret mutation or merge performed.
+
+Next: complete private rclone browser consent, configure GitHub Environment without exposing credentials, identify an explicitly separate restore project and read-only production connection; resolve missing history-table precondition without unauthorized production mutation; run real encrypted round-trip and restore, record evidence, then request activation/merge approval. Supabase connector currently asks for an unavailable link_id. See OFFSITE_BACKUP_AND_RECOVERY.md for gate variable names. No restore verification flag has been set.
+
 ## GOOGLE-DRIVE-BACKUP-02 — 17 November 2026 (pending live authorization and restore)
 
 Owner updated the backup policy to one encrypted full logical Supabase backup per Cairo calendar day, retain 30 Cairo calendar days, and nest archives by 1-mohamed-backups/YYYY/MM - MonthName. Only expired recognized archive files are permanently deleted after a verified new upload and successful backup_history write; unrelated Drive files are preserved. No production or existing Drive data was changed.

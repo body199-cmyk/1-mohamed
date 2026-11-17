@@ -4,13 +4,22 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 import { pathToFileURL } from "node:url";
-import { backupFolderParts, prepareRcloneBackup } from "./google-drive-rclone.mjs";
+import { backupFolderParts, isManagedBackupPath, prepareRcloneBackup } from "./google-drive-rclone.mjs";
 
 export const EXPECTED_PROJECT_REF = "sskkuniskphlawivzudw";
 export const EXPECTED_PUBLIC_TABLES = Object.freeze(["app_members","app_owner","audit_log","backup_history","business_settings","contractors","idempotency_keys","opening_balances","payments","trips","vehicle_accounts","vehicles"]);
 export const EXPECTED_PUBLIC_DATA_TABLES = EXPECTED_PUBLIC_TABLES;
 export const BACKUP_FOLDER_NAME = "1-mohamed-backups";
 export const RETENTION_DAYS = 30;
+
+export function backupSafetyPolicy(env) {
+  const verified = env.BACKUP_RESTORE_VERIFIED === "true";
+  const retention = env.BACKUP_RETENTION_ENABLED === "true";
+  const recordHistory = env.BACKUP_RECORD_HISTORY === "true";
+  assert(!retention || (verified && recordHistory), "Retention requires a verified separate-project restore and enabled history recording.");
+  assert(env.GITHUB_EVENT_NAME !== "schedule" || (verified && recordHistory && env.BACKUP_ENABLED === "true"), "Scheduled backups require verified restore, history recording and explicit activation.");
+  return { retention, recordHistory };
+}
 
 function assert(ok, message) { if (!ok) throw new Error("BACKUP_INVALID: " + message); }
 export function cairoDate(value) {
@@ -47,6 +56,7 @@ export function verifyLogicalDump({rolesSql,schemaSql,dataSql}) {
   for(const table of EXPECTED_PUBLIC_TABLES)
     assert(new RegExp("\\bCOPY\\s+public\\."+table+"\\s*\\(","i").test(dataSql),"Logical data dump is missing public."+table+".");
   assert(/\bCOPY\s+auth\.users\s*\(/i.test(dataSql),"Logical data dump is missing auth.users; refusing incomplete Auth recovery archive.");
+  assert(/\bCOPY\s+auth\.users\s*\([^)]*\bencrypted_password\b[^)]*\)/i.test(dataSql),"Logical Auth dump is missing password hashes.");
   assert(/\bCOPY\s+auth\.identities\s*\(/i.test(dataSql),"Logical data dump is missing auth.identities; refusing incomplete Auth recovery archive.");
   return true;
 }
@@ -63,7 +73,7 @@ export function buildBackupManifest({createdAt,fileName,sourceCommit,postgresVer
 }
 function run(command,args,options={}) {
   const r=spawnSync(command,args,{encoding:"utf8",env:options.env??process.env,maxBuffer:12*1024*1024,stdio:["ignore","pipe","pipe"]});
-  if(r.error)throw r.error;if(r.status!==0)throw new Error(command+" failed with exit "+r.status+": "+(r.stderr||r.stdout||"no output").slice(-5000));
+  if(r.error)throw new Error(command+" could not start.");if(r.status!==0)throw new Error(command+" failed with exit "+r.status+"; command output withheld to protect credentials.");
   return r.stdout??"";
 }
 async function digest(path,algorithm) { const h=createHash(algorithm);for await(const c of createReadStream(path))h.update(c);return h.digest("hex"); }
@@ -99,15 +109,17 @@ async function folder(token,today) {
   return {rootId,monthId};
 }
 async function listFiles(token,rootId) {
-  const results=[], pending=[rootId];
+  const results=[], pending=[{id:rootId,path:""}], visited=new Set();
   while(pending.length) {
-    const id=pending.pop();
+    const {id,path}=pending.pop();
+    assert(!visited.has(id),"Drive folder cycle detected.");visited.add(id);
     const q=new URLSearchParams({q:"'"+id+"' in parents and trashed = false",pageSize:"1000",fields:"files(id,name,mimeType,size,md5Checksum,createdTime,webViewLink),nextPageToken"});
     const r=await drive("https://www.googleapis.com/drive/v3/files?"+q,token);
     assert(!r.nextPageToken,"More than 1000 entries in one Drive backup folder; cleanup stopped.");
     for(const file of r.files||[]) {
-      if(file.mimeType==="application/vnd.google-apps.folder")pending.push(file.id);
-      else if(/^1-mohamed-\d{4}-\d{2}-\d{2}\.tar\.gz\.age$/.test(file.name||""))results.push(file);
+      const filePath=path+file.name;
+      if(file.mimeType==="application/vnd.google-apps.folder")pending.push({id:file.id,path:filePath+"/"});
+      else if(/^1-mohamed-\d{4}-\d{2}-\d{2}\.tar\.gz\.age$/.test(file.name||""))results.push({...file,path:filePath});
     }
     assert(pending.length<500&&results.length<10000,"Drive backup folder traversal exceeded safety limit.");
   }
@@ -124,7 +136,7 @@ async function upload(token,folderId,path,name) {
   return file;
 }
 async function prune(token,folderId,today) {
-  const files=await listFiles(token,folderId), expired=filesToPrune(files,today);
+  const files=await listFiles(token,folderId), expired=filesToPrune(files.filter(f=>isManagedBackupPath(f.path,f.name)),today);
   for(const f of expired)await drive("https://www.googleapis.com/drive/v3/files/"+encodeURIComponent(f.id),token,{method:"DELETE"});
   return {retained:files.length-expired.length,deleted:expired.length};
 }
@@ -136,12 +148,13 @@ async function history(env,manifest,file,archiveBytes,archiveSha) {
   // psql -c bypasses psql variable interpolation; feed the SQL through stdin.
   const insertCmd="printf '%s\n' "+quote(sql)+" | psql \"$SUPABASE_DB_URL\" -X -v ON_ERROR_STOP=1 "+vals.map((v,i)=>"-v "+params[i]+"="+quote(v)).join(" ");
   const pruneCmd="printf '%s\n' "+quote("delete from public.backup_history where backup_date < :'cutoff'::date")+" | psql \"$SUPABASE_DB_URL\" -X -v ON_ERROR_STOP=1 -v cutoff="+quote(vals[8]);
-  const script=insertCmd+" && "+pruneCmd;
+  const script=env.BACKUP_RETENTION_ENABLED === "true" ? insertCmd+" && "+pruneCmd : insertCmd;
   run("docker",["run","--rm","--network","host","-e","SUPABASE_DB_URL","postgres:17.11-bookworm","sh","-ceu",script],{env});
 }
 function summary(lines){if(process.env.GITHUB_STEP_SUMMARY)appendFileSync(process.env.GITHUB_STEP_SUMMARY,lines.join("\n")+"\n","utf8");}
 
 export async function runOffsiteBackup(env=process.env) {
+  const policy=backupSafetyPolicy(env);
   validateBackupEnvironment(env);
   const work=mkdtempSync(join(env.RUNNER_TEMP||tmpdir(),"mohamed-backup-"));
   try {
@@ -183,9 +196,9 @@ export async function runOffsiteBackup(env=process.env) {
       uploaded=await upload(token,folders.monthId,finalEncrypted,fileName);
       finishRetention=()=>prune(token,folders.rootId,today);
     }
-    await history(env,finalManifest,uploaded,finalSize,finalSha);
-    const retention=await finishRetention();
-    summary(["## Google Drive backup completed","- Cairo date: "+today,"- File: "+fileName,"- Encrypted size: "+finalSize+" bytes","- SHA-256: "+finalSha,"- Drive upload: verified","- Retention: 30 calendar days; expired files permanently deleted: "+retention.deleted,"- Public tables: 12; Auth user records and owner/member mappings included; users must re-authenticate after a project restore","- Storage objects: 0",""]);
+    if(policy.recordHistory)await history(env,finalManifest,uploaded,finalSize,finalSha);
+    const retention=policy.retention ? await finishRetention() : {deleted:0,disabled:true};
+    summary(["## Google Drive backup completed","- Cairo date: "+today,"- File: "+fileName,"- Encrypted size: "+finalSize+" bytes","- SHA-256: "+finalSha,"- Drive upload: verified","- Retention: "+(retention.disabled?"disabled pending restore approval":"30 calendar days; expired files permanently deleted: "+retention.deleted),"- History recording: "+policy.recordHistory,"- Public tables: 12; Auth user records and owner/member mappings included; users must re-authenticate after a project restore","- Storage objects: 0",""]);
     return {today,fileName,size:finalSize,sha256:finalSha,driveFileId:uploaded.id,retention};
   } finally {rmSync(work,{recursive:true,force:true});}
 }

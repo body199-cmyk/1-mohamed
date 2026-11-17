@@ -1,3 +1,6 @@
+## T10 current slice — restore-safe Drive trial
+Add independent activation gates before database/cloud work; default no history write or deletion; exact managed paths only; rclone encrypted download SHA-256 comparison. Verify with backup/core tests and latest CI. Next slice: private browser grant and live upload/decrypt/separate-project restore; production history-table migration remains a precondition requiring explicit permission.
+
 ## LOGIN-THEME-DELIVERY-01
 Refine existing login layout with scoped tokens/Cairo, shared ThemeSelector on login/Settings, compatible theme preference with opt-in local-clock automatic mode and before-paint initialization. Keep header manual override, legacy light/dark persistence, recovery, remember selection and business drafts. Test local-clock boundaries/manual persistence/reload/storage failure and responsive login/recovery. Delivery audit records configuration/security/device acceptance gates without mutating live business data.
 

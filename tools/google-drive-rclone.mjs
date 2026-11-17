@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { createReadStream, statSync } from "node:fs";
+import { createReadStream, statSync, rmSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 
 export const ROOT_FOLDER = "1-mohamed-backups";
@@ -11,8 +11,15 @@ function assert(value, message) { if (!value) throw new Error("BACKUP_INVALID: "
 export function backupFolderParts(today) {
   assert(/^\d{4}-\d{2}-\d{2}$/.test(today), "Invalid Cairo date.");
   const month = Number(today.slice(5,7));
-  assert(month >= 1 && month <= 12 && !Number.isNaN(Date.parse(today+"T00:00:00Z")), "Invalid backup month.");
+  assert(month >= 1 && month <= 12 && !Number.isNaN(Date.parse(today+"T00:00:00Z")) && new Date(today+"T00:00:00Z").toISOString().slice(0,10) === today, "Invalid backup month/date.");
   return [ROOT_FOLDER, today.slice(0,4), String(month).padStart(2,"0") + " - " + MONTHS[month-1]];
+}
+
+export function isManagedBackupPath(path, name) {
+  const match = BACKUP_NAME.exec(name || "");
+  if (!match || typeof path !== "string") return false;
+  try { return path === backupFolderParts(match[1]).slice(1).join("/") + "/" + name; }
+  catch { return false; }
 }
 
 export function verifyRcloneFile(file, name, bytes, md5) {
@@ -28,11 +35,12 @@ function command(env, args) {
     ...env,
     RCLONE_CONFIG_DRIVE_TYPE: "drive",
     RCLONE_CONFIG_DRIVE_SCOPE: "drive.file",
+    RCLONE_CONFIG_DRIVE_SKIP_SHORTCUTS: "true",
     RCLONE_CONFIG_DRIVE_TOKEN: env.RCLONE_CONFIG_DRIVE_TOKEN
   };
   const result = spawnSync("rclone", args, { env: childEnv, encoding: "utf8", maxBuffer: 12*1024*1024, stdio: ["ignore","pipe","pipe"] });
   if (result.error) throw result.error;
-  if (result.status !== 0) throw new Error("rclone " + args[0] + " failed (exit " + result.status + "): " + (result.stderr || "unknown error").slice(-700));
+  if (result.status !== 0) throw new Error("rclone " + args[0] + " failed (exit " + result.status + "); output withheld to protect credentials.");
   return (result.stdout || "").trim();
 }
 
@@ -43,8 +51,8 @@ function list(env) {
   return files.filter(file => BACKUP_NAME.test(file.Name || "") && typeof file.Path === "string");
 }
 
-async function md5(path) {
-  const hash = createHash("md5");
+async function digest(path, algorithm = "md5") {
+  const hash = createHash(algorithm);
   for await (const chunk of createReadStream(path)) hash.update(chunk);
   return hash.digest("hex");
 }
@@ -63,16 +71,22 @@ export async function prepareRcloneBackup(env, encryptedPath, name, today, files
   command(env, ["copyto", encryptedPath, "drive:" + folder + "/" + name]);
   const files = list(env);
   const file = files.find(f => f.Name === name && f.Path === backupFolderParts(today).slice(1).join("/") + "/" + name);
-  await verifyRcloneFile(file, name, statSync(encryptedPath).size, await md5(encryptedPath));
+  verifyRcloneFile(file, name, statSync(encryptedPath).size, await digest(encryptedPath));
+  const downloaded = encryptedPath + ".download";
+  try {
+    command(env, ["copyto", "drive:" + folder + "/" + name, downloaded]);
+    assert(await digest(downloaded, "sha256") === await digest(encryptedPath, "sha256"), "Downloaded archive SHA-256 did not match.");
+  } finally { rmSync(downloaded, {force:true}); }
   // Never call "rclone link": on Google Drive it can enable public sharing.
   const webViewLink = "https://drive.google.com/file/d/" + encodeURIComponent(file.ID) + "/view";
   return {
     file: { id: file.ID, name, size: String(file.Size), md5Checksum: file.Hashes.MD5, webViewLink },
     prune: async () => {
       const all = list(env);
-      const expired = filesToPrune(all.map(f => ({ ...f, name: f.Name })), today);
+      assert(env.BACKUP_RESTORE_VERIFIED === "true" && env.BACKUP_RETENTION_ENABLED === "true", "Drive deletion is disabled pending restore approval.");
+      const expired = filesToPrune(all.filter(f => isManagedBackupPath(f.Path, f.Name)).map(f => ({ ...f, name: f.Name })), today);
       for (const item of expired) {
-        assert(item.Path.startsWith("20") && BACKUP_NAME.test(item.Name), "Refusing to delete an unrecognized Drive path.");
+        assert(isManagedBackupPath(item.Path, item.Name), "Refusing to delete an unrecognized Drive path.");
         command(env, ["deletefile", "drive:" + ROOT_FOLDER + "/" + item.Path, "--drive-use-trash=false"]);
       }
       return { retained: all.length - expired.length, deleted: expired.length };

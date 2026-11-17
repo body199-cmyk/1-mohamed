@@ -16,14 +16,18 @@ concurrency:
 jobs:
   backup:
     if: >-
-      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
-      (github.event_name == 'schedule' && vars.BACKUP_ENABLED == 'true')
+      (github.event_name == 'workflow_dispatch' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/feat/offsite-backup-t10-20261117')) ||
+      (github.event_name == 'schedule' && vars.BACKUP_ENABLED == 'true' && vars.BACKUP_RESTORE_VERIFIED == 'true' && vars.BACKUP_RECORD_HISTORY == 'true')
     runs-on: ubuntu-latest
     timeout-minutes: 40
     environment: google-drive-backup
     steps:
-      - name: Checkout reviewed main
+      - name: Checkout selected reviewed branch
         uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
       - name: Install age encryption
         run: |
           sudo apt-get update
@@ -37,4 +41,8 @@ jobs:
           GOOGLE_DRIVE_CLIENT_SECRET: ${{ secrets.GOOGLE_DRIVE_CLIENT_SECRET }}
           GOOGLE_DRIVE_REFRESH_TOKEN: ${{ secrets.GOOGLE_DRIVE_REFRESH_TOKEN }}
           GITHUB_SHA: ${{ github.sha }}
+          BACKUP_ENABLED: ${{ vars.BACKUP_ENABLED }}
+          BACKUP_RESTORE_VERIFIED: ${{ vars.BACKUP_RESTORE_VERIFIED }}
+          BACKUP_RETENTION_ENABLED: ${{ vars.BACKUP_RETENTION_ENABLED }}
+          BACKUP_RECORD_HISTORY: ${{ vars.BACKUP_RECORD_HISTORY }}
         run: node tools/offsite-backup.mjs

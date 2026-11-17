@@ -1,3 +1,6 @@
+## T10 resumed — GOOGLE-DRIVE-BACKUP-03
+Owner reopens encrypted daily Drive backup and 30 Cairo-day retention on PR #93. Partial: restore safety gates and rclone download verification implemented; real browser authorization, separate-project restore and exact-head CI remain acceptance gates. No production mutation, schedule/retention activation or merge authorized before restore evidence and approval. Current checkpoint: STATUS.
+
 ## LOGIN-THEME-DELIVERY-01
 User authorizes login polish +3-way theme choice (manual light/dark, device-clock auto06–18) and delivery review. Preserve auth/payment behavior; exact-head CI, responsive capture review and verified release. Read-only delivery review distinguishes proven code from live customer acceptance; see DELIVERY_READINESS_2026-11-17.md and STATUS.
 
