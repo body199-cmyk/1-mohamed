@@ -1,3 +1,18 @@
+## RELEASE-ACCEPTANCE-01 — 17 November 2026
+
+**PR #87 is merged and Production is deployed.** The previous UX-REORG-01.7 notes below are implementation history, not the current release state.
+
+- PR [#87](https://github.com/body199-cmyk/1-mohamed/pull/87) merged to `main`; squash commit `4571d0490604eca1130e34112537a804310b55e8`.
+- Exact PR head `c159be3ab772d1dc21eac0cc42837549dc945379`: GitHub Actions [44056644256](https://github.com/body199-cmyk/1-mohamed/actions/runs/44056644256) SUCCESS; all job steps passed, including type/unit, isolated PostgreSQL, negative controls, FIN-01/02/03, D15/D16, reports/exports, auth boundary, Chromium workspace and build.
+- Vercel Production deployment `dpl_D6uJ1cEWKervSR2XDcozTkdYp6EF` READY from the merge commit; [open Production](https://1-mohamed.vercel.app). Next.js 16.4.5, TypeScript and 15/15 static pages passed. Runtime error aggregation: no errors in the selected last 24 hours.
+- Existing Supabase project `1-mohamed` (`sskkuniskphlawivzudw`) is ACTIVE_HEALTHY; 20 migrations applied through `report_all_history`. Production env has the three Supabase connection variables configured (values remain secret) and `APP_ENABLE_REAL_DATA=true`. The read-only table inventory shows a populated business dataset; see [PRODUCTION_ACCEPTANCE_2026-11-17](PRODUCTION_ACCEPTANCE_2026-11-17.md).
+- All 10 inventoried public tables have RLS enabled. The 19 externally callable business `app_op_*` SECURITY DEFINER RPCs were inspected read-only and each contains `app_require_owner()`; `app_is_owner()` is the intentional owner-check RPC. Security Advisor still reports leaked-password protection disabled. Four unindexed-FK and five unused-index findings are informational; no schema/index changes were made.
+- No production data, Auth settings, secrets, environment variables, or migrations were changed during this review. PR #86 remains blocked; backups remain deferred.
+
+### Current acceptance state
+
+T05–T08 are connected to the existing Supabase-backed production workspace, but this checkpoint does not claim a fresh live write-path test. T09 includes the approved vehicle/contractor statement exports; daily-report export is not claimed. T10 backup/restore remains deferred. T11 still needs native Android/iOS, network/session edge-case and Auth hardening checks. T12 is deployed, with the authenticated user walkthrough and final release sign-off still outstanding. Never test writes by changing real business records.
+
 
 ### UX-REORG-01.7 correction after exact-head CI742fcdf
 89/90 browser cases passed; new device-invariance case timed out because it refilled compact filters that had auto-collapsed. Test helpers now explicitly reopen the existing filter disclosure; no app/filter behavior changed. All four standalone device/theme export cases succeeded and their PNG/PDF file hashes already matched across variants. First actual visual pass found mid-token wrapping of contractor dates/tonnes; numeric LTR columns now remain whole while Arabic routes still wrap, and monetary summary directions are explicitly LTR. Rendered PDF top clipping seen in inline tool display was a thumbnail presentation artifact: extracted embedded JPEG has intact full header, and pdftoppm ink bounding box starts18px inside the page. No PDF data/layout cropping change was needed. One batched correction and final confirmation follows; final CI must be on corrected head.
