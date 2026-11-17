@@ -79,12 +79,13 @@ async function drive(url,token,options={}) {
 }
 async function ensureFolder(token,name,parentId) {
   const safeName=name.replace(/'/g,"\\'");
-  const filter="name = '"+safeName+"' and mimeType = 'application/vnd.google-apps.folder' and trashed = false"+(parentId?" and '"+parentId+"' in parents":"");
+  const filter="name = '"+safeName+"' and mimeType = 'application/vnd.google-apps.folder' and trashed = false"+(parentId?" and '"+parentId+"' in parents":" and 'root' in parents");
   const q=new URLSearchParams({q:filter,spaces:"drive",pageSize:"100",fields:"files(id,name),nextPageToken"});
   const result=await drive("https://www.googleapis.com/drive/v3/files?"+q,token);
   assert(!result.nextPageToken,"Ambiguous Drive folder lookup.");
-  const found=result.files?.find(f=>f.name===name);
-  if(found)return found.id;
+  const matches=(result.files||[]).filter(f=>f.name===name);
+  assert(matches.length<=1,"Multiple Drive folders have the same backup path; refusing ambiguous destination.");
+  if(matches.length)return matches[0].id;
   const meta={name,mimeType:"application/vnd.google-apps.folder"};
   if(parentId)meta.parents=[parentId];
   const made=await drive("https://www.googleapis.com/drive/v3/files?fields=id,name",token,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(meta)});
