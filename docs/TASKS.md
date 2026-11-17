@@ -1,3 +1,6 @@
+## GOOGLE-DRIVE-BACKUP-05 — live setup remains partial
+Drive grant/GitHub secret/free isolated restore project prepared; synthetic encrypted upload succeeded but download hit shared OAuth quota. Database URLs, actual recovery and new CI outstanding. No production activation. Current evidence: STATUS.
+
 ## T10 resumed — GOOGLE-DRIVE-BACKUP-03
 Owner reopens encrypted daily Drive backup and 30 Cairo-day retention on PR #93. Partial: restore safety gates and rclone download verification implemented; real browser authorization, separate-project restore and exact-head CI remain acceptance gates. No production mutation, schedule/retention activation or merge authorized before restore evidence and approval. Current checkpoint: STATUS.
 

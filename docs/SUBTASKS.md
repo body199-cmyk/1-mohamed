@@ -1,3 +1,6 @@
+## T10 current slice — no-write initial snapshot
+Allow missing backup_history only in a no-history trial while preserving all11 application tables/Auth; manifest reflects actual table set. Regression29 backup/core tests PASS. Live consent/secret/free project prepared; resolve quota and securely obtain database URLs before real restore.
+
 ## T10 current slice — restore-safe Drive trial
 Add independent activation gates before database/cloud work; default no history write or deletion; exact managed paths only; rclone encrypted download SHA-256 comparison. Verify with backup/core tests and latest CI. Next slice: private browser grant and live upload/decrypt/separate-project restore; production history-table migration remains a precondition requiring explicit permission.
 

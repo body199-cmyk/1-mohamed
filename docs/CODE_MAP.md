@@ -1,3 +1,8 @@
+## GOOGLE-DRIVE-BACKUP-05 map
+- tools/offsite-backup.mjs: dumpPublicTables and explicit optional history for read-only trial; exact11/12 table manifests.
+- tools/offsite-backup.test.mjs: initial absent history allowed only for trial; incomplete real application data remains rejected.
+- STATUS: live resource setup and blocked shared-client round-trip; no credentials stored in repository.
+
 ## GOOGLE-DRIVE-BACKUP-03 map
 - tools/offsite-backup.mjs: backupSafetyPolicy, default read-only trial, gated history/retention and legacy managed paths.
 - tools/google-drive-rclone.mjs: exact dated paths, ignore shortcuts, verified encrypted download and gated deletion.

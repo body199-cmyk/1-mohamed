@@ -49,27 +49,33 @@ export function validateBackupEnvironment(env) {
   assert(url.hostname.includes(EXPECTED_PROJECT_REF)||decodeURIComponent(url.username).includes(EXPECTED_PROJECT_REF),"Database URL does not identify the expected 1-mohamed project.");
   return true;
 }
-export function verifyLogicalDump({rolesSql,schemaSql,dataSql}) {
+export function dumpPublicTables(schemaSql, allowMissingHistory=false) {
+  const hasHistory=/\bCREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?public\.backup_history\s*\(/i.test(schemaSql);
+  return EXPECTED_PUBLIC_TABLES.filter(table=>table!=="backup_history" || !allowMissingHistory || hasHistory);
+}
+export function verifyLogicalDump({rolesSql,schemaSql,dataSql,allowMissingHistory=false}) {
   assert(rolesSql?.trim(),"roles.sql is empty."); assert(schemaSql?.trim(),"schema.sql is empty."); assert(dataSql?.trim(),"data.sql is empty.");
-  for(const table of EXPECTED_PUBLIC_TABLES)
+  const publicTables=dumpPublicTables(schemaSql,allowMissingHistory);
+  for(const table of publicTables)
     assert(new RegExp("\\bCREATE\\s+TABLE\\s+(?:IF\\s+NOT\\s+EXISTS\\s+)?(?:public\\.)?"+table+"\\s*\\(","i").test(schemaSql),"Logical schema dump is missing public."+table+".");
-  for(const table of EXPECTED_PUBLIC_TABLES)
+  for(const table of publicTables)
     assert(new RegExp("\\bCOPY\\s+public\\."+table+"\\s*\\(","i").test(dataSql),"Logical data dump is missing public."+table+".");
   assert(/\bCOPY\s+auth\.users\s*\(/i.test(dataSql),"Logical data dump is missing auth.users; refusing incomplete Auth recovery archive.");
   assert(/\bCOPY\s+auth\.users\s*\([^)]*\bencrypted_password\b[^)]*\)/i.test(dataSql),"Logical Auth dump is missing password hashes.");
   assert(/\bCOPY\s+auth\.identities\s*\(/i.test(dataSql),"Logical data dump is missing auth.identities; refusing incomplete Auth recovery archive.");
   return true;
 }
-export function buildBackupManifest({createdAt,fileName,sourceCommit,postgresVersion,tableCounts,dataSqlSha256}) {
+export function buildBackupManifest({createdAt,fileName,sourceCommit,postgresVersion,tableCounts,dataSqlSha256,includeBackupHistory=true}) {
   assert(fileName===buildBackupFileName(createdAt),"Backup file name does not match Cairo calendar date.");
   assert(/^[a-f0-9]{7,64}$/i.test(sourceCommit||""),"Source commit is invalid.");
   assert(typeof postgresVersion==="string"&&postgresVersion.length>0,"PostgreSQL version is missing.");
   assert(tableCounts&&typeof tableCounts==="object"&&!Array.isArray(tableCounts),"Table-count manifest is invalid.");
-  const names=Object.keys(tableCounts).sort(), expected=[...EXPECTED_PUBLIC_TABLES].sort();
+  const publicTables=EXPECTED_PUBLIC_TABLES.filter(t=>t!=="backup_history" || includeBackupHistory);
+  const names=Object.keys(tableCounts).sort(), expected=[...publicTables].sort();
   assert(names.length===expected.length&&names.every((n,i)=>n===expected[i]),"Public table-count manifest is incomplete.");
   for(const [name,count] of Object.entries(tableCounts)) assert(Number.isSafeInteger(count)&&count>=0,"Invalid row count for public."+name);
   assert(/^[a-f0-9]{64}$/.test(dataSqlSha256||""),"SQL data SHA-256 is invalid.");
-  return {format:"1-mohamed-full-supabase-logical-backup",format_version:2,created_at:new Date(createdAt).toISOString(),cairo_backup_date:cairoDate(createdAt),project_ref:EXPECTED_PROJECT_REF,source_commit:sourceCommit,postgres_version:postgresVersion,public_table_counts:tableCounts,public_tables_included:[...EXPECTED_PUBLIC_TABLES],public_table_data_included:[...EXPECTED_PUBLIC_TABLES],auth_users_included:true,auth_password_hashes_included:true,identity_mapping_rows_included:true,auth_identities_included:true,storage_objects_included:false,data_sql_sha256:dataSqlSha256,encrypted:true};
+  return {format:"1-mohamed-full-supabase-logical-backup",format_version:2,created_at:new Date(createdAt).toISOString(),cairo_backup_date:cairoDate(createdAt),project_ref:EXPECTED_PROJECT_REF,source_commit:sourceCommit,postgres_version:postgresVersion,public_table_counts:tableCounts,public_tables_included:[...publicTables],public_table_data_included:[...publicTables],backup_history_included:includeBackupHistory,auth_users_included:true,auth_password_hashes_included:true,identity_mapping_rows_included:true,auth_identities_included:true,storage_objects_included:false,data_sql_sha256:dataSqlSha256,encrypted:true};
 }
 function run(command,args,options={}) {
   const r=spawnSync(command,args,{encoding:"utf8",env:options.env??process.env,maxBuffer:12*1024*1024,stdio:["ignore","pipe","pipe"]});
@@ -166,12 +172,13 @@ export async function runOffsiteBackup(env=process.env) {
     ];
     for(const args of commands)run("npx",["--yes","supabase@2.122.1",...args],{env});
     const [rolesSql,schemaSql,dataSql]=["roles.sql","schema.sql","data.sql"].map(n=>readFileSync(join(work,n),"utf8"));
-    verifyLogicalDump({rolesSql,schemaSql,dataSql});
+    verifyLogicalDump({rolesSql,schemaSql,dataSql,allowMissingHistory:!policy.recordHistory});
+    const publicTables=dumpPublicTables(schemaSql,!policy.recordHistory);
     const containerScript=[
       "set -eu",
       "psql \"$SUPABASE_DB_URL\" -XAt -v ON_ERROR_STOP=1 -c \"select (select count(*) from storage.buckets)::text || '|' || (select count(*) from storage.objects)::text\" > /backup/storage-counts.txt",
       "psql \"$SUPABASE_DB_URL\" -XAt -v ON_ERROR_STOP=1 -c \"select current_setting('server_version')\" > /backup/postgres-version.txt",
-      "psql \"$SUPABASE_DB_URL\" -XAt -v ON_ERROR_STOP=1 -c \"select jsonb_build_object('app_members',(select count(*) from public.app_members),'app_owner',(select count(*) from public.app_owner),'audit_log',(select count(*) from public.audit_log),'business_settings',(select count(*) from public.business_settings),'contractors',(select count(*) from public.contractors),'idempotency_keys',(select count(*) from public.idempotency_keys),'opening_balances',(select count(*) from public.opening_balances),'payments',(select count(*) from public.payments),'trips',(select count(*) from public.trips),'vehicle_accounts',(select count(*) from public.vehicle_accounts),'vehicles',(select count(*) from public.vehicles),'backup_history',(select count(*) from public.backup_history))::text\" > /backup/table-counts.json",
+      "psql \"$SUPABASE_DB_URL\" -XAt -v ON_ERROR_STOP=1 -c \"select jsonb_build_object("+publicTables.map(t=>"'"+t+"',(select count(*) from public."+t+")").join(",")+")::text\" > /backup/table-counts.json",
     ].join("\n");
     const uid=typeof process.getuid==="function"?String(process.getuid()):"0",gid=typeof process.getgid==="function"?String(process.getgid()):"0";
     run("docker",["run","--rm","--network","host","--user",uid+":"+gid,"-e","SUPABASE_DB_URL","-v",work+":/backup","postgres:17.11-bookworm","sh","-ceu",containerScript],{env});
@@ -181,7 +188,7 @@ export async function runOffsiteBackup(env=process.env) {
     const manifest={format:"1-mohamed-full-supabase-logical-backup",format_version:2,created_at:createdAt,cairo_backup_date:today,project_ref:EXPECTED_PROJECT_REF,source_commit:env.GITHUB_SHA||"0000000",postgres_version:readFileSync(join(work,"postgres-version.txt"),"utf8").trim(),public_table_counts:counts,public_tables_included:[...EXPECTED_PUBLIC_TABLES],auth_users_included:true,storage_objects_included:false};
     writeFileSync(join(work,"manifest.json"),JSON.stringify(manifest,null,2)+"\n",{mode:0o600});
     const dataSqlSha=await digest(join(work,"data.sql"),"sha256");
-    const finalManifest=buildBackupManifest({createdAt,fileName,sourceCommit:manifest.source_commit,postgresVersion:manifest.postgres_version,tableCounts:counts,dataSqlSha256:dataSqlSha});
+    const finalManifest=buildBackupManifest({createdAt,fileName,sourceCommit:manifest.source_commit,postgresVersion:manifest.postgres_version,tableCounts:counts,dataSqlSha256:dataSqlSha,includeBackupHistory:publicTables.includes("backup_history")});
     writeFileSync(join(work,"manifest.json"),JSON.stringify(finalManifest,null,2)+"\n",{mode:0o600});
     const tar=join(work,"1-mohamed.tar.gz");run("tar",["-czf",tar,"-C",work,"roles.sql","schema.sql","data.sql","manifest.json"]);
     const finalEncrypted=tar+".age";run("age",["-r",env.AGE_RECIPIENT,"-o",finalEncrypted,tar]);
@@ -198,7 +205,7 @@ export async function runOffsiteBackup(env=process.env) {
     }
     if(policy.recordHistory)await history(env,finalManifest,uploaded,finalSize,finalSha);
     const retention=policy.retention ? await finishRetention() : {deleted:0,disabled:true};
-    summary(["## Google Drive backup completed","- Cairo date: "+today,"- File: "+fileName,"- Encrypted size: "+finalSize+" bytes","- SHA-256: "+finalSha,"- Drive upload: verified","- Retention: "+(retention.disabled?"disabled pending restore approval":"30 calendar days; expired files permanently deleted: "+retention.deleted),"- History recording: "+policy.recordHistory,"- Public tables: 12; Auth user records and owner/member mappings included; users must re-authenticate after a project restore","- Storage objects: 0",""]);
+    summary(["## Google Drive backup completed","- Cairo date: "+today,"- File: "+fileName,"- Encrypted size: "+finalSize+" bytes","- SHA-256: "+finalSha,"- Drive upload: verified","- Retention: "+(retention.disabled?"disabled pending restore approval":"30 calendar days; expired files permanently deleted: "+retention.deleted),"- History recording: "+policy.recordHistory,"- Public tables: "+publicTables.length+"; Auth user records and owner/member mappings included; users must re-authenticate after a project restore","- Storage objects: 0",""]);
     return {today,fileName,size:finalSize,sha256:finalSha,driveFileId:uploaded.id,retention};
   } finally {rmSync(work,{recursive:true,force:true});}
 }

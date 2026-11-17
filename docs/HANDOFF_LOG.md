@@ -1,3 +1,6 @@
+## GOOGLE-DRIVE-BACKUP-05 — 17 November 2026
+Google consent verified; encrypted Environment grant saved, all activation gates false. Free separate restore project xvmnmdxdhymllsdyhlth ACTIVE_HEALTHY; no production writes. Synthetic encrypted upload succeeded, download twice blocked by shared-client project quota403, so no decrypt/restore success claimed. Missing production history table handled only for no-write trial; regression29 tests PASS. Current paths, blockers and next action in STATUS; public publication approval still required.
+
 ## GOOGLE-DRIVE-BACKUP-03 — 17 November 2026
 Resumed PR93 at 5e0ee06 on feat/offsite-backup-t10-20261117; existing CI44160850974 PASS, main145ec998 unchanged. Found unconditional Drive/history pruning before a restore drill. Added opt-in restore/history/retention gates, no-write trial defaults, exact dated archive paths, rclone shortcut exclusion/download SHA-256 verification and safe subprocess errors. Reviewed full diff separately by same assistant; 28 backup/core tests PASS plus syntax/diff checks. Live Auth/dump/Drive/decrypt/restore remain untested; new full CI required. No production writes, real Drive changes, secrets configured or PR merge. Supabase connector requires missing link_id; backup_history table migration may be absent and must not be silently applied. Current next action and constraints are in STATUS.
 

@@ -55,3 +55,20 @@ test("Auth recovery refuses a users dump without password hashes",()=>{
  const dataSql=[...EXPECTED_PUBLIC_TABLES.map(t=>"COPY public."+t+" (id) FROM stdin;"),"COPY auth.users (id,email) FROM stdin;","COPY auth.identities (id,user_id) FROM stdin;"].join("\n");
  assert.throws(()=>verifyLogicalDump({rolesSql,schemaSql,dataSql}),/password hashes/);
 });
+
+test("read-only first backup may omit only the absent history table",()=>{
+  const tables=EXPECTED_PUBLIC_TABLES.filter(t=>t!=="backup_history");
+  const rolesSql="CREATE ROLE authenticator;";
+  const schemaSql=tables.map(t=>"CREATE TABLE public."+t+" (id text);").join("\n");
+  const dataSql=[...tables.map(t=>"COPY public."+t+" (id) FROM stdin;"),"COPY auth.users (id,encrypted_password) FROM stdin;","COPY auth.identities (id,user_id) FROM stdin;"].join("\n");
+  assert.equal(verifyLogicalDump({rolesSql,schemaSql,dataSql,allowMissingHistory:true}),true);
+  assert.throws(()=>verifyLogicalDump({rolesSql,schemaSql,dataSql}),/backup_history/);
+  assert.throws(()=>verifyLogicalDump({rolesSql,schemaSql:schemaSql+"\nCREATE TABLE public.backup_history (id text);",dataSql,allowMissingHistory:true}),/backup_history/);
+  assert.throws(()=>verifyLogicalDump({rolesSql,schemaSql,dataSql:dataSql.replace("COPY public.payments (id) FROM stdin;",""),allowMissingHistory:true}),/payments/);
+  const args={createdAt:"2026-11-17T01:00:00Z",fileName:"1-mohamed-2026-11-17.tar.gz.age",sourceCommit:"a".repeat(40),postgresVersion:"17.11",tableCounts:Object.fromEntries(tables.map(t=>[t,0])),dataSqlSha256:"b".repeat(64)};
+  const manifest=buildBackupManifest({...args,includeBackupHistory:false});
+  assert.deepEqual(manifest.public_tables_included,tables);
+  assert.deepEqual(manifest.public_table_data_included,tables);
+  assert.equal(manifest.backup_history_included,false);
+  assert.throws(()=>buildBackupManifest(args),/incomplete/);
+});
