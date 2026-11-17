@@ -67,6 +67,8 @@ const preparedServerRoutes = new Set([
   "apps/web/src/app/api/ledger/master/route.ts",
   "apps/web/src/app/api/auth/login/route.ts",
   "apps/web/src/app/api/auth/members/route.ts",
+  "apps/web/src/app/api/backup/export/route.ts",
+  "apps/web/src/app/api/backup/history/route.ts",
 ]);
 for (const path of appSourceFiles("apps/web/src/app")) {
   const file = read(path);
@@ -75,7 +77,7 @@ for (const path of appSourceFiles("apps/web/src/app")) {
       `Unreviewed Supabase import in ${path}`);
   } else {
     assert.match(file, /getSupabaseSetupStatus/);
-    if (path.includes("/api/ledger/")) assert.match(file, /verifyOwnerForRoute/);
+    if (path.includes("/api/ledger/") || path.includes("/api/backup/")) assert.match(file, /verifyOwnerForRoute/);
     if (path.endsWith("/api/auth/login/route.ts")) assert.match(file, /app_has_access/);
     assert.doesNotMatch(file, /SUPABASE_SERVICE_ROLE_KEY|sb_secret_/);
   }
