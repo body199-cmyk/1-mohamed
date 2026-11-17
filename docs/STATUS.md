@@ -1,3 +1,9 @@
+## GOOGLE-DRIVE-BACKUP-02 — 17 November 2026 (pending live authorization and restore)
+
+Owner updated the backup policy to one encrypted full logical Supabase backup per Cairo calendar day, retain 30 Cairo calendar days, and nest archives by 1-mohamed-backups/YYYY/MM - MonthName. Only expired recognized archive files are permanently deleted after a verified new upload and successful backup_history write; unrelated Drive files are preserved. No production or existing Drive data was changed.
+
+PR #93 now includes an alternative rclone Google Drive transport using the owner's one-time browser authorization, without the owner having to create a Google Cloud OAuth client or consent screen. The legacy OAuth transport remains optional. GitHub Actions must still receive the owner's private rclone token via an Environment secret; the ChatGPT Google Drive connector cannot supply GitHub credentials. CI and the actual upload/decrypt/separate-project restore remain release gates. The backup schedule remains disabled.
+
 ## GOOGLE-DRIVE-BACKUP-01 — 17 November 2026
 
 Owner-approved policy: one encrypted full logical Supabase backup per Cairo calendar day, retain the latest 15 calendar days in a private Google Drive folder. No AWS, Cloudflare R2, or six-hour snapshots. The scheduled workflow remains gated until Google OAuth refresh-token secrets, Supabase Session Pooler URL, age public recipient, and the backup-history migration are configured.
