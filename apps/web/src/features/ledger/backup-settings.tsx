@@ -5,7 +5,7 @@ const TABLES=[
  ["app_members","المستخدمون المدعوون"],["app_owner","صاحب الحساب"],["audit_log","سجل العمليات"],
  ["business_settings","بيانات النشاط"],["contractors","المقاولون"],["idempotency_keys","منع تكرار العمليات"],
  ["opening_balances","الأرصدة الافتتاحية"],["payments","الدفعات"],["trips","النقلات"],
- ["vehicle_accounts","حسابات العربيات"],["vehicles","العربيات"],
+ ["vehicle_accounts","حسابات العربيات"],["vehicles","العربيات"],["backup_history","سجل النسخ الاحتياطية"],
 ] as const;
 type Backup={backup_date:string;file_name:string;drive_file_id:string;drive_web_view_link:string|null;size_bytes:number;sha256:string;created_at:string};
 function bytes(value:number){return value<1024?value+" B":(value/1024).toFixed(1)+" KB";}
@@ -23,11 +23,11 @@ export function BackupSettings(){
  useEffect(()=>{void refresh();},[]);
  return <section aria-label="النسخ الاحتياطي" style={{marginTop:22,paddingTop:18,borderTop:"1px solid var(--border-color)"}}>
   <h3>النسخ الاحتياطي واستعادة البيانات</h3>
-  <p>نسخة سحابية يومية مشفرة على Google Drive، مع الاحتفاظ بآخر 15 يومًا. النسخة الكاملة تتضمن قاعدة البيانات ومستخدمي Auth.</p>
+  <p>نسخة سحابية يومية مشفرة على Google Drive، مع الاحتفاظ بآخر 15 يومًا. النسخة السحابية تشمل بيانات وهيكل جداول التطبيق. حسابات Supabase Auth تُدار بشكل منفصل ولا تُحفظ كلمات مرورها في هذا التصدير.</p>
   <div className={ui.actions}>
    <a className={ui.control} href="/api/backup/export?format=json" download>تنزيل نسخة بيانات كاملة (JSON)</a>
   </div>
-  <p>نسخة JSON تحتوي جميع جداول بيانات التطبيق الـ11. لا تحتوي كلمات مرور Auth أو إعدادات المشروع الداخلية؛ احتفظ بالنسخة السحابية المشفرة لاستعادة PostgreSQL بالكامل.</p>
+  <p>نسخة JSON تحتوي جميع جداول بيانات التطبيق الـ12. لا تحتوي بيانات دخول Supabase Auth أو كلمات المرور أو إعدادات المشروع الداخلية؛ احتفظ بالنسخة السحابية المشفرة لاستعادة هيكل وبيانات PostgreSQL.</p>
   <div className={ui.fieldGroup}>
    <label htmlFor="backup-csv-table">تصدير جدول قابل للقراءة في Excel</label>
    <select id="backup-csv-table" className={ui.control} value={table} onChange={e=>setTable(e.target.value as typeof table)}>

@@ -6,7 +6,8 @@ import { spawnSync } from "node:child_process";
 import { pathToFileURL } from "node:url";
 
 export const EXPECTED_PROJECT_REF = "sskkuniskphlawivzudw";
-export const EXPECTED_PUBLIC_TABLES = Object.freeze(["app_members","app_owner","audit_log","business_settings","contractors","idempotency_keys","opening_balances","payments","trips","vehicle_accounts","vehicles"]);
+export const EXPECTED_PUBLIC_TABLES = Object.freeze(["app_members","app_owner","audit_log","backup_history","business_settings","contractors","idempotency_keys","opening_balances","payments","trips","vehicle_accounts","vehicles"]);
+export const EXPECTED_PUBLIC_DATA_TABLES = Object.freeze(EXPECTED_PUBLIC_TABLES.filter(table => !["app_members","app_owner"].includes(table)));
 export const BACKUP_FOLDER_NAME = "1-mohamed-backups";
 export const RETENTION_DAYS = 15;
 
@@ -38,9 +39,10 @@ export function validateBackupEnvironment(env) {
 }
 export function verifyLogicalDump({rolesSql,schemaSql,dataSql}) {
   assert(rolesSql?.trim(),"roles.sql is empty."); assert(schemaSql?.trim(),"schema.sql is empty."); assert(dataSql?.trim(),"data.sql is empty.");
-  for(const table of EXPECTED_PUBLIC_TABLES)
+  for(const table of EXPECTED_PUBLIC_DATA_TABLES)
     assert(new RegExp("\\bCOPY\\s+public\\."+table+"\\s*\\(","i").test(dataSql),"Logical data dump is missing public."+table+".");
-  assert(/\bCOPY\s+auth\.users\s*\(/i.test(dataSql),"Logical data dump is missing auth.users; refusing incomplete recovery archive.");
+  for(const table of ["app_members","app_owner"])
+    assert(!new RegExp("\\bCOPY\\s+public\\."+table+"\\s*\\(","i").test(dataSql),"Identity mapping data public."+table+" must be recreated on restore, not replayed from stale Auth UUIDs.");
   return true;
 }
 export function buildBackupManifest({createdAt,fileName,sourceCommit,postgresVersion,tableCounts,dataSqlSha256}) {
@@ -52,7 +54,7 @@ export function buildBackupManifest({createdAt,fileName,sourceCommit,postgresVer
   assert(names.length===expected.length&&names.every((n,i)=>n===expected[i]),"Public table-count manifest is incomplete.");
   for(const [name,count] of Object.entries(tableCounts)) assert(Number.isSafeInteger(count)&&count>=0,"Invalid row count for public."+name);
   assert(/^[a-f0-9]{64}$/.test(dataSqlSha256||""),"SQL data SHA-256 is invalid.");
-  return {format:"1-mohamed-full-supabase-logical-backup",format_version:2,created_at:new Date(createdAt).toISOString(),cairo_backup_date:cairoDate(createdAt),project_ref:EXPECTED_PROJECT_REF,source_commit:sourceCommit,postgres_version:postgresVersion,public_table_counts:tableCounts,public_tables_included:[...EXPECTED_PUBLIC_TABLES],auth_users_included:true,storage_objects_included:false,data_sql_sha256:dataSqlSha256,encrypted:true};
+  return {format:"1-mohamed-full-supabase-logical-backup",format_version:2,created_at:new Date(createdAt).toISOString(),cairo_backup_date:cairoDate(createdAt),project_ref:EXPECTED_PROJECT_REF,source_commit:sourceCommit,postgres_version:postgresVersion,public_table_counts:tableCounts,public_tables_included:[...EXPECTED_PUBLIC_TABLES],auth_users_included:false,auth_password_hashes_included:false,identity_mapping_rows_included:false,storage_objects_included:false,data_sql_sha256:dataSqlSha256,encrypted:true};
 }
 function run(command,args,options={}) {
   const r=spawnSync(command,args,{encoding:"utf8",env:options.env??process.env,maxBuffer:12*1024*1024,stdio:["ignore","pipe","pipe"]});
@@ -114,7 +116,7 @@ export async function runOffsiteBackup(env=process.env) {
     const commands=[
       ["db","dump","--db-url",env.SUPABASE_DB_URL,"-f",join(work,"roles.sql"),"--role-only"],
       ["db","dump","--db-url",env.SUPABASE_DB_URL,"-f",join(work,"schema.sql")],
-      ["db","dump","--db-url",env.SUPABASE_DB_URL,"-f",join(work,"data.sql"),"--use-copy","--data-only","-x","storage.buckets_vectors","-x","storage.vector_indexes"],
+      ["db","dump","--db-url",env.SUPABASE_DB_URL,"-f",join(work,"data.sql"),"--use-copy","--data-only","-x","storage.buckets_vectors","-x","storage.vector_indexes","-x","public.app_owner","-x","public.app_members"],
     ];
     for(const args of commands)run("npx",["--yes","supabase@2.122.1",...args],{env});
     const [rolesSql,schemaSql,dataSql]=["roles.sql","schema.sql","data.sql"].map(n=>readFileSync(join(work,n),"utf8"));
@@ -123,7 +125,7 @@ export async function runOffsiteBackup(env=process.env) {
       "set -eu",
       "psql \"$SUPABASE_DB_URL\" -XAt -v ON_ERROR_STOP=1 -c \"select (select count(*) from storage.buckets)::text || '|' || (select count(*) from storage.objects)::text\" > /backup/storage-counts.txt",
       "psql \"$SUPABASE_DB_URL\" -XAt -v ON_ERROR_STOP=1 -c \"select current_setting('server_version')\" > /backup/postgres-version.txt",
-      "psql \"$SUPABASE_DB_URL\" -XAt -v ON_ERROR_STOP=1 -c \"select jsonb_build_object('app_members',(select count(*) from public.app_members),'app_owner',(select count(*) from public.app_owner),'audit_log',(select count(*) from public.audit_log),'business_settings',(select count(*) from public.business_settings),'contractors',(select count(*) from public.contractors),'idempotency_keys',(select count(*) from public.idempotency_keys),'opening_balances',(select count(*) from public.opening_balances),'payments',(select count(*) from public.payments),'trips',(select count(*) from public.trips),'vehicle_accounts',(select count(*) from public.vehicle_accounts),'vehicles',(select count(*) from public.vehicles))::text\" > /backup/table-counts.json",
+      "psql \"$SUPABASE_DB_URL\" -XAt -v ON_ERROR_STOP=1 -c \"select jsonb_build_object('app_members',(select count(*) from public.app_members),'app_owner',(select count(*) from public.app_owner),'audit_log',(select count(*) from public.audit_log),'business_settings',(select count(*) from public.business_settings),'contractors',(select count(*) from public.contractors),'idempotency_keys',(select count(*) from public.idempotency_keys),'opening_balances',(select count(*) from public.opening_balances),'payments',(select count(*) from public.payments),'trips',(select count(*) from public.trips),'vehicle_accounts',(select count(*) from public.vehicle_accounts),'vehicles',(select count(*) from public.vehicles),'backup_history',(select count(*) from public.backup_history))::text\" > /backup/table-counts.json",
     ].join("\n");
     const uid=typeof process.getuid==="function"?String(process.getuid()):"0",gid=typeof process.getgid==="function"?String(process.getgid()):"0";
     run("docker",["run","--rm","--network","host","--user",uid+":"+gid,"-e","SUPABASE_DB_URL","-v",work+":/backup","postgres:17.11-bookworm","sh","-ceu",containerScript],{env});
@@ -143,7 +145,7 @@ export async function runOffsiteBackup(env=process.env) {
     const uploaded=await upload(token,folderId,finalEncrypted,fileName);
     await history(env,finalManifest,uploaded,finalSize,finalSha);
     const retention=await prune(token,folderId,today);
-    summary(["## Google Drive backup completed","- Cairo date: "+today,"- File: "+fileName,"- Encrypted size: "+finalSize+" bytes","- SHA-256: "+finalSha,"- Drive upload: verified","- Retention: 15 calendar days; expired files trashed: "+retention.trashed,"- Public tables: 11; Auth users included","- Storage objects: 0",""]);
+    summary(["## Google Drive backup completed","- Cairo date: "+today,"- File: "+fileName,"- Encrypted size: "+finalSize+" bytes","- SHA-256: "+finalSha,"- Drive upload: verified","- Retention: 15 calendar days; expired files trashed: "+retention.trashed,"- Public tables: 12; Auth users/password hashes excluded by Supabase CLI; owner/member mappings must be recreated","- Storage objects: 0",""]);
     return {today,fileName,size:finalSize,sha256:finalSha,driveFileId:uploaded.id,retention};
   } finally {rmSync(work,{recursive:true,force:true});}
 }

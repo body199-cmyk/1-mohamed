@@ -2,13 +2,13 @@ import { createHash } from "node:crypto";
 
 export const PORTABLE_BACKUP_TABLES = [
   "app_members","app_owner","audit_log","business_settings","contractors",
-  "idempotency_keys","opening_balances","payments","trips","vehicle_accounts","vehicles",
+  "idempotency_keys","opening_balances","payments","trips","vehicle_accounts","vehicles","backup_history",
 ] as const;
 export type PortableBackupTable = typeof PORTABLE_BACKUP_TABLES[number];
 export const BACKUP_ORDER: Record<PortableBackupTable, readonly string[]> = {
   app_members:["user_id"], app_owner:["id"], audit_log:["id"], business_settings:["id"],
   contractors:["id"], idempotency_keys:["key"], opening_balances:["id"], payments:["id"],
-  trips:["id"], vehicle_accounts:["vehicle_id","contractor_id"], vehicles:["id"],
+  trips:["id"], vehicle_accounts:["vehicle_id","contractor_id"], vehicles:["id"], backup_history:["id"],
 };
 export const BACKUP_COLUMNS: Record<PortableBackupTable, readonly string[]> = {
   app_members:["user_id","email","is_active","invited_by","created_at","updated_at"],
@@ -22,6 +22,7 @@ export const BACKUP_COLUMNS: Record<PortableBackupTable, readonly string[]> = {
   trips:["id","vehicle_id","counterparty_contractor_id","responsible_contractor_id","direction","trip_date","weight_milli_tonnes","contractor_rate_piastres","vehicle_rate_piastres","same_rate","expense_piastres","contractor_total_piastres","vehicle_total_piastres","notes","is_cancelled","cancel_reason","cancelled_at","version","created_at","updated_at","origin","destination","receipt_number"],
   vehicle_accounts:["vehicle_id","contractor_id","created_at","last_activity_at"],
   vehicles:["id","plate_number","driver_name","notes","is_archived","created_at","updated_at","version"],
+  backup_history:["id","backup_date","format","file_name","drive_file_id","drive_web_view_link","size_bytes","sha256","table_counts","created_at"],
 };
 const MAX_ROWS=50000;
 function assert(ok:boolean,message:string):asserts ok { if(!ok) throw new Error("PORTABLE_BACKUP_INVALID: "+message); }
