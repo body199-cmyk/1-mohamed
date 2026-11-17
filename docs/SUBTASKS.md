@@ -1,3 +1,6 @@
+## LOGIN-THEME-DELIVERY-01
+Refine existing login layout with scoped tokens/Cairo, shared ThemeSelector on login/Settings, compatible theme preference with opt-in local-clock automatic mode and before-paint initialization. Keep header manual override, legacy light/dark persistence, recovery, remember selection and business drafts. Test local-clock boundaries/manual persistence/reload/storage failure and responsive login/recovery. Delivery audit records configuration/security/device acceptance gates without mutating live business data.
+
 ## SHARED-FIELDS-VISIBLE — approved release
 Shared expense and note now stay visible beside other shared-work fields without disclosure clicks. Optional zero expense/empty note defaults and payloads unchanged. Updated SQL/browser fixtures assert direct visibility. User confirms finishing and deploying the pending change; run exact-head CI before merge. This patch follows the owner invitation release without changing its permissions.
 

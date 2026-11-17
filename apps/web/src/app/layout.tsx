@@ -1,3 +1,4 @@
+import {THEME_BOOTSTRAP} from "../components/theme-preference";
 import type { Metadata } from "next";
 import "../styles/variables.css";
 import "../styles/globals.css";
@@ -10,8 +11,8 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  return <html lang="ar" dir="rtl">
-    <head><link rel="stylesheet" href="/fonts/cairo.css" /></head>
+  return <html lang="ar" dir="rtl" suppressHydrationWarning>
+    <head><script dangerouslySetInnerHTML={{__html:THEME_BOOTSTRAP}}/><link rel="stylesheet" href="/fonts/cairo.css" /></head>
     <body>
       <a href="#main-content" className="skipLink">تخطي التنقل إلى المحتوى الرئيسي</a>
       <SiteShell>{children}</SiteShell>

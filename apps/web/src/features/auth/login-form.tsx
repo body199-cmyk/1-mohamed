@@ -5,6 +5,9 @@ import { useRouter } from "next/navigation";
 import { createRecoveryRequestClient } from "../../lib/supabase/client";
 import { buildAuthCallbackUrl, getSupabaseSetupStatus } from "../../lib/supabase/config";
 import { PasswordField } from "./password-field";
+import {ThemeSelector} from "../../components/theme-selector";
+import {WorkspaceIcon} from "../ledger/workspace-icon";
+import styles from "./login-form.module.css";
 import { REMEMBER_COOKIE } from "../../lib/supabase/remember";
 
 /** Owner-only login. The server resolves the public alias to the verified Auth email. */
@@ -59,44 +62,49 @@ export function LoginForm({ enabled = false }: { enabled?: boolean }) {
   }
 
   return (
-    <section aria-labelledby="login-heading" style={{ maxWidth: 440, margin: "48px auto", padding: 24,
-      border: "1px solid var(--border-color, #d7dce5)", borderRadius: 16,
-      background: "var(--surface-card,#fff)", boxShadow: "var(--shadow-elevated)", borderTop: "4px solid var(--color-primary,#175CD3)" }}>
-      <p style={{ color: "var(--color-primary,#175CD3)", fontWeight: 700 }}>أحمد أبو علي — حسابات النقل</p>
-      <h1 id="login-heading">{recovery ? "استرجاع كلمة المرور" : "تسجيل الدخول"}</h1>
-      <p>حسابات النقل والمقاولين — الدخول للحسابات المصرّح بها فقط.</p>
-      {!setup.ready && <p role="status">الربط الآمن لم يُفعّل بعد. لا تدخل كلمة مرور حقيقية الآن.</p>}
-      {setup.ready && !enabled && <p role="status">الحسابات الدائمة غير مفعّلة على النسخة دي. الدخول متوقف لحد استكمال إعداد التشغيل؛ ده مش معناه إن حسابك اتمسح أو كلمة السر غلط.</p>}
-      <form onSubmit={submit} autoComplete="on">
+    <div className={styles.page}>
+      <header className={styles.brand}>
+        <span className={styles.brandMark}><WorkspaceIcon name="daily"/></span>
+        <div><strong>أحمد أبو علي</strong><p>حسابات النقل والمقاولين</p></div>
+      </header>
+      <section aria-labelledby="login-heading" className={styles.card}>
+      <div className={styles.heading}>
+        <h1 id="login-heading">{recovery ? "استرجاع كلمة المرور" : "تسجيل الدخول"}</h1>
+        <p>{recovery?"اكتب بريد حسابك لاستلام رابط الاسترجاع.":"أدخل بيانات حسابك للمتابعة إلى حسابات النقل."}</p>
+      </div>
+      {!setup.ready && <p className={styles.notice} role="status">الربط الآمن لم يُفعّل بعد. لا تدخل كلمة مرور حقيقية الآن.</p>}
+      {setup.ready && !enabled && <p className={styles.notice} role="status">الحسابات الدائمة غير مفعّلة على النسخة دي. الدخول متوقف لحد استكمال إعداد التشغيل؛ ده مش معناه إن حسابك اتمسح أو كلمة السر غلط.</p>}
+      <form onSubmit={submit} autoComplete="on" className={styles.form} aria-busy={busy}>
         <label htmlFor="owner-identifier">{recovery ? "البريد الإلكتروني" : "اسم المستخدم أو البريد الإلكتروني"}</label>
         <input id="owner-identifier" type={recovery ? "email" : "text"} required
           autoComplete={recovery ? "email" : "username"} autoCapitalize="none" autoCorrect="off"
-          maxLength={254} placeholder={recovery ? "" : "1234"}
+          maxLength={254} placeholder={recovery ? "name@example.com" : "اسم المستخدم أو name@example.com"}
           value={recovery ? email : identifier}
           onChange={e => recovery ? setEmail(e.target.value) : setIdentifier(e.target.value)}
           disabled={busy || !enabled || !setup.ready}
-          style={{ width: "100%", padding: 12, marginBottom: 14, display: "block", border: "1px solid var(--border-strong)", borderRadius: 10, background: "var(--surface-card)", color: "var(--text-main)" }} />
+          className={styles.identifier} spellCheck={false} />
         {!recovery && <>
           <PasswordField id="owner-password" label="كلمة المرور" autoComplete="current-password"
             value={password} onChange={setPassword} disabled={busy || !enabled || !setup.ready} />
-          <label style={{ display: "block", marginBottom: 16 }}><input type="checkbox" checked={remember}
+          <label className={styles.remember}><input type="checkbox" checked={remember}
             onChange={e => setRemember(e.target.checked)} disabled={busy || !enabled || !setup.ready} />{" "}تذكر دخولي على هذا المتصفح</label>
-          <p style={{ fontSize: 13 }}>فعّل تذكّر الدخول على جهازك الشخصي فقط. حفظ كلمة المرور يتم من مدير كلمات المرور في المتصفح.</p>
+          <p className={styles.hint}>فعّل تذكّر الدخول على جهازك الشخصي فقط. حفظ كلمة المرور يتم من مدير كلمات المرور في المتصفح.</p>
         </>}
         <button type="submit" disabled={busy || !enabled || !setup.ready || done}
-          style={{ padding: "12px 24px", cursor: "pointer", width: "100%", minHeight: 48, border: 0, borderRadius: 10,
-            background: "var(--color-primary,#175CD3)", color: "var(--color-primary-text,#fff)", fontWeight: 700 }}>
+          className={styles.submit}>
           {busy ? "جارٍ التحقق..." : recovery ? "إرسال رابط الاسترجاع" : "دخول"}
         </button>
       </form>
       <button type="button" onClick={() => {
         if (!recovery && identifier.includes("@")) setEmail(identifier.trim());
         setRecovery(!recovery); setMessage(""); setDone(false);
-      }} disabled={busy || !enabled || !setup.ready} style={{ display: "block", marginTop: 16 }}>
+      }} disabled={busy || !enabled || !setup.ready} className={styles.recovery}>
         {recovery ? "الرجوع لتسجيل الدخول" : "نسيت كلمة المرور؟"}
       </button>
-      {message && <p role="status">{message}</p>}
-      <p style={{ fontSize: 13 }}>لا يوجد تسجيل حسابات جديدة من الموقع. يضيف المسؤول الحسابات المعتمدة لاحقًا.</p>
+      {message && <p className={styles.notice+" "+styles.message} role="status">{message}</p>}
+      <p className={styles.access}>لا يوجد تسجيل حسابات جديدة من الموقع. يضيف المسؤول الحسابات المعتمدة لاحقًا.</p>
     </section>
+    <div className={styles.appearance}><ThemeSelector/></div>
+    </div>
   );
 }

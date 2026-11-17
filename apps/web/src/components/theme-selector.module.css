@@ -1,0 +1,8 @@
+.selector{border:0;padding:0;min-width:0;margin:0}
+.selector legend{font-size:.86rem;font-weight:700;margin-bottom:10px;color:var(--text-main)}
+.options{display:flex;gap:6px;flex-wrap:wrap}
+.options button{min-height:48px;min-width:80px;padding:9px 16px;border:1px solid var(--border-strong);border-radius:10px;background:var(--surface-card);color:var(--text-main);font:inherit;font-size:.86rem;font-weight:650;cursor:pointer}
+.options button[aria-pressed=true]{background:var(--color-primary-bg);color:var(--text-main);border-color:var(--color-primary);box-shadow:inset 0 0 0 1px var(--color-primary)}
+.options button:hover{background:var(--surface-hover)}
+.options button:focus-visible{outline:3px solid var(--border-focus);outline-offset:3px}
+.selector p{font-size:.8rem;color:var(--text-muted);line-height:1.9;margin-top:10px}
