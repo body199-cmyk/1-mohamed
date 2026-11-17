@@ -1,3 +1,6 @@
+## GOOGLE-DRIVE-BACKUP-07
+Trial-only data confirmed; detailed local inventory/report delivered, no fixture deletion. CI at bb60b18 passed, PR description updated. Role setup pending specific approval after automatic rejection; see BACKUP_READER_ACCESS_PROPOSAL and STATUS. Full backup/restore remains incomplete.
+
 ## GOOGLE-DRIVE-BACKUP-05 — live setup remains partial
 Drive grant/GitHub secret/free isolated restore project prepared; synthetic encrypted upload succeeded but download hit shared OAuth quota. Database URLs, actual recovery and new CI outstanding. No production activation. Current evidence: STATUS.
 

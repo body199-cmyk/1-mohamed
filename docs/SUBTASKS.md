@@ -1,3 +1,6 @@
+## T10 next slice — narrow temporary reader
+Pending approval:24h source credential restricted to explicit11 business tables, Auth users/identities, Storage metadata and public sequences, with BYPASSRLS and no business writes. Implement direct pg_dump compatibility, verify credentials privately and restore only into the free separate project. Synthetic report data remains for UI acceptance until deliberate final cleaning.
+
 ## T10 current slice — no-write initial snapshot
 Allow missing backup_history only in a no-history trial while preserving all11 application tables/Auth; manifest reflects actual table set. Regression29 backup/core tests PASS. Live consent/secret/free project prepared; resolve quota and securely obtain database URLs before real restore.
 

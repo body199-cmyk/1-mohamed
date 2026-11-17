@@ -1,3 +1,6 @@
+## GOOGLE-DRIVE-BACKUP-07 — 18 November 2026
+Owner confirms trial-only data and clean final handover; clarified no immediate deletion. Local ignored detailed data report produced; existing rows/accounts kept. CI44182832645 SUCCESS at bb60b18; PR description update approved and completed. Source backup-role creation rejected automatically for broad BYPASSRLS/read scope/indefinite duration despite generic user consent; no role created. Narrow24h proposal prepared, public-key credential transport safely proved on test project only. Await exact scoped-access approval; Drive download quota/full restore remain blockers. STATUS is current checkpoint.
+
 ## GOOGLE-DRIVE-BACKUP-05 — 17 November 2026
 Google consent verified; encrypted Environment grant saved, all activation gates false. Free separate restore project xvmnmdxdhymllsdyhlth ACTIVE_HEALTHY; no production writes. Synthetic encrypted upload succeeded, download twice blocked by shared-client project quota403, so no decrypt/restore success claimed. Missing production history table handled only for no-write trial; regression29 tests PASS. Current paths, blockers and next action in STATUS; public publication approval still required.
 

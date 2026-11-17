@@ -1,3 +1,8 @@
+## GOOGLE-DRIVE-BACKUP-07 map
+- docs/BACKUP_READER_ACCESS_PROPOSAL.md: exact un-applied temporary scope and credential handling.
+- artifacts/backup-review/TEST_DATA_REPORT.md + TEST_DATA_INVENTORY.json: ignored local detailed trial inventory; never publish customer-style row details in Git.
+- docs/STATUS.md: latest authorization, successful CI and actual blockers.
+
 ## GOOGLE-DRIVE-BACKUP-05 map
 - tools/offsite-backup.mjs: dumpPublicTables and explicit optional history for read-only trial; exact11/12 table manifests.
 - tools/offsite-backup.test.mjs: initial absent history allowed only for trial; incomplete real application data remains rejected.
