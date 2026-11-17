@@ -9,7 +9,9 @@ export function sourceConnection(value,ca) {
  const user=decodeURIComponent(u.username);
  if(!['postgres:','postgresql:'].includes(u.protocol)||!hostOk||u.pathname!=='/postgres'||(u.port&&u.port!=='5432')||!u.password||!([READER,`${READER}.${SOURCE_REF}`].includes(user)))throw Error('Unexpected source project or backup role');
  if(u.hostname.includes('pooler')&&user!==`${READER}.${SOURCE_REF}`)throw Error('Pooler project binding missing');
- return {host:u.hostname,port:5432,user,password:decodeURIComponent(u.password),database:'postgres',ssl:{ca,rejectUnauthorized:true},connectionTimeoutMillis:15000,query_timeout:900000,application_name:'offsite-reader-export'};
+ // COPY streaming queries do not settle pg's callback-based query_timeout timer.
+ // The approved source role already has a server-side 15-minute statement_timeout.
+ return {host:u.hostname,port:5432,user,password:decodeURIComponent(u.password),database:'postgres',ssl:{ca,rejectUnauthorized:true},connectionTimeoutMillis:15000,application_name:'offsite-reader-export'};
 }
 export function quoteIdentifier(value){return '"'+String(value).replaceAll('"','""')+'"';}
 export function authCopyHeader(table,columns) {

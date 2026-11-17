@@ -5,7 +5,7 @@ import {basename} from 'node:path';
 async function sha(path){const h=createHash('sha256');for await(const c of createReadStream(path))h.update(c);return h.digest('hex');}
 function command(args){
  const env={...process.env,RCLONE_CONFIG:'/dev/null',RCLONE_CONFIG_DRIVE_TYPE:'drive',RCLONE_CONFIG_DRIVE_SCOPE:'drive.file',RCLONE_CONFIG_DRIVE_SKIP_SHORTCUTS:'true'};
- const r=spawnSync('rclone',[...args,'--tpslimit','1','--contimeout','15s','--timeout','60s','--retries','2','--retries-sleep','15s','--low-level-retries','2'],{env,encoding:'utf8',maxBuffer:1024*1024});
+ const r=spawnSync('rclone',[...args,'--tpslimit','1','--contimeout','15s','--timeout','60s','--retries','2','--retries-sleep','15s','--low-level-retries','2'],{env,encoding:'utf8',maxBuffer:1024*1024,timeout:120000,killSignal:'SIGTERM'});
  if(r.error||r.status!==0){const quota=/rateLimitExceeded|RATE_LIMIT_EXCEEDED|Quota exceeded/.test(r.stderr||'');throw Error(quota?'Shared Drive client quota blocked this step':'Drive transfer failed; private diagnostics withheld');}
 }
 async function main(){

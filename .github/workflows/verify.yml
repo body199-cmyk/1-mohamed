@@ -248,6 +248,7 @@ jobs:
           BACKUP_RESTORE_VERIFIED: ${{ vars.BACKUP_RESTORE_VERIFIED }}
         run: node tools/backup-reader/export.mjs
       - name: Upload encrypted trial to Drive and download for SHA-256 verification
+        timeout-minutes: 5
         env:
           RCLONE_CONFIG_DRIVE_TOKEN: ${{ secrets.RCLONE_CONFIG_DRIVE_TOKEN }}
           ENCRYPTED_ARCHIVE: ${{ steps.export.outputs.archive }}
