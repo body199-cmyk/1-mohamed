@@ -64,9 +64,8 @@ export async function prepareRcloneBackup(env, encryptedPath, name, today, files
   const files = list(env);
   const file = files.find(f => f.Name === name && f.Path === backupFolderParts(today).slice(1).join("/") + "/" + name);
   await verifyRcloneFile(file, name, statSync(encryptedPath).size, await md5(encryptedPath));
-  const remote = "drive:" + folder + "/" + name;
-  let webViewLink = "";
-  try { webViewLink = command(env, ["link", remote]); } catch { /* Optional link, file ID remains authoritative. */ }
+  // Never call "rclone link": on Google Drive it can enable public sharing.
+  const webViewLink = "https://drive.google.com/file/d/" + encodeURIComponent(file.ID) + "/view";
   return {
     file: { id: file.ID, name, size: String(file.Size), md5Checksum: file.Hashes.MD5, webViewLink },
     prune: async () => {
