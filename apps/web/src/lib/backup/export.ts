@@ -27,7 +27,7 @@ export const BACKUP_COLUMNS: Record<PortableBackupTable, readonly string[]> = {
 const MAX_ROWS=50000;
 function assert(ok:boolean,message:string):asserts ok { if(!ok) throw new Error("PORTABLE_BACKUP_INVALID: "+message); }
 function checkSafeNumbers(value:unknown,path="root"):void {
-  if(typeof value==="number") assert(Number.isSafeInteger(value),"Unsafe numeric value at "+path+"; export stopped to avoid changing financial precision.");
+  if(typeof value==="number") { assert(Number.isFinite(value)&&Math.abs(value)<=Number.MAX_SAFE_INTEGER,"Unsafe numeric value at "+path+"; export stopped to avoid changing financial precision."); if(Number.isInteger(value)) assert(Number.isSafeInteger(value),"Unsafe integer at "+path+"; export stopped to avoid changing financial precision."); }
   else if(Array.isArray(value)) value.forEach((item,index)=>checkSafeNumbers(item,path+"["+index+"]"));
   else if(value&&typeof value==="object") for(const [key,item] of Object.entries(value)) checkSafeNumbers(item,path+"."+key);
 }
