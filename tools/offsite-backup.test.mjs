@@ -22,7 +22,7 @@ const goodManifestInput = {
 
 test("T10 offsite manifest covers all current public tables and states identity exclusions", () => {
   const manifest = buildBackupManifest(goodManifestInput);
-  assert.deepEqual(Object.keys(manifest.public_table_counts_at_snapshot).sort(), [...EXPECTED_PUBLIC_TABLES].sort());
+  assert.deepEqual(Object.keys(manifest.public_table_counts_observed_after_dump).sort(), [...EXPECTED_PUBLIC_TABLES].sort());
   assert.deepEqual(manifest.archived_table_data, [...ARCHIVED_DATA_TABLES]);
   assert.deepEqual(manifest.schema_only_identity_tables, ["public.app_owner", "public.app_members"]);
   assert.equal(manifest.auth_user_data_included, false);

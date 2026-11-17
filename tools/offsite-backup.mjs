@@ -145,7 +145,7 @@ export function buildBackupManifest({
     pg_dump_version: pgDumpVersion,
     database_size_bytes: databaseBytes,
     schema: "public",
-    public_table_counts_at_snapshot: tableCounts,
+    public_table_counts_observed_after_dump: tableCounts,
     archived_table_data: [...ARCHIVED_DATA_TABLES],
     schema_only_identity_tables: EXCLUDED_TABLE_DATA.map((table) => "public." + table),
     excluded_managed_schemas: ["auth", "storage", "extensions"],

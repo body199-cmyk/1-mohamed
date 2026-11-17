@@ -63,7 +63,7 @@ Those rows contain Supabase Auth UUID mappings. The Auth-managed `auth` schema a
 
 The job also:
 - verifies the archive table-of-contents before encryption;
-- writes a manifest with the project reference, source commit, PostgreSQL version, table counts, and SHA-256 of the raw dump;
+- writes a manifest with the project reference, source commit, PostgreSQL version, a post-dump table-count sample for reconciliation, and SHA-256 of the raw dump;
 - encrypts the bundle with age before any upload;
 - uploads only the encrypted archive and a SHA-256 sidecar;
 - verifies object size and checksum metadata at both destinations;
@@ -119,7 +119,7 @@ If the original Supabase project still exists and its native backups are availab
 4. Decrypt with the offline age private identity, extract the tar bundle, and inspect `manifest.json`.
 5. Restore the data into the already-migrated new project using PostgreSQL 17 `pg_restore --data-only --no-owner --no-acl --exit-on-error`. Do not use `--clean` against a live project.
 6. Create the owner in Supabase Auth, initialize the empty `app_owner` row with that new Auth UUID, and re-invite any approved members. The offsite logical archive intentionally does not contain Auth credentials or owner/member UUID mappings.
-7. Compare restored row counts with the manifest, run owner/member/anonymous access checks, and verify representative trips, payments, audit history, contractor statements, vehicle-cash statements, and PDF/XLSX/CSV exports.
+7. Compare restored row counts with the manifest as a reconciliation check (the count sample is taken immediately after the dump and concurrent writes can create a small difference), then run owner/member/anonymous access checks, and verify representative trips, payments, audit history, contractor statements, vehicle-cash statements, and PDF/XLSX/CSV exports.
 8. Only after the owner accepts the separate-project restore should the app be pointed to the recovered project. Keep the original project and its data untouched until cutover is proven.
 
 A successful upload is not a successful restore. Final backup acceptance requires at least one complete restore drill to a separate environment.
