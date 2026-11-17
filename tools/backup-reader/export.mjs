@@ -74,7 +74,7 @@ export async function createReaderArchive(env=process.env){
   writeFileSync(join(work,'manifest.json'),JSON.stringify(manifest,null,2)+'\n',{mode:0o600});
   await client.query('rollback');await client.end();client=null;
   const tar=join(work,'archive.tar.gz');run('tar',['-czf',tar,'-C',work,'roles.sql','schema.sql','pre-data.sql','post-data.sql','data.sql','manifest.json']);
-  const encrypted=join(root,fileName);run('age',['-r',env.AGE_RECIPIENT,'-o',encrypted,tar]);
+  const encrypted=join(root,fileName);run(env.AGE_BIN||'age',['-r',env.AGE_RECIPIENT,'-o',encrypted,tar]);
   const result={fileName,path:encrypted,sha256:await sha(encrypted),size:statSync(encrypted).size,cairoDate:cairoDate(createdAt),tables:tables.length,authUsers:fingerprints['auth.users'].count,authIdentities:fingerprints['auth.identities'].count,sourceWrites:false};
   writeFileSync(join(root,'result.json'),JSON.stringify(result,null,2)+'\n',{mode:0o600});
   if(env.GITHUB_OUTPUT)appendFileSync(env.GITHUB_OUTPUT,`archive=${encrypted}\nfile_name=${fileName}\nsha256=${result.sha256}\n`);
