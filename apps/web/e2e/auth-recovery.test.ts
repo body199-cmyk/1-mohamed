@@ -60,7 +60,7 @@ it('maps the configured owner username to the verified Auth email and issues onl
  expect(response.status).toBe(200);
  expect(response.headers.get('cache-control')).toBe('no-store');
  expect(boundary.signInWithPassword).toHaveBeenCalledWith({email:'owner@example.test',password:'1234'});
- expect(boundary.rpc).toHaveBeenCalledWith('app_is_owner');
+ expect(boundary.rpc).toHaveBeenCalledWith('app_has_access');
 });
 
 it('does not authenticate arbitrary identifiers or issue a session to a non-owner',async()=>{
@@ -97,4 +97,23 @@ it('rejects cross-site login requests and stays closed when production auth is d
   body:JSON.stringify({identifier:'1234',password:'1234'})
  });
  expect((await ownerLogin(disabled)).status).toBe(503);
+});
+
+it('invitation links open password setup and still verify approved membership',async()=>{
+ const landing=await GET(new NextRequest('http://localhost/auth/callback?flow=invite'));
+ expect(landing.headers.get('location')).toBe('https://1-mohamed.vercel.app/auth/reset');
+ const verified=await GET(new NextRequest('http://localhost/auth/callback?token_hash=fixture&type=invite'));
+ expect(verified.headers.get('location')).toBe('https://1-mohamed.vercel.app/auth/reset');
+ expect(boundary.verifyOtp).toHaveBeenCalledWith({token_hash:'fixture',type:'invite'});
+ expect(boundary.rpc).toHaveBeenCalledWith('app_has_access');
+});
+
+it('allows an approved invited email login but denies the same email after membership revocation',async()=>{
+ vi.stubEnv('APP_ENABLE_REAL_DATA','true');
+ const request=()=>new NextRequest('https://1-mohamed.vercel.app/api/auth/login',{method:'POST',headers:{origin:'https://1-mohamed.vercel.app'},body:JSON.stringify({identifier:'member@example.test',password:'fixture-password'})});
+ expect((await ownerLogin(request())).status).toBe(200);
+ expect(boundary.signInWithPassword).toHaveBeenCalledWith({email:'member@example.test',password:'fixture-password'});
+ boundary.rpc.mockResolvedValue({data:false,error:null});
+ expect((await ownerLogin(request())).status).toBe(401);
+ expect(boundary.signOut).toHaveBeenCalled();
 });

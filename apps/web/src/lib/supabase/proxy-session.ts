@@ -6,7 +6,7 @@ import {loginCookieOptions,remembersLogin} from './remember';
 /**
  * Active session-refresh adapter called by apps/web/src/proxy.ts when the
  * production real-data switch and Supabase configuration are present.
- * Signed claims are checked with getClaims(), then app_is_owner() is queried;
+ * Signed claims are checked with getClaims(), then app_has_access() is queried;
  * authenticated status alone never grants access. Route Handlers repeat the
  * owner check independently. Redirects must preserve refreshed cookies and
  * cache headers from this response.
@@ -38,8 +38,8 @@ export async function refreshSupabaseSession(request: NextRequest) {
   const { data, error } = await supabase.auth.getClaims();
   const claims = !error ? (data?.claims ?? null) : null;
   // Authenticated is NOT authorized: an invited/created Auth user must also
-  // match the owner row, as enforced independently by RLS and every RPC.
-  const ownerResult = claims?.sub ? await supabase.rpc("app_is_owner") : null;
+  // match the owner or active membership, enforced independently by RLS and every RPC.
+  const ownerResult = claims?.sub ? await supabase.rpc("app_has_access") : null;
   const ownerAuthorized = !!claims?.sub && ownerResult?.error == null && ownerResult?.data === true;
   return { response, claims, ownerAuthorized, error };
 

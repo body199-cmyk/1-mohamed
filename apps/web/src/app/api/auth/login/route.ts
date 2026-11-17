@@ -54,18 +54,20 @@ export async function POST(request: NextRequest) {
   if (!ownerUsername || !ownerEmail) {
     return result({ error: "إعداد حساب الدخول غير مكتمل." }, 503);
   }
-  if (!matchesOwnerLoginIdentifier(identifier, ownerUsername, ownerEmail)) {
+  const loginEmail = matchesOwnerLoginIdentifier(identifier,ownerUsername,ownerEmail)
+    ? ownerEmail : /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier) ? identifier.toLowerCase() : null;
+  if (!loginEmail) {
     return result({ error: "بيانات الدخول غير صحيحة." }, 401);
   }
 
   const sessionResponse = NextResponse.next({ request });
   const client = createRouteHandlerSupabaseClient(request, sessionResponse);
-  const { error: signInError } = await client.auth.signInWithPassword({ email: ownerEmail, password });
+  const { error: signInError } = await client.auth.signInWithPassword({ email: loginEmail, password });
   if (signInError) {
     return result({ error: "بيانات الدخول غير صحيحة." }, 401, sessionResponse);
   }
 
-  const { data: owner, error: ownerError } = await client.rpc("app_is_owner");
+  const { data: owner, error: ownerError } = await client.rpc("app_has_access");
   if (ownerError || owner !== true) {
     await client.auth.signOut();
     return result({ error: "بيانات الدخول غير صحيحة." }, 401, sessionResponse);

@@ -1,3 +1,9 @@
+## OWNER-INVITATIONS-01 map
+- supabase/migrations/20261117131220_owner_managed_members.sql: app_members, live app_has_access, operational gate replacement, strict-owner member-target/grant/revoke RPCs.
+- supabase/functions/invite-member/{index,core}.ts: pinned SDK + native Edge secret, strict fresh owner validation, invite/existing-account recovery/resend, grant only after email API success.
+- apps/web/src/app/api/auth/members/route.ts + features/auth/member-invitations.tsx: owner Settings UI/API, no public registration/admin secret in web.
+- supabase/tests/18_member_access_verification.sql, apps/web/e2e/member-{invitation,route}.test.ts, e2e/workspace/member-invitations.spec.ts: actual SQL authorization plus isolated HTTP/UI contracts. tools/db-verify.mjs runs the new SQL checks after prior financial suites.
+
 ## AUTH-USERNAME + DAILY-QUICK-ACCESS-01 — 17 November 2026
 
 - `apps/web/src/app/api/auth/login/route.ts`: public POST entry for owner login only; maps the configured username/email to the one existing Auth email on the server, signs in through Supabase, and requires `app_is_owner()`. It does not return the email mapping or store a password.

@@ -1,4 +1,5 @@
 "use client";
+import {MemberInvitations} from "../auth/member-invitations";
 import { useEffect, useRef, useState } from "react";
 import { LogoutButton } from "../auth/logout-button";
 import { TransactionEntry } from "./transaction-entry";
@@ -190,7 +191,8 @@ export function RealWorkspace() {
       </div>
       <section className={ui.surface + " " + ui.settings} hidden={screen !== "settings"}>
         <h2>الإعدادات</h2><button onClick={toggleTheme}>المظهر: {theme === "dark" ? "داكن" : "فاتح"}</button>
-        <p>تغيير كلمة المرور واستعادتها من شاشة تسجيل الدخول عبر بريد صاحب الحساب.</p>
+        <p>تغيير كلمة المرور واستعادتها من شاشة تسجيل الدخول عبر بريد حسابك.</p>
+        <MemberInvitations visible={screen === "settings"}/>
         <p>نسخ قاعدة البيانات واستعادتها تُدار بواسطة المسؤول؛ تصدير التقرير ليس نسخة احتياطية للبرنامج.</p>
       </section>
     </div>

@@ -24,7 +24,7 @@ function denyWrites() {
 }
 function privatePath(path: string) {
   return path === "/app" || path.startsWith("/app/") ||
-    path === "/api/ledger/master" || path === "/api/ledger/operations" ||
+    path === "/api/auth/members" || path === "/api/ledger/master" || path === "/api/ledger/operations" ||
     path === "/api/ledger/read";
 }
 function jsonDenied(status: number) {

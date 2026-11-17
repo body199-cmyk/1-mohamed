@@ -21,7 +21,7 @@ export function ResetPasswordForm() {
     if(!verification.current)verification.current=(async()=>{
     const params=new URLSearchParams(window.location.hash.slice(1));
     const access=params.get('access_token'),refresh=params.get('refresh_token');
-    const recovery=params.get('type')==='recovery';
+    const recovery=['recovery','invite'].includes(params.get('type')??'');
     if(window.location.hash)window.history.replaceState(null,'',window.location.pathname+window.location.search);
         const client=createBrowserSupabaseClient();
         if(access||refresh){
@@ -31,7 +31,7 @@ export function ResetPasswordForm() {
         }
         const user=await client.auth.getUser();
         if(user.error||!user.data.user)throw new Error('missing session');
-        const owner=await client.rpc('app_is_owner');
+        const owner=await client.rpc('app_has_access');
         if(owner.error||owner.data!==true)throw new Error('not authorized');
     })();
     void verification.current.then(()=>{if(active)setCanReset(true);}).catch(()=>{
@@ -53,7 +53,7 @@ export function ResetPasswordForm() {
       const client = createBrowserSupabaseClient();
       const { data: userData, error: userError } = await client.auth.getUser();
       if (userError || !userData.user) throw new Error("invalid recovery session");
-      const owner=await client.rpc('app_is_owner');
+      const owner=await client.rpc('app_has_access');
       if(owner.error||owner.data!==true)throw new Error('unauthorized recovery');
       const { error } = await client.auth.updateUser({ password });
       if (error?.code === 'weak_password') {

@@ -14,10 +14,11 @@ export async function GET(request: NextRequest) {
   destination.searchParams.set('error','recovery');
   const code = request.nextUrl.searchParams.get("code");
   const tokenHash=request.nextUrl.searchParams.get('token_hash');
-  const isRecovery=request.nextUrl.searchParams.get('type')==='recovery';
+  const tokenType=request.nextUrl.searchParams.get('type');
+  const isRecovery=tokenType==='recovery'||tokenType==='invite';
   // Email implicit tokens live only in the browser fragment, never on the server.
   // A redirect with no fragment preserves it; reset consumes and immediately clears it.
-  if(setup.ready&&!code&&!tokenHash&&request.nextUrl.searchParams.get('flow')==='recovery'){
+  if(setup.ready&&!code&&!tokenHash&&['recovery','invite'].includes(request.nextUrl.searchParams.get('flow')??'')){
     const landing=NextResponse.redirect(new URL('/auth/reset',base),{status:303});
     landing.headers.set('cache-control','no-store');
     landing.headers.set('referrer-policy','no-referrer');
@@ -31,7 +32,7 @@ export async function GET(request: NextRequest) {
   }
 
   const flow = request.nextUrl.searchParams.get("flow");
-  const target = new URL(flow === "recovery" || isRecovery ? "/auth/reset" : "/login", base);
+  const target = new URL(flow === "recovery" || flow === "invite" || isRecovery ? "/auth/reset" : "/login", base);
   const response = NextResponse.redirect(target, { status: 303 });
   response.headers.set("cache-control", "no-store");
   const client = createRouteHandlerSupabaseClient(request, response);
@@ -43,12 +44,12 @@ export async function GET(request: NextRequest) {
   };
   try {
   const { error } = tokenHash&&isRecovery
-    ? await client.auth.verifyOtp({token_hash:tokenHash,type:'recovery'})
+    ? await client.auth.verifyOtp({token_hash:tokenHash,type:tokenType==='invite'?'invite':'recovery'})
     : await client.auth.exchangeCodeForSession(code!);
   if (error) {
     return reject();
   }
-  const owner=await client.rpc('app_is_owner');
+  const owner=await client.rpc('app_has_access');
   if(owner.error||owner.data!==true){
     await client.auth.signOut();
     return reject();
