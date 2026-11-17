@@ -3,7 +3,7 @@ import type {OperationalReportImageLayout} from './render-report-image';
 const LEFT=80,RIGHT=1360,SPAN=1280,BLUE='#2446ad',INK='#172b45',MUTED='#526171';
 const COLORS={credit:'#147344',debit:'#b3343c',neutral:BLUE};
 type Table=OperationalReportDetailSection&{top:number;heights:number[];widths:number[];total?:string};
-export interface CompactReportLayout extends OperationalReportImageLayout {readonly compactTables:readonly Table[];readonly compactFooter:number;}
+export interface CompactReportLayout extends OperationalReportImageLayout {readonly compactTables:readonly Table[];readonly compactFooter:number;readonly metadataColumns:number;readonly metadataStart:number;readonly metadataRowGap:number;}
 /** Deterministic wrapping means export layout never depends on viewport or theme. */
 export function reportLines(text:string,width:number,size=26):string[]{
  const max=Math.max(2,Math.floor(width/(size*.64)));const lines:string[]=[];
@@ -17,8 +17,10 @@ export function reportLines(text:string,width:number,size=26):string[]{
 function widths(table:OperationalReportDetailSection){const sum=table.columns.reduce((n,c)=>n+c.widthWeight,0);return table.columns.map(c=>SPAN*c.widthWeight/sum);}
 function tableHeight(table:OperationalReportDetailSection){const w=widths(table);return (table.rows.length?table.rows:[[table.emptyMessage]]).map(row=>Math.max(78,24+Math.max(...row.map((v,i)=>table.columns[i]?.direction==='ltr'?1:reportLines(v,(w[i]??SPAN)-24).length))*37));}
 export function createCompactReportLayout(doc:OperationalReportDocument,options:{fixedHeight?:number;pageLabel?:string}):CompactReportLayout {
- const metadataRows=Math.ceil(doc.metadata.length/3);
- const summaryStart=234+metadataRows*66;let y=summaryStart;
+ const metadataColumns=doc.metadata.length<=4?2:3;
+ const metadataRows=Math.ceil(doc.metadata.length/metadataColumns);
+ const metadataStart=270,metadataRowGap=80;
+ const summaryStart=metadataStart+metadataRows*metadataRowGap+20;let y=summaryStart;
  doc.summarySections.forEach((section,i)=>{y+=i===0?Math.ceil(section.metrics.length/4)*132+20:44+Math.ceil(section.metrics.length/4)*70+18;});
  const tables:Table[]=[];
  const all=[{title:doc.detailsTitle??'تفاصيل التقرير',columns:doc.columns,rows:doc.rows,emptyMessage:doc.emptyMessage,rowTones:doc.rowTones},...(doc.detailSections??[])];
@@ -27,7 +29,7 @@ export function createCompactReportLayout(doc:OperationalReportDocument,options:
  const contentBottom=compactFooter+doc.footerNotes.reduce((n,t)=>n+reportLines(t,SPAN,23).length*34+10,0)+80;
  const height=options.fixedHeight??Math.max(1000,contentBottom);
  if(height>8192||height<contentBottom||(options.fixedHeight!==undefined&&options.fixedHeight!==2036))throw new Error('التقرير أطول من مساحة الصورة أو صفحة PDF؛ اختر فترة أقصر أو استخدم CSV/Excel. لن تُحذف أي حركة.');
- return {...doc,width:1440,height,summaryStart,tableTitleY:tables[0]!.top,headerY:tables[0]!.top+62,rowsTop:tables[0]!.top+124,pageLabel:options.pageLabel,compactTables:tables,compactFooter};
+ return {...doc,width:1440,height,summaryStart,metadataColumns,metadataStart,metadataRowGap,tableTitleY:tables[0]!.top,headerY:tables[0]!.top+62,rowsTop:tables[0]!.top+124,pageLabel:options.pageLabel,compactTables:tables,compactFooter};
 }
 function text(ctx:CanvasRenderingContext2D,value:string,x:number,y:number,size=26,color=INK,bold=false,width=SPAN,ltr=false){
  ctx.font=`${bold?700:400} ${size}px Cairo, Tahoma, Arial, sans-serif`;ctx.textAlign='right';ctx.textBaseline='alphabetic';ctx.fillStyle=color;ctx.direction=ltr?'ltr':'rtl';
@@ -41,7 +43,8 @@ export function paintCompactReport(ctx:CanvasRenderingContext2D,layout:CompactRe
  ctx.font='700 32px Cairo';ctx.fillStyle=INK;ctx.fillText(layout.title,720,128,SPAN);
  ctx.font='400 22px Cairo';ctx.fillStyle=MUTED;ctx.fillText(layout.subtitle,720,169,SPAN);
  ctx.font='400 19px Cairo';ctx.fillText('تاريخ الإعداد: '+layout.generatedAtLabel,720,207,SPAN);rule(ctx,225,BLUE,5);
- layout.metadata.forEach((m,i)=>{const x=RIGHT-(i%3)*(SPAN/3);const y=260+Math.floor(i/3)*66;text(ctx,m.label,x,y,20,MUTED,false,400);text(ctx,m.value,x,y+31,25,INK,true,400,m.direction==='ltr');});
+ const metaLeft=140,metaRight=1300,metaSpan=metaRight-metaLeft,metaCell=metaSpan/layout.metadataColumns;
+ layout.metadata.forEach((m,i)=>{const row=Math.floor(i/layout.metadataColumns),remaining=layout.metadata.length-row*layout.metadataColumns;let column=i%layout.metadataColumns;if(remaining===1&&layout.metadataColumns===3)column=1;const x=metaRight-column*metaCell,y=layout.metadataStart+row*layout.metadataRowGap;text(ctx,m.label,x,y,20,MUTED,false,metaCell-36);text(ctx,m.value,x,y+31,25,INK,true,metaCell-36,m.direction==='ltr');});
  let y=layout.summaryStart;
  layout.summarySections.forEach((section,s)=>{
   if(s>0){text(ctx,section.title,RIGHT,y+28,23,INK,true);y+=44;}

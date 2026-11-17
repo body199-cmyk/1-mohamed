@@ -15,9 +15,9 @@ export function buildDetailedContractorDocument(report:LiveStatementReport,name:
  const money=(v:string)=>(BigInt(v)>0n?'+':'')+formatPoundsForDisplay(v)+' ج.م';
  return {presentation:'compact-statement',detailsTitle:'تفاصيل شغل المقاول',businessName:'أحمد أبو علي — حسابات النقل',title:'كشف حساب المقاول',subtitle:'شغل أحمد أبو علي مع '+name+'؛ دفعات العربيات مستقلة عن فرق الشغل.',
   generatedAtLabel:new Intl.DateTimeFormat('ar-EG',{timeZone:'Africa/Cairo',dateStyle:'medium',timeStyle:'short'}).format(new Date()),
-  metadata:[{label:'المقاول',value:name},{label:'من تاريخ',value:report.date_from},{label:'إلى تاريخ',value:report.date_to},
-   {label:'العربية',value:vehicles.get(filters.vehicle)??(filters.vehicle||'الكل')},{label:'من',value:filters.origin||'الكل'},
-   {label:'إلى',value:filters.destination||'الكل'},{label:'الاتجاه',value:filters.direction==='AHMED_SUPPLIES'?'شغل أحمد':filters.direction==='OTHER_SUPPLIES'?'شغل المقاول':'الكل'}],
+  metadata:[{label:'اسم المقاول',value:name},{label:'من تاريخ',value:report.date_from},{label:'إلى تاريخ',value:report.date_to},
+   {label:'رقم العربية',value:vehicles.get(filters.vehicle)??(filters.vehicle||'الكل')},{label:'من',value:filters.origin||'الكل'},
+   {label:'إلى',value:filters.destination||'الكل'},{label:'اتجاه الشغل',value:filters.direction==='AHMED_SUPPLIES'?'شغل أحمد':filters.direction==='OTHER_SUPPLIES'?'شغل المقاول':'الكل'}],
   summarySections:[{title:'حساب الفترة الكامل',metrics:[{label:'الحساب السابق',direction:'ltr',value:money(report.opening_balance_piastres)},
    {label:'شغل لصالح أحمد',direction:'ltr',value:money(report.ahmed_work_piastres),tone:'credit'},{label:'شغل على أحمد',direction:'ltr',value:money((-BigInt(report.counterparty_work_piastres)).toString()),tone:'debit'},
    {label:report.beneficiary==='AHMED'?'الصافي لصالح أحمد':report.beneficiary==='COUNTERPARTY'?'الصافي على أحمد':'الحساب متعادل',direction:'ltr',value:formatPoundsForDisplay((BigInt(report.closing_balance_piastres)<0n?-BigInt(report.closing_balance_piastres):BigInt(report.closing_balance_piastres)).toString())+' ج.م',emphasis:true,tone:report.beneficiary==='AHMED'?'credit':report.beneficiary==='COUNTERPARTY'?'debit':'neutral'}]},
