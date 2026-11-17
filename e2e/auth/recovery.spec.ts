@@ -35,7 +35,64 @@ for(const remember of [false,true])test(`remember=${remember}: authenticated coo
  await page.getByLabel('اسم المستخدم أو البريد الإلكتروني',{exact:true}).fill('owner@example.test');
  await page.getByLabel('كلمة المرور',{exact:true}).fill('fixture-password');
  await page.getByRole('checkbox',{name:'تذكر دخولي على هذا المتصفح'}).setChecked(remember);
+ await page.getByRole('button',{name:'دخول',exact:true}).click();
+ await expect(page).toHaveURL(new RegExp('/app
+ const cookie=(await context.cookies()).find(c=>c.name.includes('-auth-token'));
+ expect(cookie).toBeDefined();
+ if(remember)expect(cookie!.expires).toBeGreaterThan(Date.now()/1000);else expect(cookie!.expires).toBe(-1);
+});
+test('email fragment from another browser enables matching reset fields and is removed from URL',async({page})=>{
+ const requests=await network(page);
+ await page.goto('/auth/callback?flow=recovery#access_token='+token+'&refresh_token=fixture-refresh&type=recovery');
+ const password=page.getByLabel('كلمة المرور الجديدة',{exact:true});
+ await expect(password).toBeEnabled();expect(page.url()).not.toContain('#');
+ await password.fill('fixture-password-strong');
+ await page.getByLabel('تأكيد كلمة المرور',{exact:true}).fill('different-password');
+ await page.getByRole('button',{name:'حفظ كلمة المرور',exact:true}).click();
+ await expect(page.getByRole('status')).toContainText('تتطابق');
+ expect(requests.filter(r=>r.method==='PUT')).toHaveLength(0);
+ await page.getByLabel('تأكيد كلمة المرور',{exact:true}).fill('fixture-password-strong');
+ await page.getByRole('button',{name:'إظهار كلمة المرور الجديدة',exact:true}).click();
+ await expect(password).toHaveAttribute('type','text');
+ await page.getByRole('button',{name:'حفظ كلمة المرور',exact:true}).click();
+ await expect(page).toHaveURL(/login\?reset=success/);
+ expect(requests.filter(r=>r.method==='PUT')).toHaveLength(1);
+});
+test('missing session and unauthorized user never enable password reset',async({page})=>{
+ await network(page,false);await page.goto('/auth/reset');
+ await expect(page.getByRole('status')).toContainText('الرابط غير صالح');
+ await expect(page.getByRole('button',{name:'حفظ كلمة المرور'})).toBeDisabled();
+ await page.goto('/auth/reset#access_token='+token+'&refresh_token=fixture-refresh&type=recovery');
+ await expect(page.getByRole('status')).toContainText('الرابط غير صالح');
+ await expect(page.getByRole('button',{name:'حفظ كلمة المرور'})).toBeDisabled();
+});
+
+for(const rejected of [false,true])test(`short matching password reaches Auth; provider rejection=${rejected}`,async({page})=>{
+ const requests=await network(page,true,rejected);
+ await page.goto('/auth/reset#access_token='+token+'&refresh_token=fixture-refresh&type=recovery');
+ const password=page.getByLabel('كلمة المرور الجديدة',{exact:true});
+ await expect(password).toBeEnabled();
+ await password.fill(rejected?'abc':'abc123');
+ await page.getByLabel('تأكيد كلمة المرور',{exact:true}).fill(rejected?'abc':'abc123');
+ await page.getByRole('button',{name:'حفظ كلمة المرور',exact:true}).click();
+ if(rejected){
+  await expect(page.getByRole('status')).toContainText('رفضت كلمة المرور');
+  await expect(page.getByRole('button',{name:'حفظ كلمة المرور',exact:true})).toBeEnabled();
+  expect(requests.filter(r=>r.path==='/auth/v1/logout')).toHaveLength(0);
+ }else await expect(page).toHaveURL(/login\?reset=success/);
+ expect(requests.filter(r=>r.method==='PUT')).toHaveLength(1);
+});
+
+
+test('the configured short owner username alias reaches the protected workspace',async({page,context})=>{
+ await network(page);await page.goto('/login');
+ await page.getByLabel('اسم المستخدم أو البريد الإلكتروني',{exact:true}).fill('1234');
+ await page.getByLabel('كلمة المرور',{exact:true}).fill('1234');
+ await page.getByRole('button',{name:'دخول',exact:true}).click();
  await expect(page).toHaveURL(new RegExp('/app$'));
+ expect((await context.cookies()).some(cookie=>cookie.name.includes('-auth-token'))).toBe(true);
+});
+));
  const cookie=(await context.cookies()).find(c=>c.name.includes('-auth-token'));
  expect(cookie).toBeDefined();
  if(remember)expect(cookie!.expires).toBeGreaterThan(Date.now()/1000);else expect(cookie!.expires).toBe(-1);
