@@ -43,7 +43,7 @@ export function DailyTripList({date,revision,disabled,vehicles,contractors,onRev
  const visibleWeight=report?.rows.every(r=>typeof r.weight_milli_tonnes==='string'&&/^\d+$/.test(r.weight_milli_tonnes))
   ?scaledIntegerToDecimal(report.rows.reduce((total,r)=>total+BigInt(String(r.weight_milli_tonnes)),0n).toString(),3):null;
  const fullWeight=report&&!report.next_cursor;
- return <section className={ui.surface} aria-label="النقلات المسجلة في اليومية">
+ return <section id="daily-trip-list" className={ui.surface + " " + styles.sectionCard} aria-label="النقلات المسجلة في اليومية">
   <header className={styles.sectionHeader}><div><h2>المسجّل بالفعل</h2><p>نقلات محفوظة من قاعدة البيانات، مستقلة عن مسودة الإدخال.</p></div>
    {report&&<strong>{String(report.total_count)} نقلة · {new Set(report.rows.map(r=>r.vehicle_id)).size} عربية ظاهرة</strong>}
   </header>

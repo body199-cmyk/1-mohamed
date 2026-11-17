@@ -1,3 +1,32 @@
+.quickAccess {
+  position: sticky; top: 8px; z-index: 35; grid-column: 1 / -1;
+  display: flex; align-items: center; gap: 8px; max-width: 100%;
+  margin: 0 0 14px; padding: 8px; overflow-x: auto;
+  overscroll-behavior-inline: contain; scrollbar-width: none;
+  background: color-mix(in srgb, var(--surface-card) 94%, transparent);
+  border: 1px solid var(--border-color); border-radius: 14px;
+  box-shadow: var(--shadow-elevated); backdrop-filter: blur(12px);
+}
+.quickAccess::-webkit-scrollbar { display: none; }
+.quickAccess a {
+  display: inline-flex; flex: 0 0 auto; align-items: center; justify-content: center;
+  min-height: 44px; padding: 8px 13px; color: var(--text-main);
+  background: var(--surface-card-subtle); border: 1px solid var(--border-section);
+  border-radius: 10px; font-size: .82rem; font-weight: 800; line-height: 1.5;
+  white-space: nowrap; scroll-snap-align: start;
+}
+.quickAccess a:hover { color: var(--color-primary); border-color: var(--color-primary); }
+.quickAccess a:focus-visible { outline: 3px solid var(--border-focus); outline-offset: 2px; }
+.sectionCard.sectionCard {
+  margin: 14px 0 20px; padding: 22px; background: var(--surface-section);
+  border: 1px solid var(--border-section); border-radius: 18px;
+  box-shadow: var(--shadow-section); scroll-margin-top: 86px;
+}
+@media(max-width:600px) {
+  .quickAccess { gap: 6px; padding: 7px; border-radius: 12px; scroll-snap-type: x proximity; }
+  .quickAccess a { min-height: 44px; padding: 8px 11px; font-size: .78rem; }
+  .sectionCard.sectionCard { padding: 17px 15px; border-radius: 15px; }
+}
 .sectionHeader{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:16px}
 .sectionHeader h2{margin:0 0 6px;font-size:1.15rem}
 .sectionHeader p{margin:0;color:var(--text-muted);font-size:.85rem;line-height:1.8}

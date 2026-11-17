@@ -32,7 +32,7 @@ test('login reveals/hides password, offers remember choice and sends cross-brows
 });
 for(const remember of [false,true])test(`remember=${remember}: authenticated cookie follows the selected persistence`,async({page,context})=>{
  await network(page);await page.goto('/login');
- await page.getByLabel('البريد الإلكتروني',{exact:true}).fill('owner@example.test');
+ await page.getByLabel('اسم المستخدم أو البريد الإلكتروني',{exact:true}).fill('owner@example.test');
  await page.getByLabel('كلمة المرور',{exact:true}).fill('fixture-password');
  await page.getByRole('checkbox',{name:'تذكر دخولي على هذا المتصفح'}).setChecked(remember);
  await page.getByRole('button',{name:'دخول',exact:true}).click();await expect(page).toHaveURL(/\/app$/);
@@ -80,4 +80,14 @@ for(const rejected of [false,true])test(`short matching password reaches Auth; p
   expect(requests.filter(r=>r.path==='/auth/v1/logout')).toHaveLength(0);
  }else await expect(page).toHaveURL(/login\?reset=success/);
  expect(requests.filter(r=>r.method==='PUT')).toHaveLength(1);
+});
+
+
+test('the configured short owner username alias reaches the protected workspace',async({page,context})=>{
+ await network(page);await page.goto('/login');
+ await page.getByLabel('اسم المستخدم أو البريد الإلكتروني',{exact:true}).fill('1234');
+ await page.getByLabel('كلمة المرور',{exact:true}).fill('1234');
+ await page.getByRole('button',{name:'دخول',exact:true}).click();
+ await expect(page).toHaveURL(/\\/app$/);
+ expect((await context.cookies()).some(cookie=>cookie.name.includes('-auth-token'))).toBe(true);
 });

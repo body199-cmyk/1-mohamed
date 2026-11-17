@@ -1,6 +1,7 @@
 "use client";
 import {useRef,useState,type FormEvent,type MutableRefObject} from 'react';
 import ui from './workspace-ui.module.css';
+import daily from './daily-work.module.css';
 import {PaymentPreview} from './payment-preview';
 import {poundsToPiastres,assertDecimal} from '../../lib/ledger/amounts';
 import type {LedgerWrite} from './workspace-data';
@@ -40,7 +41,7 @@ export function PaymentEntry({accounts,vehicles,contractors,busy,revision,paymen
   }
 
  return (
-    <section className={ui.surface} id="real-payment-form" aria-label="تسجيل دفعة نقدية">
+    <section className={ui.surface + " " + daily.sectionCard} id="real-payment-form" aria-label="تسجيل دفعة نقدية">
       <h2>تسجيل دفعة نقدية</h2>
       <p>لا يُسمح بصرف أكثر من الرصيد المتاح في أي تاريخ لاحق؛ الخادم يرفض أي عجز.</p>
       <form className={ui.form} onSubmit={createPayment}>
