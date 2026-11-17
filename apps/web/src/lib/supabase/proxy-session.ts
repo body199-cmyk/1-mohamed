@@ -4,14 +4,12 @@ import { assertSupabaseConfigured } from "./config";
 import {loginCookieOptions,remembersLogin} from './remember';
 
 /**
- * H041: candidate session-refresh adapter for a FUTURE feature branch.
- *
- * NOT connected to apps/web/src/proxy.ts yet; that deny-all boundary stays
- * in force until a dedicated Supabase TEST environment verifies GoTrue,
- * the owner gate, and session refresh behavior end-to-end.
- *
- * Important: when the future caller returns a different response (redirect),
- * it MUST copy refreshed cookies AND cache headers from this response.
+ * Active session-refresh adapter called by apps/web/src/proxy.ts when the
+ * production real-data switch and Supabase configuration are present.
+ * Signed claims are checked with getClaims(), then app_is_owner() is queried;
+ * authenticated status alone never grants access. Route Handlers repeat the
+ * owner check independently. Redirects must preserve refreshed cookies and
+ * cache headers from this response.
  */
 export async function refreshSupabaseSession(request: NextRequest) {
   const { url, publishableKey } = assertSupabaseConfigured();
