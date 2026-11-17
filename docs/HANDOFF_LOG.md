@@ -1384,3 +1384,14 @@ User explicitly approved the complete vehicle statement design: summary cards, t
 - Read-only security review: externally callable `app_op_*` functions have `app_require_owner()` and fixed search paths; `app_is_owner()` is the intentional owner-check RPC. Advisor still flags leaked-password protection disabled and informational FK/index findings. No settings, schema, or data were changed.
 - No production rows were written, edited, deleted, seeded, or truncated. PR86 remains blocked. Backup/restore remains deferred by prior user decision.
 - Remaining acceptance: authenticated user walkthrough on latest production, read-only statements/filters/exports, real Android/iOS and session/network checks, and review of leaked-password protection. See [PRODUCTION_ACCEPTANCE_2026-11-17](PRODUCTION_ACCEPTANCE_2026-11-17.md).
+
+
+## AUTH-USERNAME + DAILY-QUICK-ACCESS-01 — 17 November 2026
+
+User authorized implementation and merge of owner username login `1234` / requested password, sticky daily quick access, warm section cards, and coordinated light/dark colors. Work is isolated on `feat/daily-quick-access-owner-username-20261117` from `main=943fa96e9df91851e10822134fe651f8d2e8933b`.
+
+Production preparation: the existing Supabase owner identity was retained; server-only Vercel Production variables hold the configured username alias and existing Auth email. The Auth password hash was updated through Supabase Auth storage as requested; no plaintext password is in GitHub or Vercel variables. No new user, SQL migration, business row or financial data change was made. The numeric password is weak and must be replaced after initial access validation.
+
+Code scope: a server Route Handler resolves only the configured alias or the exact existing email, uses Supabase Auth `signInWithPassword`, and requires `app_is_owner()` before returning session cookies. The proxy narrowly permits POST to that endpoint; recovery remains email-based. Daily quick access targets shared work, trip registration, cash payment and saved trips. Four relevant sections receive warm neutral cards and theme-aware shadows.
+
+Added Auth route unit cases for owner mapping, invalid identifier, non-owner rejection, cross-origin rejection and disabled auth; browser fixture coverage for username alias and remember-session; workspace layout assertions for quick links, sticky behavior, section surfaces and light/dark difference. Exact final-head CI, Vercel Preview review and release verification are still pending at this log entry. No claim of live browser login or deployment until evidence is recorded below.

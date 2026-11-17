@@ -22,6 +22,11 @@
   border: 1px solid var(--border-section); border-radius: 18px;
   box-shadow: var(--shadow-section); scroll-margin-top: 86px;
 }
+.sectionCard.sectionCard > h2,
+.sectionCard.sectionCard > header h2 {
+  padding-inline-start: 10px;
+  border-inline-start: 3px solid var(--section-accent);
+}
 @media(max-width:600px) {
   .quickAccess { gap: 6px; padding: 7px; border-radius: 12px; scroll-snap-type: x proximity; }
   .quickAccess a { min-height: 44px; padding: 8px 11px; font-size: .78rem; }

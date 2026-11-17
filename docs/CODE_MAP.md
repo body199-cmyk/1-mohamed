@@ -1,3 +1,12 @@
+## AUTH-USERNAME + DAILY-QUICK-ACCESS-01 — 17 November 2026
+
+- `apps/web/src/app/api/auth/login/route.ts`: public POST entry for owner login only; maps the configured username/email to the one existing Auth email on the server, signs in through Supabase, and requires `app_is_owner()`. It does not return the email mapping or store a password.
+- `apps/web/src/lib/supabase/owner-login-identity.ts`: exact alias/email matching helper; `apps/web/src/proxy.ts` narrowly allows only POST to this login endpoint before owner-session middleware.
+- `apps/web/src/features/auth/login-form.tsx`: username-or-email entry while preserving email-only recovery and remember-session behavior.
+- `apps/web/src/features/ledger/transaction-entry.tsx`: sticky daily quick-access navigation. `shared-work-panel.tsx`, `transaction-entry.tsx`, `payment-entry.tsx`, and `daily-trip-list.tsx` expose the four in-page anchors.
+- `apps/web/src/features/ledger/daily-work.module.css` + `apps/web/src/styles/variables.css`: shared responsive quick-access strip and warm light/dark section surfaces; existing theme toggle remains in `real-workspace.tsx`.
+- Regression: `apps/web/e2e/auth-recovery.test.ts`, `e2e/auth/recovery.spec.ts`, `tools/auth-test-server.mjs`, and `e2e/workspace/design-rollout.spec.ts`. No SQL, financial logic, ledger API, write payload, report renderer or business data changes.
+
 ## Production Supabase path — verified 17 November 2026
 - `apps/web/src/proxy.ts`: the production real-data switch and Supabase configuration gate; refreshes the request session and checks the owner before private workspace access. Preview/development remain fail-closed unless separately configured.
 - `apps/web/src/lib/supabase/proxy-session.ts`: active session refresh adapter used by `proxy.ts`; verifies signed claims with `getClaims()`, then checks `app_is_owner()`, and carries refreshed cookies/cache headers across responses.

@@ -35,7 +35,7 @@ for(const remember of [false,true])test(`remember=${remember}: authenticated coo
  await page.getByLabel('اسم المستخدم أو البريد الإلكتروني',{exact:true}).fill('owner@example.test');
  await page.getByLabel('كلمة المرور',{exact:true}).fill('fixture-password');
  await page.getByRole('checkbox',{name:'تذكر دخولي على هذا المتصفح'}).setChecked(remember);
- await page.getByRole('button',{name:'دخول',exact:true}).click();await expect(page).toHaveURL(/\/app$/);
+ await expect(page).toHaveURL(new RegExp('/app$'));
  const cookie=(await context.cookies()).find(c=>c.name.includes('-auth-token'));
  expect(cookie).toBeDefined();
  if(remember)expect(cookie!.expires).toBeGreaterThan(Date.now()/1000);else expect(cookie!.expires).toBe(-1);
@@ -88,6 +88,6 @@ test('the configured short owner username alias reaches the protected workspace'
  await page.getByLabel('اسم المستخدم أو البريد الإلكتروني',{exact:true}).fill('1234');
  await page.getByLabel('كلمة المرور',{exact:true}).fill('1234');
  await page.getByRole('button',{name:'دخول',exact:true}).click();
- await expect(page).toHaveURL(/\\/app$/);
+ await expect(page).toHaveURL(new RegExp('/app$'));
  expect((await context.cookies()).some(cookie=>cookie.name.includes('-auth-token'))).toBe(true);
 });
