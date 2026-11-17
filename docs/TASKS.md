@@ -1,3 +1,6 @@
+## OWNER-INVITATIONS-01
+Approved: owner Settings email invitation, member password selection, only original owner manages users, operational member access and immediate subsequent-request revocation. No public registration. See STATUS for verification and email-sender/release gates.
+
 ## AUTH-USERNAME + DAILY-QUICK-ACCESS-01 — 17 November 2026 / in progress
 
 User-authorized scope: accept the configured owner alias `1234` (and preserve the real email login) without exposing the email mapping in the browser; keep Supabase Auth and `app_is_owner()` as the only identity/authorization source. Add a sticky quick-access strip for shared daily data, trip registration, cash payment, and saved trips. Give these sections subtle warm neutral cards in both existing light/dark themes. No public signup, new user, business data, SQL, accounting or export changes.

@@ -33,7 +33,7 @@ async function network(page: Page, owner = true, rejectPassword = false) {
           })
         : route.fulfill({ json: user });
     }
-    if (path === "/rest/v1/rpc/app_is_owner") return route.fulfill({ json: owner });
+    if (path === "/rest/v1/rpc/app_has_access") return route.fulfill({ json: owner });
     if (path === "/auth/v1/recover") return route.fulfill({ json: {} });
     if (path === "/auth/v1/token") {
       return route.fulfill({

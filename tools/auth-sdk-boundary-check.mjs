@@ -37,10 +37,10 @@ assert.match(login, /<LoginForm\s+enabled=\{process\.env\.APP_ENABLE_REAL_DATA\s
 assert.match(login, /export const dynamic\s*=\s*"force-dynamic"/);
 assert.match(loginForm, /fetch\(["']\/api\/auth\/login["']/);
 assert.match(loginForm, /resetPasswordForEmail/);
-assert.doesNotMatch(loginForm, /signInWithPassword|app_is_owner|createBrowserSupabaseClient/);
+assert.doesNotMatch(loginForm, /signInWithPassword|app_has_access|createBrowserSupabaseClient/);
 const ownerLoginRoute = read("apps/web/src/app/api/auth/login/route.ts");
 assert.match(ownerLoginRoute, /signInWithPassword/);
-assert.match(ownerLoginRoute, /app_is_owner/);
+assert.match(ownerLoginRoute, /app_has_access/);
 assert.match(ownerLoginRoute, /OWNER_LOGIN_USERNAME/);
 assert.match(ownerLoginRoute, /OWNER_LOGIN_EMAIL/);
 assert.match(ownerLoginRoute, /isAllowedLedgerOrigin/);
@@ -66,6 +66,7 @@ const preparedServerRoutes = new Set([
   "apps/web/src/app/api/ledger/read/route.ts",
   "apps/web/src/app/api/ledger/master/route.ts",
   "apps/web/src/app/api/auth/login/route.ts",
+  "apps/web/src/app/api/auth/members/route.ts",
 ]);
 for (const path of appSourceFiles("apps/web/src/app")) {
   const file = read(path);
@@ -75,7 +76,7 @@ for (const path of appSourceFiles("apps/web/src/app")) {
   } else {
     assert.match(file, /getSupabaseSetupStatus/);
     if (path.includes("/api/ledger/")) assert.match(file, /verifyOwnerForRoute/);
-    if (path.endsWith("/api/auth/login/route.ts")) assert.match(file, /app_is_owner/);
+    if (path.endsWith("/api/auth/login/route.ts")) assert.match(file, /app_has_access/);
     assert.doesNotMatch(file, /SUPABASE_SERVICE_ROLE_KEY|sb_secret_/);
   }
 }
@@ -91,7 +92,7 @@ assert.match(server, /response\.cookies\.set\(/);
 assert.match(server, /response\.headers\.set\(/);
 assert.match(server, /request\.cookies\.set\(/);
 assert.match(owner, /getClaims\(/);
-assert.match(owner, /rpc\("app_is_owner"\)/);
+assert.match(owner, /rpc\("app_has_access"\)/);
 assert.match(session, /getClaims\(/);
 assert.match(session, /request\.cookies\.set\(/);
 assert.match(session, /response\.cookies\.set\(/);

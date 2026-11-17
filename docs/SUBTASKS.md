@@ -1,3 +1,6 @@
+## OWNER-INVITATIONS-01 implementation
+Add additive membership migration and isolated permission tests; narrow Auth invite Edge handler; authenticated owner-only management API; Settings UI; access-aware login/callback/reset/proxy/ledger guard; test failure and revocation. Preserve financial formulas, owner identity and direct-write denial. Production release requires matching source, CI and verified email delivery configuration.
+
 ## UX-REORG-01.3 — optional quick-add opening
 Implement only existing Daily quick-record modal + existing RPC payload adapters, typed fields and canonical units; protect partial-created vehicle state and immutable opening retry identity. Existing payment-account modal unchanged. Source and tests mapped in CODE_MAP; current evidence and next step in STATUS.
 

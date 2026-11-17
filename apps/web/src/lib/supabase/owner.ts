@@ -3,10 +3,11 @@ import "server-only";
 import type { createRouteHandlerSupabaseClient } from "./server";
 
 /**
- * Active owner guard for a specific Route Handler client.
+ * Active workspace-access guard for a specific Route Handler client.
  * Caller supplies the configured client tied to that request and response;
  * no global singleton, session-cookie trust, or service-role bypass is used.
  * Every permanent ledger Route Handler calls this guard before its RPC.
+ * Historical export name retained; invitation management additionally checks app_is_owner().
  */
 export async function verifyOwnerForRoute(
   supabase: ReturnType<typeof createRouteHandlerSupabaseClient>
@@ -20,7 +21,7 @@ export async function verifyOwnerForRoute(
   }
 
   const { data: isOwner, error: ownerError } =
-    await supabase.rpc("app_is_owner");
+    await supabase.rpc("app_has_access");
 
   if (ownerError || isOwner !== true) {
     return { authorized: false as const };

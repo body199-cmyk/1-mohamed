@@ -95,6 +95,8 @@ const steps = [
   ['whole-pound tests', 'supabase/tests/16_whole_pound_verification.sql', 'D19: exact boundaries and whole-pound constraints'],
   ['all-history policy', 'supabase/migrations/20261114190803_report_all_history.sql', 'Reports: resolve actual complete account period'],
   ['all-history tests', 'supabase/tests/17_report_all_history_verification.sql', 'Reports: filters, opening, cursor and authorization'],
+  ['members migration', 'supabase/migrations/20261117131220_owner_managed_members.sql', 'Owner invitations and live membership authorization'],
+  ['members tests', 'supabase/tests/18_member_access_verification.sql', 'Owner/member/stranger/revoked access and writes'],
 ];
 
 function describe(error) {
@@ -150,6 +152,7 @@ for (const [id, relative, label] of steps) {
   }
 
   try {
+    if(id==='members migration')await db.exec('reset role');
     await db.exec(sql);
     if (negativeMode && id === negativeStep) {
       console.error('NEGATIVE CONTROL FAILED: the suite PASSED although a protection was removed.');
