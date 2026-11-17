@@ -43,8 +43,8 @@ export function verifyLogicalDump({rolesSql,schemaSql,dataSql}) {
     assert(new RegExp("\\bCREATE\\s+TABLE\\s+(?:IF\\s+NOT\\s+EXISTS\\s+)?(?:public\\.)?"+table+"\\s*\\(","i").test(schemaSql),"Logical schema dump is missing public."+table+".");
   for(const table of EXPECTED_PUBLIC_TABLES)
     assert(new RegExp("\\bCOPY\\s+public\\."+table+"\\s*\\(","i").test(dataSql),"Logical data dump is missing public."+table+".");
-  assert(/\\bCOPY\\s+auth\\.users\\s*\\(/i.test(dataSql),"Logical data dump is missing auth.users; refusing incomplete Auth recovery archive.");
-  assert(/\\bCOPY\\s+auth\\.identities\\s*\\(/i.test(dataSql),"Logical data dump is missing auth.identities; refusing incomplete Auth recovery archive.");
+  assert(/\bCOPY\s+auth\.users\s*\(/i.test(dataSql),"Logical data dump is missing auth.users; refusing incomplete Auth recovery archive.");
+  assert(/\bCOPY\s+auth\.identities\s*\(/i.test(dataSql),"Logical data dump is missing auth.identities; refusing incomplete Auth recovery archive.");
   return true;
 }
 export function buildBackupManifest({createdAt,fileName,sourceCommit,postgresVersion,tableCounts,dataSqlSha256}) {
