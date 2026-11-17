@@ -1,3 +1,6 @@
+## GOOGLE-DRIVE-BACKUP-08 — 18 November 2026
+Scoped source reader approved/applied with24h expiry; credential stored encrypted and strict-TLS login/write-denial tests passed. Private Auth read views avoid broad auth-schema membership; applied role/view migrations are additive, no site data changed. New manual consistent-snapshot exporter/trial workflow prepared (Drive only; rejected extra GitHub Artifact removed);31 focused tests PASS, live run/new CI pending. Target postgres membership rejected/not applied; constrain target restore permissions. Disable source login after drill. STATUS has current paths/expiry/blockers.
+
 ## GOOGLE-DRIVE-BACKUP-07 — 18 November 2026
 Owner confirms trial-only data and clean final handover; clarified no immediate deletion. Local ignored detailed data report produced; existing rows/accounts kept. CI44182832645 SUCCESS at bb60b18; PR description update approved and completed. Source backup-role creation rejected automatically for broad BYPASSRLS/read scope/indefinite duration despite generic user consent; no role created. Narrow24h proposal prepared, public-key credential transport safely proved on test project only. Await exact scoped-access approval; Drive download quota/full restore remain blockers. STATUS is current checkpoint.
 

@@ -1,3 +1,8 @@
+## GOOGLE-DRIVE-BACKUP-08 map
+- tools/backup-reader/{contract,export,drive-trial}.mjs: restricted source validation, consistent SQL export, encrypted trial transport.
+- tools/backup-reader/package*.json: isolated pinned pure-JS runtime; contract.test.mjs covers project/role/host binding and Auth columns.
+- .github/workflows/verify.yml: branch-bound manual reader trial, isolated from ordinary CI and production schedule.
+
 ## GOOGLE-DRIVE-BACKUP-07 map
 - docs/BACKUP_READER_ACCESS_PROPOSAL.md: exact un-applied temporary scope and credential handling.
 - artifacts/backup-review/TEST_DATA_REPORT.md + TEST_DATA_INVENTORY.json: ignored local detailed trial inventory; never publish customer-style row details in Git.

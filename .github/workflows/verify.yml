@@ -3,16 +3,22 @@ name: Verify pull request
 on:
   pull_request:
   workflow_dispatch:
+    inputs:
+      run_reader_drill:
+        description: Export an encrypted trial snapshot with the approved temporary reader
+        type: boolean
+        default: false
 
 permissions:
   contents: read
 
 concurrency:
-  group: verify-v2-${{ github.workflow }}-${{ github.ref }}
+  group: verify-v2-${{ github.workflow }}-${{ github.ref }}-${{ inputs.run_reader_drill || false }}
   cancel-in-progress: true
 
 jobs:
   check:
+    if: ${{ inputs.run_reader_drill != true }}
     name: Typecheck, packages, PostgreSQL and build
     runs-on: ubuntu-latest
     timeout-minutes: 60
@@ -64,7 +70,7 @@ jobs:
       - name: Test versioned backup, tampering, isolated atomic restore and stale replay
         run: node --test tools/backup-core.test.mjs
       - name: Test daily Google Drive backup contract and 30-day retention
-        run: node --test tools/offsite-backup.test.mjs
+        run: node --test tools/offsite-backup.test.mjs tools/backup-reader/contract.test.mjs
       - name: Validate offsite backup workflow script syntax
         run: |
           node --check tools/offsite-backup.mjs
@@ -212,3 +218,37 @@ jobs:
           path: artifacts/h063/
           if-no-files-found: ignore
           retention-days: 7
+
+  reader-drill:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.run_reader_drill == true && github.ref == 'refs/heads/feat/offsite-backup-t10-20261117' }}
+    name: Manual encrypted reader trial
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    environment: google-drive-backup
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install pinned reader tools
+        run: npm ci --prefix tools/backup-reader --ignore-scripts --no-audit --no-fund
+      - name: Install encryption and Drive tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes age rclone
+      - name: Export one consistent read-only snapshot and encrypt
+        id: export
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          AGE_RECIPIENT: ${{ vars.AGE_RECIPIENT }}
+          BACKUP_READER_TRIAL: 'true'
+          BACKUP_ENABLED: ${{ vars.BACKUP_ENABLED }}
+          BACKUP_RECORD_HISTORY: ${{ vars.BACKUP_RECORD_HISTORY }}
+          BACKUP_RETENTION_ENABLED: ${{ vars.BACKUP_RETENTION_ENABLED }}
+          BACKUP_RESTORE_VERIFIED: ${{ vars.BACKUP_RESTORE_VERIFIED }}
+        run: node tools/backup-reader/export.mjs
+      - name: Upload encrypted trial to Drive and download for SHA-256 verification
+        env:
+          RCLONE_CONFIG_DRIVE_TOKEN: ${{ secrets.RCLONE_CONFIG_DRIVE_TOKEN }}
+          ENCRYPTED_ARCHIVE: ${{ steps.export.outputs.archive }}
+        run: node tools/backup-reader/drive-trial.mjs

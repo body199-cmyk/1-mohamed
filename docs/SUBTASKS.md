@@ -1,3 +1,6 @@
+## T10 active slice — approved reader snapshot
+Run the branch-bound manual reader trial: pinned PostgreSQL17 dump plus explicit nongenerated Auth columns under one exported snapshot, age encryption with local offline key, encrypted-only artifact/Drive verification. Never grant target postgres membership without separate approval; complete constrained restore and disable source login after drill.
+
 ## T10 next slice — narrow temporary reader
 Pending approval:24h source credential restricted to explicit11 business tables, Auth users/identities, Storage metadata and public sequences, with BYPASSRLS and no business writes. Implement direct pg_dump compatibility, verify credentials privately and restore only into the free separate project. Synthetic report data remains for UI acceptance until deliberate final cleaning.
 

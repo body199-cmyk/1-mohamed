@@ -1,3 +1,6 @@
+## GOOGLE-DRIVE-BACKUP-08
+Scoped24h source reader and encrypted credentials are live; no business writes granted, actual write-denial probes pass.31 focused tests pass. Consistent-snapshot reader export/manual trial added; no production activation. Isolated restore permissions and Drive quota remain gates; see STATUS.
+
 ## GOOGLE-DRIVE-BACKUP-07
 Trial-only data confirmed; detailed local inventory/report delivered, no fixture deletion. CI at bb60b18 passed, PR description updated. Role setup pending specific approval after automatic rejection; see BACKUP_READER_ACCESS_PROPOSAL and STATUS. Full backup/restore remains incomplete.
 
