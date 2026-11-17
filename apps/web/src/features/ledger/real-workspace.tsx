@@ -196,7 +196,6 @@ export function RealWorkspace() {
         <p>تغيير كلمة المرور واستعادتها من شاشة تسجيل الدخول عبر بريد حسابك.</p>
         <MemberInvitations visible={screen === "settings"}/>
         <BackupSettings/>
-        <p>نسخ قاعدة البيانات واستعادتها تُدار بواسطة المسؤول؛ تصدير التقرير ليس نسخة احتياطية للبرنامج.</p>
       </section>
     </div>
   </div>;
