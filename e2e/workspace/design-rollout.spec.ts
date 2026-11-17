@@ -173,7 +173,7 @@ test('restyled master and payment forms retain their write payloads',async({page
 
 test('daily quick access stays sticky and each entry area is a warm, theme-aware section card',async({page})=>{
  await page.setViewportSize({width:390,height:844});await prepare(page);
- const quick=page.getByRole('navigation',{name:'وصول سريع لتسجيل اليومية'});
+ const quick=page.getByRole('group',{name:'وصول سريع لتسجيل اليومية'});
  await expect(quick).toBeVisible();
  await expect(quick.getByRole('link')).toHaveCount(4);
  expect(await quick.evaluate(el=>getComputedStyle(el).position)).toBe('sticky');

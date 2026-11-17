@@ -195,12 +195,12 @@ export function TransactionEntry({ contractors, vehicles, accounts, busy, write,
 
 
   return <div className={entryVisible?daily.layout:undefined}>
-    {entryVisible && <nav className={daily.quickAccess} aria-label="وصول سريع لتسجيل اليومية">
+    {entryVisible && <div role="group" className={daily.quickAccess} aria-label="وصول سريع لتسجيل اليومية">
       <a href="#shared-work-panel">البيانات المشتركة</a>
       <a href="#trip-entry-section">تسجيل العربيات</a>
       <a href="#real-payment-form">دفعات العربيات</a>
       <a href="#daily-trip-list">نقلات اليوم</a>
-    </nav>}
+    </div>}
     <div hidden={!entryVisible}>
     <a className={daily.paymentJump} href="#real-payment-form">الانتقال لتسجيل دفعة نقدية</a>
     {message && <p role="status">{message}</p>}
