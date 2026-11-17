@@ -5,7 +5,8 @@ export const metadata: Metadata = { title: "حسابات النقل — مساح
 
 /**
  * Server-backed workspace only; no DemoStoreProvider or sample seed records.
- * The existing proxy still denies private access until final Auth/RLS cutover.
+ * Private access is gated by proxy.ts, signed claims, app_is_owner(), and the
+ * Route Handler checks. This route never mounts the demo store or sample data.
  */
 export default function ProtectedWorkspacePage() {
   return <RealWorkspace />;
