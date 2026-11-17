@@ -1,3 +1,6 @@
+## SHARED-FIELDS-VISIBLE — approved release
+Shared expense and note now stay visible beside other shared-work fields without disclosure clicks. Optional zero expense/empty note defaults and payloads unchanged. Updated SQL/browser fixtures assert direct visibility. User confirms finishing and deploying the pending change; run exact-head CI before merge. This patch follows the owner invitation release without changing its permissions.
+
 ## OWNER-INVITATIONS-01 — release resumed with explicit user approval
 User confirms publishing/merging/deploying the invitation code after the public-source warning and authorizes Settings controls. Git CLI lacks credentials; use the authenticated GitHub connector for the same approved repository, preserving the reviewed source. Added owner-only manual invitation-link generation through Supabase Admin generateLink as a working alternative to custom SMTP: no email claimed, no temporary password, link returned only to owner/no-store and retained only in component memory. Existing email and revoke flows preserved. Do not log or commit generated links. Sender config is still unverified; no actual recipient supplied or invitation sent.
 

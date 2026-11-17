@@ -96,7 +96,7 @@ export function SharedWorkPanel({contractors,busy,applied,dirty,onApply,onNew,on
    {!draft.sameRate&&<div className={ui.fieldGroup}><label htmlFor="shared-vehicle-rate">سعر العربية المشترك للطن</label><input id="shared-vehicle-rate" className={ui.control} inputMode="decimal" required disabled={busy||confirmation!==null} value={draft.vehicleRate} onChange={e=>change('vehicleRate',e.target.value)}/></div>}
    <div className={ui.fieldGroup}><label htmlFor="shared-origin">من — للشغل المشترك</label><input id="shared-origin" className={ui.control} maxLength={200} disabled={busy||confirmation!==null} value={draft.origin} onChange={e=>change('origin',e.target.value)}/></div>
    <div className={ui.fieldGroup}><label htmlFor="shared-destination">إلى — للشغل المشترك</label><input id="shared-destination" className={ui.control} maxLength={200} disabled={busy||confirmation!==null} value={draft.destination} onChange={e=>change('destination',e.target.value)}/></div>
-   <details className={styles.optionalDefaults}><summary>مصاريف وملاحظة مشتركة — اختياري</summary>
+   <div className={styles.optionalDefaults}>
     <div className={ui.form}>
      <div className={ui.fieldGroup}><label htmlFor="shared-expense">مصاريف ثابتة لكل نقلة بالجنيه</label>
       <input id="shared-expense" className={ui.control} inputMode="decimal" required disabled={busy||confirmation!==null} value={draft.expense} onChange={e=>change('expense',e.target.value)}/>
@@ -104,7 +104,7 @@ export function SharedWorkPanel({contractors,busy,applied,dirty,onApply,onNew,on
      <div className={ui.fieldGroup}><label htmlFor="shared-notes">ملاحظة مشتركة لكل نقلة</label>
       <input id="shared-notes" className={ui.control} maxLength={400} disabled={busy||confirmation!==null} value={draft.notes} onChange={e=>change('notes',e.target.value)}/></div>
     </div>
-   </details>
+   </div>
    {error&&<p role="alert">{error}</p>}
    <div className={ui.actions}><button type="submit" disabled={busy||confirmation!==null}>اعتماد بيانات الشغل</button>
     {applied&&<button type="button" disabled={busy||confirmation!==null} onClick={()=>{setDraft(applied);setEditing(false);setError('');setConfirmation(null);}}>إلغاء تعديل المشترك</button>}

@@ -187,7 +187,7 @@ test('shared date defaults to Cairo today even before UTC midnight and stays edi
 });
 
 async function optionalDefaults(page:Page,expense='20',notes='شغل موقع النور'){
- await page.getByText('مصاريف وملاحظة مشتركة — اختياري',{exact:true}).click();
+ await expect(page.locator('#shared-expense')).toBeVisible();await expect(page.locator('#shared-notes')).toBeVisible();
  await page.locator('#shared-expense').fill(expense);await page.locator('#shared-notes').fill(notes);
 }
 test('shared expense and note apply per trip, allow overrides and restore defaults only after success',async({page})=>{
@@ -241,7 +241,7 @@ for(const mobile of [true,false])for(const dark of [false,true])test(`shared def
  const {attempts}=await fixture(page);if(dark)await page.getByRole('button',{name:'تبديل الوضع الفاتح/الداكن'}).click();
  await optionalDefaults(page);await shared(page);
  await restoreShared(page);
- await page.getByText('مصاريف وملاحظة مشتركة — اختياري',{exact:true}).click();
+ await expect(page.locator('#shared-expense')).toBeVisible();await expect(page.locator('#shared-notes')).toBeVisible();
  const folder='artifacts/ui-review-87/shared-defaults';await mkdir(folder,{recursive:true});
  await page.evaluate(()=>document.fonts.ready);
  await expect(page.locator('#shared-expense')).toHaveValue('20');await expect(page.locator('#shared-notes')).toHaveValue('شغل موقع النور');
