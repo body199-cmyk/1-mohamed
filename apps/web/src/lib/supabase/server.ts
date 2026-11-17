@@ -11,8 +11,9 @@ import {loginCookieOptions,remembersLogin} from './remember';
  * Set-Cookie + Cache-Control propagation explicit and avoids dropping the
  * second `headers` argument of Supabase SSR setAll().
  *
- * Not yet activated: there are no permanent authenticated routes.
- * Do not use this from a Server Component or persist a client globally.
+ * Used by the permanent ledger Route Handlers. Do not use this from a Server
+ * Component or persist a client globally; each request supplies its own
+ * request and response so refreshed cookies and cache headers are preserved.
  */
 export function createRouteHandlerSupabaseClient(
   request: NextRequest,
