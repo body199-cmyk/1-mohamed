@@ -251,7 +251,7 @@ export async function runOffsiteBackup(env = process.env) {
     ], { env });
 
     verifyArchiveToc(readFileSync(join(work, "toc.list"), "utf8"));
-    verifySchemaInventory(readFileSync(join(work, "schema-list.txt"), "utf8").trim().split(/\\r?\\n/));
+    verifySchemaInventory(readFileSync(join(work, "schema-list.txt"), "utf8").trim().split(/\r?\n/));
     const tableCounts = JSON.parse(readFileSync(join(work, "table-counts.json"), "utf8").trim());
     const [storageBucketCount, storageObjectCount] = readFileSync(join(work, "storage-counts.txt"), "utf8")
       .trim().split("|").map(Number);
