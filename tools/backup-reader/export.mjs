@@ -28,14 +28,17 @@ export async function createReaderArchive(env=process.env){
  const root=resolve(env.READER_OUTPUT_DIR||join(env.RUNNER_TEMP||tmpdir(),'reader-encrypted'));
  mkdirSync(root,{recursive:true,mode:0o700});
  const work=mkdtempSync(join(env.RUNNER_TEMP||tmpdir(),'reader-private-'));
- let client;
+ let client,connected=false;
  try {
   const ca=await caCertificate(),config=sourceConnection(env.SUPABASE_DB_URL,ca);
+  console.log('Pinned Supabase CA and restricted source binding verified.');
   writeFileSync(join(work,'supabase-root.crt'),ca,{mode:0o600});
-  client=new pg.Client(config);await client.connect();
+  client=new pg.Client(config);await client.connect();connected=true;
+  console.log('Source TLS session established.');
   await client.query("begin isolation level repeatable read read only");
   await client.query("set local timezone='UTC'");
   const snapshot=(await client.query('select pg_export_snapshot() as id')).rows[0].id;
+  console.log('Consistent read-only snapshot opened.');
   const actual=(await client.query("select tablename from pg_tables where schemaname='public' order by tablename")).rows.map(r=>r.tablename);
   const tables=EXPECTED_PUBLIC_TABLES.filter(t=>t!=='backup_history'||actual.includes(t));
   if(JSON.stringify([...tables].sort())!==JSON.stringify(actual))throw Error('Public table inventory changed; update recovery coverage');
@@ -43,7 +46,7 @@ export async function createReaderArchive(env=process.env){
   if(storage.buckets!=='0'||storage.objects!=='0')throw Error('Storage object export required');
   const pgEnv={...env,PGHOST:config.host,PGPORT:'5432',PGUSER:config.user,PGPASSWORD:config.password,PGDATABASE:'postgres',PGSSLMODE:'verify-full',PGSSLROOTCERT:'/backup/supabase-root.crt',PGTZ:'UTC'};
   const dockerArgs=['run','--rm','--network','host','--user',`${process.getuid?.()||0}:${process.getgid?.()||0}`,'-v',`${work}:/backup`,...['PGHOST','PGPORT','PGUSER','PGPASSWORD','PGDATABASE','PGSSLMODE','PGSSLROOTCERT','PGTZ'].flatMap(v=>['-e',v]),'postgres:17.11-bookworm'];
-  for(const [file,section] of [['pre-data.sql','pre-data'],['post-data.sql','post-data'],['public-data.sql','data']])run('docker',[...dockerArgs,'pg_dump','--schema=public','--no-owner',`--section=${section}`,`--snapshot=${snapshot}`,'--file',`/backup/${file}`],pgEnv);
+  for(const [file,section] of [['pre-data.sql','pre-data'],['post-data.sql','post-data'],['public-data.sql','data']]){console.log('Exporting public '+section+' section.');run('docker',[...dockerArgs,'pg_dump','--schema=public','--no-owner',`--section=${section}`,`--snapshot=${snapshot}`,'--file',`/backup/${file}`],pgEnv);}
   const counts={},fingerprints={},authColumns={};
   for(const table of tables){const r=(await client.query(tableFingerprintSql('public',table))).rows[0];counts[table]=Number(r.count);if(!Number.isSafeInteger(counts[table]))throw Error('Unsafe row count');fingerprints['public.'+table]=r;}
   const data=join(work,'data.sql');writeFileSync(data,'-- Auth records precede application mappings.\n',{mode:0o600});
@@ -71,6 +74,6 @@ export async function createReaderArchive(env=process.env){
   writeFileSync(join(root,'result.json'),JSON.stringify(result,null,2)+'\n',{mode:0o600});
   if(env.GITHUB_OUTPUT)appendFileSync(env.GITHUB_OUTPUT,`archive=${encrypted}\nfile_name=${fileName}\nsha256=${result.sha256}\n`);
   console.log(JSON.stringify(result));return result;
- }finally{if(client){await client.query('rollback').catch(()=>{});await client.end().catch(()=>{});}rmSync(work,{recursive:true,force:true});}
+ }finally{if(client){if(connected)await client.query('rollback').catch(()=>{});await client.end().catch(()=>{});}rmSync(work,{recursive:true,force:true});}
 }
 if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href)createReaderArchive().catch(error=>{console.error('Restricted reader export failed: '+(error.code||error.message||'unknown failure'));process.exitCode=1;});
