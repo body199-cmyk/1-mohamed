@@ -54,7 +54,7 @@ export function buildBackupManifest({createdAt,fileName,sourceCommit,postgresVer
   assert(names.length===expected.length&&names.every((n,i)=>n===expected[i]),"Public table-count manifest is incomplete.");
   for(const [name,count] of Object.entries(tableCounts)) assert(Number.isSafeInteger(count)&&count>=0,"Invalid row count for public."+name);
   assert(/^[a-f0-9]{64}$/.test(dataSqlSha256||""),"SQL data SHA-256 is invalid.");
-  return {format:"1-mohamed-full-supabase-logical-backup",format_version:2,created_at:new Date(createdAt).toISOString(),cairo_backup_date:cairoDate(createdAt),project_ref:EXPECTED_PROJECT_REF,source_commit:sourceCommit,postgres_version:postgresVersion,public_table_counts:tableCounts,public_tables_included:[...EXPECTED_PUBLIC_TABLES],auth_users_included:false,auth_password_hashes_included:false,identity_mapping_rows_included:false,storage_objects_included:false,data_sql_sha256:dataSqlSha256,encrypted:true};
+  return {format:"1-mohamed-full-supabase-logical-backup",format_version:2,created_at:new Date(createdAt).toISOString(),cairo_backup_date:cairoDate(createdAt),project_ref:EXPECTED_PROJECT_REF,source_commit:sourceCommit,postgres_version:postgresVersion,public_table_counts:tableCounts,public_tables_included:[...EXPECTED_PUBLIC_TABLES],public_table_data_included:[...EXPECTED_PUBLIC_DATA_TABLES],auth_users_included:false,auth_password_hashes_included:false,identity_mapping_rows_included:false,storage_objects_included:false,data_sql_sha256:dataSqlSha256,encrypted:true};
 }
 function run(command,args,options={}) {
   const r=spawnSync(command,args,{encoding:"utf8",env:options.env??process.env,maxBuffer:12*1024*1024,stdio:["ignore","pipe","pipe"]});

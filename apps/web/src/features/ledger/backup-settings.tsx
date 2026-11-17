@@ -25,9 +25,9 @@ export function BackupSettings(){
   <h3>النسخ الاحتياطي واستعادة البيانات</h3>
   <p>نسخة سحابية يومية مشفرة على Google Drive، مع الاحتفاظ بآخر 15 يومًا. النسخة السحابية تشمل بيانات وهيكل جداول التطبيق. حسابات Supabase Auth تُدار بشكل منفصل ولا تُحفظ كلمات مرورها في هذا التصدير.</p>
   <div className={ui.actions}>
-   <a className={ui.control} href="/api/backup/export?format=json" download>تنزيل نسخة بيانات كاملة (JSON)</a>
+   <a className={ui.control} href="/api/backup/export?format=json" download>تنزيل نسخة بيانات التطبيق (JSON)</a>
   </div>
-  <p>نسخة JSON تحتوي جميع جداول بيانات التطبيق الـ12. لا تحتوي بيانات دخول Supabase Auth أو كلمات المرور أو إعدادات المشروع الداخلية؛ احتفظ بالنسخة السحابية المشفرة لاستعادة هيكل وبيانات PostgreSQL.</p>
+  <p>نسخة JSON تحتوي جميع جداول بيانات التطبيق الـ12، بما فيها سجل النسخ الاحتياطية. لا تحتوي بيانات دخول Supabase Auth أو كلمات المرور أو إعدادات المشروع الداخلية؛ احتفظ بالنسخة السحابية المشفرة لاستعادة هيكل وبيانات PostgreSQL.</p>
   <div className={ui.fieldGroup}>
    <label htmlFor="backup-csv-table">تصدير جدول قابل للقراءة في Excel</label>
    <select id="backup-csv-table" className={ui.control} value={table} onChange={e=>setTable(e.target.value as typeof table)}>

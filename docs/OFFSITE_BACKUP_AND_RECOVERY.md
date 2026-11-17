@@ -33,3 +33,8 @@ Create a separate Supabase project, apply reviewed migrations, download and SHA-
 
 ## Current status
 The workflow is prepared but deliberately inactive until OAuth, the database connection string, age recipient, backup-history migration and a separate-project restore drill are configured and verified. No live production rows have been changed by this implementation.
+
+## Official references
+- Supabase CLI database dump and managed-schema exclusions: https://supabase.com/docs/reference/cli/supabase-db-dump
+- Supabase database backup limitations and Storage exclusion: https://supabase.com/docs/guides/platform/backups
+- Supabase logical backup and restore workflow: https://supabase.com/docs/guides/platform/migrating-within-supabase/backup-restore

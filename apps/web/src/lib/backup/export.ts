@@ -41,7 +41,7 @@ export function createPortableBackup(tables:Record<PortableBackupTable,unknown[]
     assert(total<=MAX_ROWS,"Portable export exceeded 50,000 rows.");
     checkSafeNumbers(tables[table],table);
   }
-  const body={format:"1-mohamed-portable-data-backup",format_version:1,created_at:new Date(createdAt).toISOString(),project_ref:"sskkuniskphlawivzudw",tables_included:[...PORTABLE_BACKUP_TABLES],row_counts:Object.fromEntries(PORTABLE_BACKUP_TABLES.map(table=>[table,tables[table].length])),auth_passwords_included:false,storage_objects_included:false,tables};
+  const body={format:"1-mohamed-portable-data-backup",format_version:1,created_at:new Date(createdAt).toISOString(),project_ref:"sskkuniskphlawivzudw",tables_included:[...PORTABLE_BACKUP_TABLES],row_counts:Object.fromEntries(PORTABLE_BACKUP_TABLES.map(table=>[table,tables[table].length])),auth_users_included:false,auth_passwords_included:false,storage_objects_included:false,tables};
   const sha256=createHash("sha256").update(JSON.stringify(body),"utf8").digest("hex");
   return {...body,sha256};
 }
