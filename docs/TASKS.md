@@ -1,3 +1,6 @@
+## LOGIN-THEME-DELIVERY-01
+User authorizes login polish +3-way theme choice (manual light/dark, device-clock auto06–18) and delivery review. Preserve auth/payment behavior; exact-head CI, responsive capture review and verified release. Read-only delivery review distinguishes proven code from live customer acceptance; see DELIVERY_READINESS_2026-11-17.md and STATUS.
+
 ## SHARED-FIELDS-VISIBLE — approved release
 Shared expense and note now stay visible beside other shared-work fields without disclosure clicks. Optional zero expense/empty note defaults and payloads unchanged. Updated SQL/browser fixtures assert direct visibility. User confirms finishing and deploying the pending change; run exact-head CI before merge. This patch follows the owner invitation release without changing its permissions.
 

@@ -93,6 +93,14 @@ jobs:
           retention-days: 7
       - name: Test password recovery, visibility and optional remembered sessions
         run: npx playwright test --config=playwright.auth.config.ts
+      - name: Keep login and automatic theme review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: login-theme-review
+          path: artifacts/login-theme/
+          if-no-files-found: ignore
+          retention-days: 7
       - name: Keep private workspace browser evidence
         if: always()
         uses: actions/upload-artifact@v4

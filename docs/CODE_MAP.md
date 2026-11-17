@@ -1,3 +1,10 @@
+## LOGIN-THEME-DELIVERY-01 map
+- components/theme-preference.ts: preference types,06–18local-clock resolution and fixed before-paint script; theme-provider.tsx: saved3-way preference, live auto updates/manual override/cross-tab sync.
+- components/theme-selector.tsx +theme-selector.module.css: labeled manual/auto controls on login and private Settings.
+- features/auth/login-form.tsx +login-form.module.css: existing auth behavior with scoped responsive brand/form/error styling; app/layout.tsx applies theme before paint.
+- tools/auth-test-server.mjs: actual production tokens/Cairo/auth CSS and ThemeProvider in isolated auth fixture; e2e/auth/login-presentation.spec.ts and apps/web/e2e/theme-preference.test.ts cover layout and clock/persistence behavior. CI uploads login-theme-review images.
+- docs/DELIVERY_READINESS_2026-11-17.md: current release/acceptance matrix, not a new session briefing.
+
 ## SHARED-FIELDS-VISIBLE — approved release
 Shared expense and note now stay visible beside other shared-work fields without disclosure clicks. Optional zero expense/empty note defaults and payloads unchanged. Updated SQL/browser fixtures assert direct visibility. User confirms finishing and deploying the pending change; run exact-head CI before merge. This patch follows the owner invitation release without changing its permissions.
 

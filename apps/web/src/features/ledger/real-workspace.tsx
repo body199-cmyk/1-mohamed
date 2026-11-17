@@ -9,6 +9,7 @@ import { RealReports } from "./real-reports";
 import { MasterDataEntry } from "./master-data-entry";
 import { RealCashStatement } from "./real-cash-statement";
 import { useWorkspaceData } from "./workspace-data";
+import {ThemeSelector} from "../../components/theme-selector";
 import { useTheme } from "../../components/theme-provider";
 import styles from "./workspace.module.css";
 import ui from "./workspace-ui.module.css";
@@ -190,7 +191,7 @@ export function RealWorkspace() {
         <RecordActions {...data} busy={blocked} mode="master" reportType="trips.list" reportRows={[]} />
       </div>
       <section className={ui.surface + " " + ui.settings} hidden={screen !== "settings"}>
-        <h2>الإعدادات</h2><button onClick={toggleTheme}>المظهر: {theme === "dark" ? "داكن" : "فاتح"}</button>
+        <h2>الإعدادات</h2><ThemeSelector/>
         <p>تغيير كلمة المرور واستعادتها من شاشة تسجيل الدخول عبر بريد حسابك.</p>
         <MemberInvitations visible={screen === "settings"}/>
         <p>نسخ قاعدة البيانات واستعادتها تُدار بواسطة المسؤول؛ تصدير التقرير ليس نسخة احتياطية للبرنامج.</p>
