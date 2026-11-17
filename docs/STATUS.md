@@ -1,3 +1,13 @@
+## GOOGLE-DRIVE-BACKUP-01 — 17 November 2026
+
+Owner-approved policy: one encrypted full logical Supabase backup per Cairo calendar day, retain the latest 15 calendar days in a private Google Drive folder. No AWS, Cloudflare R2, or six-hour snapshots. The scheduled workflow remains gated until Google OAuth refresh-token secrets, Supabase Session Pooler URL, age public recipient, and the backup-history migration are configured.
+
+Cloud backup uses pinned Supabase CLI v2.122.1 to create roles/schema/data SQL dumps; validates all 11 public application tables plus auth.users; checks Storage remains empty; gzip-compresses and age-encrypts before Google Drive upload; verifies Drive size/MD5 and stores encrypted archive SHA-256 in owner-only backup_history. A same-Cairo-day duplicate is rejected. Old Drive archives and history rows older than the 15-day calendar window are pruned only after successful upload verification.
+
+Owner-only local export endpoints produce a portable JSON snapshot of all 11 public application tables and per-table UTF-8 CSV downloads. JSON export checks safe integer precision and fails closed if PostgREST returns a number outside JavaScript's exact integer range. This local portable export is application data, not a complete database image: schema, Auth password hashes and Storage object bytes are not included. The encrypted cloud SQL archive is the full logical database recovery artifact.
+
+No production rows, Auth identities, credentials, Drive files, or live database schema have been changed in this implementation. PR #93 remains open and unmerged; CI and the isolated restore test are still required. Google Drive connector access in ChatGPT is separate from the OAuth grant used by GitHub Actions.
+
 ## T10 / D07 — offsite backup preparation — 17 November 2026
 
 The production Supabase project was inspected read-only. Current database is PostgreSQL 17.11 in eu-central-1, approximately 16.4 MB, with 11 public tables, 1,045 trips, 1,138 payments, 8 contractors, 12 vehicles, 2,273 audit rows, 2,262 idempotency rows, one owner, zero approved members, one Auth user, and no Storage buckets/objects. These counts are a baseline only; do not clear or classify the existing records as real/trial without the owner's confirmation.

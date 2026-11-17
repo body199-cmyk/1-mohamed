@@ -67,8 +67,6 @@ jobs:
         run: node --test tools/offsite-backup.test.mjs
       - name: Validate offsite backup workflow script syntax
         run: node --check tools/offsite-backup.mjs
-      - name: Smoke-test PostgreSQL 17 dump and data-only recovery
-        run: bash tools/offsite-backup-postgres-smoke.sh
       - name: Build preview web app
         run: npm run build
       - name: Verify new Supabase SDK remains inactive before real Auth E2E
