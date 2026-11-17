@@ -19,7 +19,7 @@ async function readOneTable(client:any,table:PortableBackupTable){
   if(error||!data)throw new Error("تعذّر تصدير جدول "+table+".");
   rows.push(...data);
   if(data.length<PAGE_SIZE)break;
-  if(offset+PAGE_SIZE>=50000)throw new Error("حجم البيانات تجاوز الحد الآمن للتصدير المحلي.");
+  if(offset>=50000)throw new Error("حجم البيانات تجاوز الحد الآمن للتصدير المحلي.");
  }
  return rows;
 }
