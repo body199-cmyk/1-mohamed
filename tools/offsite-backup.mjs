@@ -95,7 +95,7 @@ async function upload(token,folderId,path,name) {
 }
 async function prune(token,folderId,today) {
   const files=await listFiles(token,folderId), expired=filesToPrune(files,today);
-  for(const f of expired)await drive("https://www.googleapis.com/drive/v3/files/"+encodeURIComponent(f.id),token,{method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify({trashed:true})});
+  for(const f of expired)await drive("https://www.googleapis.com/drive/v3/files/"+encodeURIComponent(f.id),token,{method:"DELETE"});
   return {retained:files.length-expired.length,trashed:expired.length};
 }
 function quote(value){return "'"+String(value).replace(/'/g,"'\\''")+"'";}

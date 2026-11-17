@@ -21,7 +21,7 @@ Keep the age private identity offline in two secure locations. Never put it in G
 ## Schedule and retention
 - One run daily at 01:17 UTC (03:17 Cairo during UTC+2).
 - One filename per Cairo date; a second same-day run refuses to create a duplicate.
-- After successful upload verification, files older than the 15-day Cairo calendar window are moved to Drive Trash.
+- After successful upload verification, files older than the 15-day Cairo calendar window are permanently deleted from Drive.
 - Scheduled runs remain disabled until `BACKUP_ENABLED=true`.
 - GitHub scheduled workflows are best-effort; monitor the owner-only backup history.
 
