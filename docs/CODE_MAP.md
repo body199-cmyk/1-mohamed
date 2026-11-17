@@ -1,3 +1,11 @@
+## Production Supabase path — verified 17 November 2026
+- `apps/web/src/proxy.ts`: the production real-data switch and Supabase configuration gate; refreshes the request session and checks the owner before private workspace access. Preview/development remain fail-closed unless separately configured.
+- `apps/web/src/lib/supabase/proxy-session.ts`: active session refresh adapter used by `proxy.ts`; verifies signed claims with `getClaims()`, then checks `app_is_owner()`, and carries refreshed cookies/cache headers across responses.
+- `apps/web/src/lib/supabase/server.ts` + `owner.ts`: request-scoped Route Handler client and active owner verification used by permanent ledger APIs; no service-role client.
+- `apps/web/src/app/app/page.tsx` + `features/ledger/real-workspace.tsx`: protected Supabase-backed workspace, separate from `/demo/*`.
+- `apps/web/src/app/api/ledger/{master,operations,read}/route.ts`: owner-checked master reads, audited write RPCs, and report/read RPCs. Production configuration was verified read-only; see [PRODUCTION_ACCEPTANCE_2026-11-17](PRODUCTION_ACCEPTANCE_2026-11-17.md).
+- Comments in earlier H041 preparation sections are historical and must not be treated as the current activation state.
+
 ## UX-REORG-01.1 — 16 November 2026
 - `apps/web/src/features/ledger/real-workspace.tsx`: private workspace screen selection; default daily view; four primary destinations; secondary master/settings access; header theme control; save-and-exit landing; contextual focus and preselection when statement actions return to daily entry. Existing handlers remain the same.
 - `apps/web/src/features/ledger/workspace.module.css`: polished RTL desktop sidebar and approved four-item fixed mobile bottom navigation with safe-area padding; compact secondary menu; 48px header controls; semantic-token surfaces, focus, reduced-motion, statement summary cards and responsive layout.
