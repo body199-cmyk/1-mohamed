@@ -7,6 +7,10 @@
   --text-muted: #626f82;
   --surface-card: #ffffff;
   --surface-card-subtle: #F8FAFC;
+  --surface-section: #FFFCF7;
+  --border-section: #E9DFD1;
+  --shadow-section: 0 7px 22px rgba(86, 61, 34, .055);
+  --section-accent: #A4774C;
   --surface-hover: #eff3f8;
   --border-color: #e1e6ed;
   --border-strong: #a8b2bf;
@@ -55,6 +59,10 @@
   --text-muted: #a8b6c7;
   --surface-card: #1c2b3b;
   --surface-card-subtle: #182637;
+  --surface-section: #202E3A;
+  --border-section: #4A4B49;
+  --shadow-section: 0 8px 24px rgba(0, 0, 0, .24);
+  --section-accent: #D3AE83;
   --surface-hover: #293d52;
   --border-color: #33465a;
   --border-strong: #61768b;

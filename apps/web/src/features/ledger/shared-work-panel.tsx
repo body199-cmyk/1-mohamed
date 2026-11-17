@@ -59,7 +59,7 @@ export function SharedWorkPanel({contractors,busy,applied,dirty,onApply,onNew,on
   }catch(cause){setError(cause instanceof Error?cause.message:'راجع بيانات الشغل.');}
  }
  const name=contractors.find(c=>c.id===applied?.contractor)?.name;
- return <section className={ui.surface+' '+styles.shared} aria-label="بيانات الشغل المشتركة">
+ return <section id="shared-work-panel" className={ui.surface+' '+styles.shared+' '+styles.sectionCard} aria-label="بيانات الشغل المشتركة">
   <header className={styles.sectionHeader}><div><h2>بيانات الشغل المشتركة</h2>
    {(!applied||editing)&&<p>{applied?'معتمدة للنقلات التالية؛ المحفوظ سابقًا لا يتغير.':'اضبطها مرة، وبعدها سجّل العربيات واحدة وراء التانية.'}</p>}</div>
    <span className={styles.state}>{applied?'المشترك مفعّل':'لم يُعتمد بعد'}</span>

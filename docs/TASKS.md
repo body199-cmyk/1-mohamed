@@ -1,3 +1,9 @@
+## AUTH-USERNAME + DAILY-QUICK-ACCESS-01 — 17 November 2026 / in progress
+
+User-authorized scope: accept the configured owner alias `1234` (and preserve the real email login) without exposing the email mapping in the browser; keep Supabase Auth and `app_is_owner()` as the only identity/authorization source. Add a sticky quick-access strip for shared daily data, trip registration, cash payment, and saved trips. Give these sections subtle warm neutral cards in both existing light/dark themes. No public signup, new user, business data, SQL, accounting or export changes.
+
+Implementation branch: `feat/daily-quick-access-owner-username-20261117`. Acceptance: owner alias maps only to the configured owner email; invalid identifiers/passwords and non-owner sessions fail closed; cross-site login is rejected; disabled/incomplete production auth remains closed; email recovery and remember-session behavior remain intact; all four quick links target real sections; bar remains sticky and scrolls correctly; each section has a distinct surface in light/dark; mobile width has no horizontal page overflow; existing daily and financial write payloads remain unchanged. Exact-head CI, preview captures, critical diff review and release evidence are mandatory before merge.
+
 ## UX-REORG-01.3 — inline old balances
 Approved: Daily +vehicle/+contractor forms optionally capture old amount/date; vehicle positive credit only with responsible account, contractor explicit credit/debit direction. Preserve all existing no-opening and retry/draft behavior. Acceptance: exact signs and units, atomic contractor nested opening, two-stage vehicle partial recovery with no duplicate creation or opening request, invalid negative/zero/range input rejected before writes, same-car same-day different-contractor report rows remain distinct. Screenshot + exact-head CI pending; no SQL/Auth/production/merge.
 

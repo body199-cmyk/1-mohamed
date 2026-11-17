@@ -195,6 +195,12 @@ export function TransactionEntry({ contractors, vehicles, accounts, busy, write,
 
 
   return <div className={entryVisible?daily.layout:undefined}>
+    {entryVisible && <div role="group" className={daily.quickAccess} aria-label="وصول سريع لتسجيل اليومية">
+      <a href="#shared-work-panel">البيانات المشتركة</a>
+      <a href="#trip-entry-section">تسجيل العربيات</a>
+      <a href="#real-payment-form">دفعات العربيات</a>
+      <a href="#daily-trip-list">نقلات اليوم</a>
+    </div>}
     <div hidden={!entryVisible}>
     <a className={daily.paymentJump} href="#real-payment-form">الانتقال لتسجيل دفعة نقدية</a>
     {message && <p role="status">{message}</p>}
@@ -202,7 +208,7 @@ export function TransactionEntry({ contractors, vehicles, accounts, busy, write,
       createdContractor={createdSharedContractor} onApply={applyShared} onNew={newShared}
       onManual={()=>{setAppliedShared(null);setReuseDay(false);setCustomize(true);}}
       onAddContractor={()=>{sharedContractorCreation.current=true;setQuickModal('contractor');}}/>
-    <section className={styles.tripSurface} aria-label="تسجيل نقلة">
+    <section id="trip-entry-section" className={styles.tripSurface + " " + daily.sectionCard} aria-label="تسجيل نقلة">
       <header className={styles.heading}><div><h2>تسجيل نقلة</h2>
       <p>{appliedShared?'اختَر العربية وأدخل الوزن والمصاريف؛ بيانات الشغل المعتمدة مطبّقة.':'إدخال منفرد: راجع المقاول والتاريخ والأسعار لكل نقلة، أو اعتمد المشترك أعلاه.'}</p></div>
       <span className={styles.headingIcon} aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M3 6h11v11H3zM14 10h4l3 4v3h-7"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg></span></header>

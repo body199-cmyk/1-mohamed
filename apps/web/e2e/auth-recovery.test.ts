@@ -1,15 +1,19 @@
 import {afterEach,beforeEach,expect,it,vi} from 'vitest';
 import {NextRequest} from 'next/server';
 import {loginCookieOptions,remembersLogin} from '../src/lib/supabase/remember';
-const boundary=vi.hoisted(()=>({verifyOtp:vi.fn(),exchangeCodeForSession:vi.fn(),signOut:vi.fn(),rpc:vi.fn()}));
+const boundary=vi.hoisted(()=>({verifyOtp:vi.fn(),exchangeCodeForSession:vi.fn(),signInWithPassword:vi.fn(),signOut:vi.fn(),rpc:vi.fn()}));
 vi.mock('../src/lib/supabase/server',()=>({createRouteHandlerSupabaseClient:()=>({auth:boundary,rpc:boundary.rpc})}));
 import {GET} from '../src/app/auth/callback/route';
+import {POST as ownerLogin} from '../src/app/api/auth/login/route';
 beforeEach(()=>{
  vi.stubEnv('NEXT_PUBLIC_SUPABASE_URL','https://fixture.supabase.co');
  vi.stubEnv('NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY','public-fixture');
  vi.stubEnv('NEXT_PUBLIC_SITE_URL','https://1-mohamed.vercel.app');
  vi.resetAllMocks();boundary.verifyOtp.mockResolvedValue({error:null});
- boundary.exchangeCodeForSession.mockResolvedValue({error:null});boundary.rpc.mockResolvedValue({data:true,error:null});
+ boundary.exchangeCodeForSession.mockResolvedValue({error:null});
+ boundary.signInWithPassword.mockResolvedValue({error:null});boundary.signOut.mockResolvedValue({error:null});
+ boundary.rpc.mockResolvedValue({data:true,error:null});
+ vi.stubEnv('OWNER_LOGIN_USERNAME','1234');vi.stubEnv('OWNER_LOGIN_EMAIL','owner@example.test');
 });
 afterEach(()=>vi.unstubAllEnvs());
 it('recovery redirects to the configured public site, never the internal localhost or supplied next URL',async()=>{
@@ -43,4 +47,54 @@ it('remember selection changes session persistence but never interferes with coo
  expect(loginCookieOptions({path:'/',maxAge:99999,expires:new Date('2030-01-01')},false)).toEqual({path:'/'});
  expect(loginCookieOptions({path:'/',maxAge:99999},true).maxAge).toBe(2592000);
  expect(loginCookieOptions({path:'/',maxAge:0},true)).toEqual({path:'/',maxAge:0});
+});
+
+
+it('maps the configured owner username to the verified Auth email and issues only an owner session',async()=>{
+ vi.stubEnv('APP_ENABLE_REAL_DATA','true');
+ const request=new NextRequest('https://1-mohamed.vercel.app/api/auth/login',{
+  method:'POST',headers:{origin:'https://1-mohamed.vercel.app','content-type':'application/json'},
+  body:JSON.stringify({identifier:'1234',password:'1234'})
+ });
+ const response=await ownerLogin(request);
+ expect(response.status).toBe(200);
+ expect(response.headers.get('cache-control')).toBe('no-store');
+ expect(boundary.signInWithPassword).toHaveBeenCalledWith({email:'owner@example.test',password:'1234'});
+ expect(boundary.rpc).toHaveBeenCalledWith('app_is_owner');
+});
+
+it('does not authenticate arbitrary identifiers or issue a session to a non-owner',async()=>{
+ vi.stubEnv('APP_ENABLE_REAL_DATA','true');
+ const wrong=new NextRequest('https://1-mohamed.vercel.app/api/auth/login',{
+  method:'POST',headers:{origin:'https://1-mohamed.vercel.app','content-type':'application/json'},
+  body:JSON.stringify({identifier:'not-the-owner',password:'1234'})
+ });
+ const denied=await ownerLogin(wrong);
+ expect(denied.status).toBe(401);
+ expect(boundary.signInWithPassword).not.toHaveBeenCalled();
+
+ boundary.rpc.mockResolvedValue({data:false,error:null});
+ const nonOwner=new NextRequest('https://1-mohamed.vercel.app/api/auth/login',{
+  method:'POST',headers:{origin:'https://1-mohamed.vercel.app','content-type':'application/json'},
+  body:JSON.stringify({identifier:'1234',password:'1234'})
+ });
+ const rejected=await ownerLogin(nonOwner);
+ expect(rejected.status).toBe(401);
+ expect(boundary.signOut).toHaveBeenCalled();
+});
+
+it('rejects cross-site login requests and stays closed when production auth is disabled',async()=>{
+ vi.stubEnv('APP_ENABLE_REAL_DATA','true');
+ const crossSite=new NextRequest('https://1-mohamed.vercel.app/api/auth/login',{
+  method:'POST',headers:{origin:'https://attacker.example','content-type':'application/json'},
+  body:JSON.stringify({identifier:'1234',password:'1234'})
+ });
+ expect((await ownerLogin(crossSite)).status).toBe(403);
+ expect(boundary.signInWithPassword).not.toHaveBeenCalled();
+ vi.stubEnv('APP_ENABLE_REAL_DATA','false');
+ const disabled=new NextRequest('https://1-mohamed.vercel.app/api/auth/login',{
+  method:'POST',headers:{origin:'https://1-mohamed.vercel.app','content-type':'application/json'},
+  body:JSON.stringify({identifier:'1234',password:'1234'})
+ });
+ expect((await ownerLogin(disabled)).status).toBe(503);
 });

@@ -169,3 +169,30 @@ test('restyled master and payment forms retain their write payloads',async({page
  await expect(page.locator('#real-payment-amount')).toHaveValue('');
  expect(writes).toHaveLength(4);expect(writes[3]).toMatchObject({operation:'payment.create',payload:{vehicle_id:'V1',responsible_contractor_id:'C1',payment_date:'2026-11-15',amount_egp:'100'}});
 });
+
+
+test('daily quick access stays sticky and each entry area is a warm, theme-aware section card',async({page})=>{
+ await page.setViewportSize({width:390,height:844});await prepare(page);
+ const quick=page.getByRole('group',{name:'وصول سريع لتسجيل اليومية'});
+ await expect(quick).toBeVisible();
+ await expect(quick.getByRole('link')).toHaveCount(4);
+ expect(await quick.evaluate(el=>getComputedStyle(el).position)).toBe('sticky');
+ const targets=['shared-work-panel','trip-entry-section','real-payment-form','daily-trip-list'];
+ for(const id of targets){
+  const card=page.locator('#'+id);
+  await expect(card).toBeVisible();
+  const visual=await card.evaluate(el=>{const s=getComputedStyle(el);return {background:s.backgroundColor,radius:s.borderRadius,shadow:s.boxShadow};});
+  expect(visual.background).not.toBe('rgba(0, 0, 0, 0)');
+  expect(visual.radius).not.toBe('0px');
+  expect(visual.shadow).not.toBe('none');
+ }
+ const light=await page.locator('#shared-work-panel').evaluate(el=>getComputedStyle(el).backgroundColor);
+ await page.locator('html').evaluate(el=>el.setAttribute('data-theme','dark'));
+ const dark=await page.locator('#shared-work-panel').evaluate(el=>getComputedStyle(el).backgroundColor);
+ expect(dark).not.toBe(light);
+ await page.screenshot({path:'artifacts/design-rollout/daily-quick-access-mobile-dark.png'});
+ await quick.getByRole('link',{name:'تسجيل العربيات'}).click();
+ await expect(page).toHaveURL(/#trip-entry-section$/);
+ await quick.getByRole('link',{name:'دفعات العربيات'}).click();
+ await expect(page).toHaveURL(/#real-payment-form$/);
+});

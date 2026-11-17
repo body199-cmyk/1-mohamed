@@ -68,6 +68,13 @@ export async function proxy(request: NextRequest) {
     return noCache(NextResponse.next());
   }
 
+  // Public owner-login endpoint. Its Route Handler resolves only the configured
+  // alias and independently verifies the owner before issuing an Auth session.
+  if (pathname === "/api/auth/login") {
+    if (method !== "POST") return jsonDenied(405);
+    return noCache(NextResponse.next({ request }));
+  }
+
   // Explicit allowlist: unknown pages and API endpoints are not exposed.
   if (!privatePath(pathname)) return jsonDenied(404);
 

@@ -1,3 +1,10 @@
+## AUTH-USERNAME + DAILY-QUICK-ACCESS-01 — 17 November 2026 (in progress)
+
+- Separate branch: `feat/daily-quick-access-owner-username-20261117`, based on `main=943fa96e9df91851e10822134fe651f8d2e8933b`. Main/Production UI has not yet received this task.
+- Owner login: the existing Auth owner is retained. Production-only server environment contains the configured username alias and its existing Auth email; the owner password was updated in Supabase Auth as explicitly requested. No password or service-role secret is stored in GitHub. The login Route Handler resolves the alias server-side, signs in through Supabase Auth, then requires `app_is_owner()=true`; email login and recovery remain supported.
+- Daily UI: sticky in-page quick access to shared work, trip registration, cash payments and saved daily trips. Shared/trip/payment/saved-trip sections use warm neutral surfaces and subtle shadows. Light/dark tokens follow the existing theme toggle. No financial calculations, write payloads, SQL migrations, or business rows are changed.
+- Verification still required on the exact final branch SHA: typecheck, unit/Auth tests, complete workspace Chromium suite, build, critical diff review, Vercel Preview visual review, then the authorized merge/Production deployment. The Preview remains fail-closed for real business data. The requested numeric password is weak; it should be replaced with a strong unique password after the initial access check.
+
 ## RELEASE-ACCEPTANCE-01 — 17 November 2026
 
 **PR #87 is merged and Production is deployed.** The previous UX-REORG-01.7 notes below are implementation history, not the current release state.
