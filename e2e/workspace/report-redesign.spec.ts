@@ -1,5 +1,5 @@
 import {test,expect,type Page} from '@playwright/test';
-import {mkdir,writeFile} from 'node:fs/promises';
+import {mkdir,readFile,writeFile} from 'node:fs/promises';
 import {createSqlLedger} from './support/sql-ledger';
 let sql:Awaited<ReturnType<typeof createSqlLedger>>;
 test.beforeEach(async()=>{test.setTimeout(120000);sql=await createSqlLedger();
@@ -36,6 +36,7 @@ for(const mobile of [true,false])for(const dark of [false,true])test(`report red
  await cash(page);await capture('01-vehicle-summary',page.getByLabel('ملخص نقدية العربية'));
  await capture('02-vehicle-trips',page.getByText('نقلات العربية',{exact:true}));await capture('03-vehicle-total',page.getByLabel('إجمالي كشف العربية'));
  {for(const [label,ext] of [['تنزيل CSV','csv'],['تنزيل Excel XLSX','xlsx'],['تنزيل صورة PNG','png'],['تنزيل PDF مباشر','pdf']] as const){const d=page.waitForEvent('download');await page.getByRole('button',{name:label,exact:true}).click();const file=await d;await file.saveAs(dir+'/vehicle.'+ext);expect(await file.failure()).toBeNull();}}
+ const vehicleCsv=await readFile(dir+'/vehicle.csv','utf8');for(const field of ['تاريخ النقلة','من','إلى','الأطنان','سعر الطن','المصاريف','إجمالي النقلة','الدفعات المستلمة'])expect(vehicleCsv).toContain(field);expect(vehicleCsv).not.toContain('TRIP-');expect(vehicleCsv).not.toContain('R1');expect(vehicleCsv).not.toContain('ملاحظة');expect(vehicleCsv).not.toContain('توريد موقع النور');
  await contractor(page);await capture('04-contractor-summary',page.getByLabel('ملخص حساب المقاول'));await capture('05-contractor-work',page.locator('article[data-tone="credit"]').first());
  {
   for(const [label,ext] of [['تنزيل CSV','csv'],['تنزيل Excel XLSX','xlsx'],['تنزيل صورة PNG','png'],['تنزيل PDF مباشر','pdf']] as const){const d=page.waitForEvent('download');await page.getByRole('button',{name:label,exact:true}).click();const download=await d;await download.saveAs(dir+'/contractor.'+ext);expect(await download.failure()).toBeNull();}
