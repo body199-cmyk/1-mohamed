@@ -33,7 +33,7 @@ function checkSafeNumbers(value:unknown,path="root"):void {
 }
 export function createPortableBackup(tables:Record<PortableBackupTable,unknown[]>,createdAt=new Date().toISOString()) {
   const keys=Object.keys(tables).sort(),expected=[...PORTABLE_BACKUP_TABLES].sort();
-  assert(keys.length===expected.length&&keys.every((key,index)=>key===expected[index]),"All 11 public application tables are required.");
+  assert(keys.length===expected.length&&keys.every((key,index)=>key===expected[index]),"All 12 public application tables are required.");
   let total=0;
   for(const table of PORTABLE_BACKUP_TABLES) {
     assert(Array.isArray(tables[table]),"Missing table "+table+".");
