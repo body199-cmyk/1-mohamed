@@ -79,7 +79,7 @@ docker exec "$container" pg_dump --username postgres --dbname postgres \
   --format=custom --no-owner --no-acl > "$work/public.dump"
 
 test -s "$work/public.dump"
-docker run --rm --volume "$work:/backup" postgres:17.11-bookworm \
+docker run --rm --user "$(id -u):$(id -g)" --volume "$work:/backup" postgres:17.11-bookworm \
   pg_restore --list /backup/public.dump > "$work/toc.list"
 
 for table in app_members app_owner audit_log business_settings contractors idempotency_keys \

@@ -229,8 +229,10 @@ export async function runOffsiteBackup(env = process.env) {
       "psql \"$SUPABASE_DB_URL\" -XAt -v ON_ERROR_STOP=1 -c \"select pg_database_size(current_database())::text || '|' || current_setting('server_version')\" > /backup/database-info.txt",
     ].join("\n");
 
+    const runnerUid = typeof process.getuid === "function" ? String(process.getuid()) : "0";
+    const runnerGid = typeof process.getgid === "function" ? String(process.getgid()) : "0";
     run("docker", [
-      "run", "--rm", "--network", "host", "-e", "SUPABASE_DB_URL",
+      "run", "--rm", "--network", "host", "--user", runnerUid + ":" + runnerGid, "-e", "SUPABASE_DB_URL",
       "-v", work + ":/backup", "postgres:17.11-bookworm", "sh", "-ceu", containerScript,
     ], { env });
 
