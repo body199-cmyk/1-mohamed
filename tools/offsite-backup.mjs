@@ -39,6 +39,8 @@ export function validateBackupEnvironment(env) {
 }
 export function verifyLogicalDump({rolesSql,schemaSql,dataSql}) {
   assert(rolesSql?.trim(),"roles.sql is empty."); assert(schemaSql?.trim(),"schema.sql is empty."); assert(dataSql?.trim(),"data.sql is empty.");
+  for(const table of EXPECTED_PUBLIC_TABLES)
+    assert(new RegExp("\\bCREATE\\s+TABLE\\s+(?:IF\\s+NOT\\s+EXISTS\\s+)?(?:public\\.)?"+table+"\\s*\\(","i").test(schemaSql),"Logical schema dump is missing public."+table+".");
   for(const table of EXPECTED_PUBLIC_DATA_TABLES)
     assert(new RegExp("\\bCOPY\\s+public\\."+table+"\\s*\\(","i").test(dataSql),"Logical data dump is missing public."+table+".");
   for(const table of ["app_members","app_owner"])

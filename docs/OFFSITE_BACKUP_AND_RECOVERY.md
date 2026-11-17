@@ -9,7 +9,7 @@ The current Storage inventory is zero buckets and zero objects. The job fails cl
 
 ## Google Drive setup
 Create a Google Cloud OAuth client, enable the Google Drive API, and authorize the client once with the narrow `drive.file` scope. Add these secrets to GitHub Environment `google-drive-backup`:
-- `SUPABASE_DB_URL`: Session Pooler port 5432 with `sslmode=require`, never transaction pooler.
+- `SUPABASE_DB_URL`: Session Pooler port 5432 with `sslmode=require`; percent-encode special characters in the password. Never use the transaction pooler for database dumps.
 - `GOOGLE_DRIVE_CLIENT_ID`
 - `GOOGLE_DRIVE_CLIENT_SECRET`
 - `GOOGLE_DRIVE_REFRESH_TOKEN`
