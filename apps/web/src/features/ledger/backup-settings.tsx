@@ -23,7 +23,7 @@ export function BackupSettings(){
  useEffect(()=>{void refresh();},[]);
  return <section aria-label="النسخ الاحتياطي" style={{marginTop:22,paddingTop:18,borderTop:"1px solid var(--border-color)"}}>
   <h3>النسخ الاحتياطي واستعادة البيانات</h3>
-  <p>سيتم إنشاء نسخة سحابية يومية مشفرة على Google Drive والاحتفاظ بآخر 15 يومًا بعد إكمال تفويض Google Drive وإعداد مفاتيح النسخ. النسخة السحابية تشمل بيانات وهيكل جداول التطبيق. حسابات Supabase Auth تُدار بشكل منفصل ولا تُحفظ كلمات مرورها في هذا التصدير. ربط Drive داخل ChatGPT وحده لا يفعّل النسخ التلقائي للتطبيق.</p>
+  <p>سيتم إنشاء نسخة سحابية يومية مشفرة على Google Drive والاحتفاظ بآخر 15 يومًا بعد إكمال تفويض Google Drive وإعداد مفاتيح النسخ. النسخة السحابية تشمل سجلات Auth؛ أما التصدير المحلي فيشمل جداول التطبيق فقط. النسخة السحابية تشمل بيانات وهيكل جداول التطبيق. حسابات Supabase Auth تُدار بشكل منفصل ولا تُحفظ كلمات مرورها في هذا التصدير. ربط Drive داخل ChatGPT وحده لا يفعّل النسخ التلقائي للتطبيق.</p>
   <div className={ui.actions}>
    <a className={ui.control} href="/api/backup/export?format=json" download>تنزيل نسخة بيانات التطبيق (JSON)</a>
   </div>

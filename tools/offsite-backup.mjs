@@ -7,7 +7,7 @@ import { pathToFileURL } from "node:url";
 
 export const EXPECTED_PROJECT_REF = "sskkuniskphlawivzudw";
 export const EXPECTED_PUBLIC_TABLES = Object.freeze(["app_members","app_owner","audit_log","backup_history","business_settings","contractors","idempotency_keys","opening_balances","payments","trips","vehicle_accounts","vehicles"]);
-export const EXPECTED_PUBLIC_DATA_TABLES = Object.freeze(EXPECTED_PUBLIC_TABLES.filter(table => !["app_members","app_owner"].includes(table)));
+export const EXPECTED_PUBLIC_DATA_TABLES = EXPECTED_PUBLIC_TABLES;
 export const BACKUP_FOLDER_NAME = "1-mohamed-backups";
 export const RETENTION_DAYS = 15;
 
@@ -41,10 +41,10 @@ export function verifyLogicalDump({rolesSql,schemaSql,dataSql}) {
   assert(rolesSql?.trim(),"roles.sql is empty."); assert(schemaSql?.trim(),"schema.sql is empty."); assert(dataSql?.trim(),"data.sql is empty.");
   for(const table of EXPECTED_PUBLIC_TABLES)
     assert(new RegExp("\\bCREATE\\s+TABLE\\s+(?:IF\\s+NOT\\s+EXISTS\\s+)?(?:public\\.)?"+table+"\\s*\\(","i").test(schemaSql),"Logical schema dump is missing public."+table+".");
-  for(const table of EXPECTED_PUBLIC_DATA_TABLES)
+  for(const table of EXPECTED_PUBLIC_TABLES)
     assert(new RegExp("\\bCOPY\\s+public\\."+table+"\\s*\\(","i").test(dataSql),"Logical data dump is missing public."+table+".");
-  for(const table of ["app_members","app_owner"])
-    assert(!new RegExp("\\bCOPY\\s+public\\."+table+"\\s*\\(","i").test(dataSql),"Identity mapping data public."+table+" must be recreated on restore, not replayed from stale Auth UUIDs.");
+  assert(/\\bCOPY\\s+auth\\.users\\s*\\(/i.test(dataSql),"Logical data dump is missing auth.users; refusing incomplete Auth recovery archive.");
+  assert(/\\bCOPY\\s+auth\\.identities\\s*\\(/i.test(dataSql),"Logical data dump is missing auth.identities; refusing incomplete Auth recovery archive.");
   return true;
 }
 export function buildBackupManifest({createdAt,fileName,sourceCommit,postgresVersion,tableCounts,dataSqlSha256}) {
@@ -56,7 +56,7 @@ export function buildBackupManifest({createdAt,fileName,sourceCommit,postgresVer
   assert(names.length===expected.length&&names.every((n,i)=>n===expected[i]),"Public table-count manifest is incomplete.");
   for(const [name,count] of Object.entries(tableCounts)) assert(Number.isSafeInteger(count)&&count>=0,"Invalid row count for public."+name);
   assert(/^[a-f0-9]{64}$/.test(dataSqlSha256||""),"SQL data SHA-256 is invalid.");
-  return {format:"1-mohamed-full-supabase-logical-backup",format_version:2,created_at:new Date(createdAt).toISOString(),cairo_backup_date:cairoDate(createdAt),project_ref:EXPECTED_PROJECT_REF,source_commit:sourceCommit,postgres_version:postgresVersion,public_table_counts:tableCounts,public_tables_included:[...EXPECTED_PUBLIC_TABLES],public_table_data_included:[...EXPECTED_PUBLIC_DATA_TABLES],auth_users_included:false,auth_password_hashes_included:false,identity_mapping_rows_included:false,storage_objects_included:false,data_sql_sha256:dataSqlSha256,encrypted:true};
+  return {format:"1-mohamed-full-supabase-logical-backup",format_version:2,created_at:new Date(createdAt).toISOString(),cairo_backup_date:cairoDate(createdAt),project_ref:EXPECTED_PROJECT_REF,source_commit:sourceCommit,postgres_version:postgresVersion,public_table_counts:tableCounts,public_tables_included:[...EXPECTED_PUBLIC_TABLES],public_table_data_included:[...EXPECTED_PUBLIC_TABLES],auth_users_included:true,auth_password_hashes_included:true,identity_mapping_rows_included:true,auth_identities_included:true,storage_objects_included:false,data_sql_sha256:dataSqlSha256,encrypted:true};
 }
 function run(command,args,options={}) {
   const r=spawnSync(command,args,{encoding:"utf8",env:options.env??process.env,maxBuffer:12*1024*1024,stdio:["ignore","pipe","pipe"]});
@@ -118,7 +118,7 @@ export async function runOffsiteBackup(env=process.env) {
     const commands=[
       ["db","dump","--db-url",env.SUPABASE_DB_URL,"-f",join(work,"roles.sql"),"--role-only"],
       ["db","dump","--db-url",env.SUPABASE_DB_URL,"-f",join(work,"schema.sql")],
-      ["db","dump","--db-url",env.SUPABASE_DB_URL,"-f",join(work,"data.sql"),"--use-copy","--data-only","-x","storage.buckets_vectors","-x","storage.vector_indexes","-x","public.app_owner","-x","public.app_members"],
+      ["db","dump","--db-url",env.SUPABASE_DB_URL,"-f",join(work,"data.sql"),"--use-copy","--data-only","-x","storage.buckets_vectors","-x","storage.vector_indexes"],
     ];
     for(const args of commands)run("npx",["--yes","supabase@2.122.1",...args],{env});
     const [rolesSql,schemaSql,dataSql]=["roles.sql","schema.sql","data.sql"].map(n=>readFileSync(join(work,n),"utf8"));
@@ -147,7 +147,7 @@ export async function runOffsiteBackup(env=process.env) {
     const uploaded=await upload(token,folderId,finalEncrypted,fileName);
     await history(env,finalManifest,uploaded,finalSize,finalSha);
     const retention=await prune(token,folderId,today);
-    summary(["## Google Drive backup completed","- Cairo date: "+today,"- File: "+fileName,"- Encrypted size: "+finalSize+" bytes","- SHA-256: "+finalSha,"- Drive upload: verified","- Retention: 15 calendar days; expired files trashed: "+retention.trashed,"- Public tables: 12; Auth users/password hashes excluded by Supabase CLI; owner/member mappings must be recreated","- Storage objects: 0",""]);
+    summary(["## Google Drive backup completed","- Cairo date: "+today,"- File: "+fileName,"- Encrypted size: "+finalSize+" bytes","- SHA-256: "+finalSha,"- Drive upload: verified","- Retention: 15 calendar days; expired files trashed: "+retention.trashed,"- Public tables: 12; Auth user records and owner/member mappings included; users must re-authenticate after a project restore","- Storage objects: 0",""]);
     return {today,fileName,size:finalSize,sha256:finalSha,driveFileId:uploaded.id,retention};
   } finally {rmSync(work,{recursive:true,force:true});}
 }
