@@ -1,0 +1,73 @@
+name: Encrypted offsite database backup
+
+on:
+  schedule:
+    # Four snapshots per day (UTC); GitHub scheduled jobs are best-effort.
+    - cron: "13 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: production-offsite-backup
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    if: >-
+      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
+      (github.event_name == 'schedule' && vars.BACKUP_ENABLED == 'true')
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    environment: offsite-backup
+    steps:
+      - name: Checkout reviewed main
+        uses: actions/checkout@v4
+
+      - name: Validate required configuration without printing secrets
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          AGE_RECIPIENT: ${{ vars.AGE_RECIPIENT }}
+          AWS_BACKUP_BUCKET: ${{ vars.AWS_BACKUP_BUCKET }}
+          AWS_BACKUP_REGION: ${{ vars.AWS_BACKUP_REGION }}
+          AWS_BACKUP_ROLE_ARN: ${{ vars.AWS_BACKUP_ROLE_ARN }}
+          R2_ACCOUNT_ID: ${{ vars.R2_ACCOUNT_ID }}
+          R2_BACKUP_BUCKET: ${{ vars.R2_BACKUP_BUCKET }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+        run: |
+          set -eu
+          for name in SUPABASE_DB_URL AGE_RECIPIENT AWS_BACKUP_BUCKET AWS_BACKUP_REGION \
+            AWS_BACKUP_ROLE_ARN R2_ACCOUNT_ID R2_BACKUP_BUCKET R2_ACCESS_KEY_ID R2_SECRET_ACCESS_KEY; do
+            eval "value=\${$name:-}"
+            if [ -z "$value" ]; then
+              echo "::error::Missing required backup setting: $name"
+              exit 1
+            fi
+          done
+
+      - name: Obtain short-lived AWS credentials through GitHub OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_BACKUP_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_BACKUP_REGION }}
+          role-session-name: github-offsite-backup
+
+      - name: Install encryption and storage clients
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes age awscli
+
+      - name: Create, encrypt, upload and verify both offsite copies
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          AGE_RECIPIENT: ${{ vars.AGE_RECIPIENT }}
+          AWS_BACKUP_BUCKET: ${{ vars.AWS_BACKUP_BUCKET }}
+          AWS_BACKUP_REGION: ${{ vars.AWS_BACKUP_REGION }}
+          R2_ACCOUNT_ID: ${{ vars.R2_ACCOUNT_ID }}
+          R2_BACKUP_BUCKET: ${{ vars.R2_BACKUP_BUCKET }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+        run: node tools/offsite-backup.mjs
