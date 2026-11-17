@@ -12,6 +12,9 @@ export const EXPECTED_PUBLIC_TABLES = Object.freeze([
   "trips", "vehicle_accounts", "vehicles",
 ]);
 export const EXCLUDED_TABLE_DATA = Object.freeze(["app_owner", "app_members"]);
+export const ALLOWED_NON_PUBLIC_SCHEMAS = Object.freeze([
+  "auth", "extensions", "graphql", "graphql_public", "realtime", "storage", "supabase_migrations", "vault",
+]);
 export const ARCHIVED_DATA_TABLES = Object.freeze(
   EXPECTED_PUBLIC_TABLES.filter((name) => !EXCLUDED_TABLE_DATA.includes(name)),
 );
@@ -91,6 +94,16 @@ async function verifyR2BucketProtectionFromApi(env) {
   return verifyR2BucketProtection(payload.result);
 }
 
+export function verifySchemaInventory(schemaNames) {
+  assert(Array.isArray(schemaNames), "PostgreSQL schema inventory is invalid.");
+  const allowed = new Set(["public", ...ALLOWED_NON_PUBLIC_SCHEMAS]);
+  const unexpected = schemaNames.filter((name) => !allowed.has(name));
+  assert(unexpected.length === 0,
+    "Unrecognized database schema(s) would be omitted from the offsite archive: " + unexpected.join(", "));
+  assert(schemaNames.includes("public"), "The public schema is missing.");
+  return true;
+}
+
 export function verifyArchiveToc(tocText) {
   assert(typeof tocText === "string" && tocText.length > 0, "pg_restore produced an empty archive index.");
   const lines = tocText.split(/\r?\n/);
@@ -148,7 +161,7 @@ export function buildBackupManifest({
     public_table_counts_observed_after_dump: tableCounts,
     archived_table_data: [...ARCHIVED_DATA_TABLES],
     schema_only_identity_tables: EXCLUDED_TABLE_DATA.map((table) => "public." + table),
-    excluded_managed_schemas: ["auth", "storage", "extensions"],
+    excluded_managed_schemas: [...ALLOWED_NON_PUBLIC_SCHEMAS],
     auth_user_data_included: false,
     storage_bucket_count: storageBucketCount,
     storage_object_count: storageObjectCount,
@@ -224,6 +237,7 @@ export async function runOffsiteBackup(env = process.env) {
       "pg_dump --dbname=\"$SUPABASE_DB_URL\" --schema=public --exclude-table-data=public.app_owner --exclude-table-data=public.app_members --format=custom --no-owner --no-acl --file=/backup/public.dump",
       "test -s /backup/public.dump",
       "pg_restore --list /backup/public.dump > /backup/toc.list",
+      "psql \"$SUPABASE_DB_URL\" -XAt -v ON_ERROR_STOP=1 -c \"select nspname from pg_namespace where nspname not like 'pg_%' and nspname <> 'information_schema' order by nspname\" > /backup/schema-list.txt",
       "psql \"$SUPABASE_DB_URL\" -XAt -v ON_ERROR_STOP=1 -c \"select jsonb_build_object('app_members',(select count(*) from public.app_members),'app_owner',(select count(*) from public.app_owner),'audit_log',(select count(*) from public.audit_log),'business_settings',(select count(*) from public.business_settings),'contractors',(select count(*) from public.contractors),'idempotency_keys',(select count(*) from public.idempotency_keys),'opening_balances',(select count(*) from public.opening_balances),'payments',(select count(*) from public.payments),'trips',(select count(*) from public.trips),'vehicle_accounts',(select count(*) from public.vehicle_accounts),'vehicles',(select count(*) from public.vehicles))::text\" > /backup/table-counts.json",
       "psql \"$SUPABASE_DB_URL\" -XAt -v ON_ERROR_STOP=1 -c \"select (select count(*) from storage.buckets)::text || '|' || (select count(*) from storage.objects)::text\" > /backup/storage-counts.txt",
       "psql \"$SUPABASE_DB_URL\" -XAt -v ON_ERROR_STOP=1 -c \"select pg_database_size(current_database())::text || '|' || current_setting('server_version')\" > /backup/database-info.txt",
@@ -237,6 +251,7 @@ export async function runOffsiteBackup(env = process.env) {
     ], { env });
 
     verifyArchiveToc(readFileSync(join(work, "toc.list"), "utf8"));
+    verifySchemaInventory(readFileSync(join(work, "schema-list.txt"), "utf8").trim().split(/\\r?\\n/));
     const tableCounts = JSON.parse(readFileSync(join(work, "table-counts.json"), "utf8").trim());
     const [storageBucketCount, storageObjectCount] = readFileSync(join(work, "storage-counts.txt"), "utf8")
       .trim().split("|").map(Number);

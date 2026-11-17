@@ -3,7 +3,7 @@ import { test } from "node:test";
 import {
   EXPECTED_PROJECT_REF, EXPECTED_PUBLIC_TABLES, EXCLUDED_TABLE_DATA,
   ARCHIVED_DATA_TABLES, buildBackupObjectKey, buildBackupManifest,
-  validateBackupEnvironment, verifyArchiveToc, verifyS3BucketProtection, verifyR2BucketProtection,
+  validateBackupEnvironment, verifyArchiveToc, verifyS3BucketProtection, verifyR2BucketProtection, verifySchemaInventory,
 } from "./offsite-backup.mjs";
 
 const counts = Object.fromEntries(EXPECTED_PUBLIC_TABLES.map((name) => [name, 0]));
@@ -40,6 +40,17 @@ test("T10 refuses missing, extra or invalid public table counts", () => {
   assert.throws(() => buildBackupManifest({ ...goodManifestInput, tableCounts: missing }), /keys do not match/);
   assert.throws(() => buildBackupManifest({ ...goodManifestInput, tableCounts: { ...counts, unknown: 1 } }), /keys do not match/);
   assert.throws(() => buildBackupManifest({ ...goodManifestInput, tableCounts: { ...counts, trips: -1 } }), /Invalid row count/);
+});
+
+test("T10 refuses unknown database schemas so application data cannot be silently skipped", () => {
+  assert.equal(verifySchemaInventory([
+    "auth", "extensions", "graphql", "graphql_public", "public",
+    "realtime", "storage", "supabase_migrations", "vault",
+  ]), true);
+  assert.throws(() => verifySchemaInventory([
+    "auth", "public", "finance_private",
+  ]), /would be omitted/);
+  assert.throws(() => verifySchemaInventory(["auth"]), /public schema is missing/);
 });
 
 test("T10 archive TOC must contain every public table and only approved table data", () => {

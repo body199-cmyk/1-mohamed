@@ -53,13 +53,13 @@ AWS and Cloudflare are independent storage providers. Supabase, S3, and R2 there
 
 ## 3. What the offsite archive contains
 
-The job runs PostgreSQL 17 `pg_dump` against the project's Session Pooler or direct PostgreSQL connection, with TLS required. It archives the complete `public` schema and data, including all current business tables, RLS policies, functions, indexes, audit history, canceled rows, idempotency records, and business settings.
+The job runs PostgreSQL 17 `pg_dump` against the project's Session Pooler or direct PostgreSQL connection, with TLS required. It archives the complete `public` schema and data, including all current business tables, RLS policies, functions, indexes, audit history, canceled rows, idempotency records, and business settings. It inventories database schemas and fails closed if an unrecognized schema appears, so a future application schema cannot be silently omitted.
 
 For safe identity recovery into a **new** Supabase project, it intentionally includes the schema but omits row data from:
 - `public.app_owner`
 - `public.app_members`
 
-Those rows contain Supabase Auth UUID mappings. The Auth-managed `auth` schema and passwords are not exported. On a new project, create the owner Auth account first, initialize `app_owner` using the administrative `app_set_initial_owner(new_auth_user_id)` function, and re-invite approved members. This prevents restoring stale Auth UUIDs or trying to restore passwords from an application dump. Same-project recovery should prefer Supabase's native restore instead.
+Those rows contain Supabase Auth UUID mappings. The Supabase-managed `auth`, `storage`, `extensions`, `realtime`, `graphql`, `graphql_public`, `supabase_migrations`, and `vault` schemas are not exported. The Auth-managed users/passwords and Vault secrets must be recreated or reconfigured separately. On a new project, create the owner Auth account first, initialize `app_owner` using the administrative `app_set_initial_owner(new_auth_user_id)` function, and re-invite approved members. This prevents restoring stale Auth UUIDs or trying to restore passwords from an application dump. Same-project recovery should prefer Supabase's native restore instead.
 
 The job also:
 - verifies the archive table-of-contents before encryption;
