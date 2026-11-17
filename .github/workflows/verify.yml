@@ -63,10 +63,12 @@ jobs:
         run: npx vitest run packages/statement-export/tests/xlsx-rendering.test.ts
       - name: Test versioned backup, tampering, isolated atomic restore and stale replay
         run: node --test tools/backup-core.test.mjs
-      - name: Test daily Google Drive backup contract and 15-day retention
+      - name: Test daily Google Drive backup contract and 30-day retention
         run: node --test tools/offsite-backup.test.mjs
       - name: Validate offsite backup workflow script syntax
-        run: node --check tools/offsite-backup.mjs
+        run: |
+          node --check tools/offsite-backup.mjs
+          node --check tools/google-drive-rclone.mjs
       - name: Build preview web app
         run: npm run build
       - name: Verify new Supabase SDK remains inactive before real Auth E2E
