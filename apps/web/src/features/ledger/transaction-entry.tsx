@@ -1,9 +1,13 @@
 "use client";
 import ui from "./workspace-ui.module.css";
 
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import styles from "./trip-entry-design.module.css";
-import { PaymentPreview } from "./payment-preview";
+import daily from "./daily-work.module.css";
+import { RepeatedVehicleNotice } from "./repeated-vehicle-notice";
+import { PaymentEntry } from "./payment-entry";
+import type {QuickOpening} from "./quick-opening-fields";
+import { SharedWorkPanel, type SharedWorkValues } from "./shared-work-panel";
 import { SearchableChoice } from "./searchable-choice";
 import { QuickRecordModal, type QuickRecordInput } from "./quick-record-modal";
 import { PaymentAccountModal } from "./payment-account-modal";
@@ -23,6 +27,12 @@ type Props = {
   onExit?: () => void;
   write: (operation: WriteOperation, payload: Record<string, unknown>) => Promise<boolean>;
   refresh: () => Promise<void>;
+  onDateChange?: (date: string) => void;
+  recordedCount?:string|null;
+  entryVisible?:boolean;
+  children?:ReactNode;
+  tripCounterpartyRequest?: { id: number; value: string } | null;
+  paymentAccountRequest?: { id: number; value: string } | null;
 };
 
 
@@ -32,7 +42,7 @@ type Props = {
  * Prepared real-data entry. SQL computes all totals and the responsible
  * contractor. Never accept browser-computed totals as authoritative.
  */
-export function TransactionEntry({ contractors, vehicles, accounts, busy, write, revision, refresh, onExit }: Props) {
+export function TransactionEntry({ contractors, vehicles, accounts, busy, write, revision, refresh, onExit, tripCounterpartyRequest, paymentAccountRequest, onDateChange, recordedCount, entryVisible=true, children }: Props) {
   const [tripVehicle, setTripVehicle] = useState("");
   const [tripCounterparty, setTripCounterparty] = useState("");
   const [direction, setDirection] = useState<"AHMED_SUPPLIES" | "OTHER_SUPPLIES">("AHMED_SUPPLIES");
@@ -46,12 +56,41 @@ export function TransactionEntry({ contractors, vehicles, accounts, busy, write,
   const [tripOrigin, setTripOrigin] = useState("");
   const [tripDestination, setTripDestination] = useState("");
   const [paymentAccount, setPaymentAccount] = useState("");
-  const [paymentDate, setPaymentDate] = useState("");
-  const [paymentAmount, setPaymentAmount] = useState("");
-  const [paymentNotes, setPaymentNotes] = useState("");
+  useEffect(() => {
+    if (tripCounterpartyRequest?.value) {
+      setTripCounterparty(tripCounterpartyRequest.value);
+      setCustomize(true);
+    }
+  }, [tripCounterpartyRequest?.id]);
+  useEffect(() => {
+    if (paymentAccountRequest?.value) setPaymentAccount(paymentAccountRequest.value);
+  }, [paymentAccountRequest?.id]);
   const [reuseDay,setReuseDay] = useState(false);
+  const [appliedShared,setAppliedShared]=useState<SharedWorkValues|null>(null);
+  const [customize,setCustomize]=useState(false);
+  const [editExpense,setEditExpense]=useState(false);
+  const [createdSharedContractor,setCreatedSharedContractor]=useState('');
+  const sharedContractorCreation=useRef(false);
+  const hasOverrides=!!appliedShared&&(tripCounterparty!==appliedShared.contractor||direction!==appliedShared.direction||tripDate!==appliedShared.date||contractorRate!==appliedShared.contractorRate||vehicleRate!==appliedShared.vehicleRate||sameRate!==appliedShared.sameRate||tripOrigin!==appliedShared.origin||tripDestination!==appliedShared.destination||expense!==appliedShared.expense||tripNotes!==appliedShared.notes);
+  const tripDirty=hasOverrides||!!(tripVehicle||weight||(!appliedShared&&(tripNotes||expense!=='0'||tripCounterparty||tripDate||direction!=="AHMED_SUPPLIES"||contractorRate||vehicleRate||!sameRate||tripOrigin||tripDestination)));
+  useEffect(()=>{if(tripDate)onDateChange?.(tripDate);},[tripDate,onDateChange]);
+  function copyShared(value:SharedWorkValues){
+    setTripCounterparty(value.contractor);setDirection(value.direction);setTripDate(value.date);
+    setContractorRate(value.contractorRate);setVehicleRate(value.vehicleRate);setSameRate(value.sameRate);
+    setTripOrigin(value.origin);setTripDestination(value.destination);setExpense(value.expense);setTripNotes(value.notes);
+  }
+  function clearTrip(){setTripVehicle('');setWeight('');setCustomize(false);setEditExpense(false);}
+  function applyShared(value:SharedWorkValues){setAppliedShared(value);copyShared(value);clearTrip();setReuseDay(true);requestAnimationFrame(()=>document.getElementById('real-trip-vehicle')?.focus());}
+  function newShared(){
+    setAppliedShared(null);clearTrip();setExpense('0');setTripNotes('');setTripDate('');setTripCounterparty('');setContractorRate('');setVehicleRate('');
+    setTripOrigin('');setTripDestination('');setReuseDay(false);setDirection('AHMED_SUPPLIES');setSameRate(true);
+  }
   const [quickModal, setQuickModal] = useState<null | "vehicle" | "contractor" | "payment">(null);
   const submitting = useRef(false);
+  const pendingTripFocus=useRef(false);
+  useEffect(()=>{
+    if(!busy&&pendingTripFocus.current){pendingTripFocus.current=false;document.getElementById('real-trip-vehicle')?.focus();}
+  },[busy,weight,tripVehicle]);
   const [message, setMessage] = useState("");
   const drafts = useRef(new Map<string, Record<string, unknown>>());
   // Inline creation keeps one payload (and therefore one requestKey) per exact
@@ -61,22 +100,34 @@ export function TransactionEntry({ contractors, vehicles, accounts, busy, write,
 
   /** Inline creation from the choice fields; payloads keep a stable id across retries. */
   async function quickCreateVehicle(input: QuickRecordInput): Promise<string | null> {
-    const key = "vehicle.create:" + input.plate + "|" + input.driver;
+    const key = "vehicle.create:" + JSON.stringify([input.plate,input.driver,input.opening??null]);
     const cached = quickDrafts.current.get(key)
-      ?? { id: "VEH-" + crypto.randomUUID(), plate_number: input.plate, driver_name: input.driver || null };
+      ?? { id: "VEH-" + crypto.randomUUID(), plate_number: input.plate, driver_name: input.driver || null,...(input.opening?{contractor_id:input.opening.contractorId}:{}) };
     quickDrafts.current.set(key, cached);
     const confirmed = await write("vehicle.create", cached);
     if (confirmed) quickDrafts.current.delete(key);
     return confirmed ? String(cached.id) : null;
   }
   async function quickCreateContractor(input: QuickRecordInput): Promise<string | null> {
-    const key = "contractor.create:" + input.name;
+    const key = "contractor.create:" + JSON.stringify([input.name,input.opening??null]);
     const cached = quickDrafts.current.get(key)
-      ?? { id: "CTR-" + crypto.randomUUID(), name: input.name, start_mode: "DETAILS" };
+      ?? { id: "CTR-" + crypto.randomUUID(), name: input.name, start_mode: input.opening?'TOTAL':'DETAILS',
+        ...(input.opening?{opening:{start_date:input.opening.date,signed_piastres:input.opening.signedPiastres}}:{}) };
     quickDrafts.current.set(key, cached);
     const confirmed = await write("contractor.create", cached);
     if (confirmed) quickDrafts.current.delete(key);
     return confirmed ? String(cached.id) : null;
+  }
+
+  async function createVehicleOpening(vehicleId:string,opening:QuickOpening):Promise<boolean>{
+    const signature='vehicle.opening:'+JSON.stringify([vehicleId,opening]);
+    const payload=quickDrafts.current.get(signature)??{id:'OPEN-'+crypto.randomUUID(),balance_type:'VEHICLE_CASH',
+      vehicle_id:vehicleId,contractor_id:opening.contractorId,start_date:opening.date,
+      signed_piastres:opening.signedPiastres,start_mode:'TOTAL'};
+    quickDrafts.current.set(signature,payload);
+    const confirmed=await write('opening.create',payload);
+    if(confirmed)quickDrafts.current.delete(signature);
+    return confirmed;
   }
 
   // A confirmed creation stays pending until the refreshed lists contain the
@@ -85,15 +136,18 @@ export function TransactionEntry({ contractors, vehicles, accounts, busy, write,
   // its own dialog, so a later refresh cannot close a dialog the user opened
   // meanwhile.
   const [pendingVehicle, setPendingVehicle] = useState<string | null>(null);
-  const [pendingContractor, setPendingContractor] = useState<string | null>(null);
+  const [pendingContractor, setPendingContractor] = useState<{id:string;target:"shared"|"trip"}|null>(null);
   const [pendingAccount, setPendingAccount] = useState<{ vehicleId: string; contractorId: string } | null>(null);
   useEffect(() => {
     if (pendingVehicle && vehicles.some(v => v.id === pendingVehicle)) {
       setTripVehicle(pendingVehicle); setPendingVehicle(null);
       setQuickModal(modal => modal === "vehicle" ? null : modal);
     }
-    if (pendingContractor && contractors.some(c => c.id === pendingContractor)) {
-      setTripCounterparty(pendingContractor); setPendingContractor(null);
+    if (pendingContractor && contractors.some(c => c.id === pendingContractor.id)) {
+      if(pendingContractor.target==='shared')setCreatedSharedContractor(pendingContractor.id);
+      else setTripCounterparty(pendingContractor.id);
+      sharedContractorCreation.current=false;
+      setPendingContractor(null);
       setQuickModal(modal => modal === "contractor" ? null : modal);
     }
     if (pendingAccount && accounts.some(a => a.vehicle_id === pendingAccount.vehicleId
@@ -127,9 +181,11 @@ export function TransactionEntry({ contractors, vehicles, accounts, busy, write,
       drafts.current.set(signature, payload);
       if (await write("trip.create", payload)) {
         drafts.current.delete(signature);
-        setWeight(""); setTripNotes("");
-        if (!reuseDay) {setTripOrigin("");setTripDestination("");setContractorRate("");setVehicleRate("");setExpense("0");setTripVehicle("");setTripCounterparty("");}
         const button = (event.nativeEvent as SubmitEvent).submitter as HTMLButtonElement | null;
+        pendingTripFocus.current=button?.value!=="exit";
+        if(appliedShared){copyShared(appliedShared);clearTrip();}
+        else {setWeight("");setTripNotes("");}
+        if (!appliedShared && !reuseDay) {setTripOrigin("");setTripDestination("");setContractorRate("");setVehicleRate("");setExpense("0");setTripVehicle("");setTripCounterparty("");}
         if (button?.value === "exit") onExit?.();
         setMessage("تم حفظ النقلة بنجاح.");
       }
@@ -137,47 +193,40 @@ export function TransactionEntry({ contractors, vehicles, accounts, busy, write,
     finally { submitting.current = false; }
   }
 
-  async function createPayment(event: FormEvent) {
-    event.preventDefault();
-    if (busy || submitting.current) return;
-    submitting.current = true;
-    setMessage("");
-    try {
-      const [vehicle_id, responsible_contractor_id] = paymentAccount.split("|");
-      if (!vehicle_id || !responsible_contractor_id || !paymentDate) {
-        throw new Error("حدد حساب العربية وتاريخ الدفع.");
-      }
-      const amount = assertDecimal(paymentAmount, 2, true);
-      // Exact bigint validation; no JavaScript floating-point money.
-      poundsToPiastres(amount);
-      const source = { vehicle_id, responsible_contractor_id,
-        payment_date: paymentDate, amount_egp: amount, notes: paymentNotes.trim() };
-      const signature = "payment:" + JSON.stringify(source);
-      const payload = drafts.current.get(signature) ?? { id: "PAY-" + crypto.randomUUID(), ...source };
-      drafts.current.set(signature, payload);
-      if (await write("payment.create", payload)) {
-        drafts.current.delete(signature);
-        setPaymentAmount(""); setPaymentNotes(""); setMessage("تم حفظ الدفعة بنجاح.");
-      }
-    } catch (error) { setMessage(error instanceof Error ? error.message : "بيانات الدفعة غير صالحة."); }
-    finally { submitting.current = false; }
-  }
 
-  return <>
+  return <div className={entryVisible?daily.layout:undefined}>
+    <div hidden={!entryVisible}>
+    <a className={daily.paymentJump} href="#real-payment-form">الانتقال لتسجيل دفعة نقدية</a>
     {message && <p role="status">{message}</p>}
+    <SharedWorkPanel contractors={contractors} busy={busy} applied={appliedShared} dirty={tripDirty}
+      createdContractor={createdSharedContractor} onApply={applyShared} onNew={newShared}
+      onManual={()=>{setAppliedShared(null);setReuseDay(false);setCustomize(true);}}
+      onAddContractor={()=>{sharedContractorCreation.current=true;setQuickModal('contractor');}}/>
     <section className={styles.tripSurface} aria-label="تسجيل نقلة">
       <header className={styles.heading}><div><h2>تسجيل نقلة</h2>
-      <p>اختر اتجاه الشغل، ثم أدخل الوزن والأسعار. يمكنك تسجيل أكثر من نقلة بأسعار مختلفة في اليوم نفسه.</p></div>
+      <p>{appliedShared?'اختَر العربية وأدخل الوزن والمصاريف؛ بيانات الشغل المعتمدة مطبّقة.':'إدخال منفرد: راجع المقاول والتاريخ والأسعار لكل نقلة، أو اعتمد المشترك أعلاه.'}</p></div>
       <span className={styles.headingIcon} aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M3 6h11v11H3zM14 10h4l3 4v3h-7"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg></span></header>
       <form onSubmit={createTrip} className={styles.tripForm}>
         <div className={styles.entryFields}>
-        <details open><summary>العربية والمقاول والتاريخ</summary><div className={styles.fieldGrid}>
+        <div className={daily.compactFields}>
         <SearchableChoice className={styles.choice} id="real-trip-vehicle" label="العربية" value={tripVehicle} onChange={setTripVehicle} disabled={busy}
           choices={vehicles.filter(v=>!v.is_archived).map(v=>({id:v.id,label:v.plate_number}))}
           onAdd={() => setQuickModal("vehicle")} addLabel="+ عربية جديدة"/>
+        <div className={styles.formField}><label htmlFor="real-trip-weight">الوزن بالطن (3 خانات عشرية)</label>
+        <input id="real-trip-weight" className={styles.control} required inputMode="decimal" placeholder="12.500"
+          value={weight} onChange={e => setWeight(e.target.value)} disabled={busy} /></div>
+        <details className={daily.expenseDetails} open={!appliedShared||editExpense} onToggle={e=>{if(appliedShared)setEditExpense(e.currentTarget.open);}}>
+         <summary>المصاريف: <bdi>{expense||'—'}</bdi> ج.م — تعديل</summary>
+         <div className={styles.formField}><label htmlFor="real-trip-expense">مصاريف النقلة بالجنيه</label>
+        <input id="real-trip-expense" className={styles.control} required inputMode="decimal"
+          value={expense} onChange={e => setExpense(e.target.value)} disabled={busy} /></div></details>
+        </div>
+        <RepeatedVehicleNotice vehicleId={tripVehicle} date={tripDate} revision={revision} disabled={busy}/>
+        <details open={!appliedShared||customize} onToggle={e=>{if(appliedShared)setCustomize(e.currentTarget.open);}}>
+          <summary>{appliedShared?'تفاصيل وأسعار مختلفة لهذه النقلة فقط':'بيانات النقلة والأسعار'}{hasOverrides?' — توجد تعديلات خاصة':''}</summary><div className={styles.fieldGrid}>
         <SearchableChoice className={styles.choice} id="real-trip-counterparty" label="المقاول الطرف" value={tripCounterparty} onChange={setTripCounterparty} disabled={busy}
           choices={contractors.filter(c=>!c.is_archived&&!c.is_primary).map(c=>({id:c.id,label:c.name}))}
-          onAdd={() => setQuickModal("contractor")} addLabel="+ مقاول جديد"/>
+          onAdd={() => {sharedContractorCreation.current=false;setQuickModal("contractor");}} addLabel="+ مقاول جديد"/>
         <div className={styles.formField}><label htmlFor="real-trip-direction">اتجاه النقلة</label>
         <select id="real-trip-direction" className={styles.control} value={direction}
           onChange={e => setDirection(e.target.value as typeof direction)} disabled={busy}>
@@ -187,11 +236,7 @@ export function TransactionEntry({ contractors, vehicles, accounts, busy, write,
         <div className={styles.formField}><label htmlFor="real-trip-date">تاريخ النقلة (يسمح بالتاريخ القديم)</label>
         <input id="real-trip-date" className={styles.control} type="date" required value={tripDate}
           onChange={e => {setTripDate(e.target.value);setContractorRate("");setVehicleRate("");setExpense("0");setTripOrigin("");setTripDestination("");}} disabled={busy} /></div>
-        </div></details>
-        <details open><summary>الوزن والأسعار والمصاريف</summary><div className={styles.fieldGrid}>
-        <div className={styles.formField}><label htmlFor="real-trip-weight">الوزن بالطن (3 خانات عشرية)</label>
-        <input id="real-trip-weight" className={styles.control} required inputMode="decimal" placeholder="12.500"
-          value={weight} onChange={e => setWeight(e.target.value)} disabled={busy} /></div>
+
         <div className={styles.formField}><label htmlFor="real-trip-contractor-rate">سعر المقاول بالجنيه للطن</label>
         <input id="real-trip-contractor-rate" className={styles.control} required inputMode="decimal"
           value={contractorRate} onChange={e => setContractorRate(e.target.value)} disabled={busy} /></div>
@@ -204,11 +249,7 @@ export function TransactionEntry({ contractors, vehicles, accounts, busy, write,
           <input id="real-trip-vehicle-rate" className={styles.control} required inputMode="decimal"
             value={vehicleRate} onChange={e => setVehicleRate(e.target.value)} disabled={busy} /></div>
         </>}
-        <div className={styles.formField}><label htmlFor="real-trip-expense">مصاريف النقلة بالجنيه</label>
-        <input id="real-trip-expense" className={styles.control} required inputMode="decimal"
-          value={expense} onChange={e => setExpense(e.target.value)} disabled={busy} /></div>
-        </div></details>
-        <details><summary>خط السير والملاحظات</summary><div className={styles.fieldGrid}>
+
         <div className={styles.formField}><label htmlFor="real-trip-origin">من</label>
         <input id="real-trip-origin" className={styles.control} maxLength={200} value={tripOrigin}
           onChange={e => setTripOrigin(e.target.value)} disabled={busy} /></div>
@@ -219,7 +260,7 @@ export function TransactionEntry({ contractors, vehicles, accounts, busy, write,
         <input id="real-trip-notes" className={styles.control} maxLength={400} value={tripNotes}
           onChange={e => setTripNotes(e.target.value)} disabled={busy} /></div>
         </div></details>
-        <label className={styles.checkboxRow}><input type="checkbox" checked={reuseDay} disabled={busy} onChange={e=>setReuseDay(e.target.checked)}/> استخدام نفس بيانات اليوم للنقلة التالية (اختياري)</label>
+        {!appliedShared&&<label className={styles.checkboxRow}><input type="checkbox" checked={reuseDay} disabled={busy} onChange={e=>setReuseDay(e.target.checked)}/> استخدام نفس بيانات اليوم للنقلة التالية (اختياري)</label>}
         </div><aside className={styles.summaryColumn} aria-label="معاينة النقلة">
         <TripPreviewCard entryLayout weightTonnes={normalizeDecimalInput(weight)} contractorRateEgp={normalizeDecimalInput(contractorRate)}
           vehicleRateEgp={normalizeDecimalInput(sameRate?contractorRate:vehicleRate)} expenseEgp={normalizeDecimalInput(expense)} direction={direction}
@@ -230,14 +271,14 @@ export function TransactionEntry({ contractors, vehicles, accounts, busy, write,
           vehiclePlate={vehicles.find(v=>v.id===tripVehicle)?.plate_number}/>
         </aside>
         <footer className={styles.actions}>
-          <p>راجع بيانات النقلة ومعاينة الحساب قبل الحفظ.</p>
+          <p>راجع بيانات النقلة ومعاينة الحساب قبل الحفظ.{recordedCount!=null&&<strong> المسجّل في التاريخ المختار: {recordedCount} نقلة.</strong>}</p>
           <div className={styles.actionButtons}>
             <button className={styles.primaryButton} type="submit" value="new" disabled={busy}>حفظ وإضافة نقلة جديدة</button>
-            <button className={styles.secondaryButton} type="submit" value="exit" disabled={busy}>حفظ وخروج</button>
+            <button className={styles.secondaryButton} data-secondary type="submit" value="exit" disabled={busy}>حفظ وخروج</button>
           </div>
         </footer>
       </form>
-      <QuickRecordModal kind="vehicle" open={quickModal === "vehicle"} busy={busy}
+      <QuickRecordModal onCreateOpening={createVehicleOpening} contractors={contractors.filter(c=>!c.is_archived)} kind="vehicle" open={quickModal === "vehicle"} busy={busy}
         existing={vehicles.filter(v => !v.is_archived).map(v => v.plate_number)}
         onRefreshLists={() => void refresh()}
         onClose={() => setQuickModal(null)}
@@ -245,37 +286,15 @@ export function TransactionEntry({ contractors, vehicles, accounts, busy, write,
       <QuickRecordModal kind="contractor" open={quickModal === "contractor"} busy={busy}
         existing={contractors.filter(c => !c.is_archived).map(c => c.name)}
         onRefreshLists={() => void refresh()}
-        onClose={() => setQuickModal(null)}
-        onCreate={quickCreateContractor} onCreated={id => setPendingContractor(id)}/>
+        onClose={() => {sharedContractorCreation.current=false;setPendingContractor(null);setQuickModal(null);}}
+        onCreate={quickCreateContractor} onCreated={id => setPendingContractor({id,target:sharedContractorCreation.current?"shared":"trip"})}/>
     </section>
-    <section className={ui.surface}>
-      <h2>تسجيل دفعة نقدية</h2>
-      <p>لا يُسمح بصرف أكثر من الرصيد المتاح في أي تاريخ لاحق؛ الخادم يرفض أي عجز.</p>
-      <form className={ui.form} onSubmit={createPayment}>
-        <div className={ui.fieldGroup}><label htmlFor="real-payment-account">حساب العربية والمقاول المسؤول</label>
-        <select id="real-payment-account" className={ui.control} required value={paymentAccount}
-          onChange={e => setPaymentAccount(e.target.value)} disabled={busy}>
-          <option value="">اختر الحساب</option>
-          {accounts.map(a => <option key={a.vehicle_id + "|" + a.contractor_id}
-            value={a.vehicle_id + "|" + a.contractor_id}>
-            {vehicles.find(v => v.id === a.vehicle_id)?.plate_number ?? a.vehicle_id}
-            {" — "}{contractors.find(c => c.id === a.contractor_id)?.name ?? a.contractor_id}
-          </option>)}
-        </select></div>
-        <div className={ui.fieldGroup}><label htmlFor="real-payment-date">تاريخ الدفع</label>
-        <input id="real-payment-date" className={ui.control} type="date" required value={paymentDate}
-          onChange={e => setPaymentDate(e.target.value)} disabled={busy} /></div>
-        <div className={ui.fieldGroup}><label htmlFor="real-payment-amount">المبلغ بالجنيه</label>
-        <input id="real-payment-amount" className={ui.control} required inputMode="decimal" placeholder="100"
-          value={paymentAmount} onChange={e => setPaymentAmount(e.target.value)} disabled={busy} /></div>
-        <div className={ui.actions}><button type="button" id="real-payment-account-add" onClick={() => setQuickModal("payment")}
-          disabled={busy} style={{marginBottom:12}}>+ حساب جديد</button></div>
-        <div className={ui.fieldGroup}><label htmlFor="real-payment-notes">ملاحظات</label>
-        <input id="real-payment-notes" className={ui.control} maxLength={400} value={paymentNotes}
-          onChange={e => setPaymentNotes(e.target.value)} disabled={busy} /></div>
-        <PaymentPreview account={paymentAccount} amount={paymentAmount} revision={revision}/>
-        <div className={ui.actions}><button type="submit" disabled={busy}>حفظ الدفعة</button></div>
-      </form>
+    </div>
+    {children}
+    <div hidden={!entryVisible} className={daily.paymentArea}>
+    <PaymentEntry accounts={accounts} vehicles={vehicles} contractors={contractors} busy={busy} revision={revision}
+      paymentAccount={paymentAccount} setPaymentAccount={setPaymentAccount} setMessage={setMessage}
+      write={write} submitting={submitting} onAddAccount={() => setQuickModal("payment")}/>
       <PaymentAccountModal open={quickModal === "payment"} busy={busy}
         vehicles={vehicles.filter(v => !v.is_archived).map(v => ({ id: v.id, label: v.plate_number }))}
         contractors={contractors.filter(c => !c.is_archived).map(c => ({ id: c.id, label: c.name }))}
@@ -288,6 +307,6 @@ export function TransactionEntry({ contractors, vehicles, accounts, busy, write,
           write("vehicle.account.ensure", { vehicle_id: vehicleId, contractor_id: contractorId })}
         onAccountReady={(vehicleId, contractorId) => setPendingAccount({ vehicleId, contractorId })}
         onRefreshLists={() => void refresh()}/>
-    </section>
-  </>;
+    </div>
+  </div>;
 }

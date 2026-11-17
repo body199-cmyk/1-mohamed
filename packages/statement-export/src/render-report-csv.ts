@@ -46,6 +46,11 @@ export function renderOperationalReportCsv(doc: OperationalReportDocument): stri
   } else {
     lines.push(row([doc.emptyMessage, ...doc.columns.slice(1).map(() => "")]));
   }
+  for(const section of doc.detailSections??[]){
+    lines.push('',row([section.title]),row(section.columns.map(c=>c.label)));
+    if(section.rows.length)for(const record of section.rows)lines.push(row(record));
+    else lines.push(row([section.emptyMessage]));
+  }
   for (const note of doc.footerNotes) lines.push(row(["ملاحظة", note]));
   return UTF8_BOM + lines.join(CSV_NEWLINE);
 }

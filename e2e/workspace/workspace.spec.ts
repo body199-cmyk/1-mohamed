@@ -13,9 +13,22 @@ async function fixture(page:Page){
  await page.route('**/api/ledger/operations',route=>route.fulfill({json:{ok:true,data:{status:'OK'}}}));
  await page.route('**/api/ledger/read',route=>route.fulfill({json:{ok:true,data:{status:'OK',snapshot:'10:10',
   rows:[],total_count:'0',next_cursor:null,current_cash_balance_piastres:'28000'}}}));
- await page.goto('/');await expect(page.getByText('أهلًا بك في إدارة الشغل',{exact:true})).toBeVisible();
+ await page.goto('/');await expect(page.getByTestId('workspace-title')).toHaveText('اليومية');
 }
-async function nav(page:Page,label:string){await page.getByRole('navigation').getByRole('button',{name:label,exact:true}).click();}
+async function nav(page:Page,label:string){
+ const primary:Record<string,string>={
+  'تسجيل الشغل والدفعات':'اليومية',
+  'النقلات واليومية':'التقارير والكشوف',
+  'كشف حساب عربية':'حسابات العربيات والدفعات',
+ };
+ if(label==='الإعدادات'||label==='إدارة البيانات'){
+  const more=page.locator('[data-testid="mobile-more"]');
+  if(await more.isVisible()) await more.locator('summary').click();
+  await page.getByRole('button',{name:label,exact:true}).click();
+  return;
+ }
+ await page.getByRole('navigation').getByRole('button',{name:primary[label]??label,exact:true}).click();
+}
 test('successful refresh clears a previous access error; repeated denial stays visible',async({page})=>{
  await fixture(page);
  await page.route('**/api/ledger/master?**',route=>route.fulfill({status:401,json:{error:'غير مصرح بالدخول.'}}));
@@ -30,7 +43,8 @@ test('successful refresh clears a previous access error; repeated denial stays v
  });
  await page.getByRole('button',{name:'تحديث البيانات',exact:true}).click();
  await expect(page.getByText('غير مصرح بالدخول.',{exact:true})).toHaveCount(0);
- await expect(page.getByText('المقاولون: 1 — العربيات: 1')).toBeVisible();
+ await expect(page.getByText('المقاولون: 1',{exact:true})).toBeVisible();
+ await expect(page.getByText('العربيات: 1',{exact:true})).toBeVisible();
 });
 async function trip(page:Page){
  await nav(page,'تسجيل الشغل والدفعات');
@@ -53,7 +67,8 @@ test('mobile real workspace preserves draft, saves canonical Arabic input and ex
  const saved=page.waitForRequest(r=>r.url().includes('/api/ledger/operations'));
  await page.getByRole('button',{name:'حفظ وخروج',exact:true}).click();const payload=(await saved).postDataJSON();
  expect(payload.operation).toBe('trip.create');expect(payload.payload.weight_tonnes).toBe('1.250');expect(payload.payload.contractor_rate_egp).toBe('100');
- await expect(page.getByText('أهلًا بك في إدارة الشغل',{exact:true})).toBeVisible();
+ await expect(page.getByText('تم حفظ النقلة والخروج من نموذج الإدخال.',{exact:true})).toBeVisible();
+ await expect(page.getByRole('button',{name:'تسجيل شغل أو دفعة',exact:true})).toBeVisible();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  await page.screenshot({path:'artifacts/closeout/workspace-mobile.png',fullPage:true});
 });
@@ -67,6 +82,30 @@ test('retry reuses request identity; same-tick submits cannot duplicate a transa
  await expect(page.getByText('تم حفظ النقلة بنجاح.',{exact:true})).toBeVisible();
  expect(requests).toHaveLength(2);expect(requests[0]).toEqual(requests[1]);
 });
+test('contractor and cash statements reopen daily entry with their selected context',async({page})=>{
+ await page.setViewportSize({width:390,height:844});
+ await fixture(page);
+ await trip(page);
+ const saved=page.waitForRequest(r=>r.url().includes('/api/ledger/operations'));
+ await page.getByRole('button',{name:'حفظ وخروج',exact:true}).click();
+ await saved;
+ await expect(page.getByText('تم حفظ النقلة والخروج من نموذج الإدخال.',{exact:true})).toBeVisible();
+
+ await nav(page,'حساب شغل المقاولين');
+ await page.locator('#real-statement-contractor').selectOption('K1');
+ await page.getByRole('button',{name:'تسجيل شغل جديد',exact:true}).click();
+ await expect(page.getByTestId('workspace-title')).toHaveText('اليومية');
+ await expect(page.locator('#real-trip-vehicle')).toBeFocused();
+ await expect(page.locator('#real-trip-counterparty')).toHaveValue('K1');
+
+ await nav(page,'حسابات العربيات والدفعات');
+ await page.locator('#cash-account').selectOption('V1|K_AHMED');
+ await page.getByRole('button',{name:'تسجيل دفعة',exact:true}).click();
+ await expect(page.getByTestId('workspace-title')).toHaveText('اليومية');
+ await expect(page.locator('#real-payment-account')).toBeFocused();
+ await expect(page.locator('#real-payment-account')).toHaveValue('V1|K_AHMED');
+});
+
 test('payment preview is exact and invalid amount has no after value',async({page})=>{
  await fixture(page);await nav(page,'تسجيل الشغل والدفعات');
  await page.locator('#real-payment-account').selectOption('V1|K_AHMED');await page.locator('#real-payment-amount').fill('١٠٠');
@@ -79,39 +118,44 @@ test('changed snapshot stops full export; complete daily report displays exact S
   return route.fulfill({json:{ok:true,data:{status:'OK',snapshot:more?'11:11':'10:10',total_count:'2',
    rows:[{...row,id:more?'T2':'T1'}],next_cursor:more?null:{date:'2026-01-02',id:'T1'},totals:{active_count:'2',weight_milli_tonnes:'2000',contractor_total_piastres:'20000',vehicle_total_piastres:'18000',ahmed_work_piastres:'20000',counterparty_work_piastres:'0'}}}});});
  await nav(page,'النقلات واليومية');await page.locator('#report-from').fill('2026-01-02');await page.locator('#report-to').fill('2026-01-02');
- await page.getByRole('button',{name:'تحميل التقرير',exact:true}).click();await expect(page.getByLabel('ملخص الشغل')).toContainText('200');
+ await page.getByRole('button',{name:'تحميل التقرير',exact:true}).click();await expect(page.getByLabel('ملخص الشغل',{exact:true})).toContainText('200');
  await expect(page.getByRole('button',{name:'تنزيل CSV',exact:true})).not.toBeVisible();
  await page.getByRole('button',{name:'تحميل 200 سجل إضافي',exact:true}).click();
  await expect(page.getByRole('alert')).toContainText('تغيرت البيانات');await expect(page.getByRole('button',{name:'تنزيل CSV',exact:true})).not.toBeVisible();
  expect(more).toBe(true);
 });
 test('cash statement shows both sources and exports exact complete CSV',async({page})=>{
- await fixture(page);await page.route('**/api/ledger/read',route=>route.fulfill({json:{ok:true,data:{status:'OK',snapshot:'10:10',total_count:'2',next_cursor:null,
+ await fixture(page);await page.route('**/api/ledger/read',route=>{if(route.request().postDataJSON().operation==='trips.list')return route.fulfill({json:{ok:true,data:{status:'OK',snapshot:'10:10',total_count:'1',next_cursor:null,rows:[row]}}});return route.fulfill({json:{ok:true,data:{status:'OK',snapshot:'10:10',total_count:'2',next_cursor:null,
  date_from:'2026-01-02',date_to:'2026-01-02',vehicle_id:'V1',responsible_contractor_id:'K_AHMED',period_opening_piastres:'10000',work_piastres:'9000',paid_piastres:'4000',period_closing_piastres:'15000',current_cash_balance_piastres:'28000',
  rows:[{id:'T1',date:'2026-01-02',movement_type:'WORK',signed_delta_piastres:'9000',running_balance_piastres:'19000',origin:'القاهرة',destination:'السويس'},
- {id:'P1',date:'2026-01-02',movement_type:'PAYMENT',signed_delta_piastres:'-4000',running_balance_piastres:'15000'}]}}}));
+ {id:'P1',date:'2026-01-02',movement_type:'PAYMENT',signed_delta_piastres:'-4000',running_balance_piastres:'15000'}]}}});});
  await nav(page,'كشف حساب عربية');await page.locator('#cash-account').selectOption('V1|K_AHMED');
  await page.locator('#cash-from').fill('2026-01-02');await page.locator('#cash-to').fill('2026-01-02');
  await page.getByRole('button',{name:'عرض كشف النقدية',exact:true}).click();await expect(page.getByLabel('كشف نقدية العربية')).toContainText('150');
- await expect(page.getByText('المتبقي الحالي:',{exact:false})).toContainText('280');
+ const summary=page.getByLabel('ملخص نقدية العربية');
+ await expect(summary).toContainText('الباقي للعربية آخر الفترة');
+ await expect(summary).toContainText('رصيد أول الفترة');
+ await expect(summary).toContainText('مستحق الشغل خلال الفترة');
+ await expect(summary).toContainText('المدفوع خلال الفترة');
+ await expect(summary.locator('p',{hasText:'المتبقي الحالي:'})).toContainText('280');
  const download=page.waitForEvent('download');await page.getByRole('button',{name:'تنزيل CSV',exact:true}).click();
  const fs=await import('node:fs/promises');const text=await fs.readFile((await (await download).path())!,'utf8');
- expect(text).toContain('T1');expect(text).toContain('P1');expect(text).toContain('السويس');expect(text).toContain('150');
+ expect(text).not.toContain('T1');expect(text).not.toContain('P1');expect(text).toContain('السويس');expect(text).toContain('150');expect(text).toContain('الدفعات المستلمة');expect(text).toContain('40 ج.م');
 });
 
 test('desktop workspace keeps the report content column usable at wide viewports',async({page})=>{
  await fixture(page);
  for(const width of [768,1024,1440]){
   await page.setViewportSize({width,height:900});
+  await nav(page,'التقارير والكشوف');
   const geometry=await page.evaluate(()=>{
    const workspace=document.querySelector('[class*="workspace"]') as HTMLElement;
    const nav=document.querySelector('[class*="nav"]') as HTMLElement;
    const content=document.querySelector('[class*="content"]') as HTMLElement;
-   const cards=[...document.querySelectorAll('.shortcutTile')].map(node=>(node as HTMLElement).getBoundingClientRect());
-   return {width:innerWidth,workspace:workspace?.getBoundingClientRect().width,nav:nav?.getBoundingClientRect().width,content:content?.getBoundingClientRect().width,minCard:Math.min(...cards.map(card=>card.width)),maxCard:Math.max(...cards.map(card=>card.width))};
+   return {width:innerWidth,workspace:workspace?.getBoundingClientRect().width,nav:nav?.getBoundingClientRect().width,content:content?.getBoundingClientRect().width,documentWidth:document.documentElement.scrollWidth};
   });
   expect(geometry.content).toBeGreaterThan(400);
-  expect(geometry.minCard).toBeGreaterThan(180);
+  expect(geometry.documentWidth).toBeLessThanOrEqual(width);
  }
 });
 

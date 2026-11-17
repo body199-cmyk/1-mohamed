@@ -10,23 +10,42 @@ async function prepare(page:Page){
  });
  await page.route('**/api/ledger/read',route=>route.fulfill({json:{ok:true,data:{status:'OK',snapshot:'10:10',rows:[],total_count:'0',next_cursor:null,current_cash_balance_piastres:'100000'}}}));
  await page.route('**/api/ledger/operations',route=>route.abort());
- await page.goto('/');await expect(page.getByText('أهلًا بك في إدارة الشغل',{exact:true})).toBeVisible();
+ await page.goto('/');
+ await expect(page.getByTestId('workspace-title')).toHaveText('اليومية');
+ await page.waitForFunction(()=>document.documentElement.dataset.theme==='light'||document.documentElement.dataset.theme==='dark');
+ await expect(page.locator('#real-trip-vehicle option[value="V1"]')).toHaveCount(1);
+ await expect(page.locator('#real-trip-counterparty option[value="C1"]')).toHaveCount(1);
  await page.evaluate(()=>document.fonts.ready);
 }
-const screens=['الرئيسية','تسجيل الشغل والدفعات','النقلات واليومية','كشف المقاول','كشف حساب عربية','البيانات الأساسية','الإعدادات'];
-for(const mobile of [false,true])for(const dark of [false,true])test(`all screens fit and use consistent controls / ${mobile?'mobile':'desktop'} / ${dark?'dark':'light'}`,async({page})=>{
+const screens=[
+ {title:'اليومية',primary:true},
+ {title:'حساب شغل المقاولين',primary:true},
+ {title:'حسابات العربيات والدفعات',primary:true},
+ {title:'التقارير والكشوف',primary:true},
+ {title:'إدارة البيانات',primary:false},
+ {title:'الإعدادات',primary:false},
+];
+async function selectScreen(page:Page,title:string,mobile:boolean){
+ const secondary=title==='إدارة البيانات'||title==='الإعدادات';
+ if(secondary&&mobile) await page.locator('[data-testid="mobile-more"] summary').click();
+ const target=secondary?page.getByRole('button',{name:title,exact:true}):
+  page.getByRole('navigation').getByRole('button',{name:title,exact:true});
+ await target.click();
+ await expect(page.getByTestId('workspace-title')).toHaveText(title);
+}
+for(const mobile of [false,true])for(const dark of [false,true])test('all workspace destinations fit / '+(mobile?'mobile':'desktop')+' / '+(dark?'dark':'light'),async({page})=>{
  await page.setViewportSize(mobile?{width:390,height:844}:{width:1500,height:1000});
  await page.emulateMedia({reducedMotion:'reduce'});await prepare(page);
  await page.evaluate(value=>document.documentElement.dataset.theme=value,dark?'dark':'light');
  for(let i=0;i<screens.length;i++){
-  await page.getByRole('navigation').getByRole('button',{name:screens[i],exact:true}).click();
+  await selectScreen(page,screens[i].title,mobile);
   await page.evaluate(()=>window.scrollTo(0,0));
-  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),screens[i]).toBe(true);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),screens[i].title).toBe(true);
   const geometry=await page.locator('main input:not([type=checkbox]), main select, main button').evaluateAll(nodes=>nodes.filter(n=>n.getBoundingClientRect().width>0).map(n=>({height:n.getBoundingClientRect().height,text:(n.textContent??'').slice(0,40)})));
-  expect(geometry.filter(n=>n.height<43),screens[i]).toEqual([]);
-  await page.screenshot({path:`artifacts/design-rollout/${mobile?'mobile':'desktop'}-${dark?'dark':'light'}-${i}.png`});
+  expect(geometry.filter(n=>n.height<43),screens[i].title).toEqual([]);
+  await page.screenshot({path:'artifacts/design-rollout/'+(mobile?'mobile':'desktop')+'-'+(dark?'dark':'light')+'-'+i+'.png'});
  }
- await page.getByRole('navigation').getByRole('button',{name:screens[1],exact:true}).click();
+ await selectScreen(page,'اليومية',mobile);
  await page.locator('#real-payment-account-add').click();
  const dialog=page.getByRole('dialog',{name:'فتح حساب عربية جديد'});
  await expect(dialog).toBeVisible();await expect(page.locator('#quick-account-plate')).toBeFocused();
@@ -35,8 +54,92 @@ for(const mobile of [false,true])for(const dark of [false,true])test(`all screen
  const cancel=(await dialog.getByRole('button',{name:'إلغاء',exact:true}).boundingBox())!;
  expect(save.height).toBeGreaterThanOrEqual(48);expect(cancel.height).toBeGreaterThanOrEqual(48);
  expect(Math.max(save.x,cancel.x)-Math.min(save.x+save.width,cancel.x+cancel.width)).toBeGreaterThanOrEqual(11);
- await page.screenshot({path:`artifacts/design-rollout/${mobile?'mobile':'desktop'}-${dark?'dark':'light'}-account.png`});
+ await page.screenshot({path:'artifacts/design-rollout/'+(mobile?'mobile':'desktop')+'-'+(dark?'dark':'light')+'-account.png'});
  await page.keyboard.press('Escape');await expect(dialog).toHaveCount(0);
+});
+
+test('header theme toggle is accessible and mobile navigation exposes four destinations',async({page})=>{
+ await page.setViewportSize({width:390,height:844});await prepare(page);
+ const theme=page.getByRole('button',{name:'تبديل الوضع الفاتح/الداكن'});
+ await expect(theme).toBeVisible();
+ const before=await page.locator('html').getAttribute('data-theme');
+ await theme.click();
+ await expect(page.locator('html')).toHaveAttribute('data-theme',before==='dark'?'light':'dark');
+ await expect(theme).toHaveAttribute('aria-pressed',before==='dark'?'false':'true');
+ await expect(page.getByRole('navigation').getByRole('button')).toHaveCount(4);
+ const more=page.locator('[data-testid="mobile-more"]');
+ await expect(more).toBeVisible();
+ await more.locator('summary').click();
+ await expect(more.getByRole('button',{name:'إدارة البيانات',exact:true})).toBeVisible();
+ await page.keyboard.press('Escape');
+ await expect(more.getByRole('button',{name:'إدارة البيانات',exact:true})).not.toBeVisible();
+ await expect(more.locator('summary')).toBeFocused();
+ expect(await page.getByRole('navigation').evaluate(el=>getComputedStyle(el).position)).toBe('fixed');
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+});
+
+
+
+test('workspace navigation fits required phone, tablet and desktop widths',async({page})=>{
+ await page.setViewportSize({width:390,height:844});await prepare(page);
+ for(const width of [360,390,412,768,1280]){
+  await page.setViewportSize({width,height:844});
+  await page.evaluate(()=>window.scrollTo(0,0));
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'width '+width).toBe(true);
+  const mobile=width<=767;
+  expect(await page.getByRole('navigation').evaluate(el=>getComputedStyle(el).position),'nav position '+width).toBe(mobile?'fixed':'sticky');
+  await expect(page.getByRole('navigation').getByRole('button')).toHaveCount(mobile?4:6);
+  if(mobile){
+   await page.locator('[data-testid="mobile-more"] summary').click();
+   await expect(page.getByRole('button',{name:'إدارة البيانات',exact:true})).toBeVisible();
+   await page.getByRole('button',{name:'إدارة البيانات',exact:true}).click();
+  }else{
+   await expect(page.getByRole('navigation').getByRole('button',{name:'إدارة البيانات',exact:true})).toBeVisible();
+  }
+  await expect(page.getByTestId('workspace-title')).toHaveText('إدارة البيانات');
+ }
+});
+
+test('save and exit returns to the daily landing after a confirmed trip write',async({page})=>{
+ await prepare(page);
+ const writes:{operation:string;payload:Record<string,unknown>}[]=[];
+ await page.route('**/api/ledger/operations',route=>{
+  writes.push(route.request().postDataJSON());return route.fulfill({json:{ok:true,data:{status:'OK'}}});
+ });
+ await page.locator('#real-trip-vehicle').selectOption('V1');
+ await page.locator('#real-trip-counterparty').selectOption('C1');
+ await page.locator('#real-trip-date').fill('2026-11-15');
+ await page.locator('#real-trip-weight').fill('10');
+ await page.locator('#real-trip-contractor-rate').fill('100');
+ await page.locator('#real-trip-expense').fill('0');
+ await page.getByRole('button',{name:'حفظ وخروج',exact:true}).click();
+ await expect(page.getByText('تم حفظ النقلة والخروج من نموذج الإدخال.',{exact:true})).toBeVisible();
+ expect(writes).toHaveLength(1);
+ expect(writes[0].operation).toBe('trip.create');
+ expect(writes[0].payload).toMatchObject({
+  vehicle_id:'V1',counterparty_contractor_id:'C1',direction:'AHMED_SUPPLIES',
+  trip_date:'2026-11-15',weight_tonnes:'10',contractor_rate_egp:'100',
+  vehicle_rate_egp:'100',same_rate:true,expense_egp:'0'
+ });
+ await page.getByRole('button',{name:'تسجيل شغل أو دفعة',exact:true}).click();
+ await expect(page.locator('#real-trip-vehicle')).toBeVisible();
+});
+
+
+test('failed trip write keeps the daily entry open',async({page})=>{
+ await prepare(page);
+ await page.route('**/api/ledger/operations',route=>
+  route.fulfill({status:500,json:{ok:false,error:'رفض تجريبي'}}));
+ await page.locator('#real-trip-vehicle').selectOption('V1');
+ await page.locator('#real-trip-counterparty').selectOption('C1');
+ await page.locator('#real-trip-date').fill('2026-11-15');
+ await page.locator('#real-trip-weight').fill('10');
+ await page.locator('#real-trip-contractor-rate').fill('100');
+ await page.locator('#real-trip-expense').fill('0');
+ await page.getByRole('button',{name:'حفظ وخروج',exact:true}).click();
+ await expect(page.locator('#real-trip-vehicle')).toBeVisible();
+ await expect(page.getByText('تم حفظ النقلة والخروج من نموذج الإدخال.',{exact:true})).toHaveCount(0);
+ await expect(page.getByRole('button',{name:'حفظ وخروج',exact:true})).toBeVisible();
 });
 
 test('restyled master and payment forms retain their write payloads',async({page})=>{
@@ -45,8 +148,7 @@ test('restyled master and payment forms retain their write payloads',async({page
  await page.route('**/api/ledger/operations',route=>{
   writes.push(route.request().postDataJSON());return route.fulfill({json:{ok:true,data:{status:'OK'}}});
  });
- const nav=page.getByRole('navigation');
- await nav.getByRole('button',{name:'البيانات الأساسية',exact:true}).click();
+ await selectScreen(page,'إدارة البيانات',false);
  await page.locator('#contractor-name').fill('مقاول تجربة الواجهة');
  await page.getByRole('button',{name:'حفظ المقاول',exact:true}).click();
  await expect(page.locator('#contractor-name')).toHaveValue('');
@@ -60,7 +162,7 @@ test('restyled master and payment forms retain their write payloads',async({page
  await page.getByRole('button',{name:'تأكيد ربط الحساب',exact:true}).click();
  await expect.poll(()=>writes.length).toBe(3);
  expect(writes[2]).toMatchObject({operation:'vehicle.account.ensure',payload:{vehicle_id:'V1',contractor_id:'C1'}});
- await nav.getByRole('button',{name:'تسجيل الشغل والدفعات',exact:true}).click();
+ await selectScreen(page,'اليومية',false);
  await page.locator('#real-payment-account').selectOption('V1|C1');
  await page.locator('#real-payment-date').fill('2026-11-15');await page.locator('#real-payment-amount').fill('100');
  await page.getByRole('button',{name:'حفظ الدفعة',exact:true}).click();

@@ -11,7 +11,7 @@ async function prepare(page:Page){
  await page.route('**/api/ledger/read',route=>route.fulfill({json:{ok:true,data:{status:'OK',snapshot:'10:10',rows:[],total_count:'0',next_cursor:null}}}));
  await page.route('**/api/ledger/operations',route=>route.fulfill({json:{ok:true,data:{status:'OK'}}}));
  await page.goto('/');
- await page.getByRole('navigation').getByRole('button',{name:'تسجيل الشغل والدفعات',exact:true}).click();
+ await expect(page.getByTestId('workspace-title')).toHaveText('اليومية');
  await page.evaluate(()=>document.fonts.ready);
  await page.locator('#real-trip-vehicle').selectOption('V1');
  await page.locator('#real-trip-counterparty').selectOption('C1');

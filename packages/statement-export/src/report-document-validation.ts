@@ -20,6 +20,21 @@ export function assertOperationalReportDocument(doc: OperationalReportDocument):
       !Array.isArray(doc.footerNotes) || doc.footerNotes.length > 10) {
     throw new Error("أقسام التقرير تتجاوز الحدود المدعومة.");
   }
+  if(doc.rowTones!==undefined&&(!Array.isArray(doc.rowTones)||doc.rowTones.length!==doc.rows.length||doc.rowTones.some(t=>!['credit','debit','neutral'].includes(t))))throw new Error('ألوان صفوف التقرير لا تطابق بياناته.');
+  if(doc.presentation!==undefined&&doc.presentation!=="compact-statement")throw new Error("تنسيق التقرير غير صالح.");
+  if(doc.detailsTotal!==undefined&&typeof doc.detailsTotal!=="string")throw new Error("إجمالي التفاصيل غير صالح.");
+  if(doc.detailsTitle!==undefined&&typeof doc.detailsTitle!=="string")throw new Error("عنوان التفاصيل غير صالح.");
+  if(doc.detailSections!==undefined){
+    if(doc.presentation!=='compact-statement')throw new Error('أقسام التفاصيل تتطلب تنسيق كشف الحساب الثابت.');
+    if(!Array.isArray(doc.detailSections)||doc.detailSections.length>4)throw new Error("أقسام التفاصيل غير صالحة.");
+    let count=doc.rows.length;
+    for(const section of doc.detailSections){
+      if(!section||typeof section.title!=="string")throw new Error("عنوان التفاصيل غير صالح.");
+      assertOperationalReportDocument({...doc,...section,rowTones:section.rowTones,presentation:undefined,detailsTitle:undefined,detailSections:undefined});
+      count+=section.rows.length;
+    }
+    if(count>MAX_OPERATIONAL_REPORT_ROWS)throw new Error("التقرير يتجاوز حد الحركات؛ لن تُحذف بيانات بصمت.");
+  }
   let weightTotal = 0;
   for (const column of doc.columns) {
     if (!column || typeof column.label !== "string" ||
@@ -54,6 +69,7 @@ export function assertOperationalReportDocument(doc: OperationalReportDocument):
     }
     for (const metric of section.metrics) {
       if (!metric || typeof metric.label !== "string" || typeof metric.value !== "string" ||
+          (metric.tone!==undefined&&!["credit","debit","neutral"].includes(metric.tone)) ||
           (metric.direction !== undefined && metric.direction !== "rtl" && metric.direction !== "ltr")) {
         throw new Error("قيمة في ملخص التقرير غير صالحة.");
       }

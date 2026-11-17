@@ -23,6 +23,7 @@ function renderSheet(
   widths: readonly number[],
   headerRows: readonly number[],
   freezeFirstRow: boolean,
+  tones?: OperationalReportDocument["rowTones"],
 ): string {
   const columns = widths.map((width, index) =>
     '<col min="' + (index + 1) + '" max="' + (index + 1) +
@@ -33,7 +34,7 @@ function renderSheet(
     const header = headerRows.includes(rowId);
     const cells = values.map((value, columnIndex) =>
       '<c r="' + columnLetter(columnIndex) + rowId + '" t="inlineStr"' +
-      (header ? ' s="1"' : '') + '><is><t xml:space="preserve">' +
+      (header ? ' s="1"' : tones?.[rowIndex-1]==='credit'?' s="2"':tones?.[rowIndex-1]==='debit'?' s="3"':'') + '><is><t xml:space="preserve">' +
       escapeXlsxText(value) + '</t></is></c>'
     ).join("");
     return '<row r="' + rowId + '" ht="' + (header ? "27" : "22") +
@@ -71,6 +72,12 @@ export function createOperationalReportXlsxParts(
     for (const metric of section.metrics) summaryRows.push([metric.label, metric.value]);
     summaryRows.push([]);
   }
+  for(const section of doc.detailSections??[]){
+    summaryRows.push([section.title]);headerRows.push(summaryRows.length);
+    summaryRows.push(section.columns.map(c=>c.label));headerRows.push(summaryRows.length);
+    summaryRows.push(...(section.rows.length?section.rows.map(r=>[...r]):[[section.emptyMessage]]));
+    summaryRows.push([]);
+  }
   for (const note of doc.footerNotes) summaryRows.push(["ملاحظة", note]);
   const detailRows: string[][] = [
     doc.columns.map(column => column.label),
@@ -87,14 +94,14 @@ export function createOperationalReportXlsxParts(
     '<sheet name="تفاصيل التقرير" sheetId="2" r:id="rId2"/>' +
     '</sheets></workbook>';
   const styles = XML_START + '<styleSheet xmlns="' + SHEET_NS + '">' +
-    '<fonts count="2"><font><sz val="11"/><name val="Cairo"/></font>' +
-    '<font><b/><color rgb="FFFFFFFF"/><sz val="11"/><name val="Cairo"/></font></fonts>' +
+    '<fonts count="4"><font><sz val="11"/><name val="Cairo"/></font>' +
+    '<font><b/><color rgb="FFFFFFFF"/><sz val="11"/><name val="Cairo"/></font><font><color rgb="FF166534"/><sz val="11"/><name val="Cairo"/></font><font><color rgb="FF991B1B"/><sz val="11"/><name val="Cairo"/></font></fonts>' +
     '<fills count="2"><fill><patternFill patternType="none"/></fill>' +
     '<fill><patternFill patternType="solid"><fgColor rgb="FF206BC4"/><bgColor indexed="64"/></patternFill></fill></fills>' +
     '<borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders>' +
     '<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>' +
-    '<cellXfs count="2"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>' +
-    '<xf numFmtId="0" fontId="1" fillId="1" borderId="0" xfId="0" applyFont="1" applyFill="1"/></cellXfs>' +
+    '<cellXfs count="4"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>' +
+    '<xf numFmtId="0" fontId="1" fillId="1" borderId="0" xfId="0" applyFont="1" applyFill="1"/><xf numFmtId="0" fontId="2" fillId="0" borderId="0" xfId="0" applyFont="1"/><xf numFmtId="0" fontId="3" fillId="0" borderId="0" xfId="0" applyFont="1"/></cellXfs>' +
     '<cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>';
   const contentTypes = XML_START +
     '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">' +
@@ -117,7 +124,7 @@ export function createOperationalReportXlsxParts(
     { name: "xl/_rels/workbook.xml.rels", content: workbookRels },
     { name: "xl/styles.xml", content: styles },
     { name: "xl/worksheets/sheet1.xml", content: renderSheet(summaryRows, [36, 72], headerRows, false) },
-    { name: "xl/worksheets/sheet2.xml", content: renderSheet(detailRows, widths, [1], true) },
+    { name: "xl/worksheets/sheet2.xml", content: renderSheet(detailRows, widths, [1], true,doc.rowTones) },
   ];
 }
 

@@ -44,6 +44,7 @@ export interface OperationalReportSummaryMetric {
   readonly value: string;
   readonly direction?: "rtl" | "ltr";
   readonly emphasis?: boolean;
+  readonly tone?: "credit" | "debit" | "neutral";
 }
 
 export interface OperationalReportSummarySection {
@@ -58,7 +59,20 @@ export interface OperationalReportColumn {
   readonly widthWeight: number;
 }
 
+export interface OperationalReportDetailSection {
+  readonly title: string;
+  readonly columns: readonly OperationalReportColumn[];
+  readonly rows: readonly (readonly string[])[];
+  readonly emptyMessage: string;
+  readonly rowTones?: readonly ("credit" | "debit" | "neutral")[];
+}
+
 export interface OperationalReportDocument {
+  /** Fixed white-paper statement, independent of viewport and app theme. */
+  readonly presentation?: "compact-statement";
+  readonly detailsTitle?: string;
+  readonly detailsTotal?: string;
+  readonly detailSections?: readonly OperationalReportDetailSection[];
   readonly businessName: string;
   readonly title: string;
   readonly subtitle: string;
@@ -69,4 +83,6 @@ export interface OperationalReportDocument {
   readonly rows: readonly (readonly string[])[];
   readonly emptyMessage: string;
   readonly footerNotes: readonly string[];
+  /** Optional per-row work direction; never inferred from closing balance. */
+  readonly rowTones?: readonly ("credit" | "debit" | "neutral")[];
 }

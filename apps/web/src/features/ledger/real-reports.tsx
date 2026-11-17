@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { postLedgerRead } from "../../lib/ledger/transport";
 import { formatPoundsForDisplay } from "../../lib/ledger/amounts";
 import type { LedgerEntities, LedgerWrite } from "./workspace-data";
-import { projectLedgerReport } from "./report-presentation";
+import { OperationalRows } from "./operational-rows";
 import { ReportExportActions } from "../reports/report-export-actions";
 import { buildRealOperationalDocument, isFullOperationalReport } from "./real-operational-document";
 import { assertReportPage, mergeReportPage, type ReportPage } from "./report-snapshot";
@@ -15,10 +15,10 @@ type Report = ReportPage & { date_from?:string; date_to?:string; totals?: Record
   period_closing_piastres?: string; current_cash_balance_piastres?: string; cash_balance_piastres?: string };
 type ReportType = "trips.list" | "payments.list";
 const EMPTY_ROWS: Record<string, unknown>[] = [];
-const asText = (value: unknown) => typeof value === "string" ? value : value == null ? "" : String(value);
 
 
-export function RealReports({ contractors, vehicles, accounts, disabled, revision, write }: LedgerEntities & {disabled:boolean; revision:number; write:LedgerWrite}) {
+
+export function RealReports({ contractors, vehicles, accounts, disabled, revision, write, periodRequest, onOpenStatement }: LedgerEntities & {disabled:boolean; revision:number; write:LedgerWrite; onOpenStatement?:(screen:"cash"|"contractor")=>void; periodRequest?:{id:number;date:string}|null}) {
   const [busy,setBusy] = useState(false);
   const [notice,setNotice] = useState("");
   const reportQuery = useRef<{ type: ReportType; payload: Record<string, unknown> } | null>(null);
@@ -34,6 +34,12 @@ export function RealReports({ contractors, vehicles, accounts, disabled, revisio
 
   const active = useRef(0);
   useEffect(() => { active.current++; setReport(null); reportQuery.current = null; },[revision]);
+  useEffect(()=>{
+    if(!periodRequest)return;
+    active.current++;setReport(null);reportQuery.current=null;setReportType('trips.list');
+    setAllHistory(false);setReportFrom(periodRequest.date);setReportTo(periodRequest.date);
+    setReportVehicle('');setReportCounterparty('');setIncludeCancelled(false);setNotice('');
+  },[periodRequest?.id]);
   async function readReport(event: FormEvent) {
     event.preventDefault();
     if (busy || disabled || (!allHistory && (!reportFrom || !reportTo))) return;
@@ -83,10 +89,6 @@ export function RealReports({ contractors, vehicles, accounts, disabled, revisio
     finally { setBusy(false); }
   }
 
-  const projected = report ? projectLedgerReport(reportType, report.rows, {
-    vehicles: new Map(vehicles.map(v => [v.id, v.plate_number])),
-    contractors: new Map(contractors.map(c => [c.id, c.name]))
-  }) : null;
   const fullExportDocument = (() => {
     if (!report || !isFullOperationalReport(report)) return null;
     try {
@@ -107,7 +109,9 @@ export function RealReports({ contractors, vehicles, accounts, disabled, revisio
   return <fieldset disabled={disabled} style={{border:0,padding:0,minWidth:0}}>
     {notice && <p role="alert">{notice}</p>}
     <section className={ui.surface}>
-      <h2>النقلات والتقرير اليومي والمدفوعات</h2>
+      <h2>التقارير والكشوف</h2>
+      {onOpenStatement&&<div className={ui.actions} aria-label="فتح كشف حساب"><button type="button" onClick={()=>onOpenStatement('cash')}>فتح كشف العربية</button><button type="button" onClick={()=>onOpenStatement('contractor')}>فتح كشف المقاول</button></div>}
+      <h3>سجل النقلات والدفعات — للمراجعة والتعديل</h3>
       <form className={ui.form} onSubmit={readReport}>
         <div className={ui.fieldGroup}><label htmlFor="report-type">التقرير</label>
         <select id="report-type" className={ui.control} value={reportType}
@@ -153,7 +157,7 @@ export function RealReports({ contractors, vehicles, accounts, disabled, revisio
           <input type="checkbox" checked={includeCancelled} onChange={e => { setIncludeCancelled(e.target.checked); setReport(null); }} disabled={busy} />
           {" "}عرض القيود الملغاة أيضًا
         </label>
-        <div className={ui.actions}><button disabled={busy} type="submit">تحميل التقرير</button></div>
+        <div className={ui.actions}><button disabled={busy} type="submit">{busy?"جارٍ تحميل التقرير…":"تحميل التقرير"}</button></div>
       </form>
       {report && <>
         {allHistory && <p>كل الحساب من البداية: {report.date_from} — {report.date_to}</p>}
@@ -185,17 +189,8 @@ export function RealReports({ contractors, vehicles, accounts, disabled, revisio
         </div>}
         {isFullOperationalReport(report) && !fullExportDocument &&
           <p role="alert">بيانات التقرير غير متسقة؛ تم إيقاف التصدير الكامل لحمايتك.</p>}
-        <div style={{ overflowX: "auto", marginTop: 12 }}>
-          <table style={{ borderCollapse: "collapse", minWidth: 600 }}>
-            <thead><tr>{projected?.headers.map((header, index) =>
-              <th key={index} scope="col" style={{ padding: 8, borderBottom: "1px solid #ccc" }}>{header}</th>)}</tr></thead>
-            <tbody>{projected?.rows.map((row, index) => <tr key={asText(report.rows[index]?.id) || index}>
-              {row.map((value, column) =>
-                <td key={column} >
-                  {value}</td>)}
-            </tr>)}</tbody>
-          </table>
-        </div>
+        <OperationalRows type={reportType} rows={report.rows} lookups={{vehicles:new Map(vehicles.map(v=>[v.id,v.plate_number])),contractors:new Map(contractors.map(c=>[c.id,c.name]))}}/>
+
       </>}
     </section>
 

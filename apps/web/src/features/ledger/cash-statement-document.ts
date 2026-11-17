@@ -29,7 +29,7 @@ export function cashStatementDocument(report:CashReport,vehicle:string,contracto
   return {businessName:'أحمد أبو علي — حسابات النقل',title:'كشف نقدية العربية',
     subtitle:'شغل العربية ودفعاتها لدى المقاول المسؤول؛ مستقل عن فرق شغل المقاولين.',
     generatedAtLabel:new Intl.DateTimeFormat('ar-EG',{timeZone:'Africa/Cairo',dateStyle:'medium',timeStyle:'short'}).format(new Date()),
-    metadata:[{label:'العربية',value:vehicle},{label:'المقاول المسؤول',value:contractor},{label:'من',value:report.date_from},{label:'إلى',value:report.date_to}],
+    metadata:[{label:'رقم العربية',value:vehicle},{label:'المقاول المسؤول',value:contractor},{label:'من تاريخ',value:report.date_from},{label:'إلى تاريخ',value:report.date_to}],
     summarySections:[{title:'ملخص الحساب',metrics:[
       {label:'أول الفترة',value:money(report.period_opening_piastres)},
       {label:'مستحق الشغل',value:money(report.work_piastres)},

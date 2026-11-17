@@ -6,6 +6,8 @@ import type {
 } from "./document-types";
 import { assertOperationalReportDocument } from "./report-document-validation";
 
+import {createCompactReportLayout,paintCompactReport,type CompactReportLayout} from "./compact-report";
+
 const WIDTH = 1440;
 const HEIGHT = 2036;
 const LEFT = 80;
@@ -30,6 +32,7 @@ export interface OperationalReportImageLayout {
   readonly summarySections: readonly OperationalReportSummarySection[];
   readonly columns: readonly OperationalReportColumn[];
   readonly rows: readonly (readonly string[])[];
+  readonly rowTones?: OperationalReportDocument["rowTones"];
   readonly emptyMessage: string;
   readonly footerNotes: readonly string[];
   readonly summaryStart: number;
@@ -44,6 +47,7 @@ export function createOperationalReportImageLayout(
   options: { readonly fixedHeight?: number; readonly pageLabel?: string } = {},
 ): OperationalReportImageLayout {
   assertOperationalReportDocument(doc);
+  if(doc.presentation==="compact-statement")return createCompactReportLayout(doc,options);
   const metadataRows = Math.ceil(doc.metadata.length / 2);
   const summaryStart = 220 + metadataRows * 48 + 14;
   let summaryBottom = summaryStart;
@@ -64,7 +68,7 @@ export function createOperationalReportImageLayout(
     width: WIDTH, height, businessName: doc.businessName, title: doc.title,
     subtitle: doc.subtitle, generatedAtLabel: doc.generatedAtLabel,
     metadata: doc.metadata, summarySections: doc.summarySections, columns: doc.columns,
-    rows: doc.rows, emptyMessage: doc.emptyMessage, footerNotes: doc.footerNotes,
+    rows: doc.rows, rowTones:doc.rowTones, emptyMessage: doc.emptyMessage, footerNotes: doc.footerNotes,
     summaryStart, tableTitleY, headerY, rowsTop, pageLabel: options.pageLabel,
   };
 }
@@ -161,7 +165,8 @@ function paintTable(
     : [[layout.emptyMessage, ...layout.columns.slice(1).map(() => "")]];
   rows.forEach((values, rowIndex) => {
     const y = layout.rowsTop + rowIndex * ROW_HEIGHT;
-    ctx.fillStyle = rowIndex % 2 === 0 ? "#ffffff" : STRIPE;
+    const tone=layout.rowTones?.[rowIndex];
+    ctx.fillStyle = tone==='credit'?'#f0fdf4':tone==='debit'?'#fef2f2':rowIndex % 2 === 0 ? "#ffffff" : STRIPE;
     ctx.fillRect(LEFT, y, CONTENT_WIDTH, ROW_HEIGHT);
     ctx.strokeStyle = BORDER;
     ctx.beginPath();
@@ -175,7 +180,7 @@ function paintTable(
       const value = values[columnIndex] ?? "";
       write(ctx, value, right - 8, y + 34, {
         size: fontSize, maxWidth: width - 14, ltr: column.direction === "ltr",
-        color: value.startsWith("-") && column.direction === "ltr" ? "#a34a20" : NAVY,
+        color: tone==='credit'?'#166534':tone==='debit'?'#991b1b':value.startsWith("-") && column.direction === "ltr" ? "#a34a20" : NAVY,
       });
       right -= width;
     }
@@ -187,6 +192,7 @@ export function paintOperationalReportImage(
   ctx: CanvasRenderingContext2D,
   layout: OperationalReportImageLayout,
 ): void {
+  if("compactTables" in layout){paintCompactReport(ctx,layout as CompactReportLayout);return;}
   ctx.fillStyle = "#ffffff";
   ctx.fillRect(0, 0, layout.width, layout.height);
   ctx.fillStyle = BLUE;

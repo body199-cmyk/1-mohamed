@@ -83,6 +83,14 @@ jobs:
         run: npx playwright install chromium
       - name: Test private workspace components with isolated HTTP fixtures
         run: npm run test:workspace
+      - name: Keep exact-head private workspace visual review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr87-exact-head-ui-review
+          path: artifacts/ui-review-87/
+          if-no-files-found: error
+          retention-days: 7
       - name: Test password recovery, visibility and optional remembered sessions
         run: npx playwright test --config=playwright.auth.config.ts
       - name: Keep private workspace browser evidence

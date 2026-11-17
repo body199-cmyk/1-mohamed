@@ -28,3 +28,184 @@
 .paymentPreview p { margin-bottom:8px; }
 .paymentPreview bdi { font-size:1.1rem; font-weight:750; color:var(--color-primary); }
 .paymentPreview small { color:var(--text-muted); }
+
+
+/* Financial statement summaries: clear hierarchy without changing ledger values. */
+.statementSummary,
+.cashSummary {
+  display: grid;
+  gap: 12px;
+  margin: 18px 0;
+}
+
+.statementHero,
+.cashHero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-width: 0;
+  padding: 18px 20px;
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  background: var(--surface-card-subtle);
+}
+
+.statementHero {
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.statementHero > span,
+.cashHero > span,
+.summaryMetric > span,
+.cashMetric > span {
+  color: var(--text-muted);
+  font-size: .82rem;
+  font-weight: 750;
+  line-height: 1.6;
+}
+
+.statementHero > strong {
+  font-size: 1.1rem;
+  line-height: 1.8;
+}
+
+.statementHero[data-tone="ahmed"] {
+  background: var(--color-success-bg);
+  border-color: var(--color-success-border);
+}
+
+.statementHero[data-tone="counterparty"] {
+  background: var(--color-danger-bg);
+  border-color: var(--color-danger-border);
+}
+
+.statementMetrics,
+.cashMetrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.summaryMetric,
+.cashMetric {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  min-width: 0;
+  padding: 14px;
+  background: var(--surface-card-subtle);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+}
+
+.summaryMetric > strong,
+.cashMetric > strong {
+  min-width: 0;
+  color: var(--text-main);
+  font-size: .94rem;
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+}
+
+.summaryNote {
+  margin: 10px 0;
+  color: var(--text-muted);
+  font-size: .88rem;
+}
+
+.cashHero {
+  background: var(--color-primary-bg);
+  border-color: var(--border-color);
+}
+
+.cashHero > span {
+  color: var(--text-main);
+  font-size: .9rem;
+}
+
+.cashHero > strong {
+  color: var(--text-main);
+  font-size: 1.45rem;
+  font-weight: 850;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.5;
+}
+
+.cashCurrent {
+  margin: 0;
+  padding: 12px 14px;
+  background: var(--surface-card-subtle);
+  border-inline-start: 3px solid var(--color-info);
+  border-radius: 10px;
+  font-size: .88rem;
+  line-height: 1.9;
+}
+
+.cashCurrent > span {
+  color: var(--text-muted);
+  font-weight: 750;
+}
+
+@media (max-width: 600px) {
+  .statementMetrics,
+  .cashMetrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .statementMetrics > :last-child,
+  .cashMetrics > :last-child {
+    grid-column: 1 / -1;
+  }
+
+  .cashHero {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .cashHero > strong {
+    font-size: 1.25rem;
+  }
+}
+
+
+.sectionHeading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.sectionHeading > div {
+  min-width: 0;
+}
+
+.sectionHeading h2 {
+  margin-bottom: 6px;
+}
+
+.sectionHeading p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: .88rem;
+  line-height: 1.8;
+}
+
+.sectionHeading > button {
+  flex: none;
+}
+
+@media (max-width: 600px) {
+  .sectionHeading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .sectionHeading > button {
+    width: 100%;
+  }
+}

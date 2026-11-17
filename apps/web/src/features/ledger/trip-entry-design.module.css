@@ -37,7 +37,7 @@
 .checkboxRow { grid-column:1/-1; display:flex; align-items:flex-start; gap:10px; padding:14px; border:1px solid var(--border-color); border-radius:10px; background:var(--surface-card-subtle); font-size:.85rem; line-height:1.8; }
 .entryFields > .checkboxRow { margin:20px 0 24px; }
 .checkboxRow input { width:18px; height:18px; flex:none; margin-top:3px; accent-color:var(--color-primary); }
-.summaryColumn { align-self:start; position:sticky; top:20px; padding-top:24px; min-width:0; }
+.summaryColumn { align-self:start; position:static; padding-top:24px; min-width:0; }
 .actions { grid-column:1/-1; display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:16px; padding:22px 0; border-top:1px solid var(--border-color); }
 .actions p { color:var(--text-muted); font-size:.82rem; }
 .actionButtons,.dialogActions { display:flex; flex-wrap:wrap; gap:12px; }
@@ -73,3 +73,11 @@
   .dialog { padding:22px; border-radius:16px; max-height:calc(100dvh - 32px); }
 }
 @media(prefers-reduced-motion:reduce) { .tripSurface *,.dialog * { transition:none !important; } }
+
+.tripSurface button.secondaryButton[type="submit"]{background:var(--surface-card);color:var(--text-main);border-color:var(--border-strong);box-shadow:none}
+.tripSurface button.secondaryButton[type="submit"]:hover:not(:disabled){background:var(--surface-hover);border-color:var(--color-primary)}
+@media(min-width:601px){.choice{grid-template-columns:minmax(0,1fr)}.choice input{grid-column:1;border-radius:10px}.choice button{grid-column:1;grid-row:auto;justify-self:start;border:1px solid var(--border-strong);border-radius:8px}.choice select{grid-column:1}}
+
+.openingFields{border:1px solid var(--border-color);border-radius:10px;padding:16px;margin:6px 0 20px;min-width:0}.openingFields legend{font-size:.94rem;font-weight:750;padding:0 6px}.openingFields p{font-size:.82rem;line-height:1.9;color:var(--text-muted);margin:12px 0}.openingCheck{display:flex!important;align-items:center;gap:10px;min-height:44px}.openingCheck input{width:18px;height:18px;accent-color:var(--color-primary)}.dialog select.control{font:inherit;margin-bottom:20px}
+
+@media(max-width:767px){.tripSurface :is(input,select,button){scroll-margin-block:20px 110px}.actions{scroll-margin-block:20px 110px}}
