@@ -1,3 +1,6 @@
+## SHARED-FIELDS-VISIBLE — approved release
+Shared expense and note now stay visible beside other shared-work fields without disclosure clicks. Optional zero expense/empty note defaults and payloads unchanged. Updated SQL/browser fixtures assert direct visibility. User confirms finishing and deploying the pending change; run exact-head CI before merge. This patch follows the owner invitation release without changing its permissions.
+
 ## OWNER-INVITATIONS-01
 Approved: owner Settings email invitation, member password selection, only original owner manages users, operational member access and immediate subsequent-request revocation. No public registration. See STATUS for verification and email-sender/release gates.
 

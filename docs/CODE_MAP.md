@@ -1,3 +1,6 @@
+## SHARED-FIELDS-VISIBLE — approved release
+Shared expense and note now stay visible beside other shared-work fields without disclosure clicks. Optional zero expense/empty note defaults and payloads unchanged. Updated SQL/browser fixtures assert direct visibility. User confirms finishing and deploying the pending change; run exact-head CI before merge. This patch follows the owner invitation release without changing its permissions.
+
 ## OWNER-INVITATIONS-01 map
 - supabase/migrations/20261117131220_owner_managed_members.sql: app_members, live app_has_access, operational gate replacement, strict-owner member-target/grant/revoke RPCs.
 - supabase/functions/invite-member/{index,core}.ts: pinned SDK + native Edge secret, strict fresh owner validation, invite/existing-account recovery/resend, grant only after email API success.

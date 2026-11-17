@@ -13,7 +13,7 @@ async function common(page:Page){
  await page.locator('#shared-date').fill('2026-11-16');await page.locator('#shared-contractor-rate').fill('100');
  await page.getByLabel('نفس سعر المقاول والعربية في المشترك',{exact:true}).uncheck();await page.locator('#shared-vehicle-rate').fill('80');
  await page.locator('#shared-origin').fill('بني سويف');await page.locator('#shared-destination').fill('القاهرة');
- await page.getByText('مصاريف وملاحظة مشتركة — اختياري',{exact:true}).click();
+ await expect(page.locator('#shared-expense')).toBeVisible();await expect(page.locator('#shared-notes')).toBeVisible();
  await page.locator('#shared-expense').fill('20');await page.locator('#shared-notes').fill('شغل موقع النور');
  await page.getByRole('button',{name:'اعتماد بيانات الشغل',exact:true}).click();
 }
