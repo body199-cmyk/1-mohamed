@@ -195,7 +195,7 @@ export function RealWorkspace() {
         <h2>الإعدادات</h2><ThemeSelector/>
         <p>تغيير كلمة المرور واستعادتها من شاشة تسجيل الدخول عبر بريد حسابك.</p>
         <MemberInvitations visible={screen === "settings"}/>
-        <BackupSettings/>
+        {screen === "settings" ? <BackupSettings/> : null}
       </section>
     </div>
   </div>;
