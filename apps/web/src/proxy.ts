@@ -1,8 +1,8 @@
 /**
- * Default: fail-closed public demo preview, no persistent writes.
- * Final Supabase cutover: set server-only APP_ENABLE_REAL_DATA=true together
- * with configured Auth/RLS, then verify all live acceptance gates.
- * No env flag alone grants a user access: JWT + owner RPC + route RLS apply.
+ * Default: fail-closed in local/preview environments unless explicitly configured.
+ * Production currently enables APP_ENABLE_REAL_DATA=true with the existing
+ * Supabase project. The switch is not authorization: signed claims, app_is_owner(),
+ * Route Handler checks, and database RLS still gate every private operation.
  */
 import { NextResponse, type NextRequest } from "next/server";
 import { getSupabaseSetupStatus } from "./lib/supabase/config";
