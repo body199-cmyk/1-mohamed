@@ -44,9 +44,14 @@ export async function createReaderArchive(env=process.env){
   if(JSON.stringify([...tables].sort())!==JSON.stringify(actual))throw Error('Public table inventory changed; update recovery coverage');
   const storage=(await client.query('select (select count(*) from storage.buckets)::text as buckets,(select count(*) from storage.objects)::text as objects')).rows[0];
   if(storage.buckets!=='0'||storage.objects!=='0')throw Error('Storage object export required');
-  const pgEnv={...env,PGHOST:config.host,PGPORT:'5432',PGUSER:config.user,PGPASSWORD:config.password,PGDATABASE:'postgres',PGSSLMODE:'verify-full',PGSSLROOTCERT:'/backup/supabase-root.crt',PGTZ:'UTC'};
+  const native=typeof env.PG_DUMP_BIN==='string'&&env.PG_DUMP_BIN.length>0;
+  const pgEnv={...env,PGHOST:config.host,PGPORT:'5432',PGUSER:config.user,PGPASSWORD:config.password,PGDATABASE:'postgres',PGSSLMODE:'verify-full',PGSSLROOTCERT:native?join(work,'supabase-root.crt'):'/backup/supabase-root.crt',PGTZ:'UTC'};
   const dockerArgs=['run','--rm','--network','host','--user',`${process.getuid?.()||0}:${process.getgid?.()||0}`,'-v',`${work}:/backup`,...['PGHOST','PGPORT','PGUSER','PGPASSWORD','PGDATABASE','PGSSLMODE','PGSSLROOTCERT','PGTZ'].flatMap(v=>['-e',v]),'postgres:17.11-bookworm'];
-  for(const [file,section] of [['pre-data.sql','pre-data'],['post-data.sql','post-data'],['public-data.sql','data']]){console.log('Exporting public '+section+' section.');run('docker',[...dockerArgs,'pg_dump','--schema=public','--no-owner',`--section=${section}`,`--snapshot=${snapshot}`,'--file',`/backup/${file}`],pgEnv);}
+  for(const [file,section] of [['pre-data.sql','pre-data'],['post-data.sql','post-data'],['public-data.sql','data']]){
+   console.log('Exporting public '+section+' section.');
+   const args=['--schema=public','--no-owner',`--section=${section}`,`--snapshot=${snapshot}`,'--file',native?join(work,file):`/backup/${file}`];
+   run(native?env.PG_DUMP_BIN:'docker',native?args:[...dockerArgs,'pg_dump',...args],pgEnv);
+  }
   const counts={},fingerprints={},authColumns={};
   for(const table of tables){const r=(await client.query(tableFingerprintSql('public',table))).rows[0];counts[table]=Number(r.count);if(!Number.isSafeInteger(counts[table]))throw Error('Unsafe row count');fingerprints['public.'+table]=r;}
   const data=join(work,'data.sql');writeFileSync(data,'-- Auth records precede application mappings.\n',{mode:0o600});
