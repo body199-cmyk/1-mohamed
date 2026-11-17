@@ -29,14 +29,22 @@ assert.match(proxy, /jsonDenied\(404\)/);
 assert.match(proxy, /NextResponse\.json/);
 assert.match(proxy, /status:\s*503/);
 assert.match(proxy, /NextResponse\.redirect/);
+assert.match(proxy, /pathname === ["']\/api\/auth\/login["']/);
 
 const login = read("apps/web/src/app/login/page.tsx");
 const loginForm = read("apps/web/src/features/auth/login-form.tsx");
 assert.match(login, /<LoginForm\s+enabled=\{process\.env\.APP_ENABLE_REAL_DATA\s*===\s*"true"\}/);
 assert.match(login, /export const dynamic\s*=\s*"force-dynamic"/);
-assert.match(loginForm, /signInWithPassword/);
-assert.match(loginForm, /app_is_owner/);
+assert.match(loginForm, /fetch\(["']\/api\/auth\/login["']/);
 assert.match(loginForm, /resetPasswordForEmail/);
+assert.doesNotMatch(loginForm, /signInWithPassword|app_is_owner|createBrowserSupabaseClient/);
+const ownerLoginRoute = read("apps/web/src/app/api/auth/login/route.ts");
+assert.match(ownerLoginRoute, /signInWithPassword/);
+assert.match(ownerLoginRoute, /app_is_owner/);
+assert.match(ownerLoginRoute, /OWNER_LOGIN_USERNAME/);
+assert.match(ownerLoginRoute, /OWNER_LOGIN_EMAIL/);
+assert.match(ownerLoginRoute, /isAllowedLedgerOrigin/);
+assert.doesNotMatch(ownerLoginRoute, /\.signUp\(/);
 assert.match(loginForm, /!setup\.ready/);
 assert.doesNotMatch(loginForm, /\.signUp\(/);
 
@@ -57,6 +65,7 @@ const preparedServerRoutes = new Set([
   "apps/web/src/app/api/ledger/operations/route.ts",
   "apps/web/src/app/api/ledger/read/route.ts",
   "apps/web/src/app/api/ledger/master/route.ts",
+  "apps/web/src/app/api/auth/login/route.ts",
 ]);
 for (const path of appSourceFiles("apps/web/src/app")) {
   const file = read(path);
@@ -66,6 +75,7 @@ for (const path of appSourceFiles("apps/web/src/app")) {
   } else {
     assert.match(file, /getSupabaseSetupStatus/);
     if (path.includes("/api/ledger/")) assert.match(file, /verifyOwnerForRoute/);
+    if (path.endsWith("/api/auth/login/route.ts")) assert.match(file, /app_is_owner/);
     assert.doesNotMatch(file, /SUPABASE_SERVICE_ROLE_KEY|sb_secret_/);
   }
 }
@@ -86,7 +96,7 @@ assert.match(session, /getClaims\(/);
 assert.match(session, /request\.cookies\.set\(/);
 assert.match(session, /response\.cookies\.set\(/);
 assert.match(session, /cache-control/);
-for (const source of [browser, server, owner, session, loginForm]) {
+for (const source of [browser, server, owner, session, loginForm, ownerLoginRoute]) {
   assert.doesNotMatch(source, /SUPABASE_SERVICE_ROLE_KEY|sb_secret_/);
 }
 console.log("AUTH-01/PRE-LIVE PASS: pinned SDK, explicit disabled-by-default real-data flag and owner-gated Proxy.");
