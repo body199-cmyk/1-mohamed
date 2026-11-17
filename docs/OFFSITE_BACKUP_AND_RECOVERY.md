@@ -91,7 +91,7 @@ Create a GitHub Environment named `offsite-backup` and restrict its deployment b
 **Repository variable**
 - `BACKUP_ENABLED`: set to `true` only after the first manual test succeeds at both destinations.
 
-The AWS IAM OIDC trust policy must restrict the subject to this repository and the `main` branch. Its permissions should be limited to `s3:PutObject` and `s3:GetObject` on `arn:aws:s3:::<bucket>/1-mohamed/daily/*`, plus `s3:GetBucketObjectLockConfiguration` and `s3:GetBucketVersioning` on that bucket. Do not grant `s3:DeleteObject`, `s3:BypassGovernanceRetention`, or bucket-administration permissions to the workflow role.
+The AWS IAM OIDC trust policy must restrict the subject to `repo:body199-cmyk/1-mohamed:environment:offsite-backup`; the GitHub Environment itself must restrict deployments to `main`. Its permissions should be limited to `s3:PutObject`, `s3:AbortMultipartUpload`, and `s3:GetObject` on `arn:aws:s3:::<bucket>/1-mohamed/daily/*`, plus `s3:GetBucketObjectLockConfiguration` and `s3:GetBucketVersioning` on that bucket. Do not grant `s3:DeleteObject`, `s3:BypassGovernanceRetention`, or bucket-administration permissions to the workflow role.
 
 The AWS bucket must have Object Lock enabled, Versioning enabled, and a default Governance retention of at least 30 days. The R2 token must be limited to the dedicated backup bucket. Configure R2 Bucket Lock for the same prefix and retention window.
 

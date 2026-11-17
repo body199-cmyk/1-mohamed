@@ -185,7 +185,7 @@ export async function runOffsiteBackup(env = process.env) {
     "s3api", "get-object-lock-configuration", "--bucket", env.AWS_BACKUP_BUCKET,
     "--region", env.AWS_BACKUP_REGION, "--output", "json",
   ]));
-  verifyS3BucketProtection(s3Versioning, s3Lock);
+  verifyS3BucketProtection(s3Versioning, s3Lock.ObjectLockConfiguration);
 
   const work = mkdtempSync(join(env.RUNNER_TEMP || tmpdir(), "mohamed-backup-"));
   try {
