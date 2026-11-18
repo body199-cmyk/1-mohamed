@@ -1,5 +1,13 @@
 # 1-mohamed — Google Drive backup and recovery
 
+## Business-only recovery and Excel mode
+
+`BACKUP_FORMAT=plain-business` selects two files per Cairo day: `1-mohamed-YYYY-MM-DD-restore.tar.gz` and `1-mohamed-YYYY-MM-DD-excel.xlsx`. The files have no extra encryption layer; keep the Drive folder private. Do not enable this mode before an isolated recovery drill and the history-constraint migration. With no mode selected, the existing encrypted job keeps running. All three managed filename types expire by the same 30-day Cairo calendar rule; drill folders are outside scheduled retention. In the new mode both files must pass download checks before a history row is written or old files are deleted.
+
+Open Excel directly from Drive to read the ledger. This workbook is not an import file. To recover, verify the archive SHA-256 against the backup history, migrate a separate empty Supabase project to the archive revision, and restore the business archive there. Set `RESTORE_TARGET_REF`, `RESTORE_DB_URL` and `BACKUP_EXPECTED_SHA256` privately; run `node tools/backup-reader/business-restore-cli.mjs path-to-restore.tar.gz`. The command verifies the checksums and commits only after all restored tables match. It refuses the source project and rejects already populated business tables.
+
+Create or invite replacement accounts in the recovery project and reconnect the new owner and invited users before pointing the website at it. Passwords, Auth data, owner/member mappings and tokens are not in the recovery archive. Keep the old offline key while older encrypted copies are still in the retention window.
+
 **Chosen policy:** one full logical database backup per Cairo calendar day; retain the latest 30 calendar days in a private Google Drive root with year/month subfolders. No AWS, Cloudflare R2, or six-hour schedule.
 
 ## Current verification
