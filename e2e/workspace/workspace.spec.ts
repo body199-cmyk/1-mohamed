@@ -118,7 +118,7 @@ test('changed snapshot stops full export; complete daily report displays exact S
   return route.fulfill({json:{ok:true,data:{status:'OK',snapshot:more?'11:11':'10:10',total_count:'2',
    rows:[{...row,id:more?'T2':'T1'}],next_cursor:more?null:{date:'2026-01-02',id:'T1'},totals:{active_count:'2',weight_milli_tonnes:'2000',contractor_total_piastres:'20000',vehicle_total_piastres:'18000',ahmed_work_piastres:'20000',counterparty_work_piastres:'0'}}}});});
  await nav(page,'النقلات واليومية');await page.locator('#report-from').fill('2026-01-02');await page.locator('#report-to').fill('2026-01-02');
- await page.getByRole('button',{name:'تحميل التقرير',exact:true}).click();await expect(page.getByLabel('ملخص الشغل',{exact:true})).toContainText('200');
+ await expect(page.getByRole('status').filter({hasText:'البيانات تتحدث تلقائيًا'})).toBeVisible();await expect(page.getByLabel('ملخص الشغل',{exact:true})).toContainText('200');
  await expect(page.getByRole('button',{name:'تنزيل CSV',exact:true})).not.toBeVisible();
  await page.getByRole('button',{name:'تحميل 200 سجل إضافي',exact:true}).click();
  await expect(page.getByRole('alert')).toContainText('تغيرت البيانات');await expect(page.getByRole('button',{name:'تنزيل CSV',exact:true})).not.toBeVisible();
