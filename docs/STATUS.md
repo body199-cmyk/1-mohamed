@@ -1,3 +1,7 @@
+## GOOGLE-DRIVE-BACKUP-10 — dedicated OAuth setup
+
+Owner approved a dedicated Google Drive OAuth client without billing. Both workflows accept a dedicated client ID and secret with the matching rclone token. Browser sign-in and Google client creation are pending, then synthetic transfer, fresh encrypted database transfer and isolated recovery. No activation change. Prior PR #93 head b5581da passed workflow 44291690683. See GOOGLE-DRIVE-BACKUP-09 for local recovery evidence.
+
 ## GOOGLE-DRIVE-BACKUP-09 — 18 November 2026
 
 PR #93, branch feat/offsite-backup-t10-20261117. Reader export from 1ab3404 passed in Actions run 44192516568; shared rclone client quota blocked the Drive step. A separate portable export from 97b7ee3 produced a private 246,582-byte age archive. Local decryption and restore into the free isolated project matched every row fingerprint across 11 app and two Auth tables, plus the source indexes, constraints, policies and public function definitions. A disposable account passed real login and member-access checks, lost access with its existing token after revocation, and was removed. The source now reports two Auth users and one member; the tested snapshot predates the additional account.

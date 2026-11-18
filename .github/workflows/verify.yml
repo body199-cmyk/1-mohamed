@@ -251,5 +251,7 @@ jobs:
         timeout-minutes: 5
         env:
           RCLONE_CONFIG_DRIVE_TOKEN: ${{ secrets.RCLONE_CONFIG_DRIVE_TOKEN }}
+          RCLONE_CONFIG_DRIVE_CLIENT_ID: ${{ secrets.RCLONE_CONFIG_DRIVE_CLIENT_ID }}
+          RCLONE_CONFIG_DRIVE_CLIENT_SECRET: ${{ secrets.RCLONE_CONFIG_DRIVE_CLIENT_SECRET }}
           ENCRYPTED_ARCHIVE: ${{ steps.export.outputs.archive }}
         run: node tools/backup-reader/drive-trial.mjs
