@@ -2,7 +2,13 @@
 
 معاينة فوق النتائج القديمة في «التقارير والكشوف» و«العربيات» من نفس مستند التصدير. المراجعة الثانية بواسطة نفس المساعد شملت ترتيب القسمين، منع عرض نتائج جزئية أو قديمة، رفض القراءة، الرصيد السالب، تحرير رابط الصورة في المتصفح، واستمرار حد PDF مع إتاحة تصفح التقارير الأطول. لا تغيير في الحساب أو الصلاحيات أو بيانات الإنتاج.
 
-على النسخة الأولية نجح `npm run check` (233 اختبارًا وفحص الأنواع)، `npm run test:web` (193)، `npm run build` و7 حالات Playwright على Edge ببيانات اختبار. مطلوب إعادة التحقق على آخر رأس بما فيه تحسين تكبير الموبايل وفحص رفض القراءة. تعذر تشغيل محرك PostgreSQL داخل أول محاولة متصفح محلية بسبب ذاكرة WebAssembly، فاختبارات المعاينة الجديدة تثبت مسار الواجهة باستجابات مصطنعة. GitHub CI يشمل PostgreSQL المعزول واختبارات التكامل الموجودة. لا تحقق على حساب إنتاج أو هاتف فعلي.
+عند `30b3ed9c1278c3d552a592f2574c02ed5cb531e9` نجح `npm run check` (233 اختبارًا وفحص الأنواع)، `npm run test:web` (193)، `npm run build` ونجحت التأكيدات في 7 حالات Edge محلية قبل تعليق إغلاق الخادم على Windows. اكتملت [فحوص GitHub 44405555351](https://github.com/body199-cmyk/1-mohamed/actions/runs/44405555351) بنجاح بما فيها Chromium وPostgreSQL المعزول. تعارض توثيق مع تحديث `main` للنسخ الاحتياطي حُل بالإبقاء على الإضافتين، ويلزم تحقق GitHub على الرأس الجديد. حالات المعاينة تستخدم بيانات اختبار. لم يُختبر حساب إنتاج أو هاتف فعلي.
+
+## T10 simple backups — plain recovery archive and Excel
+
+Owner approved a private, unencrypted business-only recovery copy and a separate Excel copy each Cairo day, with a final 30-day window. Branch codex/plain-backup-excel is based on main dba2f0a. The new mode is opt-in; the current encrypted workflow stays active until a separate drill proves the replacement. Daily deletion is restricted to exact dated filenames in their matching year/month directories and can only follow round-trip verification of both files and a new history row.
+
+Recovery excludes Auth, passwords, owner/member mappings, tokens and backup history. It retains business rows, audit events and financial replay keys; recreate access in the new project before cutover. The Excel report contains no Auth or audit/replay records. A fresh migrated isolated PostgreSQL fixture confirmed exact restore, big integers, rejection of altered archives/nonempty targets and safe 30-day filtering. GitHub/actual Drive/Supabase recovery validation is still pending at this checkpoint.
 
 ## GOOGLE-DRIVE-BACKUP-16 — recurring export path prepared
 

@@ -23,7 +23,7 @@ export function BackupSettings(){
  useEffect(()=>{void refresh();},[]);
  return <section aria-label="النسخ الاحتياطي" style={{marginTop:22,paddingTop:18,borderTop:"1px solid var(--border-color)"}}>
   <h3>النسخ الاحتياطي واستعادة البيانات</h3>
-  <p>عند تفعيل النسخ اليومي، يحتفظ Google Drive بنسخة مشفّرة واحدة لكل يوم بتوقيت القاهرة ضمن آخر 30 يومًا. النسخة السحابية تشمل بنية قاعدة البيانات وبيانات التطبيق وسجلات استعادة الحسابات. التصدير المحلي يحتوي على بيانات التطبيق فقط.</p>
+  <p>سجل نسخ الاسترجاع اليومية على Google Drive. يحتفظ النظام بملفات آخر 30 يومًا بتوقيت القاهرة. عند تفعيل نوع النسخ الجديد، هتلاقي بجانب ملف الاسترجاع ملف Excel للقراءة، من غير بيانات تسجيل الدخول.</p>
   <div className={ui.actions}>
    <a className={ui.control} href="/api/backup/export?format=json" download>تنزيل نسخة بيانات التطبيق (JSON)</a>
   </div>

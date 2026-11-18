@@ -1,6 +1,12 @@
 ## REPORT-PREVIEW — ١٨ نوفمبر ٢٠٢٦
 
-فرع `codex/in-page-report-preview` من `dba2f0a093351b956a112b40d77caad7386912d7`. المستخدم وافق على معاينة التصدير فوق العرض الحالي في تقارير النقلات والمدفوعات وكشف العربية، والدمج بعد الاختبار. نفس مستند التصدير يرسم المعاينة. على الموبايل تظهر الورقة كاملة مع تكبير، والتقرير الطويل يتصفح بتخطيط PDF. القبول في [SUBTASKS](SUBTASKS.md#report-preview--قبول-المعاينة). راجع [HANDOFF_LOG](HANDOFF_LOG.md) لدليل الاختبار وحدوده. شرط الدمج فحوص GitHub على رأس الفرع الفعلي. بيانات الإنتاج خارج الاختبار.
+المستخدم وافق على معاينة التصدير فوق العرض الحالي في تقارير النقلات والمدفوعات وكشف العربية، والدمج بعد الاختبار. نفس مستند التصدير يرسم المعاينة. على الموبايل تظهر الورقة كاملة مع تكبير، والتقرير الطويل يتصفح بتخطيط PDF. [PR #96](https://github.com/body199-cmyk/1-mohamed/pull/96) على فرع `codex/in-page-report-preview` ضم تحديث `main` عند `a4840fc51f306f22995cc4b5142ccf0c3e0cf271` مع الحفاظ على توثيق النسخ الاحتياطي. القبول في [SUBTASKS](SUBTASKS.md#report-preview--قبول-المعاينة)، والدليل وحدوده في [HANDOFF_LOG](HANDOFF_LOG.md). الخطوة التالية هي تأكيد نجاح فحوص GitHub على رأس الفرع الجديد ثم الدمج والتحقق من `main`.
+
+## T10 simple backups — plain recovery archive and Excel
+
+Owner approved a private, unencrypted business-only recovery copy and a separate Excel copy each Cairo day, with a final 30-day window. Branch codex/plain-backup-excel is based on main dba2f0a. The new mode is opt-in; the current encrypted workflow stays active until a separate drill proves the replacement. Daily deletion is restricted to exact dated filenames in their matching year/month directories and can only follow round-trip verification of both files and a new history row.
+
+Recovery excludes Auth, passwords, owner/member mappings, tokens and backup history. It retains business rows, audit events and financial replay keys; recreate access in the new project before cutover. The Excel report contains no Auth or audit/replay records. A fresh migrated isolated PostgreSQL fixture confirmed exact restore, big integers, rejection of altered archives/nonempty targets and safe 30-day filtering. GitHub/actual Drive/Supabase recovery validation is still pending at this checkpoint.
 
 ## GOOGLE-DRIVE-BACKUP-16 — recurring export path prepared
 

@@ -4,6 +4,10 @@
 - تغيير الفلتر أو رفض القراءة أو نتيجة غير مكتملة يمنع عرض لقطة قديمة. تفاصيل العرض الحالي وأزرار التصدير تبقى في مكانها بالنسبة لبعضها.
 - التحقق: مطابقة بصمة صورة التنزيل، ترتيب القسمين، كشف برصيد سالب، تقرير متعدد الصفحات، تغيير الفلتر ورفض القراءة، وفحوص GitHub على آخر رأس قبل الدمج.
 
+## T10 follow-up — verify replacement
+
+Validate the exact archive in a separate migrated target, verify Drive round trips and reactivate accounts before selecting the new daily mode.
+
 ## T10 current slice — prepare stable Google Drive authorization
 
 The exact Drive copy has been restored to separate Supabase. Provide the backup homepage and privacy URL on a verified domain, then switch the dedicated OAuth client out of Testing and renew consent. Keep the daily schedule and deletion off while the recurring access and backup history are verified.
