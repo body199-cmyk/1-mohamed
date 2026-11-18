@@ -4,7 +4,8 @@ import { spawnSync } from "node:child_process";
 
 export const ROOT_FOLDER = "1-mohamed-backups";
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
-const BACKUP_NAME = /^1-mohamed-(\d{4}-\d{2}-\d{2})\.tar\.gz\.age$/;
+const BACKUP_NAME = /^1-mohamed-(\d{4}-\d{2}-\d{2})(?:\.tar\.gz\.age|-restore\.tar\.gz|-excel\.xlsx)$/;
+export const managedBackupDate = name => BACKUP_NAME.exec(name || "")?.[1];
 
 function assert(value, message) { if (!value) throw new Error("BACKUP_INVALID: " + message); }
 
@@ -16,9 +17,9 @@ export function backupFolderParts(today) {
 }
 
 export function isManagedBackupPath(path, name) {
-  const match = BACKUP_NAME.exec(name || "");
-  if (!match || typeof path !== "string") return false;
-  try { return path === backupFolderParts(match[1]).slice(1).join("/") + "/" + name; }
+  const date = managedBackupDate(name);
+  if (!date || typeof path !== "string") return false;
+  try { return path === backupFolderParts(date).slice(1).join("/") + "/" + name; }
   catch { return false; }
 }
 
@@ -58,25 +59,41 @@ async function digest(path, algorithm = "md5") {
   return hash.digest("hex");
 }
 
-export async function prepareRcloneBackup(env, encryptedPath, name, today, filesToPrune) {
+export async function verifyBusinessDrillOnDrive(env,backup){
+  assert(/^\d+$/.test(env.GITHUB_RUN_ID||""),"Invalid backup drill run ID.");
+  const folder="drive:"+ROOT_FOLDER+"/_restore-drill/business-"+env.GITHUB_RUN_ID;
+  const files=[[backup.path,backup.fileName],[backup.excelPath,backup.excelName]];
+  for(const [path,name] of files){
+    assert(managedBackupDate(name)===backup.cairoDate && !name.endsWith(".age"),"Unexpected drill file.");
+    const remote=folder+"/"+name;
+    const copy=path+".roundtrip";
+    try{
+      command(env,["copyto",path,remote,"--immutable"]);
+      command(env,["copyto",remote,copy,"--immutable"]);
+      assert(await digest(path,"sha256")===await digest(copy,"sha256"),"Drive drill SHA-256 did not match.");
+    }finally{rmSync(copy,{force:true});}
+  }
+}
+
+export async function prepareRcloneBackup(env, localPath, name, today, filesToPrune) {
   assert(typeof env.RCLONE_CONFIG_DRIVE_TOKEN === "string" && env.RCLONE_CONFIG_DRIVE_TOKEN.length > 0, "Missing rclone Drive token.");
   let token;
   try { token = JSON.parse(env.RCLONE_CONFIG_DRIVE_TOKEN); } catch { throw new Error("BACKUP_INVALID: Invalid rclone token JSON."); }
   assert(token.refresh_token && token.access_token, "rclone token must contain refresh_token and access_token.");
-  assert(name === "1-mohamed-" + today + ".tar.gz.age", "Backup filename/date mismatch.");
+  assert(managedBackupDate(name) === today, "Backup filename/date mismatch.");
   command(env, ["mkdir", "drive:" + ROOT_FOLDER]);
   const before = list(env);
   assert(!before.some(file => file.Name === name && isManagedBackupPath(file.Path,file.Name)), "A backup for " + today + " already exists; refusing a duplicate.");
   const folder = backupFolderParts(today).join("/");
   command(env, ["mkdir", "drive:" + folder]);
-  command(env, ["copyto", encryptedPath, "drive:" + folder + "/" + name, "--immutable"]);
+  command(env, ["copyto", localPath, "drive:" + folder + "/" + name, "--immutable"]);
   const files = list(env);
   const file = files.find(f => f.Name === name && f.Path === backupFolderParts(today).slice(1).join("/") + "/" + name);
-  verifyRcloneFile(file, name, statSync(encryptedPath).size, await digest(encryptedPath));
-  const downloaded = encryptedPath + ".download";
+  verifyRcloneFile(file, name, statSync(localPath).size, await digest(localPath));
+  const downloaded = localPath + ".download";
   try {
     command(env, ["copyto", "drive:" + folder + "/" + name, downloaded]);
-    assert(await digest(downloaded, "sha256") === await digest(encryptedPath, "sha256"), "Downloaded archive SHA-256 did not match.");
+    assert(await digest(downloaded, "sha256") === await digest(localPath, "sha256"), "Downloaded archive SHA-256 did not match.");
   } finally { rmSync(downloaded, {force:true}); }
   // Never call "rclone link": on Google Drive it can enable public sharing.
   const webViewLink = "https://drive.google.com/file/d/" + encodeURIComponent(file.ID) + "/view";

@@ -57,7 +57,7 @@ jobs:
       - name: Install backup tools
         if: steps.gate.outputs.run == 'true'
         uses: ./.github/actions/install-backup-tools
-      - name: Create full logical backup, encrypt, upload and verify
+      - name: Create backup, upload and verify
         if: steps.gate.outputs.run == 'true'
         env:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
@@ -71,4 +71,5 @@ jobs:
           BACKUP_RETENTION_ENABLED: ${{ vars.BACKUP_RETENTION_ENABLED }}
           BACKUP_RECORD_HISTORY: ${{ inputs.recurring_drill == true || vars.BACKUP_RECORD_HISTORY == 'true' }}
           BACKUP_RECURRING_DRILL: ${{ inputs.recurring_drill == true }}
+          BACKUP_FORMAT: ${{ vars.BACKUP_FORMAT }}
         run: node tools/backup-reader/recurring.mjs

@@ -1,3 +1,7 @@
+## Plain business backup
+
+The backup-reader business snapshot, restore and Excel tools package only business data. The existing Drive transport verifies both files and allows pruning only exact managed date paths.
+
 ## Backup OAuth information pages
 
 - `apps/web/public/backup-info.html` describes the backup operator and links to `apps/web/public/backup-privacy.html`, the Google Drive data-use disclosure. `apps/web/src/proxy.ts` allows anonymous read requests only at those two exact paths.

@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 import { pathToFileURL } from "node:url";
-import { backupFolderParts, isManagedBackupPath, prepareRcloneBackup } from "./google-drive-rclone.mjs";
+import { backupFolderParts, isManagedBackupPath, managedBackupDate, prepareRcloneBackup } from "./google-drive-rclone.mjs";
 
 export const EXPECTED_PROJECT_REF = "sskkuniskphlawivzudw";
 export const EXPECTED_PUBLIC_TABLES = Object.freeze(["app_members","app_owner","audit_log","backup_history","business_settings","contractors","idempotency_keys","opening_balances","payments","trips","vehicle_accounts","vehicles"]);
@@ -36,7 +36,7 @@ export function retentionCutoff(today) {
 }
 export function filesToPrune(files,today) {
   const cutoff=retentionCutoff(today);
-  return files.filter(file=>{const m=/^1-mohamed-(\d{4}-\d{2}-\d{2})\.tar\.gz\.age$/.exec(file.name||"");return m&&m[1]<cutoff;});
+  return files.filter(file=>{const date=managedBackupDate(file.name);return date&&date<cutoff;});
 }
 export function validateBackupEnvironment(env) {
   for(const name of ["SUPABASE_DB_URL","AGE_RECIPIENT"])

@@ -1,3 +1,9 @@
+## T10 simple backups — plain recovery archive and Excel
+
+Owner approved a private, unencrypted business-only recovery copy and a separate Excel copy each Cairo day, with a final 30-day window. Branch codex/plain-backup-excel is based on main dba2f0a. The new mode is opt-in; the current encrypted workflow stays active until a separate drill proves the replacement. Daily deletion is restricted to exact dated filenames in their matching year/month directories and can only follow round-trip verification of both files and a new history row.
+
+Recovery excludes Auth, passwords, owner/member mappings, tokens and backup history. It retains business rows, audit events and financial replay keys; recreate access in the new project before cutover. The Excel report contains no Auth or audit/replay records. A fresh migrated isolated PostgreSQL fixture confirmed exact restore, big integers, rejection of altered archives/nonempty targets and safe 30-day filtering. GitHub/actual Drive/Supabase recovery validation is still pending at this checkpoint.
+
 ## GOOGLE-DRIVE-BACKUP-16 — recurring export path prepared
 
 The daily workflow now uses the tested restricted snapshot exporter, verified rclone transport and a parameterized INSERT into backup_history. The manual recurring drill cannot enable scheduling or deletion. Offsite controls are checked after the GitHub Environment is available. A migration grants the reader SELECT and field-limited INSERT on backup_history only. Both migrations succeeded on the separate restore project, where grant checks confirmed append-only history, owner-only visibility and no trip mutation permissions. Local backup tests and PostgreSQL suites passed.

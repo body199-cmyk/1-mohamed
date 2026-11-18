@@ -98,6 +98,7 @@ const steps = [
   ['members migration', 'supabase/migrations/20261117131220_owner_managed_members.sql', 'Owner invitations and live membership authorization'],
   ['members tests', 'supabase/tests/18_member_access_verification.sql', 'Owner/member/stranger/revoked access and writes'],
   ['backup history migration', 'supabase/migrations/20261117160000_backup_history.sql', 'T10: owner-only daily backup history'],
+  ['backup history format migration', 'supabase/migrations/20261119100000_allow_business_recovery_history.sql', 'T10: supports legacy and business-only recovery'],
   ['backup history tests', 'supabase/tests/19_backup_history_verification.sql', 'T10: owner-only read and no direct mutation'],
 ];
 
