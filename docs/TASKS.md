@@ -1,3 +1,7 @@
+## REPORT-PREVIEW — معاينة التصدير داخل التقارير
+
+المستخدم وافق على التنفيذ والدمج بعد الاختبار. نطاق المهمة تقرير النقلات ومدفوعات العربية في «التقارير والكشوف»، وكشف حساب العربية في «العربيات». المعاينة فوق الملخص والتفاصيل الموجودة. القبول في [SUBTASKS](SUBTASKS.md#report-preview--قبول-المعاينة) وحالة التحقق في [STATUS](STATUS.md).
+
 ## T10 — exact Drive archive restored on separate Supabase
 
 The encrypted upload/download, offline decryption and isolated recovery succeeded. All 13 fingerprints match. Daily scheduling and retention are still off pending durable database and Drive authorization and backup history. See GOOGLE-DRIVE-BACKUP-12 in STATUS and HANDOFF_LOG.

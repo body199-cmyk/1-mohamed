@@ -172,6 +172,14 @@ describe("H065 operational report exports — one fixed document, five formats",
     expect(paginateOperationalReportForPdf(fixture(0))).toHaveLength(1);
   });
 
+  it("can page the whole in-app report while PDF downloads retain the 60-page limit", () => {
+    const doc = fixture(841);
+    const pages = paginateOperationalReportForPdf(doc, { maxPages: Infinity });
+    expect(pages).toHaveLength(61);
+    expect(pages.flatMap(page => page.rows)).toEqual(doc.rows);
+    expect(() => paginateOperationalReportForPdf(doc)).toThrow(/٦٠ صفحة/);
+  });
+
   it("creates a real RTL XLSX with summary and detail sheets, exact text IDs and no formulas", async () => {
     const doc = fixture();
     const parts = createOperationalReportXlsxParts(doc);

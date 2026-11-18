@@ -227,16 +227,24 @@ async function loadCairoFonts(): Promise<void> {
   await document.fonts.ready;
 }
 
-export async function renderOperationalReportPng(doc: OperationalReportDocument): Promise<Blob> {
-  const layout = createOperationalReportImageLayout(doc);
+export async function renderOperationalReportLayoutPng(layout: OperationalReportImageLayout): Promise<Blob> {
   await loadCairoFonts();
   const canvas = document.createElement("canvas");
   canvas.width = layout.width;
   canvas.height = layout.height;
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("متصفحك لا يدعم إنشاء صورة التقرير.");
-  paintOperationalReportImage(ctx, layout);
-  return new Promise((resolve, reject) => canvas.toBlob(blob => blob
-    ? resolve(blob)
-    : reject(new Error("تعذر إنشاء صورة PNG. استخدم CSV أو الطباعة.")), "image/png"));
+  try {
+    paintOperationalReportImage(ctx, layout);
+    return await new Promise((resolve, reject) => canvas.toBlob(blob => blob
+      ? resolve(blob)
+      : reject(new Error("تعذر إنشاء صورة PNG. استخدم CSV أو الطباعة.")), "image/png"));
+  } finally {
+    canvas.width = 0;
+    canvas.height = 0;
+  }
+}
+
+export async function renderOperationalReportPng(doc: OperationalReportDocument): Promise<Blob> {
+  return renderOperationalReportLayoutPng(createOperationalReportImageLayout(doc));
 }

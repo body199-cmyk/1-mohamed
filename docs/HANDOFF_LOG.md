@@ -1,3 +1,9 @@
+## REPORT-PREVIEW — ١٨ نوفمبر ٢٠٢٦
+
+معاينة فوق النتائج القديمة في «التقارير والكشوف» و«العربيات» من نفس مستند التصدير. المراجعة الثانية بواسطة نفس المساعد شملت ترتيب القسمين، منع عرض نتائج جزئية أو قديمة، رفض القراءة، الرصيد السالب، تحرير رابط الصورة في المتصفح، واستمرار حد PDF مع إتاحة تصفح التقارير الأطول. لا تغيير في الحساب أو الصلاحيات أو بيانات الإنتاج.
+
+على النسخة الأولية نجح `npm run check` (233 اختبارًا وفحص الأنواع)، `npm run test:web` (193)، `npm run build` و7 حالات Playwright على Edge ببيانات اختبار. مطلوب إعادة التحقق على آخر رأس بما فيه تحسين تكبير الموبايل وفحص رفض القراءة. تعذر تشغيل محرك PostgreSQL داخل أول محاولة متصفح محلية بسبب ذاكرة WebAssembly، فاختبارات المعاينة الجديدة تثبت مسار الواجهة باستجابات مصطنعة. GitHub CI يشمل PostgreSQL المعزول واختبارات التكامل الموجودة. لا تحقق على حساب إنتاج أو هاتف فعلي.
+
 ## GOOGLE-DRIVE-BACKUP-16 — recurring export path prepared
 
 The daily workflow now uses the tested restricted snapshot exporter, verified rclone transport and a parameterized INSERT into backup_history. The manual recurring drill cannot enable scheduling or deletion. Offsite controls are checked after the GitHub Environment is available. A migration grants the reader SELECT and field-limited INSERT on backup_history only. Both migrations succeeded on the separate restore project, where grant checks confirmed append-only history, owner-only visibility and no trip mutation permissions. Local backup tests and PostgreSQL suites passed.

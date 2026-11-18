@@ -1,3 +1,8 @@
+## REPORT-PREVIEW — معاينة التصدير في الموقع
+
+- `apps/web/src/features/reports/report-export-preview.tsx` وملف CSS المجاور يعرضان الصورة المتولدة محليًا، والتكبير والتنقل بين الصفحات. `features/ledger/real-reports.tsx` و`real-cash-statement.tsx` يمرران نفس المستند المستخدم للتصدير أمام المحتوى الحالي.
+- `packages/statement-export/src/render-report-image.ts` يرسم الصورة، و`render-report-pdf.ts` يوزع المستند الطويل على صفحات. `e2e/workspace/report-export-preview.spec.ts` يغطي العرضين وترتيبهما والمقاس والفلترة والتصفح.
+
 ## Backup OAuth information pages
 
 - `apps/web/public/backup-info.html` describes the backup operator and links to `apps/web/public/backup-privacy.html`, the Google Drive data-use disclosure. `apps/web/src/proxy.ts` allows anonymous read requests only at those two exact paths.

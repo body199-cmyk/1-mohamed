@@ -11,13 +11,14 @@ import { mergeReportPage } from './report-snapshot';
 import { verifyCashReport,type CashReport } from './cash-statement-document';
 import { ReportHistoryScope } from "../reports/report-period";
 import { ReportExportActions } from '../reports/report-export-actions';
+import { ReportExportPreview } from '../reports/report-export-preview';
 
 export function RealCashStatement({contractors,vehicles,accounts,disabled,revision,onRegisterPayment}:LedgerEntities&{disabled:boolean;revision:number;onRegisterPayment:(account:string)=>void}) {
   const [allHistory,setAllHistory]=useState(false);
   const [account,setAccount]=useState('');const [from,setFrom]=useState('');const [to,setTo]=useState('');
   const [report,setReport]=useState<CashReport|null>(null);const [busy,setBusy]=useState(false);const [error,setError]=useState('');
   const [trips,setTrips]=useState<Map<string,VehicleTrip>>(new Map());const [filtersOpen,setFiltersOpen]=useState(true);
-  useEffect(()=>{if(report)document.getElementById('vehicle-statement-heading')?.focus();},[report]);
+  useEffect(()=>{if(report)(document.getElementById('vehicle-statement-preview')??document.getElementById('vehicle-statement-heading'))?.focus();},[report]);
   const active=useRef(0);const query=useRef<Record<string,unknown>|null>(null);
   function reset(){active.current++;setReport(null);query.current=null;setError('');}
   useEffect(()=>{reset();},[revision]);
@@ -60,6 +61,7 @@ export function RealCashStatement({contractors,vehicles,accounts,disabled,revisi
     </form></details>
     {error&&<p role="alert">{error}</p>}
     {report&&<>
+      {doc&&!busy&&!disabled&&<ReportExportPreview document={doc} id="vehicle-statement-preview"/>}
       {allHistory&&<p>كل الحساب من البداية: {report.date_from} — {report.date_to}</p>}
       <VehicleStatementContent report={report} trips={trips} vehicle={vehicle} contractor={contractor}/>
       <p role="status">تم تحميل {report.rows.length} من {report.total_count} حركة.</p>

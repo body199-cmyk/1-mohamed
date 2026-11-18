@@ -1,3 +1,7 @@
+## REPORT-PREVIEW — ١٨ نوفمبر ٢٠٢٦
+
+فرع `codex/in-page-report-preview` من `dba2f0a093351b956a112b40d77caad7386912d7`. المستخدم وافق على معاينة التصدير فوق العرض الحالي في تقارير النقلات والمدفوعات وكشف العربية، والدمج بعد الاختبار. نفس مستند التصدير يرسم المعاينة. على الموبايل تظهر الورقة كاملة مع تكبير، والتقرير الطويل يتصفح بتخطيط PDF. القبول في [SUBTASKS](SUBTASKS.md#report-preview--قبول-المعاينة). راجع [HANDOFF_LOG](HANDOFF_LOG.md) لدليل الاختبار وحدوده. شرط الدمج فحوص GitHub على رأس الفرع الفعلي. بيانات الإنتاج خارج الاختبار.
+
 ## GOOGLE-DRIVE-BACKUP-16 — recurring export path prepared
 
 The daily workflow now uses the tested restricted snapshot exporter, verified rclone transport and a parameterized INSERT into backup_history. The manual recurring drill cannot enable scheduling or deletion. Offsite controls are checked after the GitHub Environment is available. A migration grants the reader SELECT and field-limited INSERT on backup_history only. Both migrations succeeded on the separate restore project, where grant checks confirmed append-only history, owner-only visibility and no trip mutation permissions. Local backup tests and PostgreSQL suites passed.
