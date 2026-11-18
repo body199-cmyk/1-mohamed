@@ -48,7 +48,7 @@ export function RealContractorStatement({ contractors, vehicles, revision, disab
   function reset() {
     active.current += 1;
     query.current = null;
-    setReport(null); setError("");
+    setReport(null); setError(""); setBusy(false);
   }
 
   async function load(event: FormEvent) {
@@ -69,7 +69,7 @@ export function RealContractorStatement({ contractors, vehicles, revision, disab
       setReport(result.data);setFiltersOpen(false);
     } catch (cause) {
       if (token === active.current) setError(cause instanceof Error ? cause.message : "تعذّر تحميل الكشف.");
-    } finally { setBusy(false); }
+    } finally { if (token === active.current) setBusy(false); }
   }
 
   async function more() {
@@ -99,7 +99,7 @@ export function RealContractorStatement({ contractors, vehicles, revision, disab
       setReport(combined);
     } catch (cause) {
       if (token === active.current) { setReport(null); setError(cause instanceof Error ? cause.message : "تعذّر تحميل المزيد."); }
-    } finally { setBusy(false); }
+    } finally { if (token === active.current) setBusy(false); }
   }
 
   return <section className={ui.surface+" "+styles.report} aria-label="كشف حساب المقاول الحقيقي">
