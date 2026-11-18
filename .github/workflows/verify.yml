@@ -245,6 +245,8 @@ jobs:
         with:
           node-version: '22'
       - uses: ./.github/actions/install-backup-tools
+      - name: Install isolated PostgreSQL recovery verifier
+        run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Send only business recovery files to the private Drive drill folder and verify
         env:
           PLAIN_BACKUP_DRILL: 'true'
@@ -252,7 +254,7 @@ jobs:
           RCLONE_CONFIG_DRIVE_TOKEN: ${{ secrets.RCLONE_CONFIG_DRIVE_TOKEN }}
           RCLONE_CONFIG_DRIVE_CLIENT_ID: ${{ secrets.RCLONE_CONFIG_DRIVE_CLIENT_ID }}
           RCLONE_CONFIG_DRIVE_CLIENT_SECRET: ${{ secrets.RCLONE_CONFIG_DRIVE_CLIENT_SECRET }}
-        run: node tools/backup-reader/business-drill.mjs
+        run: node --max-old-space-size=256 --max-semi-space-size=2 tools/backup-reader/business-drill.mjs
 
   recurring-drill:
     if: ${{ github.event_name == 'workflow_dispatch' && inputs.run_recurring_drill == true && inputs.run_reader_drill != true && github.ref == 'refs/heads/feat/offsite-backup-t10-20261117' }}
