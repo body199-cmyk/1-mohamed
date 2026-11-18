@@ -8,7 +8,7 @@ async function openTripReport(page: Page) {
   await page.getByRole("navigation").getByRole("button", { name: "التقارير والكشوف", exact: true }).click();
   await page.locator("#report-from").fill("2026-11-01");
   await page.locator("#report-to").fill("2026-11-16");
-  await page.getByRole("button", { name: "تحميل التقرير", exact: true }).click();
+  await expect(page.getByRole("status").filter({hasText:"البيانات تتحدث تلقائيًا"})).toBeVisible();
 }
 
 async function expectMatchingPng(page: Page, preview: Locator, existing: Locator) {
@@ -122,7 +122,7 @@ test("partial reports hide the preview and long reports show complete numbered P
 
   await page.route("**/api/ledger/read", route => route.fulfill({ status: 403, json: { error: "غير مصرح." } }));
   await page.locator("#report-to").fill("2026-11-17");
-  await page.getByRole("button", { name: "تحميل التقرير", exact: true }).click();
+  await expect(page.getByRole("status").filter({hasText:"البيانات تتحدث تلقائيًا"})).toBeVisible();
   await expect(page.getByRole("alert")).toContainText("غير مصرح");
   await expect(preview).toHaveCount(0);
 });

@@ -175,7 +175,7 @@ test('same vehicle on same day with different contractors remains two report rec
  expect(attempts[0].payload.id).not.toBe(attempts[1].payload.id);
  const recorded=page.getByLabel('النقلات المسجلة في اليومية');await expect(recorded).toContainText('2 نقلة');await expect(recorded).toContainText('1 عربية ظاهرة');
  await page.getByRole('button',{name:'فتح هذا اليوم في التقارير للتعديل أو الإلغاء'}).click();
- await page.getByRole('button',{name:'تحميل التقرير',exact:true}).click();
+ await expect(page.getByRole('status').filter({hasText:'البيانات تتحدث تلقائيًا'})).toBeVisible();
  await expect(page.getByLabel('ملخص سجلات التقرير').locator('li')).toHaveCount(2);
  await expect(page.getByLabel('ملخص سجلات التقرير')).toContainText('شركة النور');await expect(page.getByLabel('ملخص سجلات التقرير')).toContainText('شركة ثانية');
 });

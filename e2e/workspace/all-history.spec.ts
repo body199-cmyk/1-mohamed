@@ -38,7 +38,7 @@ test('whole-history pagination retains filters and blocks partial exports',async
  await page.locator('#report-trip-vehicle').selectOption('V1');
  await page.locator('#report-trip-contractor').selectOption('K1');
  await page.getByRole('checkbox',{name:'كل الحساب من البداية',exact:true}).check();
- await page.getByRole('button',{name:'تحميل التقرير',exact:true}).click();
+ await expect(page.getByRole('status').filter({hasText:'البيانات تتحدث تلقائيًا'})).toBeVisible();
  await expect(page.getByRole('button',{name:'تنزيل CSV',exact:true})).toHaveCount(0);
  await page.getByRole('button',{name:'تحميل 200 سجل إضافي',exact:true}).click();
  await expect(page.getByRole('button',{name:'تنزيل CSV',exact:true})).toBeVisible();
@@ -67,7 +67,7 @@ for(const kind of ['trips','payments','contractor','cash'] as const){
   await page.locator(`#${prefix}-to`).fill('2026-10-31');
   const scope=page.getByRole('checkbox',{name:'كل الحساب من البداية',exact:true});
   await scope.check();await expect(page.locator(`#${prefix}-from`)).toBeDisabled();
-  await page.getByRole('button',{name:kind==='contractor'?'عرض كشف الحساب':kind==='cash'?'عرض كشف النقدية':'تحميل التقرير',exact:true}).click();
+  if(kind==='contractor'||kind==='cash') await page.getByRole('button',{name:kind==='contractor'?'عرض كشف الحساب':'عرض كشف النقدية',exact:true}).click();
   await expect.poll(()=>attempts.length).toBe(1);
   expect(attempts[0].payload.all_history).toBe(true);
   expect(attempts[0].payload.date_from).toBeUndefined();
