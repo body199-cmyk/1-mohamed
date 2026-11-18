@@ -25,7 +25,8 @@ export function isManagedBackupPath(path, name) {
 export function verifyRcloneFile(file, name, bytes, md5) {
   assert(file && file.Name === name && file.IsDir === false, "Drive file metadata did not match.");
   assert(file.Size === bytes, "Drive file size did not match.");
-  assert(typeof file.Hashes?.MD5 === "string" && file.Hashes.MD5.toLowerCase() === md5.toLowerCase(), "Drive MD5 did not match.");
+  const reportedHash=file.Hashes?.md5 ?? file.Hashes?.MD5;
+  assert(typeof reportedHash === "string" && reportedHash.toLowerCase() === md5.toLowerCase(), "Drive MD5 did not match.");
   assert(typeof file.ID === "string" && file.ID.length > 0, "Drive file ID was missing.");
   return true;
 }
@@ -80,7 +81,7 @@ export async function prepareRcloneBackup(env, encryptedPath, name, today, files
   // Never call "rclone link": on Google Drive it can enable public sharing.
   const webViewLink = "https://drive.google.com/file/d/" + encodeURIComponent(file.ID) + "/view";
   return {
-    file: { id: file.ID, name, size: String(file.Size), md5Checksum: file.Hashes.MD5, webViewLink },
+    file: { id: file.ID, name, size: String(file.Size), md5Checksum: file.Hashes.md5 ?? file.Hashes.MD5, webViewLink },
     prune: async () => {
       const all = list(env);
       assert(env.BACKUP_RESTORE_VERIFIED === "true" && env.BACKUP_RETENTION_ENABLED === "true", "Drive deletion is disabled pending restore approval.");

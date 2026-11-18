@@ -25,6 +25,12 @@ test("rclone transport works without manually creating a Google Cloud OAuth clie
   assert.throws(()=>verifyRcloneFile({Name:"bad",IsDir:false,Size:4,Hashes:{MD5:"abcd"},ID:"file-id"},"expected",4,"abcd"),/metadata/);
 });
 
+test("Drive file integrity accepts rclone's lowercase MD5 key without accepting wrong hashes",()=>{
+  const item={Name:"1-mohamed-2026-11-18.tar.gz.age",IsDir:false,Size:4,Hashes:{md5:"abcd"},ID:"file-id"};
+  assert.equal(verifyRcloneFile(item,item.Name,4,"abcd"),true);
+  assert.throws(()=>verifyRcloneFile(item,item.Name,4,"aaaa"),/MD5 did not match/);
+});
+
 test("manual trial defaults to no production history writes and no deletion",()=>{
   assert.deepEqual(backupSafetyPolicy({}),{retention:false,recordHistory:false});
   assert.deepEqual(backupSafetyPolicy({BACKUP_RESTORE_VERIFIED:"true"}),{retention:false,recordHistory:false});
