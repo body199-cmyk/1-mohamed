@@ -95,8 +95,12 @@ export function RealReports({ contractors, vehicles, accounts, disabled, revisio
         setNotice("صفحة التقرير غير صالحة من الخادم."); return;
       }
       setReport(mergeReportPage(report, response.data));
-    } catch (error) { setReport(null); setNotice(error instanceof Error ? error.message : "تعذر تحميل الصفحة التالية. أعد تحميل التقرير."); }
-    finally { setBusy(false); }
+    } catch (error) {
+      if (token === active.current) {
+        setReport(null);
+        setNotice(error instanceof Error ? error.message : "تعذر تحميل الصفحة التالية. أعد تحميل التقرير.");
+      }
+    } finally { if (token === active.current) setBusy(false); }
   }
 
   const fullExportDocument = (() => {
