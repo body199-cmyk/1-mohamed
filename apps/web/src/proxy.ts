@@ -12,6 +12,9 @@ function isPublicAsset(pathname: string): boolean {
   return pathname.startsWith("/_next/") || pathname.startsWith("/fonts/") ||
     pathname === "/favicon.svg";
 }
+function isBackupInformationPage(pathname: string): boolean {
+  return pathname === "/backup-info.html" || pathname === "/backup-privacy.html";
+}
 function isPreviewPage(pathname: string): boolean {
   return pathname === "/" || pathname === "/login" ||
     pathname === "/demo" || pathname.startsWith("/demo/");
@@ -41,7 +44,9 @@ export async function proxy(request: NextRequest) {
   const method = request.method;
   const read = method === "GET" || method === "HEAD";
 
-  if (read && isPublicAsset(pathname)) return NextResponse.next();
+  if (read && (isPublicAsset(pathname) || isBackupInformationPage(pathname))) {
+    return NextResponse.next();
+  }
 
   // Default and all previews remain blocked until final cutover.
   if (process.env.APP_ENABLE_REAL_DATA !== "true") {
