@@ -46,6 +46,8 @@ export async function GET(request:NextRequest){
  if(!setup.ready)return result({error:"الحفظ الدائم غير مفعّل."},503);
  const session=NextResponse.next(),client=createRouteHandlerSupabaseClient(request,session);
  if(!(await verifyOwnerForRoute(client)).authorized)return result({error:"غير مصرح بالدخول."},401,session);
+ const {data:isOwner,error:ownerError}=await client.rpc("app_is_owner");
+ if(ownerError||isOwner!==true)return result({error:"التصدير متاح لصاحب المشروع فقط."},403,session);
  const format=request.nextUrl.searchParams.get("format")??"json";
  if(format==="csv"){
   const table=request.nextUrl.searchParams.get("table") as PortableBackupTable|null;

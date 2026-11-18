@@ -24,25 +24,32 @@ export async function runRecurringBackup(env=process.env){
  const policy=recurringPolicy(env);
  const ca=await caCertificate();
  const config=sourceConnection(env.SUPABASE_DB_URL,ca);
- const client=new pg.Client(config);
- let opened=false;
- try {
-  await client.connect();opened=true;
+ const withHistory=async work=>{
+  const client=new pg.Client(config);
+  try {
+   await client.connect();
+   return await work(client);
+  }finally{await client.end().catch(()=>{});}
+ };
+ const today=cairoDate(new Date());
+ await withHistory(async client=>{
   if(!(await client.query(historyPermissions)).rows[0]?.scoped)throw Error('Expected scoped history writer');
-  const today=cairoDate(new Date());
   if((await client.query('select 1 from public.backup_history where backup_date=$1',[today])).rowCount)throw Error('Backup history already exists for this Cairo day');
-  const backup=await createReaderArchive(env,{recurring:true});
-  if(backup.cairoDate!==today)throw Error('Cairo date changed during export; rerun for the new date');
-  const drive=await prepareRcloneBackup(env,backup.path,backup.fileName,today,filesToPrune);
+ });
+ // The snapshot and pg_dump use the reader's two allowed connections.
+ const backup=await createReaderArchive(env,{recurring:true});
+ if(backup.cairoDate!==today)throw Error('Cairo date changed during export; rerun for the new date');
+ const drive=await prepareRcloneBackup(env,backup.path,backup.fileName,today,filesToPrune);
+ await withHistory(async client=>{
   await client.query('begin read write');
   await client.query(`insert into public.backup_history
    (backup_date,format,file_name,drive_file_id,drive_web_view_link,size_bytes,sha256,table_counts)
    values ($1,'1-mohamed-full-supabase-logical-backup',$2,$3,$4,$5,$6,$7)`,
    [today,backup.fileName,drive.file.id,drive.file.webViewLink,backup.size,backup.sha256,JSON.stringify(backup.tableCounts)]);
   await client.query('commit');
-  const retention=policy.retention?await drive.prune():{deleted:0};
-  console.log(JSON.stringify({date:today,verified:true,history:true,deleted:retention.deleted,tables:backup.tables,sha256:backup.sha256}));
- }finally{if(opened){await client.query('rollback').catch(()=>{});await client.end();}}
+ });
+ const retention=policy.retention?await drive.prune():{deleted:0};
+ console.log(JSON.stringify({date:today,verified:true,history:true,deleted:retention.deleted,tables:backup.tables,sha256:backup.sha256}));
 }
 
 if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href){

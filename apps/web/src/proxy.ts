@@ -28,7 +28,10 @@ function denyWrites() {
 function privatePath(path: string) {
   return path === "/app" || path.startsWith("/app/") ||
     path === "/api/auth/members" || path === "/api/ledger/master" || path === "/api/ledger/operations" ||
-    path === "/api/ledger/read";
+    path === "/api/ledger/read" || isBackupApi(path);
+}
+function isBackupApi(path: string) {
+  return path === "/api/backup/export" || path === "/api/backup/history";
 }
 function jsonDenied(status: number) {
   return NextResponse.json({ error: "غير مصرح بالدخول." },
@@ -84,7 +87,7 @@ export async function proxy(request: NextRequest) {
   if (!privatePath(pathname)) return jsonDenied(404);
 
   // Only known private API methods are allowed; all other requests denied.
-  if ((pathname === "/api/ledger/master" && !read) ||
+  if (((pathname === "/api/ledger/master" || isBackupApi(pathname)) && !read) ||
       ((pathname === "/api/ledger/operations" || pathname === "/api/ledger/read") &&
        method !== "POST") ||
       ((pathname === "/app" || pathname.startsWith("/app/")) && !read)) {
