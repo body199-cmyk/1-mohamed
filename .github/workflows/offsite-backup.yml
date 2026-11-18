@@ -54,12 +54,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Install age encryption
+      - name: Install backup tools
         if: steps.gate.outputs.run == 'true'
-        run: |
-          npm ci --prefix tools/backup-reader --ignore-scripts --no-audit --no-fund
-          sudo apt-get update
-          sudo apt-get install --yes age rclone
+        uses: ./.github/actions/install-backup-tools
       - name: Create full logical backup, encrypt, upload and verify
         if: steps.gate.outputs.run == 'true'
         env:

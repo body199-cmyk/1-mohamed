@@ -240,10 +240,7 @@ jobs:
         with:
           node-version: '22'
       - name: Install encryption, Drive and pinned reader tools
-        run: |
-          npm ci --prefix tools/backup-reader --ignore-scripts --no-audit --no-fund
-          sudo apt-get update
-          sudo apt-get install --yes age rclone
+        uses: ./.github/actions/install-backup-tools
       - name: Run the daily backup path without scheduling or deletion
         env:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
