@@ -1,6 +1,6 @@
-# Temporary backup reader — pending specific access approval
+# Temporary backup reader — completed recovery drill
 
-This is an access proposal, not an applied production migration. The owner approved creating a dedicated backup user, but automatic review rejected the previous unrestricted public/auth/storage table grant and indefinite BYPASSRLS access. No production backup role was created.
+The owner approved the 24-hour scope below, including BYPASSRLS and reading Auth password hashes. The temporary credential was saved using encrypted GitHub Actions secrets. The trial used private Auth views and avoided broad managed-schema access. The source and restore logins have since been disabled and the private views removed. See GOOGLE-DRIVE-BACKUP-09 in HANDOFF_LOG for verification.
 
 ## Exact proposed scope
 

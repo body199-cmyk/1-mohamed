@@ -1,3 +1,7 @@
+## T10 offsite status — isolated recovery passed
+
+Actual local encrypted database and Auth recovery passed on the free separate Supabase project. The full Drive round trip, recurring backup and retention activation remain pending. See STATUS and HANDOFF_LOG under GOOGLE-DRIVE-BACKUP-09.
+
 ## GOOGLE-DRIVE-BACKUP-08
 Scoped24h source reader and encrypted credentials are live; no business writes granted, actual write-denial probes pass.31 focused tests pass. Consistent-snapshot reader export/manual trial added; no production activation. Isolated restore permissions and Drive quota remain gates; see STATUS.
 

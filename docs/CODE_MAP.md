@@ -1,3 +1,7 @@
+## GOOGLE-DRIVE-BACKUP-09 map
+
+`tools/backup-reader/export.mjs` exports application and Auth rows consistently and encrypts the bundle. `drive-trial.mjs` handles isolated Drive transfer and byte verification. `restore-data.mjs` and `restore-contract.mjs` import and fingerprint rows only on the separate target after reviewed schema preparation. `.github/workflows/verify.yml` runs the optional reader drill and regular checks separately.
+
 ## GOOGLE-DRIVE-BACKUP-08 map
 - tools/backup-reader/{contract,export,drive-trial}.mjs: restricted source validation, consistent SQL export, encrypted trial transport.
 - tools/backup-reader/package*.json: isolated pinned pure-JS runtime; contract.test.mjs covers project/role/host binding and Auth columns.

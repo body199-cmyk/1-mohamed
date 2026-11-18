@@ -1,3 +1,7 @@
+## T10 current slice — verify the offsite copy
+
+Local recovery and real Auth smoke checks passed. Resolve shared rclone quota, take a fresh encrypted snapshot and restore the file downloaded from Drive in an empty separate project. Keep production activation and retention off during the drill.
+
 ## T10 active slice — approved reader snapshot
 Run the branch-bound manual reader trial: pinned PostgreSQL17 dump plus explicit nongenerated Auth columns under one exported snapshot, age encryption with local offline key, encrypted-only artifact/Drive verification. Never grant target postgres membership without separate approval; complete constrained restore and disable source login after drill.
 

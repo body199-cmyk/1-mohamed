@@ -2,6 +2,12 @@
 
 **Chosen policy:** one full logical database backup per Cairo calendar day; retain the latest 30 calendar days in a private Google Drive root with year/month subfolders. No AWS, Cloudflare R2, or six-hour schedule.
 
+## Current verification
+
+The branch's manual restricted-reader export completed in Actions. Google's quota for the shared rclone OAuth client blocked the Drive round trip. The browser grant is present. See the [rclone Drive documentation](https://rclone.org/drive/#making-your-own-client-id) for shared-client limits and dedicated credentials.
+
+The local age archive decrypted and restored into a separate Supabase project. All application and Auth row fingerprints matched. The target passed real member login and revocation checks. The restricted reader currently serves the manual drill only. The regular workflow still requires a separately verified production connection and history configuration. Keep the four activation gates false until a fresh Drive download has been restored and reviewed. See HANDOFF_LOG under GOOGLE-DRIVE-BACKUP-09.
+
 ## Daily encrypted archive
 The job pins Supabase CLI v2.122.1 and creates `roles.sql`, `schema.sql`, and `data.sql` using the documented `supabase db dump` workflow. The data dump is checked for all 12 public application tables plus `auth.users` and `auth.identities`. Supabase CLI applies Supabase-specific filtering to managed schemas while retaining Auth user and identity records needed for account recovery. The archive includes owner/member UUID mappings so those rows remain linked to the restored Auth users. Password hashes in `auth.users` are part of the encrypted archive; JWT signing secrets and provider configuration are not. The manifest records project, source commit, PostgreSQL version, row counts and SHA-256 of the SQL data. It includes the new `backup_history` table. The encrypted archive's SHA-256 and size are stored in the owner-only backup-history table. The bundle is gzip-compressed and encrypted with age before upload.
 
