@@ -1,6 +1,6 @@
 "use client";
 import ui from "./workspace-ui.module.css";
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState } from "react";
 import { postLedgerRead } from "../../lib/ledger/transport";
 import { formatPoundsForDisplay } from "../../lib/ledger/amounts";
 import type { LedgerEntities, LedgerWrite } from "./workspace-data";
@@ -41,35 +41,44 @@ export function RealReports({ contractors, vehicles, accounts, disabled, revisio
     setAllHistory(false);setReportFrom(periodRequest.date);setReportTo(periodRequest.date);
     setReportVehicle('');setReportCounterparty('');setIncludeCancelled(false);setNotice('');
   },[periodRequest?.id]);
-  async function readReport(event: FormEvent) {
-    event.preventDefault();
-    if (busy || disabled || (!allHistory && (!reportFrom || !reportTo))) return;
-    const token = active.current;
-    setBusy(true); setNotice(""); setReport(null);
+  useEffect(() => {
+    const token = ++active.current;
     reportQuery.current = null;
-    try {
-      let payload: Record<string, unknown> = { ...(allHistory ? {all_history:true} : {date_from:reportFrom,date_to:reportTo}),
-        include_cancelled: includeCancelled, limit: 200 };
-      if (reportType === "trips.list") {
-        if (reportVehicle) payload.vehicle_id = reportVehicle;
-        if (reportCounterparty) payload.counterparty_contractor_id = reportCounterparty;
+    setReport(null);
+    setNotice("");
+    if (disabled || (!allHistory && (!reportFrom || !reportTo))) { setBusy(false); return; }
+    if (!allHistory && reportFrom > reportTo) {
+      setBusy(false); setNotice("تاريخ البداية يجب ألا يكون بعد تاريخ النهاية."); return;
+    }
+    let payload: Record<string, unknown> = {
+      ...(allHistory ? {all_history:true} : {date_from:reportFrom,date_to:reportTo}),
+      include_cancelled:includeCancelled, limit:200
+    };
+    if (reportType === "trips.list") {
+      if (reportVehicle) payload.vehicle_id = reportVehicle;
+      if (reportCounterparty) payload.counterparty_contractor_id = reportCounterparty;
+    } else {
+      const [vehicle_id,responsible_contractor_id] = reportAccount.split("|");
+      if (!vehicle_id || !responsible_contractor_id) { setBusy(false); return; }
+      payload = {...payload,vehicle_id,responsible_contractor_id};
+    }
+    setBusy(true);
+    const timer = setTimeout(async () => {
+      try {
+        const response = await postLedgerRead<Report>(reportType,payload);
+        if (token !== active.current) return;
+        if (!response.ok) { setNotice(response.error); return; }
+        assertReportPage(response.data);
+        reportQuery.current = {type:reportType,payload};
+        setReport(response.data);
+      } catch(error) {
+        if(token === active.current) setNotice(error instanceof Error ? error.message : "تعذّر تحميل التقرير من الخادم.");
+      } finally {
+        if(token === active.current) setBusy(false);
       }
-      if (reportType === "payments.list") {
-        const [vehicle_id, responsible_contractor_id] = reportAccount.split("|");
-        if (!vehicle_id || !responsible_contractor_id) {
-          setNotice("حدد حساب العربية أولًا."); return;
-        }
-        payload = { ...payload, vehicle_id, responsible_contractor_id };
-      }
-      const response = await postLedgerRead<Report>(reportType, payload);
-      if (token !== active.current) return;
-      if (!response.ok) { setReport(null); setNotice(response.error); return; }
-      assertReportPage(response.data);
-      reportQuery.current = { type: reportType, payload };
-      setReport(response.data);
-    } catch (error) { setNotice(error instanceof Error ? error.message : "تعذّر تحميل التقرير من الخادم."); }
-    finally { setBusy(false); }
-  }
+    },180);
+    return () => { clearTimeout(timer); active.current++; };
+  },[disabled,revision,reportType,allHistory,reportFrom,reportTo,reportAccount,reportVehicle,reportCounterparty,includeCancelled]);
 
   async function loadMoreRows() {
     const query = reportQuery.current;
@@ -113,23 +122,23 @@ export function RealReports({ contractors, vehicles, accounts, disabled, revisio
       <h2>التقارير والكشوف</h2>
       {onOpenStatement&&<div className={ui.actions} aria-label="فتح كشف حساب"><button type="button" onClick={()=>onOpenStatement('cash')}>فتح كشف العربية</button><button type="button" onClick={()=>onOpenStatement('contractor')}>فتح كشف المقاول</button></div>}
       <h3>سجل النقلات والدفعات — للمراجعة والتعديل</h3>
-      <form className={ui.form} onSubmit={readReport}>
+      <div className={ui.form}>
         <div className={ui.fieldGroup}><label htmlFor="report-type">التقرير</label>
         <select id="report-type" className={ui.control} value={reportType}
-          onChange={e => { setReportType(e.target.value as ReportType); setReport(null); }} disabled={busy}>
+          onChange={e => { setReportType(e.target.value as ReportType); setReport(null); }}>
           <option value="trips.list">النقلات</option>
           <option value="payments.list">مدفوعات وحساب نقدية عربية</option>
         </select></div>
         {reportType === "trips.list" && <>
           <div className={ui.fieldGroup}><label htmlFor="report-trip-vehicle">العربية (اختياري)</label>
           <select id="report-trip-vehicle" className={ui.control} value={reportVehicle}
-            onChange={e => { setReportVehicle(e.target.value); setReport(null); }} disabled={busy}>
+            onChange={e => { setReportVehicle(e.target.value); setReport(null); }}>
             <option value="">كل العربيات</option>
             {vehicles.map(v => <option key={v.id} value={v.id}>{v.plate_number}</option>)}
           </select></div>
           <div className={ui.fieldGroup}><label htmlFor="report-trip-contractor">المقاول الطرف (اختياري)</label>
           <select id="report-trip-contractor" className={ui.control} value={reportCounterparty}
-            onChange={e => { setReportCounterparty(e.target.value); setReport(null); }} disabled={busy}>
+            onChange={e => { setReportCounterparty(e.target.value); setReport(null); }}>
             <option value="">كل المقاولين</option>
             {contractors.filter(c => !c.is_primary).map(c =>
               <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -138,7 +147,7 @@ export function RealReports({ contractors, vehicles, accounts, disabled, revisio
         {reportType === "payments.list" && <>
           <div className={ui.fieldGroup}><label htmlFor="report-account">حساب العربية والمقاول</label>
           <select id="report-account" className={ui.control} required value={reportAccount}
-            onChange={e => { setReportAccount(e.target.value); setReport(null); }} disabled={busy}>
+            onChange={e => { setReportAccount(e.target.value); setReport(null); }}>
             <option value="">اختر الحساب</option>
             {accounts.map(a => <option key={a.vehicle_id + "|" + a.contractor_id}
               value={a.vehicle_id + "|" + a.contractor_id}>
@@ -147,19 +156,19 @@ export function RealReports({ contractors, vehicles, accounts, disabled, revisio
             </option>)}
           </select></div>
         </>}
-        <ReportHistoryScope checked={allHistory} disabled={busy} onChange={value=>{setAllHistory(value);active.current++;setReport(null);reportQuery.current=null;}}/>
+        <ReportHistoryScope checked={allHistory} onChange={value=>{setAllHistory(value);active.current++;setReport(null);reportQuery.current=null;}}/>
         <div className={ui.fieldGroup}><label htmlFor="report-from">من تاريخ</label>
         <input id="report-from" className={ui.control} type="date" required={!allHistory} value={reportFrom}
-          onChange={e => { setReportFrom(e.target.value); setReport(null); }} disabled={busy || allHistory} /></div>
+          onChange={e => { setReportFrom(e.target.value); setReport(null); }} disabled={allHistory} /></div>
         <div className={ui.fieldGroup}><label htmlFor="report-to">إلى تاريخ</label>
         <input id="report-to" className={ui.control} type="date" required={!allHistory} value={reportTo}
           onChange={e => { setReportTo(e.target.value); setReport(null); }} disabled={busy || allHistory} /></div>
         <label style={{ display: "block", marginBottom: 12 }}>
-          <input type="checkbox" checked={includeCancelled} onChange={e => { setIncludeCancelled(e.target.checked); setReport(null); }} disabled={busy} />
+          <input type="checkbox" checked={includeCancelled} onChange={e => { setIncludeCancelled(e.target.checked); setReport(null); }} />
           {" "}عرض القيود الملغاة أيضًا
         </label>
-        <div className={ui.actions}><button disabled={busy} type="submit">{busy?"جارٍ تحميل التقرير…":"تحميل التقرير"}</button></div>
-      </form>
+        <p role="status" aria-live="polite">{busy ? "جارٍ تحديث التقرير تلقائيًا…" : "البيانات تتحدث تلقائيًا عند تغيير الفلاتر."}</p>
+      </div>
       {report && <>
         {!busy && !disabled && fullExportDocument && <ReportExportPreview document={fullExportDocument} />}
         {allHistory && <p>كل الحساب من البداية: {report.date_from} — {report.date_to}</p>}
@@ -178,7 +187,7 @@ export function RealReports({ contractors, vehicles, accounts, disabled, revisio
         <p>تم تحميل {report.rows?.length ?? 0} سجل من أصل {report.total_count ?? "غير معروف"}.
           التصدير الكامل متاح بعد تحميل كل السجلات.</p>
         {report.next_cursor && <button type="button"
-          disabled={busy} onClick={() => void loadMoreRows()}>
+          onClick={() => void loadMoreRows()}>
           {busy ? "جارٍ تحميل المزيد..." : "تحميل 200 سجل إضافي"}
         </button>}
         {!isFullOperationalReport(report) && <p role="status">
