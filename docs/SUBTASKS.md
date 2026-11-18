@@ -1,3 +1,23 @@
+## T10 current slice — prepare stable Google Drive authorization
+
+The exact Drive copy has been restored to separate Supabase. Provide the backup homepage and privacy URL on a verified domain, then switch the dedicated OAuth client out of Testing and renew consent. Keep the daily schedule and deletion off while the recurring access and backup history are verified.
+
+## T10 current slice — verify the offsite copy
+
+Local recovery and real Auth smoke checks passed. Resolve shared rclone quota, take a fresh encrypted snapshot and restore the file downloaded from Drive in an empty separate project. Keep production activation and retention off during the drill.
+
+## T10 active slice — approved reader snapshot
+Run the branch-bound manual reader trial: pinned PostgreSQL17 dump plus explicit nongenerated Auth columns under one exported snapshot, age encryption with local offline key, encrypted-only artifact/Drive verification. Never grant target postgres membership without separate approval; complete constrained restore and disable source login after drill.
+
+## T10 next slice — narrow temporary reader
+Pending approval:24h source credential restricted to explicit11 business tables, Auth users/identities, Storage metadata and public sequences, with BYPASSRLS and no business writes. Implement direct pg_dump compatibility, verify credentials privately and restore only into the free separate project. Synthetic report data remains for UI acceptance until deliberate final cleaning.
+
+## T10 current slice — no-write initial snapshot
+Allow missing backup_history only in a no-history trial while preserving all11 application tables/Auth; manifest reflects actual table set. Regression29 backup/core tests PASS. Live consent/secret/free project prepared; resolve quota and securely obtain database URLs before real restore.
+
+## T10 current slice — restore-safe Drive trial
+Add independent activation gates before database/cloud work; default no history write or deletion; exact managed paths only; rclone encrypted download SHA-256 comparison. Verify with backup/core tests and latest CI. Next slice: private browser grant and live upload/decrypt/separate-project restore; production history-table migration remains a precondition requiring explicit permission.
+
 ## LOGIN-THEME-DELIVERY-01
 Refine existing login layout with scoped tokens/Cairo, shared ThemeSelector on login/Settings, compatible theme preference with opt-in local-clock automatic mode and before-paint initialization. Keep header manual override, legacy light/dark persistence, recovery, remember selection and business drafts. Test local-clock boundaries/manual persistence/reload/storage failure and responsive login/recovery. Delivery audit records configuration/security/device acceptance gates without mutating live business data.
 

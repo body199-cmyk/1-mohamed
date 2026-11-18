@@ -1,0 +1,17 @@
+name: Install PostgreSQL 17 backup tools
+description: Install the locked reader dependencies, PostgreSQL 17 client, age and rclone
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      run: |
+        npm ci --prefix tools/backup-reader --ignore-scripts --no-audit --no-fund
+        sudo apt-get update
+        if ! apt-cache show postgresql-client-17 >/dev/null 2>&1; then
+          sudo apt-get install --yes postgresql-common
+          sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+        fi
+        sudo apt-get install --yes postgresql-client-17 age rclone
+        pg_dump_bin=/usr/lib/postgresql/17/bin/pg_dump
+        "$pg_dump_bin" --version
+        echo "PG_DUMP_BIN=$pg_dump_bin" >> "$GITHUB_ENV"

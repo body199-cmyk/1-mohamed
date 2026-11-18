@@ -1,3 +1,33 @@
+## Backup OAuth information pages
+
+- `apps/web/public/backup-info.html` describes the backup operator and links to `apps/web/public/backup-privacy.html`, the Google Drive data-use disclosure. `apps/web/src/proxy.ts` allows anonymous read requests only at those two exact paths.
+
+## GOOGLE-DRIVE-BACKUP-09 map
+
+`tools/backup-reader/export.mjs` exports application and Auth rows consistently and encrypts the bundle. `drive-trial.mjs` handles isolated Drive transfer and byte verification. `restore-data.mjs` and `restore-contract.mjs` import and fingerprint rows only on the separate target after reviewed schema preparation. `.github/workflows/verify.yml` runs the optional reader drill and regular checks separately.
+
+## GOOGLE-DRIVE-BACKUP-08 map
+- tools/backup-reader/{contract,export,drive-trial}.mjs: restricted source validation, consistent SQL export, encrypted trial transport.
+- tools/backup-reader/package*.json: isolated pinned pure-JS runtime; contract.test.mjs covers project/role/host binding and Auth columns.
+- .github/workflows/verify.yml: branch-bound manual reader trial, isolated from ordinary CI and production schedule.
+
+## GOOGLE-DRIVE-BACKUP-07 map
+- docs/BACKUP_READER_ACCESS_PROPOSAL.md: exact un-applied temporary scope and credential handling.
+- artifacts/backup-review/TEST_DATA_REPORT.md + TEST_DATA_INVENTORY.json: ignored local detailed trial inventory; never publish customer-style row details in Git.
+- docs/STATUS.md: latest authorization, successful CI and actual blockers.
+
+## GOOGLE-DRIVE-BACKUP-05 map
+- tools/offsite-backup.mjs: dumpPublicTables and explicit optional history for read-only trial; exact11/12 table manifests.
+- tools/offsite-backup.test.mjs: initial absent history allowed only for trial; incomplete real application data remains rejected.
+- STATUS: live resource setup and blocked shared-client round-trip; no credentials stored in repository.
+
+## GOOGLE-DRIVE-BACKUP-03 map
+- tools/offsite-backup.mjs: backupSafetyPolicy, default read-only trial, gated history/retention and legacy managed paths.
+- tools/google-drive-rclone.mjs: exact dated paths, ignore shortcuts, verified encrypted download and gated deletion.
+- tools/offsite-backup.test.mjs: activation denials before I/O and unrelated path preservation.
+- .github/workflows/offsite-backup.yml: reviewed branch manual trial, Node 22 and explicit activation variables.
+- docs/OFFSITE_BACKUP_AND_RECOVERY.md: private authorization, trial and activation gates.
+
 ## LOGIN-THEME-DELIVERY-01 map
 - components/theme-preference.ts: preference types,06–18local-clock resolution and fixed before-paint script; theme-provider.tsx: saved3-way preference, live auto updates/manual override/cross-tab sync.
 - components/theme-selector.tsx +theme-selector.module.css: labeled manual/auto controls on login and private Settings.

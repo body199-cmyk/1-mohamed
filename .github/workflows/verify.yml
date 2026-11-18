@@ -3,16 +3,26 @@ name: Verify pull request
 on:
   pull_request:
   workflow_dispatch:
+    inputs:
+      run_reader_drill:
+        description: Export an encrypted trial snapshot with the approved temporary reader
+        type: boolean
+        default: false
+      run_recurring_drill:
+        description: Test the daily backup path with deletion disabled
+        type: boolean
+        default: false
 
 permissions:
   contents: read
 
 concurrency:
-  group: verify-v2-${{ github.workflow }}-${{ github.ref }}
+  group: verify-v2-${{ github.workflow }}-${{ github.ref }}-${{ inputs.run_reader_drill || false }}-${{ inputs.run_recurring_drill || false }}
   cancel-in-progress: true
 
 jobs:
   check:
+    if: ${{ inputs.run_reader_drill != true && inputs.run_recurring_drill != true }}
     name: Typecheck, packages, PostgreSQL and build
     runs-on: ubuntu-latest
     timeout-minutes: 60
@@ -63,6 +73,14 @@ jobs:
         run: npx vitest run packages/statement-export/tests/xlsx-rendering.test.ts
       - name: Test versioned backup, tampering, isolated atomic restore and stale replay
         run: node --test tools/backup-core.test.mjs
+      - name: Test daily Google Drive backup contract and 30-day retention
+        run: node --test tools/offsite-backup.test.mjs tools/backup-reader/contract.test.mjs tools/backup-reader/restore-contract.test.mjs
+      - name: Validate offsite backup workflow script syntax
+        run: |
+          npm ci --prefix tools/backup-reader --ignore-scripts --no-audit --no-fund
+          node --test tools/backup-reader/recurring.test.mjs
+          node --check tools/offsite-backup.mjs
+          node --check tools/google-drive-rclone.mjs
       - name: Build preview web app
         run: npm run build
       - name: Verify new Supabase SDK remains inactive before real Auth E2E
@@ -206,3 +224,70 @@ jobs:
           path: artifacts/h063/
           if-no-files-found: ignore
           retention-days: 7
+
+  recurring-drill:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.run_recurring_drill == true && inputs.run_reader_drill != true && github.ref == 'refs/heads/feat/offsite-backup-t10-20261117' }}
+    name: Manual backup on the daily path
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    environment: google-drive-backup
+    concurrency:
+      group: production-google-drive-backup
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install encryption, Drive and pinned reader tools
+        uses: ./.github/actions/install-backup-tools
+      - name: Run the daily backup path without scheduling or deletion
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          AGE_RECIPIENT: ${{ vars.AGE_RECIPIENT }}
+          RCLONE_CONFIG_DRIVE_TOKEN: ${{ secrets.RCLONE_CONFIG_DRIVE_TOKEN }}
+          RCLONE_CONFIG_DRIVE_CLIENT_ID: ${{ secrets.RCLONE_CONFIG_DRIVE_CLIENT_ID }}
+          RCLONE_CONFIG_DRIVE_CLIENT_SECRET: ${{ secrets.RCLONE_CONFIG_DRIVE_CLIENT_SECRET }}
+          BACKUP_ENABLED: ${{ vars.BACKUP_ENABLED }}
+          BACKUP_RESTORE_VERIFIED: ${{ vars.BACKUP_RESTORE_VERIFIED }}
+          BACKUP_RETENTION_ENABLED: ${{ vars.BACKUP_RETENTION_ENABLED }}
+          BACKUP_RECORD_HISTORY: 'true'
+          BACKUP_RECURRING_DRILL: 'true'
+        run: node tools/backup-reader/recurring.mjs
+
+  reader-drill:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.run_reader_drill == true && inputs.run_recurring_drill != true && github.ref == 'refs/heads/feat/offsite-backup-t10-20261117' }}
+    name: Manual encrypted reader trial
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    environment: google-drive-backup
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install pinned reader tools
+        run: npm ci --prefix tools/backup-reader --ignore-scripts --no-audit --no-fund
+      - name: Install encryption and Drive tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes age rclone
+      - name: Export one consistent read-only snapshot and encrypt
+        id: export
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          AGE_RECIPIENT: ${{ vars.AGE_RECIPIENT }}
+          BACKUP_READER_TRIAL: 'true'
+          BACKUP_ENABLED: ${{ vars.BACKUP_ENABLED }}
+          BACKUP_RECORD_HISTORY: ${{ vars.BACKUP_RECORD_HISTORY }}
+          BACKUP_RETENTION_ENABLED: ${{ vars.BACKUP_RETENTION_ENABLED }}
+          BACKUP_RESTORE_VERIFIED: ${{ vars.BACKUP_RESTORE_VERIFIED }}
+        run: node tools/backup-reader/export.mjs
+      - name: Upload encrypted trial to Drive and download for SHA-256 verification
+        timeout-minutes: 5
+        env:
+          RCLONE_CONFIG_DRIVE_TOKEN: ${{ secrets.RCLONE_CONFIG_DRIVE_TOKEN }}
+          RCLONE_CONFIG_DRIVE_CLIENT_ID: ${{ secrets.RCLONE_CONFIG_DRIVE_CLIENT_ID }}
+          RCLONE_CONFIG_DRIVE_CLIENT_SECRET: ${{ secrets.RCLONE_CONFIG_DRIVE_CLIENT_SECRET }}
+          ENCRYPTED_ARCHIVE: ${{ steps.export.outputs.archive }}
+        run: node tools/backup-reader/drive-trial.mjs

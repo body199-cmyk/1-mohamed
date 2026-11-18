@@ -1,3 +1,9 @@
+## GOOGLE-DRIVE-BACKUP-05 — live trial findings
+Production has11 app tables and no backup_history. Trial previously required a nonexistent table, forcing an unauthorized migration; fixed by allowing only absent history in no-history trials and preserving strict activation checks, covered by29 backup/core tests. Live synthetic encrypted upload succeeded, but shared rclone OAuth project quota403 blocked download including throttled retry. Shared client retirement during2026 is documented upstream; unattended reliability remains unresolved.
+
+## GOOGLE-DRIVE-BACKUP-03 — pre-restore deletion gate
+17 November 2026: existing backup runner always pruned Drive and history after upload, including a first manual run before restore acceptance. Fixed with explicit restore/history/retention gates and safe trial defaults. Regression: offsite-backup.test.mjs denies partial activation before I/O and preserves unrelated date/path layouts. Live deletion remains disabled and untested.
+
 ## ENTRY-DESIGN-01 — visual defects and local font evidence
 Current trip inline-add buttons had no appearance classes and only text whitespace between them; global reset removed native button borders/background, making save/cancel look joined. Replaced with scoped primary/secondary styling and flex gap; browser measurements prove >=12px gap and >=48px height desktop/mobile, existing operational regressions remain passing. Preview only, not released.
 Windows isolated fixture fonts failed its POSIX slash prefix check: use node:path sep in safe resolved-path boundary; screenshots now use existing Cairo fonts. Production font delivery unchanged.

@@ -1,3 +1,56 @@
+## GOOGLE-DRIVE-BACKUP-16 — recurring export path prepared
+
+The daily workflow now uses the tested restricted snapshot exporter, verified rclone transport and a parameterized INSERT into backup_history. The manual recurring drill cannot enable scheduling or deletion. Offsite controls are checked after the GitHub Environment is available. A migration grants the reader SELECT and field-limited INSERT on backup_history only. Both migrations succeeded on the separate restore project, where grant checks confirmed append-only history, owner-only visibility and no trip mutation permissions. Local backup tests and PostgreSQL suites passed.
+
+Source still has no backup_history and the trial reader remains disabled. The source role can read exactly 11 application tables and the two private Auth views, has zero application-table write grants and is not an admin member. No source migration, login or activation yet. Next: exact-head CI and a limited live recurring drill; keep auto-deletion disabled.
+
+## GOOGLE-DRIVE-BACKUP-15 — durable Drive grant verified
+
+Google Audience is In production. The owner completed the new browser consent. Forced the candidate access token to expire and verified an automatic rclone refresh; uploaded and downloaded a synthetic age archive in the verification area with matching SHA-256. Installed only the new token as the encrypted GitHub environment secret; verified metadata changed and the existing matching client configuration remains set.
+
+Source connection secret is still absent and all four backup gates remain false. PR #93 is unmerged. Next: adapt the recurring workflow to the tested restricted export path, validate backup-history access and an exact recurring run before enabling scheduling. No production data or automatic retention changed.
+
+## GOOGLE-DRIVE-BACKUP-14 — production Google OAuth configured
+
+Owner approved deploying only the two public information pages. PR #94 at 93411f07717acb93d4b9c34e397146f63668edc1 passed CI run 44390182661 and Vercel preview, and merged as 60bd74ad071d26f082ba442b6b483a8bd3c860d2. Both public pages verified on 1-mohamed.vercel.app. Google saved the domain and URLs; Audience confirmed In production. No billing enabled. The new rclone account-selection tab is open in Codex; owner must consent before validating and replacing the previous GitHub grant. Daily automation and removal stay off; PR #93 unmerged. Next: verify fresh Drive grant, then prove recurring scoped database access and history before configuring the daily job.
+
+## GOOGLE-DRIVE-BACKUP-13 — 18 November 2026
+
+- Checked Branding and Audience using the Codex in-app browser. Google requires valid public URLs for the external production configuration. Prepared a static backup homepage linking to a same-origin privacy notice; the deployed ledger root is a sign-in page and is not an eligible replacement.
+- Static pages expose no project data and do not call Supabase or Google APIs. Proxy exception covers only GET and HEAD for the two exact paths. Deployment, domain verification, OAuth switching and renewed consent are pending. The existing manual restore evidence and disabled scheduler remain unchanged.
+
+## GOOGLE-DRIVE-BACKUP-12 — 18 November 2026
+
+- Restored the exact downloaded archive from Actions 44302185263 in the isolated free project. Private staging accepted the 13 checked tables through a temporary staging-only login. Compared all 13 fingerprints, applied the three differing Auth/membership tables transactionally and verified all 13 before commit and again after cleanup.
+- The member matched the application access rules using simulated claims; no real password login was tested for accounts from this archive. The earlier isolated login drill remains separate evidence.
+- Removed all staging objects and disabled the target operator. Disabled the source trial reader and cleared its password; no active reader sessions. No source app/Auth rows, billing, scheduling, retention or merge changes. Next: durable scoped database access, backup history, and durable Google OAuth verification before activation.
+
+## GOOGLE-DRIVE-BACKUP-11 — 18 November 2026
+
+- Draft PR #93 on feat/offsite-backup-t10-20261117 at 3c06504e8f7720394902f241c760281815c7738c. CI 44293350747 passed. Manual run 44302185263 verified encrypted upload and SHA-256 after Drive download; offline decryption succeeded. No database archive was added to Git.
+- Manifest comparison against the earlier isolated restore shows matching schema hashes and ten matching app table fingerprints; app_members, Auth users and Auth identities changed. Read-only target checks show the previous restore remains present (11 app tables, one Auth user, zero members). The reviewed loader rejects nonempty targets. No fresh hosted restore or scheduled run has been verified.
+- Use an empty isolated target and bounded credentials for the exact Drive archive. Keep scheduling, retention, recording and restore-verified flags off. No production data changes or merge.
+
+## GOOGLE-DRIVE-BACKUP-09 — 18 November 2026
+
+- Actions run 44192516568 at 1ab3404e2cbee8d8e310e4bcdc5f511ea08aa356 completed restricted-reader export. Shared rclone application quota blocked Drive verification. GitHub stores workflow evidence and encrypted secrets, with no database archive artifact.
+- Local export at 97b7ee3c046243387d8d0556074473a61b98b69f: 246,582 bytes, SHA-256 446386ef1b08b3d11e39bf01a43237ca341fd2d3add21f105968681bee69cba9. Verified age decryption and SQL checksum. Source sskkuniskphlawivzudw; isolated free target xvmnmdxdhymllsdyhlth. Matched all 13 row fingerprints, 26 indexes, 41 policies, 51 function definitions and 57 constraints. Three existing unvalidated amount constraints remain as in source. Target grants allow authenticated reads and omit blanket future grants, anonymous table grants and direct authenticated writes.
+- Live target checks: temporary member signed in, read allowed data, could not use owner-only administration, and lost access using the same token once revoked. Anonymous users returned no business rows. Removed the probe and matched all 13 fingerprints again. Existing owner password login was not attempted. Source now has two Auth users/identities and one app member. Capture a fresh snapshot for the next drill. Source business rows and website accounts were not modified by this drill.
+- Independent review: data restore binds the separate host and role, checks archive coverage and checksums, rejects unsupported data statements, compares fingerprints before commit and refuses a populated target. Schema sections were reviewed and applied separately. This evidence covers the local archive and current schema. Drive download and daily activation remain pending.
+- Verified both temporary logins have NOLOGIN, no sessions and no Auth helper schema after cleanup. Removed the four revoked database secrets from GitHub and kept Drive authorization. Deleted the local decrypted SQL and temporary credential transport material. Kept the encrypted archive and offline age identity. 34 focused backup tests passed. All production gates stay false. Keep PR #93 unmerged pending a successful Drive-backed recovery and owner approval.
+
+## GOOGLE-DRIVE-BACKUP-08 — 18 November 2026
+Scoped source reader approved/applied with24h expiry; credential stored encrypted and strict-TLS login/write-denial tests passed. Private Auth read views avoid broad auth-schema membership; applied role/view migrations are additive, no site data changed. New manual consistent-snapshot exporter/trial workflow prepared (Drive only; rejected extra GitHub Artifact removed);31 focused tests PASS, live run/new CI pending. Target postgres membership rejected/not applied; constrain target restore permissions. Disable source login after drill. STATUS has current paths/expiry/blockers.
+
+## GOOGLE-DRIVE-BACKUP-07 — 18 November 2026
+Owner confirms trial-only data and clean final handover; clarified no immediate deletion. Local ignored detailed data report produced; existing rows/accounts kept. CI44182832645 SUCCESS at bb60b18; PR description update approved and completed. Source backup-role creation rejected automatically for broad BYPASSRLS/read scope/indefinite duration despite generic user consent; no role created. Narrow24h proposal prepared, public-key credential transport safely proved on test project only. Await exact scoped-access approval; Drive download quota/full restore remain blockers. STATUS is current checkpoint.
+
+## GOOGLE-DRIVE-BACKUP-05 — 17 November 2026
+Google consent verified; encrypted Environment grant saved, all activation gates false. Free separate restore project xvmnmdxdhymllsdyhlth ACTIVE_HEALTHY; no production writes. Synthetic encrypted upload succeeded, download twice blocked by shared-client project quota403, so no decrypt/restore success claimed. Missing production history table handled only for no-write trial; regression29 tests PASS. Current paths, blockers and next action in STATUS; public publication approval still required.
+
+## GOOGLE-DRIVE-BACKUP-03 — 17 November 2026
+Resumed PR93 at 5e0ee06 on feat/offsite-backup-t10-20261117; existing CI44160850974 PASS, main145ec998 unchanged. Found unconditional Drive/history pruning before a restore drill. Added opt-in restore/history/retention gates, no-write trial defaults, exact dated archive paths, rclone shortcut exclusion/download SHA-256 verification and safe subprocess errors. Reviewed full diff separately by same assistant; 28 backup/core tests PASS plus syntax/diff checks. Live Auth/dump/Drive/decrypt/restore remain untested; new full CI required. No production writes, real Drive changes, secrets configured or PR merge. Supabase connector requires missing link_id; backup_history table migration may be absent and must not be silently applied. Current next action and constraints are in STATUS.
+
 ## LOGIN-THEME-DELIVERY-01 — 17 November 2026 — implementation/review
 Baseline maina7b699e; PR90/91 and Production release verified, older pending-publication notes are superseded. User authorizes login refinement, explicit clock-auto option and delivery review. Implemented3-way saved preference, compatible manual/header toggle, minute/focus/visibility updates only in auto, cross-tab sync, fixed whitelist-only before-paint script and scoped auth refinement. Separate full source review by same assistant checks timer cleanup, manual persistence, storage failures, local timezone, no remounting of business drafts and no change to authentication/financial handlers. Local types190web tests/SDK guard pass; production build PASS; browserCI/capture/release pending. Delivery report records real remaining acceptance and security/configuration gates; no production records or secrets changed. Original owner weak password and leaked-password warning remain user-controlled. No actual invitee exists, so real invite acceptance cannot be claimed from unit/browser fixtures.
 

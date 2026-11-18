@@ -68,6 +68,8 @@ for (const path of [
   "/app",
   "/api/ledger/master?type=contractors",
   "/api/ledger/read",
+  "/api/backup/history",
+  "/api/backup/export",
 ]) {
   const res = await request(path);
   assert.equal(res.status, 307, `Expected deny-all redirect for ${path}`);

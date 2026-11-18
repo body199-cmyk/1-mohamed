@@ -23,7 +23,7 @@ const root = await request("/");
 assert.equal(root.status, 307);
 assert.equal(new URL(root.headers.get("location"), base).pathname, "/login");
 for (const path of ["/demo/trips", "/demo/home", "/app",
-  "/api/ledger/master?type=contractors", "/auth/reset", "/api/ledger/read"]) {
+  "/api/ledger/master?type=contractors", "/auth/reset", "/api/ledger/read", "/api/backup/history", "/api/backup/export"]) {
   const response = await request(path);
   assert.equal(response.status, 503, `Unexpected exposure of ${path}`);
   assert.equal(response.headers.get("cache-control"), "no-store");

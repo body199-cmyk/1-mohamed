@@ -1,3 +1,23 @@
+## T10 — exact Drive archive restored on separate Supabase
+
+The encrypted upload/download, offline decryption and isolated recovery succeeded. All 13 fingerprints match. Daily scheduling and retention are still off pending durable database and Drive authorization and backup history. See GOOGLE-DRIVE-BACKUP-12 in STATUS and HANDOFF_LOG.
+
+## T10 offsite status — isolated recovery passed
+
+Actual local encrypted database and Auth recovery passed on the free separate Supabase project. The full Drive round trip, recurring backup and retention activation remain pending. See STATUS and HANDOFF_LOG under GOOGLE-DRIVE-BACKUP-09.
+
+## GOOGLE-DRIVE-BACKUP-08
+Scoped24h source reader and encrypted credentials are live; no business writes granted, actual write-denial probes pass.31 focused tests pass. Consistent-snapshot reader export/manual trial added; no production activation. Isolated restore permissions and Drive quota remain gates; see STATUS.
+
+## GOOGLE-DRIVE-BACKUP-07
+Trial-only data confirmed; detailed local inventory/report delivered, no fixture deletion. CI at bb60b18 passed, PR description updated. Role setup pending specific approval after automatic rejection; see BACKUP_READER_ACCESS_PROPOSAL and STATUS. Full backup/restore remains incomplete.
+
+## GOOGLE-DRIVE-BACKUP-05 — live setup remains partial
+Drive grant/GitHub secret/free isolated restore project prepared; synthetic encrypted upload succeeded but download hit shared OAuth quota. Database URLs, actual recovery and new CI outstanding. No production activation. Current evidence: STATUS.
+
+## T10 resumed — GOOGLE-DRIVE-BACKUP-03
+Owner reopens encrypted daily Drive backup and 30 Cairo-day retention on PR #93. Partial: restore safety gates and rclone download verification implemented; real browser authorization, separate-project restore and exact-head CI remain acceptance gates. No production mutation, schedule/retention activation or merge authorized before restore evidence and approval. Current checkpoint: STATUS.
+
 ## LOGIN-THEME-DELIVERY-01
 User authorizes login polish +3-way theme choice (manual light/dark, device-clock auto06–18) and delivery review. Preserve auth/payment behavior; exact-head CI, responsive capture review and verified release. Read-only delivery review distinguishes proven code from live customer acceptance; see DELIVERY_READINESS_2026-11-17.md and STATUS.
 

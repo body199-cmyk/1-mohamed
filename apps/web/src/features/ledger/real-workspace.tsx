@@ -15,6 +15,7 @@ import styles from "./workspace.module.css";
 import ui from "./workspace-ui.module.css";
 import { DailyTripList } from "./daily-trip-list";
 import { WorkspaceIcon } from "./workspace-icon";
+import { BackupSettings } from "./backup-settings";
 
 const primarySections = [
   { id: "daily", title: "اليومية", label: "اليومية", icon: "daily" },
@@ -194,7 +195,7 @@ export function RealWorkspace() {
         <h2>الإعدادات</h2><ThemeSelector/>
         <p>تغيير كلمة المرور واستعادتها من شاشة تسجيل الدخول عبر بريد حسابك.</p>
         <MemberInvitations visible={screen === "settings"}/>
-        <p>نسخ قاعدة البيانات واستعادتها تُدار بواسطة المسؤول؛ تصدير التقرير ليس نسخة احتياطية للبرنامج.</p>
+        {screen === "settings" ? <BackupSettings/> : null}
       </section>
     </div>
   </div>;
