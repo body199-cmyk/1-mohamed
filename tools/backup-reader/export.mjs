@@ -16,14 +16,15 @@ function run(bin,args,env=process.env){
  return r.stdout;
 }
 async function sha(path){const h=createHash('sha256');for await(const c of createReadStream(path))h.update(c);return h.digest('hex');}
-async function caCertificate(){
+export async function caCertificate(){
  const r=await fetch('https://supabase-downloads.s3-ap-southeast-1.amazonaws.com/prod/ssl/prod-ca-2021.crt',{signal:AbortSignal.timeout(20000)});
  if(!r.ok)throw Error('Official Supabase CA unavailable');const pem=await r.text();
  if(new X509Certificate(pem).fingerprint256.replaceAll(':','').toLowerCase()!==CA_SHA256)throw Error('Supabase CA fingerprint changed');
  return pem;
 }
-export async function createReaderArchive(env=process.env){
- if(env.BACKUP_READER_TRIAL!=='true'||[env.BACKUP_ENABLED,env.BACKUP_RECORD_HISTORY,env.BACKUP_RETENTION_ENABLED,env.BACKUP_RESTORE_VERIFIED].some(v=>v==='true'))throw Error('Reader trial requires all production gates disabled');
+export async function createReaderArchive(env=process.env,{recurring=false}={}){
+ if(!recurring&&(env.BACKUP_READER_TRIAL!=='true'||[env.BACKUP_ENABLED,env.BACKUP_RECORD_HISTORY,env.BACKUP_RETENTION_ENABLED,env.BACKUP_RESTORE_VERIFIED].some(v=>v==='true')))throw Error('Reader trial requires all production gates disabled');
+ if(recurring&&(env.BACKUP_READER_TRIAL==='true'||env.BACKUP_RECORD_HISTORY!=='true'))throw Error('Recurring snapshots require backup history');
  if(!/^age1[0-9a-z]+$/.test(env.AGE_RECIPIENT||''))throw Error('Public encryption recipient required');
  const root=resolve(env.READER_OUTPUT_DIR||join(env.RUNNER_TEMP||tmpdir(),'reader-encrypted'));
  mkdirSync(root,{recursive:true,mode:0o700});
@@ -40,6 +41,7 @@ export async function createReaderArchive(env=process.env){
   const snapshot=(await client.query('select pg_export_snapshot() as id')).rows[0].id;
   console.log('Consistent read-only snapshot opened.');
   const actual=(await client.query("select tablename from pg_tables where schemaname='public' order by tablename")).rows.map(r=>r.tablename);
+  if(recurring&&!actual.includes('backup_history'))throw Error('Backup history migration is missing');
   const tables=EXPECTED_PUBLIC_TABLES.filter(t=>t!=='backup_history'||actual.includes(t));
   if(JSON.stringify([...tables].sort())!==JSON.stringify(actual))throw Error('Public table inventory changed; update recovery coverage');
   const storage=(await client.query('select (select count(*) from storage.buckets)::text as buckets,(select count(*) from storage.objects)::text as objects')).rows[0];
@@ -68,14 +70,14 @@ export async function createReaderArchive(env=process.env){
   writeFileSync(join(work,'schema.sql'),pre+'\n'+post,{mode:0o600});
   const rolesSql="-- Managed Supabase roles must already exist on the restore project.\n-- Recreate the temporary reader as NOLOGIN only for its saved table ACLs.\nDO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname='offsite_backup_reader') THEN CREATE ROLE offsite_backup_reader NOLOGIN; END IF; END $$;\n";
   writeFileSync(join(work,'roles.sql'),rolesSql,{mode:0o600});
-  verifyLogicalDump({rolesSql,schemaSql:pre+'\n'+post,dataSql:readFileSync(data,'utf8'),allowMissingHistory:true});
+  verifyLogicalDump({rolesSql,schemaSql:pre+'\n'+post,dataSql:readFileSync(data,'utf8'),allowMissingHistory:!recurring});
   const createdAt=new Date().toISOString(),fileName=buildBackupFileName(createdAt),version=(await client.query("select current_setting('server_version') as version")).rows[0].version;
   const manifest={...buildBackupManifest({createdAt,fileName,sourceCommit:env.GITHUB_SHA,postgresVersion:version,tableCounts:counts,dataSqlSha256:await sha(data),includeBackupHistory:tables.includes('backup_history')}),snapshot_consistent:true,export_mode:'restricted-reader',row_fingerprints:fingerprints,auth_columns:authColumns,schema_sections:['pre-data.sql','post-data.sql'],auth_records:'users-and-identities-only',transient_sessions_excluded:true};
   writeFileSync(join(work,'manifest.json'),JSON.stringify(manifest,null,2)+'\n',{mode:0o600});
   await client.query('rollback');await client.end();client=null;
   const tar=join(work,'archive.tar.gz');run('tar',['-czf',tar,'-C',work,'roles.sql','schema.sql','pre-data.sql','post-data.sql','data.sql','manifest.json']);
   const encrypted=join(root,fileName);run(env.AGE_BIN||'age',['-r',env.AGE_RECIPIENT,'-o',encrypted,tar]);
-  const result={fileName,path:encrypted,sha256:await sha(encrypted),size:statSync(encrypted).size,cairoDate:cairoDate(createdAt),tables:tables.length,authUsers:fingerprints['auth.users'].count,authIdentities:fingerprints['auth.identities'].count,sourceWrites:false};
+  const result={fileName,path:encrypted,sha256:await sha(encrypted),size:statSync(encrypted).size,cairoDate:cairoDate(createdAt),tables:tables.length,tableCounts:counts,authUsers:fingerprints['auth.users'].count,authIdentities:fingerprints['auth.identities'].count,sourceWrites:false};
   writeFileSync(join(root,'result.json'),JSON.stringify(result,null,2)+'\n',{mode:0o600});
   if(env.GITHUB_OUTPUT)appendFileSync(env.GITHUB_OUTPUT,`archive=${encrypted}\nfile_name=${fileName}\nsha256=${result.sha256}\n`);
   console.log(JSON.stringify(result));return result;

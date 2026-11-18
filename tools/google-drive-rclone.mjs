@@ -65,10 +65,10 @@ export async function prepareRcloneBackup(env, encryptedPath, name, today, files
   assert(name === "1-mohamed-" + today + ".tar.gz.age", "Backup filename/date mismatch.");
   command(env, ["mkdir", "drive:" + ROOT_FOLDER]);
   const before = list(env);
-  assert(!before.some(file => file.Name === name), "A backup for " + today + " already exists; refusing a duplicate.");
+  assert(!before.some(file => file.Name === name && isManagedBackupPath(file.Path,file.Name)), "A backup for " + today + " already exists; refusing a duplicate.");
   const folder = backupFolderParts(today).join("/");
   command(env, ["mkdir", "drive:" + folder]);
-  command(env, ["copyto", encryptedPath, "drive:" + folder + "/" + name]);
+  command(env, ["copyto", encryptedPath, "drive:" + folder + "/" + name, "--immutable"]);
   const files = list(env);
   const file = files.find(f => f.Name === name && f.Path === backupFolderParts(today).slice(1).join("/") + "/" + name);
   verifyRcloneFile(file, name, statSync(encryptedPath).size, await digest(encryptedPath));

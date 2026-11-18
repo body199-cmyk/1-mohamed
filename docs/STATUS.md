@@ -1,3 +1,37 @@
+## GOOGLE-DRIVE-BACKUP-16 — recurring export path prepared
+
+The daily workflow now uses the tested restricted snapshot exporter, verified rclone transport and a parameterized INSERT into backup_history. The manual recurring drill cannot enable scheduling or deletion. Offsite controls are checked after the GitHub Environment is available. A migration grants the reader SELECT and field-limited INSERT on backup_history only. Both migrations succeeded on the separate restore project, where grant checks confirmed append-only history, owner-only visibility and no trip mutation permissions. Local backup tests and PostgreSQL suites passed.
+
+Source still has no backup_history and the trial reader remains disabled. The source role can read exactly 11 application tables and the two private Auth views, has zero application-table write grants and is not an admin member. No source migration, login or activation yet. Next: exact-head CI and a limited live recurring drill; keep auto-deletion disabled.
+
+## GOOGLE-DRIVE-BACKUP-15 — durable Drive grant verified
+
+Google Audience is In production. The owner completed the new browser consent. Forced the candidate access token to expire and verified an automatic rclone refresh; uploaded and downloaded a synthetic age archive in the verification area with matching SHA-256. Installed only the new token as the encrypted GitHub environment secret; verified metadata changed and the existing matching client configuration remains set.
+
+Source connection secret is still absent and all four backup gates remain false. PR #93 is unmerged. Next: adapt the recurring workflow to the tested restricted export path, validate backup-history access and an exact recurring run before enabling scheduling. No production data or automatic retention changed.
+
+## GOOGLE-DRIVE-BACKUP-14 — production Google OAuth configured
+
+Owner approved deploying only the two public information pages. PR #94 at 93411f07717acb93d4b9c34e397146f63668edc1 passed CI run 44390182661 and Vercel preview, and merged as 60bd74ad071d26f082ba442b6b483a8bd3c860d2. Both public pages verified on 1-mohamed.vercel.app. Google saved the domain and URLs; Audience confirmed In production. No billing enabled. The new rclone account-selection tab is open in Codex; owner must consent before validating and replacing the previous GitHub grant. Daily automation and removal stay off; PR #93 unmerged. Next: verify fresh Drive grant, then prove recurring scoped database access and history before configuring the daily job.
+
+## GOOGLE-DRIVE-BACKUP-13 — Google OAuth publication prerequisites
+
+The dedicated Google project remains in Testing. Verified in the Codex browser: app name and both email fields are saved, Publish app is disabled, and the homepage, privacy URL and authorized domain are unset. The deployed ledger root only shows sign-in and is not suitable as the OAuth homepage. This branch prepares two public static pages, with GET/HEAD access limited to their exact paths. No Google Cloud or production settings changed. Local production build/typecheck and all 34 backup tests passed. Local HTTP confirmed both public pages return 200, POST is rejected, and private or lookalike paths still redirect.
+
+Owner explicitly approved publishing the two pages on the existing site. Isolated exactly three files in PR #94 on codex/backup-google-branding at 93411f07717acb93d4b9c34e397146f63668edc1, based on main 145ec998. Exact-head CI 44390182661 and Vercel preview pending. After both pass, merge only #94, verify the two live URLs and verify the domain if Google asks. Then register the URLs in Branding, change Audience and renew Drive consent. Continue with durable scoped database access and backup history before daily activation. Restore evidence remains in BACKUP-12.
+
+## GOOGLE-DRIVE-BACKUP-12 — Drive snapshot recovered on isolated Supabase
+
+PR #93 is draft at 3c06504e8f7720394902f241c760281815c7738c; CI 44293350747 passed. After run 44302185263, the downloaded and decrypted archive was loaded into private staging in the free restore project. All 13 row fingerprints matched. The application schema and ten unchanged app tables were already identical. Restored Auth users, identities and membership transactionally and verified all 13 again after staging cleanup. Restored member authorization passed with simulated claims; password sign-in for the restored accounts was not tested. A prior separate disposable-user login drill passed.
+
+Temporary restore access and the source drill login were disabled; no source app/Auth rows changed. Daily scheduling and deletion remain off. The regular job requires a durable scoped database connection and the backup_history migration, which is absent on the source. Confirm the dedicated Google OAuth publishing status and renew browser consent if the grant was issued in Testing. No billing enabled.
+
+## GOOGLE-DRIVE-BACKUP-11 — verified Drive round trip, 18 November 2026
+
+PR #93 remains draft at `3c06504e8f7720394902f241c760281815c7738c`. CI run 44293350747 passed. Dedicated Google OAuth worked in manual run 44302185263: the 261,347-byte encrypted snapshot was uploaded, downloaded and matched by SHA-256; the downloaded archive decrypted locally. It contains 11 app tables, two Auth users and identities, and one app member. The previously restored archive has identical schema sections and fingerprints for ten app tables; the membership table and both Auth tables differ. The earlier isolated restore does not verify this Drive download.
+
+The free isolated restore target still contains the earlier test restore. The reviewed loader refuses occupied targets and requires a temporary target-only connection. Next: prepare an empty isolated target and limited access, restore this exact archive, and verify fingerprints and login. Before daily activation, confirm durable OAuth and scoped source access, review backup history setup, and obtain merge approval. All four activation gates remain false; no production data changed.
+
 ## GOOGLE-DRIVE-BACKUP-10 — dedicated OAuth setup
 
 Owner approved a dedicated Google Drive OAuth client without billing. Both workflows accept a dedicated client ID and secret with the matching rclone token. Browser sign-in and Google client creation are pending, then synthetic transfer, fresh encrypted database transfer and isolated recovery. No activation change. Prior PR #93 head b5581da passed workflow 44291690683. See GOOGLE-DRIVE-BACKUP-09 for local recovery evidence.

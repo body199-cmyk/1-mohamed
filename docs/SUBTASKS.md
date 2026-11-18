@@ -1,3 +1,7 @@
+## T10 current slice — prepare stable Google Drive authorization
+
+The exact Drive copy has been restored to separate Supabase. Provide the backup homepage and privacy URL on a verified domain, then switch the dedicated OAuth client out of Testing and renew consent. Keep the daily schedule and deletion off while the recurring access and backup history are verified.
+
 ## T10 current slice — verify the offsite copy
 
 Local recovery and real Auth smoke checks passed. Resolve shared rclone quota, take a fresh encrypted snapshot and restore the file downloaded from Drive in an empty separate project. Keep production activation and retention off during the drill.

@@ -1,3 +1,7 @@
+## Backup OAuth information pages
+
+- `apps/web/public/backup-info.html` describes the backup operator and links to `apps/web/public/backup-privacy.html`, the Google Drive data-use disclosure. `apps/web/src/proxy.ts` allows anonymous read requests only at those two exact paths.
+
 ## GOOGLE-DRIVE-BACKUP-09 map
 
 `tools/backup-reader/export.mjs` exports application and Auth rows consistently and encrypts the bundle. `drive-trial.mjs` handles isolated Drive transfer and byte verification. `restore-data.mjs` and `restore-contract.mjs` import and fingerprint rows only on the separate target after reviewed schema preparation. `.github/workflows/verify.yml` runs the optional reader drill and regular checks separately.

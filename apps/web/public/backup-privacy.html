@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Backup Privacy Policy | 1-mohamed Backups</title>
+  <style>
+    body { margin: 3rem auto; padding: 0 1.25rem; max-width: 42rem; color: #172231; background: #f8fafc; font: 1.125rem/1.6 system-ui, sans-serif; }
+    a { color: #154d94; }
+  </style>
+</head>
+<body>
+  <main>
+    <p><a href="/backup-info.html">1-mohamed Backups</a></p>
+    <h1>Backup privacy policy</h1>
+    <h2>What the service accesses</h2>
+    <p>The project operator authorizes Google Drive access for the backup job. It requests file-level access (drive.file) to create and manage the folders and files it uses. It uses file names, paths and verification information, plus the encrypted file contents when checking or recovering a backup. It does not request full access to the operator’s Drive.</p>
+    <h2>How data is used and protected</h2>
+    <p>The project uses this access to upload, check, recover and, when retention is enabled, remove older managed backups. A backup can contain ledger records and account recovery data. The job encrypts that data before upload. The encrypted archives are stored in the operator’s Drive and the operator keeps the decryption key separately.</p>
+    <p>GitHub Actions runs the backup and stores the Google authorization as a protected secret. Google Drive stores the encrypted files. The service does not sell Google user data or use it for advertising. The project’s use of Google user data follows the <a href="https://developers.google.com/terms/api-services-user-data-policy">Google API Services User Data Policy</a>, including the Limited Use requirements.</p>
+    <h2>Retention and removal</h2>
+    <p>The daily backup policy keeps one copy per Cairo calendar day for the latest 30 calendar days. Once automatic retention is enabled, it removes only managed archives outside that window after a new backup has been verified. Test copies created during setup may need to be removed separately by the operator.</p>
+    <p>The operator can revoke the connection in <a href="https://myaccount.google.com/connections">Google Account connections</a> and delete the remaining copies from Drive. Revoking access stops the job from using Drive; it does not delete existing files.</p>
+    <h2>Contact</h2>
+    <p>For questions about backup data or removal, contact the project operator or use the support email shown on the Google consent screen.</p>
+  </main>
+</body>
+</html>

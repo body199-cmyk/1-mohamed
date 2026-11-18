@@ -1,3 +1,7 @@
+## T10 — exact Drive archive restored on separate Supabase
+
+The encrypted upload/download, offline decryption and isolated recovery succeeded. All 13 fingerprints match. Daily scheduling and retention are still off pending durable database and Drive authorization and backup history. See GOOGLE-DRIVE-BACKUP-12 in STATUS and HANDOFF_LOG.
+
 ## T10 offsite status — isolated recovery passed
 
 Actual local encrypted database and Auth recovery passed on the free separate Supabase project. The full Drive round trip, recurring backup and retention activation remain pending. See STATUS and HANDOFF_LOG under GOOGLE-DRIVE-BACKUP-09.

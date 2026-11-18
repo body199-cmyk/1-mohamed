@@ -8,17 +8,21 @@ on:
         description: Export an encrypted trial snapshot with the approved temporary reader
         type: boolean
         default: false
+      run_recurring_drill:
+        description: Test the daily backup path with deletion disabled
+        type: boolean
+        default: false
 
 permissions:
   contents: read
 
 concurrency:
-  group: verify-v2-${{ github.workflow }}-${{ github.ref }}-${{ inputs.run_reader_drill || false }}
+  group: verify-v2-${{ github.workflow }}-${{ github.ref }}-${{ inputs.run_reader_drill || false }}-${{ inputs.run_recurring_drill || false }}
   cancel-in-progress: true
 
 jobs:
   check:
-    if: ${{ inputs.run_reader_drill != true }}
+    if: ${{ inputs.run_reader_drill != true && inputs.run_recurring_drill != true }}
     name: Typecheck, packages, PostgreSQL and build
     runs-on: ubuntu-latest
     timeout-minutes: 60
@@ -73,6 +77,8 @@ jobs:
         run: node --test tools/offsite-backup.test.mjs tools/backup-reader/contract.test.mjs tools/backup-reader/restore-contract.test.mjs
       - name: Validate offsite backup workflow script syntax
         run: |
+          npm ci --prefix tools/backup-reader --ignore-scripts --no-audit --no-fund
+          node --test tools/backup-reader/recurring.test.mjs
           node --check tools/offsite-backup.mjs
           node --check tools/google-drive-rclone.mjs
       - name: Build preview web app
@@ -219,8 +225,14 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
 
+  recurring-drill:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.run_recurring_drill == true && inputs.run_reader_drill != true && github.ref == 'refs/heads/feat/offsite-backup-t10-20261117' }}
+    uses: ./.github/workflows/offsite-backup.yml
+    with:
+      recurring_drill: true
+
   reader-drill:
-    if: ${{ github.event_name == 'workflow_dispatch' && inputs.run_reader_drill == true && github.ref == 'refs/heads/feat/offsite-backup-t10-20261117' }}
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.run_reader_drill == true && inputs.run_recurring_drill != true && github.ref == 'refs/heads/feat/offsite-backup-t10-20261117' }}
     name: Manual encrypted reader trial
     runs-on: ubuntu-latest
     timeout-minutes: 25

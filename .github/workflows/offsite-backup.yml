@@ -5,6 +5,16 @@ on:
     # One daily snapshot at 01:17 UTC (03:17 Cairo during UTC+2).
     - cron: "17 1 * * *"
   workflow_dispatch:
+    inputs:
+      recurring_drill:
+        description: Run a full manual backup with scheduling and deletion still disabled
+        type: boolean
+        default: false
+  workflow_call:
+    inputs:
+      recurring_drill:
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -16,35 +26,57 @@ concurrency:
 jobs:
   backup:
     if: >-
-      (github.event_name == 'workflow_dispatch' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/feat/offsite-backup-t10-20261117')) ||
-      (github.event_name == 'schedule' && vars.BACKUP_ENABLED == 'true' && vars.BACKUP_RESTORE_VERIFIED == 'true' && vars.BACKUP_RECORD_HISTORY == 'true')
+      (github.event_name == 'workflow_dispatch' && inputs.recurring_drill == true &&
+        (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/feat/offsite-backup-t10-20261117')) ||
+      (github.event_name == 'schedule' && github.ref == 'refs/heads/main')
     runs-on: ubuntu-latest
     timeout-minutes: 40
     environment: google-drive-backup
     steps:
+      - name: Check activation gates in backup environment
+        id: gate
+        env:
+          ENABLED: ${{ vars.BACKUP_ENABLED }}
+          VERIFIED: ${{ vars.BACKUP_RESTORE_VERIFIED }}
+          HISTORY: ${{ vars.BACKUP_RECORD_HISTORY }}
+          RETENTION: ${{ vars.BACKUP_RETENTION_ENABLED }}
+        run: |
+          if [[ "$GITHUB_EVENT_NAME" == schedule ]]; then
+            if [[ "$ENABLED" != true || "$VERIFIED" != true || "$HISTORY" != true ]]; then
+              echo 'Daily backup is disabled.'
+              exit 0
+            fi
+          elif [[ "$ENABLED" == true || "$RETENTION" == true ]]; then
+            echo 'Disable scheduling and retention before a manual recurring drill.' >&2
+            exit 1
+          fi
+          echo 'run=true' >> "$GITHUB_OUTPUT"
       - name: Checkout selected reviewed branch
+        if: steps.gate.outputs.run == 'true'
         uses: actions/checkout@v4
       - name: Set up Node
+        if: steps.gate.outputs.run == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: '22'
       - name: Install age encryption
+        if: steps.gate.outputs.run == 'true'
         run: |
+          npm ci --prefix tools/backup-reader --ignore-scripts --no-audit --no-fund
           sudo apt-get update
           sudo apt-get install --yes age rclone
       - name: Create full logical backup, encrypt, upload and verify
+        if: steps.gate.outputs.run == 'true'
         env:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
           AGE_RECIPIENT: ${{ vars.AGE_RECIPIENT }}
           RCLONE_CONFIG_DRIVE_TOKEN: ${{ secrets.RCLONE_CONFIG_DRIVE_TOKEN }}
           RCLONE_CONFIG_DRIVE_CLIENT_ID: ${{ secrets.RCLONE_CONFIG_DRIVE_CLIENT_ID }}
           RCLONE_CONFIG_DRIVE_CLIENT_SECRET: ${{ secrets.RCLONE_CONFIG_DRIVE_CLIENT_SECRET }}
-          GOOGLE_DRIVE_CLIENT_ID: ${{ secrets.GOOGLE_DRIVE_CLIENT_ID }}
-          GOOGLE_DRIVE_CLIENT_SECRET: ${{ secrets.GOOGLE_DRIVE_CLIENT_SECRET }}
-          GOOGLE_DRIVE_REFRESH_TOKEN: ${{ secrets.GOOGLE_DRIVE_REFRESH_TOKEN }}
           GITHUB_SHA: ${{ github.sha }}
           BACKUP_ENABLED: ${{ vars.BACKUP_ENABLED }}
           BACKUP_RESTORE_VERIFIED: ${{ vars.BACKUP_RESTORE_VERIFIED }}
           BACKUP_RETENTION_ENABLED: ${{ vars.BACKUP_RETENTION_ENABLED }}
-          BACKUP_RECORD_HISTORY: ${{ vars.BACKUP_RECORD_HISTORY }}
-        run: node tools/offsite-backup.mjs
+          BACKUP_RECORD_HISTORY: ${{ inputs.recurring_drill == true || vars.BACKUP_RECORD_HISTORY == 'true' }}
+          BACKUP_RECURRING_DRILL: ${{ inputs.recurring_drill == true }}
+        run: node tools/backup-reader/recurring.mjs
