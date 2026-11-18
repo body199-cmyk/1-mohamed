@@ -6,6 +6,7 @@ import { formatPoundsForDisplay } from "../../lib/ledger/amounts";
 import type { LedgerEntities, LedgerWrite } from "./workspace-data";
 import { OperationalRows } from "./operational-rows";
 import { ReportExportActions } from "../reports/report-export-actions";
+import { ReportExportPreview } from "../reports/report-export-preview";
 import { buildRealOperationalDocument, isFullOperationalReport } from "./real-operational-document";
 import { assertReportPage, mergeReportPage, type ReportPage } from "./report-snapshot";
 import { RecordActions } from "./record-actions";
@@ -160,6 +161,7 @@ export function RealReports({ contractors, vehicles, accounts, disabled, revisio
         <div className={ui.actions}><button disabled={busy} type="submit">{busy?"جارٍ تحميل التقرير…":"تحميل التقرير"}</button></div>
       </form>
       {report && <>
+        {!busy && !disabled && fullExportDocument && <ReportExportPreview document={fullExportDocument} />}
         {allHistory && <p>كل الحساب من البداية: {report.date_from} — {report.date_to}</p>}
         {reportType === "trips.list" && report.totals && <WorkTotals totals={report.totals} />}
 

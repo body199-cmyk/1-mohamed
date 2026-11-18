@@ -1,3 +1,7 @@
+## REPORT-PREVIEW — معاينة التصدير داخل التقارير
+
+المستخدم وافق على التنفيذ والدمج بعد الاختبار. نطاق المهمة تقرير النقلات ومدفوعات العربية في «التقارير والكشوف»، وكشف حساب العربية في «العربيات». المعاينة فوق الملخص والتفاصيل الموجودة. القبول في [SUBTASKS](SUBTASKS.md#report-preview--قبول-المعاينة) وحالة التحقق في [STATUS](STATUS.md).
+
 ## T10 follow-up — private plain backups
 
 Owner approved paired daily recovery and Excel files with a 30-day limit. See STATUS for validation and cutover gates.

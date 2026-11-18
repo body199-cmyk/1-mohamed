@@ -20,7 +20,7 @@ export { createStatementXlsxParts, makeStoredZip, renderContractorStatementXlsx 
 export { assertOperationalReportDocument, MAX_OPERATIONAL_REPORT_ROWS } from "./report-document-validation";
 export { renderOperationalReportHtml } from "./render-report-html";
 export { renderOperationalReportCsv } from "./render-report-csv";
-export { createOperationalReportImageLayout, paintOperationalReportImage, renderOperationalReportPng } from "./render-report-image";
+export { createOperationalReportImageLayout, paintOperationalReportImage, renderOperationalReportLayoutPng, renderOperationalReportPng } from "./render-report-image";
 export type { OperationalReportImageLayout } from "./render-report-image";
-export { paginateOperationalReportForPdf, renderOperationalReportPdf } from "./render-report-pdf";
+export { OPERATIONAL_REPORT_PAGE_HEIGHT, paginateOperationalReportForPdf, renderOperationalReportPdf } from "./render-report-pdf";
 export { createOperationalReportXlsxParts, renderOperationalReportXlsx } from "./render-report-xlsx";

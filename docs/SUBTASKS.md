@@ -1,3 +1,9 @@
+## REPORT-PREVIEW — قبول المعاينة
+
+- نفس صورة PNG للتقرير الكامل قبل العرض الحالي. عند تجاوز حد الصورة تظهر صفحات قابلة للتنقل بنفس تخطيط PDF. على الموبايل تظهر الورقة كاملة ويمكن تكبيرها.
+- تغيير الفلتر أو رفض القراءة أو نتيجة غير مكتملة يمنع عرض لقطة قديمة. تفاصيل العرض الحالي وأزرار التصدير تبقى في مكانها بالنسبة لبعضها.
+- التحقق: مطابقة بصمة صورة التنزيل، ترتيب القسمين، كشف برصيد سالب، تقرير متعدد الصفحات، تغيير الفلتر ورفض القراءة، وفحوص GitHub على آخر رأس قبل الدمج.
+
 ## T10 follow-up — verify replacement
 
 Validate the exact archive in a separate migrated target, verify Drive round trips and reactivate accounts before selecting the new daily mode.

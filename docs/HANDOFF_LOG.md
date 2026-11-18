@@ -1,3 +1,9 @@
+## REPORT-PREVIEW — ١٨ نوفمبر ٢٠٢٦
+
+معاينة فوق النتائج القديمة في «التقارير والكشوف» و«العربيات» من نفس مستند التصدير. المراجعة الثانية بواسطة نفس المساعد شملت ترتيب القسمين، منع عرض نتائج جزئية أو قديمة، رفض القراءة، الرصيد السالب، تحرير رابط الصورة في المتصفح، واستمرار حد PDF مع إتاحة تصفح التقارير الأطول. لا تغيير في الحساب أو الصلاحيات أو بيانات الإنتاج.
+
+عند `30b3ed9c1278c3d552a592f2574c02ed5cb531e9` نجح `npm run check` (233 اختبارًا وفحص الأنواع)، `npm run test:web` (193)، `npm run build` ونجحت التأكيدات في 7 حالات Edge محلية قبل تعليق إغلاق الخادم على Windows. اكتملت [فحوص GitHub 44405555351](https://github.com/body199-cmyk/1-mohamed/actions/runs/44405555351) بنجاح بما فيها Chromium وPostgreSQL المعزول. تعارض توثيق مع تحديث `main` للنسخ الاحتياطي حُل بالإبقاء على الإضافتين، ويلزم تحقق GitHub على الرأس الجديد. حالات المعاينة تستخدم بيانات اختبار. لم يُختبر حساب إنتاج أو هاتف فعلي.
+
 ## T10 simple backups — plain recovery archive and Excel
 
 Owner approved a private, unencrypted business-only recovery copy and a separate Excel copy each Cairo day, with a final 30-day window. Branch codex/plain-backup-excel is based on main dba2f0a. The new mode is opt-in; the current encrypted workflow stays active until a separate drill proves the replacement. Daily deletion is restricted to exact dated filenames in their matching year/month directories and can only follow round-trip verification of both files and a new history row.
