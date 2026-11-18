@@ -37,13 +37,17 @@ test('plain snapshot restores business data, never Auth, and fails closed on tam
       values ('p1','v1','k1','2026-11-18',9007199254741000,'t1','=1+1');
     update public.business_settings set business_name='Recovered' where id='default';
     insert into public.audit_log(id,entity_type,entity_id,action,performed_by) overriding system value
-      values (42,'TRIP','t1','INSERT','00000000-0000-0000-0000-000000000001');`);
+      values (42,'TRIP','t1','INSERT','00000000-0000-0000-0000-000000000001');
+    insert into public.idempotency_keys(key,user_id,operation,payload_hash,status) values
+      ('Z-key','00000000-0000-0000-0000-000000000001','TRIP','hash1','COMPLETED'),
+      ('a_key','00000000-0000-0000-0000-000000000001','TRIP','hash2','COMPLETED');`);
   await source.exec("set timezone='UTC'");
   await writeBusinessSnapshot(source,dir,{date:'2026-11-18',commit:'a'.repeat(40)});
   await source.close();
   source=null;
   assert.deepEqual((await readdir(dir)).sort(),['manifest.json',...BUSINESS_TABLES.map(x=>x+'.json')].sort());
   assert.match(loadBusinessSnapshot(dir).payloads.get('payments'),/9007199254741000/);
+  assert.deepEqual(JSON.parse(loadBusinessSnapshot(dir).payloads.get('idempotency_keys')).map(x=>x.key),['Z-key','a_key']);
   const python=process.env.BACKUP_TEST_PYTHON||'python3', xlsx=join(dir,'report.xlsx');
   const workbook=spawnSync(python,[fileURLToPath(new URL('./business-xlsx.py',import.meta.url)),dir,xlsx],{encoding:'utf8'});
   assert.equal(workbook.status,0,workbook.stderr||workbook.error?.message);

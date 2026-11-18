@@ -11,7 +11,7 @@ export const BUSINESS_TABLES=Object.freeze([
 export const digest=bytes=>createHash('sha256').update(bytes).digest('hex');
 export const readRowsSql=table=>{
  if(!BUSINESS_TABLES.includes(table))throw Error('Unexpected backup table');
- return `select coalesce(jsonb_agg(j order by j::text),'[]'::jsonb)::text as rows
+ return `select coalesce(jsonb_agg(j order by convert_to(j::text,'UTF8')),'[]'::jsonb)::text as rows
  from (select to_jsonb(t) as j from public.${table} t) s`;
 };
 
