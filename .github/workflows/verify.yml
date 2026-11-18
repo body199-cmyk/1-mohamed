@@ -227,9 +227,36 @@ jobs:
 
   recurring-drill:
     if: ${{ github.event_name == 'workflow_dispatch' && inputs.run_recurring_drill == true && inputs.run_reader_drill != true && github.ref == 'refs/heads/feat/offsite-backup-t10-20261117' }}
-    uses: ./.github/workflows/offsite-backup.yml
-    with:
-      recurring_drill: true
+    name: Manual backup on the daily path
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    environment: google-drive-backup
+    concurrency:
+      group: production-google-drive-backup
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install encryption, Drive and pinned reader tools
+        run: |
+          npm ci --prefix tools/backup-reader --ignore-scripts --no-audit --no-fund
+          sudo apt-get update
+          sudo apt-get install --yes age rclone
+      - name: Run the daily backup path without scheduling or deletion
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          AGE_RECIPIENT: ${{ vars.AGE_RECIPIENT }}
+          RCLONE_CONFIG_DRIVE_TOKEN: ${{ secrets.RCLONE_CONFIG_DRIVE_TOKEN }}
+          RCLONE_CONFIG_DRIVE_CLIENT_ID: ${{ secrets.RCLONE_CONFIG_DRIVE_CLIENT_ID }}
+          RCLONE_CONFIG_DRIVE_CLIENT_SECRET: ${{ secrets.RCLONE_CONFIG_DRIVE_CLIENT_SECRET }}
+          BACKUP_ENABLED: ${{ vars.BACKUP_ENABLED }}
+          BACKUP_RESTORE_VERIFIED: ${{ vars.BACKUP_RESTORE_VERIFIED }}
+          BACKUP_RETENTION_ENABLED: ${{ vars.BACKUP_RETENTION_ENABLED }}
+          BACKUP_RECORD_HISTORY: 'true'
+          BACKUP_RECURRING_DRILL: 'true'
+        run: node tools/backup-reader/recurring.mjs
 
   reader-drill:
     if: ${{ github.event_name == 'workflow_dispatch' && inputs.run_reader_drill == true && inputs.run_recurring_drill != true && github.ref == 'refs/heads/feat/offsite-backup-t10-20261117' }}

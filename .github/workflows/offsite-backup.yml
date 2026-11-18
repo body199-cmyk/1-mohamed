@@ -10,11 +10,6 @@ on:
         description: Run a full manual backup with scheduling and deletion still disabled
         type: boolean
         default: false
-  workflow_call:
-    inputs:
-      recurring_drill:
-        type: boolean
-        default: false
 
 permissions:
   contents: read
@@ -27,7 +22,7 @@ jobs:
   backup:
     if: >-
       (github.event_name == 'workflow_dispatch' && inputs.recurring_drill == true &&
-        (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/feat/offsite-backup-t10-20261117')) ||
+        github.ref == 'refs/heads/main') ||
       (github.event_name == 'schedule' && github.ref == 'refs/heads/main')
     runs-on: ubuntu-latest
     timeout-minutes: 40
