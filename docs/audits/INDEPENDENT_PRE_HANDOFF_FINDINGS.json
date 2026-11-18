@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "status": "in_progress",
+  "audited_at": "2026-11-18",
+  "baseline": {
+    "main": "47742e3ae5f7a7846e10e10960ac6fc5ada1bf2e",
+    "pr98": "b0b3bde7c287c745b277be22930d68dc8a5b49a9"
+  },
+  "summary": { "critical": 0, "high": 1, "medium": 2, "low": 0, "informational": 0 },
+  "findings": [
+    {
+      "id": "F-001",
+      "title": "Master-data opening balance uses a JSON string where SQL requires a JSON number",
+      "severity": "HIGH",
+      "confidence": "Confirmed",
+      "files": [
+        { "file": "apps/web/src/features/ledger/master-data-entry.tsx", "lines": "60-79", "function": "createOpening" },
+        { "file": "apps/web/src/lib/ledger/amounts.ts", "lines": "12-25", "function": "poundsToPiastres" },
+        { "file": "supabase/migrations/20261104200011_phase_b_operations.sql", "lines": "490-569", "function": "app_op_opening_balance_create" },
+        { "file": "supabase/migrations/20261104200010_phase_b_foundation.sql", "lines": "85-114", "function": "app_exact_bigint" }
+      ],
+      "root_cause": "createOpening assigns poundsToPiastres' string directly to signed_piastres; JSON.stringify therefore emits a string. app_exact_bigint explicitly rejects JSON values whose jsonb_typeof is not number.",
+      "reproduction": "Using isolated fixtures, submit a valid Master Data contractor or vehicle-cash opening. Its wire payload contains signed_piastres: \"100\". The DB validation rejects SQLSTATE 22023 and the intended opening is not recorded.",
+      "expected": "A valid, exactly-representable opening is saved atomically, while inputs outside safe-auth JSON/bigint bounds fail explicitly before mutation.",
+      "actual": "Both opening types in this existing UI path fail at DB numeric validation instead of saving.",
+      "impact": "A user cannot enter old opening balances through the visible Master Data workflow. This is a financial write-path availability failure; no existing production row was changed or proven duplicated during this review.",
+      "evidence": "Complete UI string conversion to JSON/HTTP to app_exact_bigint source trace on main. Historical docs/ISSUES.md:217-218 independently identifies the same separate unresolved path; final fixture output is being recorded separately.",
+      "recommended_action": "Use a tested exact opening serializer at this UI boundary: convert only after BigInt validation and only if the exact signed integer is safely representable in this JSON/API contract, otherwise refuse explicitly. Add actual isolated SQL tests for both types, signs, rounding, safe-integer boundary and replay.",
+      "fix_regression_risk": "HIGH: naive Number conversion loses financial precision; tests must cover negatives, bigint bounds, MAX_SAFE_INTEGER and old quick openings, and must preserve idempotency payload identity."
+    },
+    {
+      "id": "F-002",
+      "title": "PR #98 misses revision-driven contractor loading and error reset",
+      "severity": "MEDIUM",
+      "confidence": "Confirmed",
+      "files": [
+        { "file": "apps/web/src/features/ledger/real-contractor-statement.tsx", "lines": "37-41", "function": "Revision useEffect" },
+        { "file": "apps/web/src/features/ledger/real-contractor-statement.tsx", "lines": "48-72", "function": "reset/load" },
+        { "file": "apps/web/src/features/ledger/real-contractor-statement.tsx", "lines": "75-103", "function": "more" }
+      ],
+      "root_cause": "Revision invalidation duplicates part of reset rather than calling it. On PR #98, reset clears busy and error, but the revision effect only increments active/query=null/report=null. If a prior request is delayed or invalidated, the new revision can retain its prior busy/error state independent of correct latest-response guards.",
+      "reproduction": "Start/delay a contractor initial or more request; change revision while awaiting; inspect the disabled/loading and stale alert state before/while the old promise resolves. Run same test with repeated rapid revisions and unmounting.",
+      "expected": "Every invalidated report generation becomes editable/retryable and cannot retain or reinstate an obsolete alert/loading state.",
+      "actual": "On PR #98 the revision-only path does not clear busy or error. Existing disabled fields can therefore be left waiting on the invalid request's own lifecycle.",
+      "impact": "The contractor statement can lock loading/actions or display stale errors after writes/refresh invalidation. Stored financial rows are not shown to be affected.",
+      "evidence": "Comparison of PR #98 head b0b3bde7 with main; separate effect uses setReport only, while fixed reset() includes busy clearing; token-only finally guards prevent old cleanup from repairing that new revision state.",
+      "recommended_action": "Route all invalidation causes through one reset protocol including busy/error cleanup and request-generation guards. Add deterministic deferred-response component tests for revision changes during first and later page reads and old errors.",
+      "fix_regression_risk": "MEDIUM: cleanup must not enable a premature duplicate fetch or let older completion update current rows; preserve token checks on every asynchronous write/finally."
+    },
+    {
+      "id": "F-003",
+      "title": "Portable backup is assembled from separate offset-based requests without snapshot consistency",
+      "severity": "MEDIUM",
+      "confidence": "Confirmed (structural absence); Needs verification for live incidence",
+      "files": [
+        { "file": "apps/web/src/app/api/backup/export/route.ts", "lines": "13-41", "function": "readOneTable/readAllTables" },
+        { "file": "apps/web/src/app/api/backup/export/route.ts", "lines": "62-67", "function": "GET JSON backup" },
+        { "file": "apps/web/src/lib/backup/export.ts", "lines": "34-46", "function": "createPortableBackup" }
+      ],
+      "root_cause": "The GET route separately reads each table via offset pagination. No repeatable-read database transaction spans those HTTP requests, no global ledger snapshot/revision is checked, and createPortableBackup verifies presence/types/sha256 but not cross-request consistency.",
+      "reproduction": "Use only a synthetic isolated database and mocked multi-page PostgREST responses. Commit a synthetic edit/cancellation between page calls or a related-entity update between two table reads; prove exported rows cannot be assigned to one MVCC snapshot while the returned backup still succeeds.",
+      "expected": "A backup is one complete point-in-time snapshot, or fails explicitly on revision drift.",
+      "actual": "Each page/table can see a different committed state and the result is serialized as a coherent archival backup with creation timestamp and checksum but no snapshot validation.",
+      "impact": "In an active ledger, a portable recovery export can silently combine different versions of related financial records. This is a recovery-integrity risk. It says nothing defective about the separately reviewed offsite MVCC/pg_dump pipeline.",
+      "evidence": "Source shows repeated await client.from(table).range(...) requests with no snapshot parameter, read transaction, revision guard, or final comparison. backup row_counts and SHA-256 describe bytes, not atomic isolation.",
+      "recommended_action": "Implement/reuse a database snapshot/revision export protocol that covers all target tables and fails closed on any concurrent drift. Add isolated multi-page concurrency, FK-related update, replay and full recovery-fingerprint verification.",
+      "fix_regression_risk": "HIGH: backup schema/adapters/gates and restoration tooling must remain compatible; a superficial revision count on audit_log may not cover all tables and can produce false completeness. Do not modify production while addressing this finding."
+    }
+  ],
+  "test_results": [
+    { "command": "git fetch origin main pull/98/head", "result": "PASS", "evidence": "Isolated refs fetched; PR #98 unmerged." },
+    { "command": "gh pr view 98 + independent source diff", "result": "PASS", "evidence": "OPEN Draft; exactly three UI source files changed at head b0b3bde7." },
+    { "command": "npm run db:verify", "result": "RUNNING", "evidence": "Isolated PGlite only; local gitignored log; no production environment input." }
+  ],
+  "production_modifications": false
+}
