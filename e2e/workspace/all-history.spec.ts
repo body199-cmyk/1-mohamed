@@ -32,7 +32,8 @@ test('whole-history pagination retains filters and blocks partial exports',async
   return route.fulfill({json:{ok:true,data:{status:'OK',snapshot:'1:1',total_count:'2',
    date_from:'2001-02-03',date_to:'2026-11-14',next_cursor:more?null:{date:'2001-02-03',id:'OLD'},
    rows:[{id:more?'NEW':'OLD',trip_date:more?'2026-11-14':'2001-02-03',vehicle_id:'V1',
-    counterparty_contractor_id:'K1',contractor_total_piastres:'10000',weight_milli_tonnes:'1000'}]}}});
+    counterparty_contractor_id:'K1',contractor_total_piastres:'10000',weight_milli_tonnes:'1000',
+    notes:more?'نقلة من الصفحة التالية':'نقلة من الصفحة الأولى'}]}}});
  });
  await page.getByRole('navigation').getByRole('button',{name:'التقارير والكشوف',exact:true}).click();
  await page.locator('#report-trip-vehicle').selectOption('V1');
@@ -46,7 +47,11 @@ test('whole-history pagination retains filters and blocks partial exports',async
   cursor:{date:'2001-02-03',id:'OLD'},snapshot:'1:1'});
  const download=page.waitForEvent('download');await page.getByRole('button',{name:'تنزيل CSV',exact:true}).click();
  const fs=await import('node:fs/promises');const csv=await fs.readFile((await(await download).path())!,'utf8');
- expect(csv).toContain('OLD');expect(csv).toContain('NEW');expect(csv).toContain('2001-02-03');
+ const rows=csv.split(/\r?\n/).filter(line=>/^"[١٢]","/.test(line));
+ expect(rows).toHaveLength(2);
+ expect(rows[0]).toMatch(/^"١","2001-02-03",.*"نقلة من الصفحة الأولى"/);
+ expect(rows[1]).toMatch(/^"٢","2026-11-14",.*"نقلة من الصفحة التالية"/);
+ expect(csv).not.toMatch(/"(OLD|NEW)"/);
 });
 
 for(const kind of ['trips','payments','contractor','cash'] as const){
