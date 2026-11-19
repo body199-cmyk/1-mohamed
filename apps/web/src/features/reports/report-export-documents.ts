@@ -35,11 +35,12 @@ export function toDailyWorkOperationalReport(
     metrics: [
       { label: "عدد النقلات", value: String(value.tripCount), direction: "ltr" as const },
       { label: "إجمالي الوزن", value: value.totalWeightTonnes + " طن", direction: "ltr" as const },
-      { label: "قيمة شغل المقاول", value: money(value.contractorTotalPiastres), direction: "ltr" as const },
-      { label: "مستحق العربيات", value: money(value.vehicleTotalPiastres), direction: "ltr" as const },
+      { label: "قيمة شغل المقاول", value: money(value.contractorTotalPiastres), direction: "ltr" as const, tone: "credit" as const },
+      { label: "مستحق العربيات", value: money(value.vehicleTotalPiastres), direction: "ltr" as const, tone: "debit" as const },
     ],
   });
   return {
+    presentation: "compact-statement",
     businessName: BUSINESS_NAME,
     title: filters.allHistory ? "تقرير الشغل — كل الحساب" : "تقرير الشغل اليومي",
     subtitle: "حجم شغل واستحقاقات النقلات فقط؛ لا يمثل رصيد فرق الشغل أو النقد بعد الدفعات.",
@@ -95,6 +96,7 @@ export function toVehicleCashOperationalReport(
   },
 ): OperationalReportDocument {
   return {
+    presentation: "compact-statement",
     businessName: BUSINESS_NAME,
     title: "كشف حساب نقد العربية",
     subtitle: "المستحق والمدفوع والمتبقي للعربية عند المقاول المسؤول عن النقد؛ منفصل عن فرق شغل المقاولين.",
@@ -109,8 +111,8 @@ export function toVehicleCashOperationalReport(
       title: "ملخص كشف نقد العربية",
       metrics: [
         { label: "الرصيد السابق للفترة", value: money(report.openingPiastres), direction: "ltr" },
-        { label: "مستحق شغل العربية", value: money(report.workPiastres), direction: "ltr" },
-        { label: "الدفعات خلال الفترة", value: money(report.paidPiastres), direction: "ltr" },
+        { label: "مستحق شغل العربية", value: money(report.workPiastres), direction: "ltr", tone: "credit" },
+        { label: "الدفعات خلال الفترة", value: money(report.paidPiastres), direction: "ltr", tone: "debit" },
         { label: "المتبقي آخر الفترة", value: money(report.closingPiastres), direction: "ltr", emphasis: true },
         { label: "عدد النقلات", value: String(report.tripCount), direction: "ltr" },
         { label: "عدد الدفعات السارية", value: String(report.paymentCount), direction: "ltr" },

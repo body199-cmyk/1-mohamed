@@ -109,6 +109,6 @@ function compactHtml(doc:OperationalReportDocument):string {
  .details-table.wide-table th,.details-table.wide-table td{padding:4px 2px;font-size:8px;line-height:1.45}
  .details-table.wide-table th{overflow-wrap:normal;word-break:normal}
  .details-table.wide-table .ltr-token{font-size:7px;white-space:normal;overflow-wrap:anywhere}
- @media print{.statement-page:has(.wide-table){width:186mm}}
+ @media print{.statement-page{width:186mm}}
  </style></head><body><main class="statement-page"><header class="statement-header"><p class="business-name">`+e(doc.businessName)+'</p><h1 class="report-title">'+e(doc.title)+'</h1><p>'+e(doc.subtitle)+'</p><p class="meta-label">تاريخ الإعداد: '+e(doc.generatedAtLabel)+'</p><div class="meta-grid">'+metadata+'</div></header>'+summary+tables+'<footer class="statement-footer">'+doc.footerNotes.map(n=>'<p>'+e(n)+'</p>').join('')+'</footer></main></body></html>';
 }

@@ -36,7 +36,7 @@ async function downloadReport(page: Page, name: string) {
   return readFile(await (await event).path());
 }
 
-test("trip exports use fixed paper styling while both existing previews keep their layout", async ({ page }, info) => {
+test("trip and vehicle previews use the same fixed paper as their exported reports", async ({ page }, info) => {
   const master: Record<string, unknown[]> = {
     contractors: [{ id: "K_AHMED", name: "أحمد أبو علي", is_primary: true }, { id: "C1", name: "شركة النور" }],
     vehicles: [{ id: "V1", plate_number: "عربية ١" }],
@@ -54,6 +54,9 @@ test("trip exports use fixed paper styling while both existing previews keep the
   await page.route("**/api/ledger/read", route => {
     const { operation } = route.request().postDataJSON();
     const cash = operation === "cash.statement";
+    const payments = operation === "payments.list";
+    const payment = { id: "PREVIEW-PAYMENT", payment_date: "2026-11-12",
+      vehicle_id: "V1", responsible_contractor_id: "K_AHMED", amount_piastres: "315000", is_cancelled: false };
     return route.fulfill({ json: { ok: true, data: {
       status: "OK", snapshot: "1:1", total_count: cash ? "2" : "1", next_cursor: null,
       date_from: "2026-11-01", date_to: "2026-11-16", vehicle_id: "V1", responsible_contractor_id: "K_AHMED",
@@ -64,7 +67,7 @@ test("trip exports use fixed paper styling while both existing previews keep the
       rows: cash ? [
         { id: trip.id, date: trip.trip_date, movement_type: "WORK", signed_delta_piastres: "205000", running_balance_piastres: "305000" },
         { id: "PREVIEW-PAYMENT", date: "2026-11-12", movement_type: "PAYMENT", signed_delta_piastres: "-315000", running_balance_piastres: "-10000" },
-      ] : [trip],
+      ] : payments ? [payment] : [trip],
     } } });
   });
   await page.clock.setFixedTime(new Date("2026-11-16T12:00:00Z"));
@@ -83,12 +86,12 @@ test("trip exports use fixed paper styling while both existing previews keep the
   const png = await downloadReport(page, "تنزيل صورة PNG");
   const pdf = await downloadReport(page, "تنزيل PDF مباشر");
   expect(png.readUInt32BE(16)).toBe(1440);
-  expect(createHash("sha256").update(png).digest()).not.toEqual(Buffer.from(previewHash));
+  expect(createHash("sha256").update(png).digest()).toEqual(Buffer.from(previewHash));
   await preview.screenshot({ path: info.outputPath("desktop-trip-preview.png") });
   await page.setViewportSize({ width: 390, height: 844 });
   expect(await downloadReport(page, "تنزيل صورة PNG")).toEqual(png);
   expect(await downloadReport(page, "تنزيل PDF مباشر")).toEqual(pdf);
-  await expect(tripImage).toBeVisible();
+  await expectMatchingPng(page, preview, page.getByRole("list", { name: "ملخص سجلات التقرير" }));
 
   const popupEvent = page.waitForEvent("popup");
   await page.getByRole("button", { name: "طباعة / حفظ PDF", exact: true }).click();
@@ -116,6 +119,14 @@ test("trip exports use fixed paper styling while both existing previews keep the
 
   await page.locator("#report-to").fill("2026-11-17");
   await expect(preview).toHaveCount(0);
+
+  await page.locator("#report-type").selectOption("payments.list");
+  await page.locator("#report-account").selectOption("V1|K_AHMED");
+  await expectMatchingPng(page, preview, page.getByRole("list", { name: "ملخص سجلات التقرير" }));
+  const paymentsPdf = await downloadReport(page, "تنزيل PDF مباشر");
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  expect(await downloadReport(page, "تنزيل PDF مباشر")).toEqual(paymentsPdf);
+  await page.setViewportSize({ width: 390, height: 844 });
 
   await page.evaluate(() => document.documentElement.setAttribute("data-theme", "dark"));
   await page.getByRole("navigation").getByRole("button", { name: "حسابات العربيات والدفعات", exact: true }).click();
@@ -150,20 +161,27 @@ test("partial reports hide the preview and long reports show complete numbered P
       status: "OK", snapshot: "1:1", rows, total_count: "150", next_cursor: more ? null : { date: "2026-11-10", id: "PREVIEW-99" },
     } } });
   });
+  await page.clock.setFixedTime(new Date("2026-11-16T12:00:00Z"));
   await page.goto("/");
   await openTripReport(page);
   const preview = page.getByRole("region", { name: previewName, exact: true });
   await expect(page.getByRole("list", { name: "ملخص سجلات التقرير" }).locator("li")).toHaveCount(100);
   await expect(preview).toHaveCount(0);
   await page.getByRole("button", { name: "تحميل 200 سجل إضافي", exact: true }).click();
-  await expect(preview.getByText("صفحة 1 من 11", { exact: true })).toBeVisible();
+  await expect(preview.getByText(/^صفحة 1 من \d+$/)).toBeVisible();
   const pdf = await downloadReport(page, "تنزيل PDF مباشر");
-  expect(Number(pdf.toString("latin1").match(/\/Count (\d+)/)?.[1])).toBeGreaterThan(1);
+  const pageCount = Number(pdf.toString("latin1").match(/\/Count (\d+)/)?.[1]);
+  expect(pageCount).toBeGreaterThan(1);
+  await expect(preview.getByText(`صفحة 1 من ${pageCount}`, { exact: true })).toBeVisible();
   const image = preview.getByRole("img");
   await expect.poll(() => image.evaluate(element => (element as HTMLImageElement).naturalHeight)).toBe(2036);
   const first = await image.getAttribute("src");
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(image).toHaveAttribute("src", first!);
+  expect(await downloadReport(page, "تنزيل PDF مباشر")).toEqual(pdf);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await preview.getByRole("button", { name: "الصفحة التالية" }).click();
-  await expect(preview.getByText("صفحة 2 من 11", { exact: true })).toBeVisible();
+  await expect(preview.getByText(`صفحة 2 من ${pageCount}`, { exact: true })).toBeVisible();
   await expect(image).toHaveAttribute("src", /^blob:/);
   await expect(image).not.toHaveAttribute("src", first!);
   await expect(page.getByRole("list", { name: "ملخص سجلات التقرير" }).locator("li")).toHaveCount(150);

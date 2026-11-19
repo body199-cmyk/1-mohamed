@@ -1,6 +1,6 @@
 import { formatEgpFromPiastres } from "@ledger/accounting";
 import type { ContractorStatement } from "@ledger/contractor-statements";
-import type { ContractorStatementDocument } from "@ledger/statement-export";
+import type { ContractorStatementDocument, OperationalReportDocument } from "@ledger/statement-export";
 
 function money(value: string): string {
   const formatted = formatEgpFromPiastres(value);
@@ -44,5 +44,44 @@ export function toStatementDocument(
       amountText: signedMoney(row.signedDeltaPiastres),
       runningBalanceText: signedMoney(row.runningBalancePiastres),
     })),
+  };
+}
+
+export function toStatementPaper(document: ContractorStatementDocument): OperationalReportDocument {
+  const { summary, period, counterpartyName } = document;
+  return {
+    presentation: "compact-statement",
+    businessName: document.businessName,
+    title: "كشف شغل مقاول",
+    subtitle: counterpartyName,
+    generatedAtLabel: document.generatedAtLabel,
+    metadata: [
+      { label: "من تاريخ", value: period.from, direction: "ltr" },
+      { label: "إلى تاريخ", value: period.to, direction: "ltr" },
+      { label: "عدد النقلات", value: summary.movementCountText, direction: "ltr" },
+    ],
+    summarySections: [{
+      title: "ملخص الكشف",
+      metrics: [
+        { label: "رصيد أول الفترة", value: summary.openingBalanceText, direction: "ltr" },
+        { label: "شغل أحمد", value: summary.ahmedWorkText, direction: "ltr", tone: "credit" },
+        { label: "شغل المقاول", value: summary.counterpartyWorkText, direction: "ltr", tone: "debit" },
+        { label: summary.closingBeneficiaryText, value: summary.closingBalanceText, direction: "ltr", emphasis: true },
+      ],
+    }],
+    columns: [
+      { label: "رقم النقلة", widthWeight: 1.4, direction: "ltr" },
+      { label: "التاريخ", widthWeight: 1.2, direction: "ltr" },
+      { label: "اتجاه الشغل", widthWeight: 2, direction: "rtl" },
+      { label: "الأثر على حساب أحمد", widthWeight: 1.3, direction: "ltr" },
+      { label: "الرصيد بعد الحركة", widthWeight: 1.3, direction: "ltr" },
+    ],
+    rows: document.rows.map(row => [
+      row.reference, row.workDate, row.directionText, row.amountText, row.runningBalanceText,
+    ]),
+    rowTones: document.rows.map(row =>
+      row.amountText.startsWith("-") ? "debit" : row.amountText.startsWith("+") ? "credit" : "neutral"),
+    emptyMessage: "لا توجد حركات خلال الفترة.",
+    footerNotes: ["الموجب لصالح أحمد أبو علي، والسالب لصالح المقاول."],
   };
 }

@@ -1,6 +1,6 @@
 ## REPORT-EXPORT-STYLE — ملفات النقلات والمدفوعات
 
-`real-operational-document.ts` يضيف تنسيق الورقة إلى لقطة التقرير الكاملة. `report-export-actions.tsx` يستخدمه للملفات المرئية والطباعة ومشاركة الصورة. `compact-report.ts` و`render-report-html.ts` يضبطان خلايا الجداول العريضة. تستهلك المعاينة وCSV وExcel نفس لقطة التقرير الكاملة، التي تتضمن الترقيم التصاعدي لتقرير النقلات.
+`real-operational-document.ts` يضيف تنسيق الورقة إلى لقطة التقرير الكاملة. `report-export-actions.tsx` يستخدمه للملفات المرئية والطباعة ومشاركة الصورة. `compact-report.ts` و`render-report-html.ts` يضبطان خلايا الجداول العريضة. المعاينة والتصدير المرئي يستخدمان نفس المستند، وCSV وExcel يقرآن نفس لقطة البيانات. يستخدم `report-export-preview.tsx` تقسيم PDF للمعاينة الطويلة. `contractor-details.tsx` يعرض معاينة كشف المقاول بالفلاتر المختارة. تستخدم صفحات النسخة التجريبية نفس قالب الورقة.
 
 ## REPORT-PREVIEW — معاينة التصدير في الموقع
 
