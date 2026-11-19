@@ -1,3 +1,31 @@
+# Stage 3 — isolated recovery rehearsal and read-only enforcement (DRAFT / NOT MERGED)
+
+The following is implemented on PR #107 only; it does NOT expose restoration, merging, deleting or database replacement in the website.
+
+- `cloud-rehearsal.mjs` opens a **PostgreSQL READ ONLY, REPEATABLE READ** transaction on the existing narrow backup-reader connection, verifies that the database reports read-only mode, reads precisely one matching backup-history row, and ends with ROLLBACK. This is vital because the scheduled backup role may have INSERT on its own history log; these rights must not be used by the rehearsal.
+- `cloud-rehearsal-contract.mjs` now allowlists **only** `rclone lsjson drive:1-mohamed-backups` and `rclone copyto <selected approved Drive path> <local temp file>`; upload, sync, delete, trash bypasses and arbitrary paths are rejected before spawning rclone. The chosen date, Drive ID, full path, file name, format, stored SHA-256 and byte length must all match.
+- `cloud-rehearsal-local.mjs` verifies a regular file (no symlinks), outer SHA-256 and size, then uses `proveBusinessRecovery` to unpack verified nine-table business TAR into a **throwaway PGlite instance**. It checks all stored row fingerprints, that recovery is possible, basic owner/member fixture readiness, and discards the recovery environment.
+- `verify-local-recovery.mjs` adds a local/offline CLI for a saved `1-mohamed-YYYY-MM-DD-restore.tar.gz` file (e.g. copied from a phone onto a laptop). Command:
+
+  `node tools/backup-reader/verify-local-recovery.mjs /absolute/path/1-mohamed-YYYY-MM-DD-restore.tar.gz <trusted_sha256_from_history>`
+
+  It works without production credentials or network access, verifies the expected digest, and reconstructs the archive only in PGlite. This is **not** importing data into the production app. The SHA must be taken from a trusted owner-only `backup_history` record and never inferred from the untrusted file.
+- New **manual** workflow `.github/workflows/recovery-drill.yml` accepts `backup_date` and `READ_ONLY_VERIFICATION`, is gated to `refs/heads/main`, and uses the existing protected `google-drive-backup` secrets. It performs only remote reads and ephemeral reconstruction, with backup-job concurrency. Since this workflow only exists on a DRAFT branch, it **cannot run from the normal GitHub Actions UI until merged onto the default branch**, and no real cloud-recovery drill has been performed yet. Its job may also require protected-environment approval.
+- Automated tests: `cloud-rehearsal-contract.test.mjs` denies unsafe Drive operations, wrong date/format/ID/path/size/digest metadata; `cloud-rehearsal-local.test.mjs` builds a real nine-table TAR from seeded isolated PostgreSQL, checks an isolated restore and rejects tampered outer archive and symlinks. This local drill runs as part of PR CI; it is distinct from a real selected Drive download.
+
+**Critical scope boundaries:** only nine-table `plain-business` archives are supported by this drill. Legacy `.age` encrypted full database backups and 12-table portable JSON have distinct formats and need separate authorized recovery mechanisms. The nine-table archive **does not restore Auth logins, app_owner/app_members or backup_history**; it proves database business rows can be recovered separately, not that a live production cutover is safe.
+
+## Independent production acceptance still required
+
+1. Real Drive backup selection and verified download with the protected manual workflow (after a separate approved merge); no upload or deletion.
+2. New empty **isolated** Supabase project rehearsal for owner/Auth mapping and affected ledger statements; compare all financial balances with the source snapshot. A PGlite result is encouraging but is not a production-ready full Supabase cutover.
+3. Explicit maintenance fencing, forced fresh rollback backup and tested return to original environment before any future "restore", "replace", "merge" or "delete-all" action is offered in the website.
+4. A separate independent audit of privileged credentials, archive handling, retained IDs and rollback. Any change affecting production data requires another explicit user-approved PR.
+
+**STOP BEFORE MERGE**: the only safe current UI is inspect, compare, cloud metadata selection and cancellation impact preview. There is no active destructive endpoint.
+
+---
+
 # Stage 2 implemented on the same draft PR — NOT MERGED
 
 - Browser-only read/compare: `src/lib/backup/compare-local.ts`, `read-bounded.ts` and `local-backup-inspector.tsx` now compare a chosen verified local portable JSON file against a **fresh, owner-only** current snapshot obtained through existing `GET /api/backup/export?format=json`. The downloaded current dataset remains in memory in the owner's browser; no upload, write or persistence. Handles 12 tables, stable primary/composite keys, duplicate rejection, canonical nested row equality, counts of old-only/new-only/modified/unchanged rows, owner/member identity mismatch warning, and *counts* of potentially affected cash accounts and contractors. **It does not compute financial balances or prove that replace/merge would work.** Snapshot may become stale; any eventual restore must recompare under maintenance fencing.
