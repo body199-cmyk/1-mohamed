@@ -1,0 +1,57 @@
+name: Verify one historical Google Drive backup without restoration to production
+
+on:
+  workflow_dispatch:
+    inputs:
+      backup_date:
+        description: "Existing Cairo backup date (YYYY-MM-DD) from Settings history"
+        type: string
+        required: true
+      confirmation:
+        description: "Type READ_ONLY_VERIFICATION (no production writes)"
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-google-drive-backup
+  cancel-in-progress: false
+
+jobs:
+  isolated-recovery:
+    if: ${{ github.ref == 'refs/heads/main' && inputs.confirmation == 'READ_ONLY_VERIFICATION' }}
+    name: Read one Drive archive, verify SHA-256 and replay in disposable PGlite
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    environment: google-drive-backup
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Validate requested date without touching credentials
+        env:
+          SELECTED_DATE: ${{ inputs.backup_date }}
+        run: |
+          node -e 'const d=process.env.SELECTED_DATE;if(!/^\d{4}-\d{2}-\d{2}$/.test(d)||Number.isNaN(Date.parse(d+"T00:00:00Z"))||new Date(d+"T00:00:00Z").toISOString().slice(0,10)!==d)process.exit(1)'
+      - name: Install locked PGlite and dedicated reader dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Install pinned backup tools and rclone
+        uses: ./.github/actions/install-backup-tools
+      - name: Confirm SQL/Drive operations stay read-only
+        run: |
+          node --test tools/backup-reader/cloud-rehearsal-contract.test.mjs
+          node --check tools/backup-reader/cloud-rehearsal.mjs
+      - name: Retrieve one selected backup and test isolated reconstruction
+        env:
+          GITHUB_EVENT_NAME: workflow_dispatch
+          BACKUP_REHEARSAL_ONLY: 'true'
+          BACKUP_REHEARSAL_DATE: ${{ inputs.backup_date }}
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          RCLONE_CONFIG_DRIVE_TOKEN: ${{ secrets.RCLONE_CONFIG_DRIVE_TOKEN }}
+          RCLONE_CONFIG_DRIVE_CLIENT_ID: ${{ secrets.RCLONE_CONFIG_DRIVE_CLIENT_ID }}
+          RCLONE_CONFIG_DRIVE_CLIENT_SECRET: ${{ secrets.RCLONE_CONFIG_DRIVE_CLIENT_SECRET }}
+        run: node --max-old-space-size=256 --max-semi-space-size=2 tools/backup-reader/cloud-rehearsal.mjs
