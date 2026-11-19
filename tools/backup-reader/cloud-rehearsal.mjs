@@ -7,15 +7,14 @@
  */
 import pg from 'pg';
 import { spawnSync } from 'node:child_process';
-import { createHash } from 'node:crypto';
-import { createReadStream, mkdtempSync, rmSync, statSync } from 'node:fs';
+import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { basename, join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { caCertificate } from './export.mjs';
 import { sourceConnection } from './contract.mjs';
 import { selectedCloudArchive, onlyReadFromDrive } from './cloud-rehearsal-contract.mjs';
-import { proveBusinessRecovery } from './business-replay-check.mjs';
+import { verifySelectedLocalArchive } from './cloud-rehearsal-local.mjs';
 import { ROOT_FOLDER } from '../google-drive-rclone.mjs';
 
 function requireEnvironment(env) {
@@ -47,11 +46,6 @@ function command(env, args, selectedRemote, localDownload) {
     throw Error('Drive read failed; raw credentials/diagnostics withheld');
   }
   return (result.stdout ?? '').trim();
-}
-async function sha256(path) {
-  const hash = createHash('sha256');
-  for await (const chunk of createReadStream(path)) hash.update(chunk);
-  return hash.digest('hex');
 }
 export async function rehearseSelectedCloudBackup(env = process.env) {
   requireEnvironment(env);
@@ -88,18 +82,9 @@ export async function rehearseSelectedCloudBackup(env = process.env) {
     const archive = join(work, basename(selection.filename));
     // This is strictly REMOTE -> LOCAL, no remote write or SQL modification.
     command(env, ['copyto', selection.remote, archive, '--immutable'], selection.remote, archive);
-    if (statSync(archive).size !== selection.size
-      || await sha256(archive) !== selection.sha256) {
-      throw Error('Cloud restore rehearsal: downloaded archive does not match trusted history');
-    }
-    // PGlite reconstruction runs locally only. All row hashes and identities checked.
-    const verified = await proveBusinessRecovery(archive);
-    if (!verified.exactMatch || verified.restoredTables !== 9 || !verified.reactivatedFixture) {
-      throw Error('Cloud restore rehearsal: isolated restore verification failed');
-    }
-    return { date: selection.date, selected_file_verified: true,
-      isolated_restore_verified: true, restored_tables: verified.restoredTables,
-      production_reads_only: true, production_writes: false };
+    const verified = await verifySelectedLocalArchive(archive, selection);
+    return { date: selection.date, ...verified,
+      production_reads_only: true };
   } finally {
     if (connected) { await client.query('rollback').catch(() => undefined); await client.end().catch(() => undefined); }
     rmSync(work, { recursive: true, force: true });
