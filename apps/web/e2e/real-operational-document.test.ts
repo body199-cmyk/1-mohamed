@@ -43,11 +43,15 @@ describe("real operational five-format document", () => {
     expect(createOperationalReportImageLayout(paper)).toMatchObject({ width: 1440 });
     const pages = paginateOperationalReportForPdf(paper);
     expect(pages.length).toBeGreaterThan(1);
-    expect(pages.flatMap(page => page.rows)).toEqual(paper.rows);
+    const pagedRows = pages.flatMap(page => page.rows);
+    expect(pagedRows).toEqual(paper.rows);
+    expect(pagedRows.map(row => row[0])).toEqual(Array.from({ length: 105 }, (_, index) =>
+      (index + 1).toLocaleString("ar-EG", { useGrouping: false })));
     const html = renderOperationalReportHtml(paper);
     expect(html).toContain('class="details-table wide-table"');
     expect(html).toContain('<span class="ltr-token">2026-11-10</span>');
-    expect(html).toContain('TR-261115-104-05');
+    expect(html).toContain('<span class="ltr-token">١٠٥</span>');
+    expect(html).not.toContain('TR-261115-104-05');
   });
   it("formats persisted trip records without demo data or omitted commercial columns", () => {
     const report = { rows: [{
@@ -58,7 +62,7 @@ describe("real operational five-format document", () => {
       vehicle_rate_piastres: "11000", expense_piastres: "500",
       contractor_total_piastres: "9007199254740993123",
       vehicle_total_piastres: "9007199254740993000",
-      notes: "تسوية", cancel_reason: null
+      notes: "تسوية", is_cancelled: true, cancel_reason: "سبب خاص"
     }], total_count: "1", next_cursor: null };
     const doc = buildRealOperationalDocument("trips.list", report, lookups,
       "2026-01-01", "2026-01-31", "2026-02-01",
@@ -66,7 +70,13 @@ describe("real operational five-format document", () => {
     expect(doc.businessName).not.toContain("تجريبية");
     expect(doc.metadata).toContainEqual({ label: "العربية المحددة", value: "عربية ١" });
     expect(doc.metadata).toContainEqual({ label: "المقاول المحدد", value: "المقاول الأول" });
-    expect(doc.columns.length).toBe(16);
+    expect(doc.columns).toHaveLength(15);
+    expect(doc.columns[0]?.label).toBe("م");
+    expect(doc.columns.map(column => column.label)).not.toContain("سبب الإلغاء");
+    expect(doc.rows[0]?.[0]).toBe("١");
+    expect(doc.rows[0]).toContain("ملغى");
+    expect(doc.rows[0]).not.toContain("سبب خاص");
+    expect(doc.rows[0]).not.toContain("TR1");
     expect(doc.rows[0]).toContain("عربية ١");
     expect(doc.rows[0]).toContain("المقاول الأول");
     expect(doc.rows[0]).toContain("12.500");
@@ -85,6 +95,8 @@ describe("real operational five-format document", () => {
     };
     const doc = buildRealOperationalDocument("payments.list", report, lookups,
       "2026-01-01", "2026-01-31", "2026-02-01");
+    expect(doc.rows[0]?.[0]).toBe("PAY1");
+    expect(doc.columns.at(-1)?.label).toBe("سبب الإلغاء");
     expect(doc.rows[0]).toContain("125");
     const metrics = doc.summarySections[0]!.metrics;
     expect(metrics.find(m => m.label === "رصيد أول الفترة")?.value).toBe("100 ج.م");

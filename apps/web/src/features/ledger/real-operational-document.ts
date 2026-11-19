@@ -17,11 +17,13 @@ type SourceReport = {
   current_cash_balance_piastres?: string;
 };
 
+const tripRowNumber = new Intl.NumberFormat("ar-EG", { useGrouping: false });
+
 const tripColumns = [
-  "id", "trip_date", "vehicle_id", "counterparty_contractor_id", "direction",
+  "row_number", "trip_date", "vehicle_id", "counterparty_contractor_id", "direction",
   "origin", "destination", "weight_milli_tonnes",
   "contractor_rate_piastres", "vehicle_rate_piastres", "expense_piastres",
-  "contractor_total_piastres", "vehicle_total_piastres", "notes", "is_cancelled", "cancel_reason"
+  "contractor_total_piastres", "vehicle_total_piastres", "notes", "is_cancelled"
 ] as const;
 const paymentColumns = [
   "id", "payment_date", "vehicle_id", "responsible_contractor_id",
@@ -29,7 +31,7 @@ const paymentColumns = [
 ] as const;
 
 const visualWidthWeights: Readonly<Record<string, number>> = {
-  id: 1.8, trip_date: 1.2, payment_date: 1.2, vehicle_id: 1.15,
+  row_number: 0.55, id: 1.8, trip_date: 1.2, payment_date: 1.2, vehicle_id: 1.15,
   counterparty_contractor_id: 1.55, responsible_contractor_id: 1.55,
   direction: 1.15, notes: 1.45, origin: 1.25, destination: 1.25,
   is_cancelled: 0.7, cancel_reason: 1.15,
@@ -43,7 +45,7 @@ export function styleRealOperationalExport(
   const columns = keys.map((key, index) => ({
     ...document.columns[index]!,
     widthWeight: visualWidthWeights[key] ?? 1,
-    direction: key === "id" || key.endsWith("_date") || key.endsWith("_piastres") ||
+    direction: key === "row_number" || key === "id" || key.endsWith("_date") || key.endsWith("_piastres") ||
       key === "weight_milli_tonnes" ? "ltr" as const : "rtl" as const,
   }));
   const summary = document.summarySections[0]!;
@@ -84,12 +86,13 @@ export function buildRealOperationalDocument(
   const fields = reportFields(type);
   const keys: readonly string[] = type === "trips.list" ? tripColumns : paymentColumns;
   const columns = keys.map(key => {
+    if (key === "row_number") return { label: "م", widthWeight: visualWidthWeights.row_number };
     const field = fields.find(f => f.key === key);
     if (!field) throw new Error("تعريف عمود التقرير غير صالح.");
     return { label: field.title, widthWeight: ["notes", "origin", "destination"].includes(key) ? 1.4 : 1 };
   });
-  const rows = report.rows.map(row =>
-    keys.map(key => displayLedgerField(key, row[key], lookups)));
+  const rows = report.rows.map((row, index) => keys.map(key =>
+    key === "row_number" ? tripRowNumber.format(index + 1) : displayLedgerField(key, row[key], lookups)));
   const metrics: { label: string; value: string }[] = [
     { label: "عدد السجلات", value: String(report.total_count) }
   ];
