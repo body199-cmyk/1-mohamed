@@ -1,8 +1,8 @@
 # Independent pre-handoff audit — LIVE working record
 
-Status: **in progress; evidence is appended as discovered so another engineer can resume safely.**
+Status: **completed source audit; findings are independently recorded for a separate implementation/review agent.**
 
-- Audit date: 2026-11-18 (UTC sandbox).
+- Audit date: 2026-11-19 (UTC sandbox).
 - Repository: `body199-cmyk/1-mohamed`.
 - Main baseline: `47742e3ae5f7a7846e10e10960ac6fc5ada1bf2e`.
 - PR #98 baseline: `b0b3bde7c287c745b277be22930d68dc8a5b49a9` (three UI files; 11 additions/7 deletions).
@@ -10,9 +10,9 @@ Status: **in progress; evidence is appended as discovered so another engineer ca
 - Safety: no production INSERT/UPDATE/DELETE/TRUNCATE, restore, seed, or reset will be attempted. Temporary local test files and synthetic fixtures only.
 - Platform security: the reviewed project deploys to Vercel/Supabase, not Genspark Hosted. Genspark access descriptors are therefore not applicable; actual Next.js and database gates are audited.
 
-## Executive summary (provisional)
+## Executive summary
 
-One confirmed HIGH financial workflow failure and one confirmed MEDIUM revision-invalidation loading deadlock are already recorded below. The exact arithmetic and authorization implementations remain under review; passing tests are not treated as proof of correctness. Do not interpret an early checkpoint as a complete audit or release recommendation.
+Three actionable findings are recorded below: one confirmed HIGH financial workflow failure, one confirmed MEDIUM PR #98 revision-invalidation loading deadlock, and one confirmed MEDIUM portable-backup consistency risk. Passing isolated tests are not treated as proof of live Supabase correctness or multi-connection safety.
 
 ## Live findings (full evidence for each)
 
@@ -67,7 +67,12 @@ One confirmed HIGH financial workflow failure and one confirmed MEDIUM revision-
 |---|---|---|
 | `git fetch origin main pull/98/head:refs/remotes/origin/pr-98` | PASS | main at `47742e3…`; PR #98 head fetched at `b0b3bde…`; no local source change. |
 | `gh pr view 98 ...` / independent full diff | PASS | PR #98 is OPEN, Draft, MERGEABLE, targeting main; exactly 3 UI files, no DB changes. CI run claimed by PR body not independently sufficient. |
-| `npm run db:verify` | RUNNING | PGlite isolated verifier only; redirected to an uncommitted local log under `docs/audits/`. |
+| `npm run db:verify` | PASS | Full isolated A/B/C, payment, financial, report, member and backup-history suite passed; PGlite/single-connection only. |
+| `npm test` | PASS | Package unit suites passed: 233 tests. |
+| `npm run test:web` | PASS | 28 files / 193 tests passed. |
+| `npm run typecheck` | PASS | Typecheck completed successfully. |
+| `npm run build` | PASS | Production build completed successfully. |
+| `npm run test:workspace` | BLOCKED | Playwright could not launch because the pinned Chromium executable is absent; no browser assertion ran. |
 | Source grep for endpoint methods, RLS/RPC definitions and raw HTML sinks | PASS | Endpoint inventory captured; no direct `dangerouslySetInnerHTML`/DOM HTML-injection sink found by the initial grep. Dedicated generated-HTML/CSV checks still to review. |
 | Production destructive or live-data tests | NOT RUN (safety decision) | Prohibited without isolated/test fixtures; no real business rows or credentials accessed. |
 
@@ -83,15 +88,15 @@ The final cleanups in `finally` are appropriately token-gated for `real-reports.
 - Numeric formatted text in XLSX may be intentional to avoid spreadsheet precision loss; not automatically a functional defect.
 - Exact current hosted Auth settings, deployment migration parity and production records are outside this audit's evidence; no claim is made from old STATUS entries.
 
-## Remediation priority and release recommendation (provisional only)
+## Remediation priority and release recommendation
 
 1. STOP incorrect UI/API opening-balance writes; independently execute isolated SQL and wire-payload regression before owner acceptance.
 2. Add deterministic stale/revision/unmount race tests before accepting PR #98. Ensure no active generation can have its state overwritten by an obsolete generation.
 3. Do not treat portable export as a proven recoverable consistent backup until snapshot semantics and real isolated recovery are proven.
 4. Complete full source/security/dependency/browser audit before final GO/NO-GO decision.
 
-**Current recommendation: CONDITIONAL GO is not yet justified; keep as audit-in-progress / NO-GO for new final-owner sign-off pending completion below.** This does not request or authorize a production rollback.
+**Current recommendation: NO-GO for final owner sign-off until F-001 and F-002 are fixed and F-003 has an accepted snapshot-consistency design.** This does not request or authorize a production rollback.
 
 ## Preservation attestation
 
-So far only `docs/audits/INDEPENDENT_PRE_HANDOFF_AUDIT.md`, the companion JSON, and temporary local verification output are created in the audit workspace. Production code, production data, Supabase/Vercel settings, PR #98 and main have not been modified, merged, reset, migrated, or deployed by this audit.
+Only `docs/audits/INDEPENDENT_PRE_HANDOFF_AUDIT.md` and the companion JSON are intended for this audit commit; temporary verification output is not part of the commit. Production code, production data, Supabase/Vercel settings, PR #98 and main have not been modified, merged, reset, migrated, or deployed by this audit.

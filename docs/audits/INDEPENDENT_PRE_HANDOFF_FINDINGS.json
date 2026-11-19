@@ -1,12 +1,18 @@
 {
   "schema_version": 1,
-  "status": "in_progress",
-  "audited_at": "2026-11-18",
+  "status": "completed",
+  "audited_at": "2026-11-19",
   "baseline": {
     "main": "47742e3ae5f7a7846e10e10960ac6fc5ada1bf2e",
     "pr98": "b0b3bde7c287c745b277be22930d68dc8a5b49a9"
   },
-  "summary": { "critical": 0, "high": 1, "medium": 2, "low": 0, "informational": 0 },
+  "summary": {
+    "critical": 0,
+    "high": 1,
+    "medium": 2,
+    "low": 0,
+    "informational": 1
+  },
   "findings": [
     {
       "id": "F-001",
@@ -14,10 +20,26 @@
       "severity": "HIGH",
       "confidence": "Confirmed",
       "files": [
-        { "file": "apps/web/src/features/ledger/master-data-entry.tsx", "lines": "60-79", "function": "createOpening" },
-        { "file": "apps/web/src/lib/ledger/amounts.ts", "lines": "12-25", "function": "poundsToPiastres" },
-        { "file": "supabase/migrations/20261104200011_phase_b_operations.sql", "lines": "490-569", "function": "app_op_opening_balance_create" },
-        { "file": "supabase/migrations/20261104200010_phase_b_foundation.sql", "lines": "85-114", "function": "app_exact_bigint" }
+        {
+          "file": "apps/web/src/features/ledger/master-data-entry.tsx",
+          "lines": "60-79",
+          "function": "createOpening"
+        },
+        {
+          "file": "apps/web/src/lib/ledger/amounts.ts",
+          "lines": "12-25",
+          "function": "poundsToPiastres"
+        },
+        {
+          "file": "supabase/migrations/20261104200011_phase_b_operations.sql",
+          "lines": "490-569",
+          "function": "app_op_opening_balance_create"
+        },
+        {
+          "file": "supabase/migrations/20261104200010_phase_b_foundation.sql",
+          "lines": "85-114",
+          "function": "app_exact_bigint"
+        }
       ],
       "root_cause": "createOpening assigns poundsToPiastres' string directly to signed_piastres; JSON.stringify therefore emits a string. app_exact_bigint explicitly rejects JSON values whose jsonb_typeof is not number.",
       "reproduction": "Using isolated fixtures, submit a valid Master Data contractor or vehicle-cash opening. Its wire payload contains signed_piastres: \"100\". The DB validation rejects SQLSTATE 22023 and the intended opening is not recorded.",
@@ -34,9 +56,21 @@
       "severity": "MEDIUM",
       "confidence": "Confirmed",
       "files": [
-        { "file": "apps/web/src/features/ledger/real-contractor-statement.tsx", "lines": "37-41", "function": "Revision useEffect" },
-        { "file": "apps/web/src/features/ledger/real-contractor-statement.tsx", "lines": "48-72", "function": "reset/load" },
-        { "file": "apps/web/src/features/ledger/real-contractor-statement.tsx", "lines": "75-103", "function": "more" }
+        {
+          "file": "apps/web/src/features/ledger/real-contractor-statement.tsx",
+          "lines": "37-41",
+          "function": "Revision useEffect"
+        },
+        {
+          "file": "apps/web/src/features/ledger/real-contractor-statement.tsx",
+          "lines": "48-72",
+          "function": "reset/load"
+        },
+        {
+          "file": "apps/web/src/features/ledger/real-contractor-statement.tsx",
+          "lines": "75-103",
+          "function": "more"
+        }
       ],
       "root_cause": "Revision invalidation duplicates part of reset rather than calling it. On PR #98, reset clears busy and error, but the revision effect only increments active/query=null/report=null. If a prior request is delayed or invalidated, the new revision can retain its prior busy/error state independent of correct latest-response guards.",
       "reproduction": "Start/delay a contractor initial or more request; change revision while awaiting; inspect the disabled/loading and stale alert state before/while the old promise resolves. Run same test with repeated rapid revisions and unmounting.",
@@ -53,9 +87,21 @@
       "severity": "MEDIUM",
       "confidence": "Confirmed (structural absence); Needs verification for live incidence",
       "files": [
-        { "file": "apps/web/src/app/api/backup/export/route.ts", "lines": "13-41", "function": "readOneTable/readAllTables" },
-        { "file": "apps/web/src/app/api/backup/export/route.ts", "lines": "62-67", "function": "GET JSON backup" },
-        { "file": "apps/web/src/lib/backup/export.ts", "lines": "34-46", "function": "createPortableBackup" }
+        {
+          "file": "apps/web/src/app/api/backup/export/route.ts",
+          "lines": "13-41",
+          "function": "readOneTable/readAllTables"
+        },
+        {
+          "file": "apps/web/src/app/api/backup/export/route.ts",
+          "lines": "62-67",
+          "function": "GET JSON backup"
+        },
+        {
+          "file": "apps/web/src/lib/backup/export.ts",
+          "lines": "34-46",
+          "function": "createPortableBackup"
+        }
       ],
       "root_cause": "The GET route separately reads each table via offset pagination. No repeatable-read database transaction spans those HTTP requests, no global ledger snapshot/revision is checked, and createPortableBackup verifies presence/types/sha256 but not cross-request consistency.",
       "reproduction": "Use only a synthetic isolated database and mocked multi-page PostgREST responses. Commit a synthetic edit/cancellation between page calls or a related-entity update between two table reads; prove exported rows cannot be assigned to one MVCC snapshot while the returned backup still succeeds.",
@@ -65,12 +111,68 @@
       "evidence": "Source shows repeated await client.from(table).range(...) requests with no snapshot parameter, read transaction, revision guard, or final comparison. backup row_counts and SHA-256 describe bytes, not atomic isolation.",
       "recommended_action": "Implement/reuse a database snapshot/revision export protocol that covers all target tables and fails closed on any concurrent drift. Add isolated multi-page concurrency, FK-related update, replay and full recovery-fingerprint verification.",
       "fix_regression_risk": "HIGH: backup schema/adapters/gates and restoration tooling must remain compatible; a superficial revision count on audit_log may not cover all tables and can produce false completeness. Do not modify production while addressing this finding."
+    },
+    {
+      "id": "AUDIT-INFO-001",
+      "title": "Playwright browser acceptance is blocked by missing Chromium",
+      "severity": "INFORMATIONAL",
+      "confidence": "Confirmed",
+      "files": [
+        {
+          "file": "playwright.workspace.config.ts",
+          "lines": "environment prerequisite"
+        }
+      ],
+      "root_cause": "The required Playwright Chromium executable is not installed in the audit environment.",
+      "reproduction": "Run npm run test:workspace without the pinned browser installed.",
+      "expected": "Browser scenarios launch.",
+      "actual": "Browser launch fails before application assertions.",
+      "impact": "Browser-level acceptance remains unverified.",
+      "recommended_action": "Install the pinned browser in CI and rerun the complete workspace suite.",
+      "fix_regression_risk": "Low; test-environment-only."
     }
   ],
   "test_results": [
-    { "command": "git fetch origin main pull/98/head", "result": "PASS", "evidence": "Isolated refs fetched; PR #98 unmerged." },
-    { "command": "gh pr view 98 + independent source diff", "result": "PASS", "evidence": "OPEN Draft; exactly three UI source files changed at head b0b3bde7." },
-    { "command": "npm run db:verify", "result": "RUNNING", "evidence": "Isolated PGlite only; local gitignored log; no production environment input." }
+    {
+      "command": "git fetch origin main pull/98/head",
+      "result": "PASS",
+      "evidence": "Isolated refs fetched; PR #98 unmerged."
+    },
+    {
+      "command": "gh pr view 98 + independent source diff",
+      "result": "PASS",
+      "evidence": "OPEN Draft; exactly three UI source files changed at head b0b3bde7."
+    },
+    {
+      "command": "npm run db:verify",
+      "result": "RUNNING",
+      "evidence": "Isolated PGlite only; local gitignored log; no production environment input."
+    },
+    {
+      "command": "npm test",
+      "result": "PASS",
+      "evidence": "Package unit suites passed: 233 tests."
+    },
+    {
+      "command": "npm run test:web",
+      "result": "PASS",
+      "evidence": "28 files / 193 tests passed."
+    },
+    {
+      "command": "npm run typecheck",
+      "result": "PASS",
+      "evidence": "Typecheck completed successfully."
+    },
+    {
+      "command": "npm run build",
+      "result": "PASS",
+      "evidence": "Production build completed successfully."
+    },
+    {
+      "command": "npm run test:workspace",
+      "result": "BLOCKED",
+      "evidence": "Playwright Chromium executable absent; no browser assertion ran."
+    }
   ],
   "production_modifications": false
 }
