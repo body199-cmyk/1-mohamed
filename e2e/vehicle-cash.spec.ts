@@ -23,7 +23,7 @@ test.describe("T08.4/5 vehicle cash report uses existing payment cash ledger",()
     await page.getByLabel("تاريخ الدفع الحقيقي").fill("2026-11-03");
     await page.getByLabel("المبلغ بالجنيه").fill("100");
     await page.getByRole("button",{name:"تسجيل الدفعة"}).click();
-    await expect(page.getByRole("main").getByRole("status")).toContainText("تم تسجيل الدفعة");
+    await expect(page.getByRole("main").getByRole("status").filter({ hasText: "تم تسجيل الدفعة" })).toBeVisible();
     await page.getByRole("navigation",{name:"التنقل الرئيسي"}).getByRole("link",{name:"نقدية العربية",exact:true}).click();
     await page.getByLabel("من تاريخ كشف العربية").fill("2026-11-03");
     await page.getByLabel("إلى تاريخ كشف العربية").fill("2026-11-05");
@@ -35,7 +35,7 @@ test.describe("T08.4/5 vehicle cash report uses existing payment cash ledger",()
     await expect(table).toContainText("دفعة");
     await expect(table).not.toContainText("REC-001");
     await page.getByLabel("من تاريخ كشف العربية").fill("2026-11-04");
-    await expect(page.getByRole("main").getByRole("status")).toContainText("لا توجد حركات");
+    await expect(page.getByRole("main").getByRole("status").filter({ hasText: "لا توجد حركات" })).toBeVisible();
     await expect(summary).toContainText("180 ج.م");
   });
   test("reconciles cash closing with payments and carries the exact closing balance into the next period",async({page})=>{
