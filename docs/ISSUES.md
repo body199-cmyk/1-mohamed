@@ -1,3 +1,7 @@
+## 19 November 2026 — independent audit findings
+
+F-001: Master Data sent a string for opening piastres. F-002: revision could leave a report waiting for a stale request or let obsolete cleanup affect the next report. F-003: portable CSV/JSON used independent offset pages. The [second audit](audits/INDEPENDENT_PRE_HANDOFF_SECOND_REVIEW.md) links each fix to its regression test and records the acceptance that remains.
+
 ## GOOGLE-DRIVE-BACKUP-05 — live trial findings
 Production has11 app tables and no backup_history. Trial previously required a nonexistent table, forcing an unauthorized migration; fixed by allowing only absent history in no-history trials and preserving strict activation checks, covered by29 backup/core tests. Live synthetic encrypted upload succeeded, but shared rclone OAuth project quota403 blocked download including throttled retry. Shared client retirement during2026 is documented upstream; unattended reliability remains unresolved.
 

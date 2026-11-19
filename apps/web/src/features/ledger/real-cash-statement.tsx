@@ -1,6 +1,6 @@
 "use client";
 import ui from "./workspace-ui.module.css";
-import { useEffect,useRef,useState,type FormEvent } from 'react';
+import { useCallback,useEffect,useRef,useState,type FormEvent } from 'react';
 import type { LedgerEntities } from './workspace-data';
 import { postLedgerRead } from '../../lib/ledger/transport';
 import styles from './statement-design.module.css';
@@ -20,8 +20,17 @@ export function RealCashStatement({contractors,vehicles,accounts,disabled,revisi
   const [trips,setTrips]=useState<Map<string,VehicleTrip>>(new Map());const [filtersOpen,setFiltersOpen]=useState(true);
   useEffect(()=>{if(report)(document.getElementById('vehicle-statement-preview')??document.getElementById('vehicle-statement-heading'))?.focus();},[report]);
   const active=useRef(0);const query=useRef<Record<string,unknown>|null>(null);
-  function reset(){active.current++;setReport(null);query.current=null;setError('');}
-  useEffect(()=>{reset();},[revision]);
+  const reset=useCallback(()=>{
+    active.current++;
+    query.current=null;
+    setReport(null);
+    setError('');
+    setBusy(false);
+  },[]);
+  useEffect(()=>{
+    reset();
+    return ()=>{active.current++;};
+  },[revision,reset]);
   async function load(e?:FormEvent){
     e?.preventDefault();if(busy||disabled)return;
     const more=!e;const prior=more?report:null;
@@ -29,7 +38,7 @@ export function RealCashStatement({contractors,vehicles,accounts,disabled,revisi
     const [vehicle_id,responsible_contractor_id]=account.split('|');
     if(!vehicle_id||!responsible_contractor_id||(!allHistory&&(!from||!to||from>to))){setError('حدد الحساب وفترة صحيحة.');return;}
     const payload=more?query.current!:{vehicle_id,responsible_contractor_id,...(allHistory?{all_history:true}:{date_from:from,date_to:to}),limit:200};
-    const token=active.current;setBusy(true);setError('');if(!more)setReport(null);
+    const token=++active.current;setBusy(true);setError('');if(!more)setReport(null);
     try{
       const result=await postLedgerRead<CashReport>('cash.statement',{...payload,...(prior?{cursor:prior.next_cursor,snapshot:prior.snapshot}:{})});
       if(token!==active.current)return;
@@ -37,7 +46,7 @@ export function RealCashStatement({contractors,vehicles,accounts,disabled,revisi
       const combined=prior?mergeReportPage(prior,result.data):result.data;
       verifyCashReport(combined);const details=await loadVehicleTrips(combined);if(token!==active.current)return;setTrips(details);setReport(combined);setFiltersOpen(false);query.current=payload;
     }catch(cause){if(token===active.current){setReport(null);setError(cause instanceof Error?cause.message:'تعذر تحميل الكشف.');}}
-    finally{setBusy(false);}
+    finally{if(token===active.current)setBusy(false);}
   }
   const vehicle=vehicles.find(v=>v.id===report?.vehicle_id)?.plate_number??report?.vehicle_id??'';
   const contractor=contractors.find(c=>c.id===report?.responsible_contractor_id)?.name??report?.responsible_contractor_id??'';
