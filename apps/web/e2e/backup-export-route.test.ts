@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
+import { createHash } from "node:crypto";
 import { PORTABLE_BACKUP_TABLES } from "../src/lib/backup/export";
 
 const state = vi.hoisted(() => ({ rpc: vi.fn(), authorized: true, owner: true }));
@@ -64,4 +65,29 @@ it("rejects a non-owner and unknown tables before reading snapshot data", async 
   state.owner = true;
   expect((await GET(request("?format=csv&table=auth.users"))).status).toBe(400);
   expect(state.rpc.mock.calls).toEqual([["app_is_owner"], ["app_is_owner"]]);
+});
+
+
+it("streams a large verified JSON attachment without corrupting UTF-8 or the archive hash", async () => {
+  const tables: Record<string, unknown[]> = Object.fromEntries(PORTABLE_BACKUP_TABLES.map(table => [table, []]));
+  const notes = "ح".repeat(65536);
+  tables.trips = Array.from({ length: 37 }, (_, index) => ({ id: "T" + index, notes }));
+  state.rpc.mockResolvedValueOnce({ data: true }).mockResolvedValueOnce({ data: tables });
+
+  const response = await GET(request());
+  expect(response.status).toBe(200);
+  expect(response.headers.get("content-length")).toBeNull();
+  const chunks: Uint8Array[] = [];
+  const reader = response.body!.getReader();
+  for (let result = await reader.read(); !result.done; result = await reader.read()) {
+    chunks.push(result.value);
+  }
+  expect(chunks.length).toBeGreaterThan(1);
+  expect(Math.max(...chunks.map(chunk => chunk.byteLength))).toBeLessThanOrEqual(64 * 1024);
+
+  const received = Buffer.concat(chunks);
+  expect(received.length).toBeGreaterThan(4_500_000);
+  const { sha256, ...archive } = JSON.parse(received.toString("utf8"));
+  expect(archive.tables.trips).toEqual(tables.trips);
+  expect(sha256).toBe(createHash("sha256").update(JSON.stringify(archive)).digest("hex"));
 });

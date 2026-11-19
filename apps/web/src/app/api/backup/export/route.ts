@@ -16,7 +16,19 @@ function result(body: object, status: number, session?: NextResponse) {
 }
 
 function download(body: string, contentType: string, filename: string, session: NextResponse) {
-  const response = new NextResponse(body, { headers: {
+  // A validated archive can exceed the platform limit for buffered responses.
+  const bytes = Buffer.from(body, "utf8");
+  const blockSize = 64 * 1024;
+  let offset = 0;
+  const stream = new ReadableStream<Uint8Array>({
+    pull(controller) {
+      const end = Math.min(offset + blockSize, bytes.length);
+      controller.enqueue(bytes.subarray(offset, end));
+      offset = end;
+      if (offset === bytes.length) controller.close();
+    },
+  });
+  const response = new NextResponse(stream, { headers: {
     "content-type": contentType,
     "content-disposition": 'attachment; filename="' + filename + '"',
     "cache-control": "no-store",
