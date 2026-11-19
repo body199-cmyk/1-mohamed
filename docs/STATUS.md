@@ -1,3 +1,7 @@
+## HISTORICAL-PAYMENT-LINK
+
+PR #101 reproduced the approved D02/D13 split between corrected work and recorded cash. Follow-up tests identified defects in payment editing and business recovery when the old reference was revalidated. See the [follow-up](audits/INDEPENDENT_PATH_A_B_REVIEW_FOLLOWUP.md) for regression evidence and remaining hosted checks.
+
 ## REPORT-PREVIEW — ١٨ نوفمبر ٢٠٢٦
 
 المستخدم وافق على معاينة التصدير فوق العرض الحالي في تقارير النقلات والمدفوعات وكشف العربية، والدمج بعد الاختبار. نفس مستند التصدير يرسم المعاينة. على الموبايل تظهر الورقة كاملة مع تكبير، والتقرير الطويل يتصفح بتخطيط PDF. [PR #96](https://github.com/body199-cmyk/1-mohamed/pull/96) على فرع `codex/in-page-report-preview` ضم تحديث `main` عند `a4840fc51f306f22995cc4b5142ccf0c3e0cf271` مع الحفاظ على توثيق النسخ الاحتياطي. القبول في [SUBTASKS](SUBTASKS.md#report-preview--قبول-المعاينة)، والدليل وحدوده في [HANDOFF_LOG](HANDOFF_LOG.md). الخطوة التالية هي تأكيد نجاح فحوص GitHub على رأس الفرع الجديد ثم الدمج والتحقق من `main`.

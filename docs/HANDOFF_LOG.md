@@ -1,3 +1,7 @@
+## 19 November 2026 — historical payment reference review
+
+PR #101 reproduced the approved D02/D13 split between corrected work and recorded cash. Follow-up tests identified defects in payment editing and business recovery when the old reference was revalidated. See the [follow-up](audits/INDEPENDENT_PATH_A_B_REVIEW_FOLLOWUP.md) for regression evidence and remaining hosted checks.
+
 ## REPORT-PREVIEW — ١٨ نوفمبر ٢٠٢٦
 
 معاينة فوق النتائج القديمة في «التقارير والكشوف» و«العربيات» من نفس مستند التصدير. المراجعة الثانية بواسطة نفس المساعد شملت ترتيب القسمين، منع عرض نتائج جزئية أو قديمة، رفض القراءة، الرصيد السالب، تحرير رابط الصورة في المتصفح، واستمرار حد PDF مع إتاحة تصفح التقارير الأطول. لا تغيير في الحساب أو الصلاحيات أو بيانات الإنتاج.
