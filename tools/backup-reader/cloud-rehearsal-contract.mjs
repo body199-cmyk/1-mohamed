@@ -30,3 +30,24 @@ export function selectedCloudArchive(date, history, remoteFile) {
     remote: 'drive:' + ROOT_FOLDER + '/' + path,
   };
 }
+
+/**
+ * Verify every rclone invocation before spawning it. No mkdir/copy upload,
+ * delete, sync, link, remote-to-remote or arbitrary paths are ever permitted.
+ */
+export function onlyReadFromDrive(args, selectedRemote, localDownload) {
+  const validList = args.length === 5 &&
+    args[0] === 'lsjson' && args[1] === 'drive:' + ROOT_FOLDER &&
+    args[2] === '--recursive' && args[3] === '--files-only' && args[4] === '--hash';
+  const validCopy = args.length === 4 &&
+    args[0] === 'copyto' && args[1] === selectedRemote &&
+    args[2] === localDownload && args[3] === '--immutable' &&
+    typeof selectedRemote === 'string' &&
+    selectedRemote.startsWith('drive:' + ROOT_FOLDER + '/') &&
+    typeof localDownload === 'string' &&
+    localDownload.startsWith('/') && !localDownload.includes('..');
+  if (!validList && !validCopy) {
+    throw Error('Cloud restore rehearsal: unsafe Drive operation blocked');
+  }
+  return args;
+}
