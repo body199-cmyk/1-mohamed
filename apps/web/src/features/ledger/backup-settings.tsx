@@ -46,7 +46,7 @@ export function BackupSettings(){
   </div>
   {notice&&<p role="status">{notice}</p>}
   {history.length===0&&!notice&&<p>لا توجد نسخ سحابية مسجلة حتى الآن.</p>}
-  {history.length>0 && <div aria-label="اختيار نسخة سحابية حسب التاريخ" style={{border:"1px solid var(--border-color)",borderRadius:12,padding:16,marginTop:12}}>
+  {history.length>0 && <div role="region" aria-label="اختيار نسخة سحابية حسب التاريخ" style={{border:"1px solid var(--border-color)",borderRadius:12,padding:16,marginTop:12}}>
   <div className={ui.fieldGroup}>
   <label htmlFor="cloud-backup-date">اختيار نسخة بتاريخ معين — معاينة معلومات فقط</label>
   <select id="cloud-backup-date" className={ui.control}
