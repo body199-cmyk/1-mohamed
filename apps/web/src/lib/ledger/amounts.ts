@@ -24,6 +24,16 @@ export function poundsToPiastres(input: string): string {
   return (signed < 0n ? -whole : whole).toString();
 }
 
+/** The operations API parses JSON numbers as JS numbers before forwarding to SQL. */
+export function exactOpeningPiastres(piastres: string): number {
+  const value = BigInt(piastres);
+  const limit = BigInt(Number.MAX_SAFE_INTEGER);
+  if (value < -limit || value > limit) {
+    throw new Error("قيمة الرصيد تتجاوز حد النقل الرقمي الدقيق. راجع المبلغ.");
+  }
+  return Number(value);
+}
+
 export function piastresToPounds(input: string): string {
   return formatPoundsForDisplay(input).replace(/,/g, "");
 }
