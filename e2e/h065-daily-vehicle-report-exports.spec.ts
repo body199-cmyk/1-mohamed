@@ -68,7 +68,7 @@ function expectDetailRowCount(html: string, count: number, label: string): void 
   expect.soft(tableStart >= 0 && bodyStart >= 0 && bodyEnd >= 0, label + " details table").toBe(true);
   if (bodyStart >= 0 && bodyEnd >= 0) {
     const body = html.slice(bodyStart + "<tbody>".length, bodyEnd);
-    expect.soft((body.match(/<tr>/g) ?? []).length, label + " detail rows").toBe(count);
+    expect.soft((body.match(/<tr(?=[\s>])/g) ?? []).length, label + " detail rows").toBe(count);
   }
 }
 

@@ -1,14 +1,17 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import type { ContractorStatement } from "@ledger/contractor-statements";
-import { toStatementDocument } from "./statement-document";
+import { ReportExportPreview } from "../reports/report-export-preview";
+import { toStatementDocument, toStatementPaper } from "./statement-document";
 import styles from "./statements.module.css";
 
 export function StatementExportActions({ statement, name }: {
   statement: ContractorStatement;
   name: string;
 }) {
+  const document = useMemo(() => toStatementDocument(statement, name), [statement, name]);
+  const paper = useMemo(() => toStatementPaper(document), [document]);
   const [busy, setBusy] = useState(false);
   const lock = useRef(false);
   const [error, setError] = useState<string | null>(null);
@@ -19,9 +22,8 @@ export function StatementExportActions({ statement, name }: {
     setBusy(true);
     setError(null);
     try {
-      const document = toStatementDocument(statement, name);
       const renderer = await import("@ledger/statement-export");
-      const blob = await renderer.renderContractorStatementPng(document);
+      const blob = await renderer.renderOperationalReportPng(paper);
       const file = new File([blob], `statement-${statement.period.from}-${statement.period.to}.png`, { type: "image/png" });
       if (typeof navigator.share === "function" && navigator.canShare?.({ files: [file] })) {
         await navigator.share({ files: [file], title: `كشف حساب ${name}` });
@@ -59,7 +61,6 @@ export function StatementExportActions({ statement, name }: {
     const preview = kind === "print" ? window.open("", "_blank") : null;
     try {
       if (kind === "print" && !preview) throw new Error("اسمح بفتح نافذة الطباعة في المتصفح ثم حاول مجددًا.");
-      const document = toStatementDocument(statement, name);
       const renderer = await import("@ledger/statement-export");
       if (kind === "xlsx") {
         const blob = renderer.renderContractorStatementXlsx(document);
@@ -75,7 +76,7 @@ export function StatementExportActions({ statement, name }: {
           window.setTimeout(() => URL.revokeObjectURL(url), 10000);
         }
       } else if (kind === "pdf") {
-        const blob = await renderer.renderContractorStatementPdf(document);
+        const blob = await renderer.renderOperationalReportPdf(paper);
         const url = URL.createObjectURL(blob);
         const link = window.document.createElement("a");
         try {
@@ -88,7 +89,7 @@ export function StatementExportActions({ statement, name }: {
           window.setTimeout(() => URL.revokeObjectURL(url), 10000);
         }
       } else if (kind === "png") {
-        const blob = await renderer.renderContractorStatementPng(document);
+        const blob = await renderer.renderOperationalReportPng(paper);
         const url = URL.createObjectURL(blob);
         const link = window.document.createElement("a");
         try {
@@ -112,7 +113,7 @@ export function StatementExportActions({ statement, name }: {
         window.setTimeout(() => URL.revokeObjectURL(url), 10000);
       } else if (preview) {
         preview.document.open();
-        preview.document.write(renderer.renderContractorStatementHtml(document));
+        preview.document.write(renderer.renderOperationalReportHtml(paper));
         preview.document.close();
         const fontStyles = preview.document.createElement("link");
         fontStyles.rel = "stylesheet";
@@ -137,7 +138,9 @@ export function StatementExportActions({ statement, name }: {
     }
   }
 
-  return <section aria-label="تصدير كشف الحساب" className={styles.exportPanel}>
+  return <>
+  <ReportExportPreview document={paper} />
+  <section aria-label="تصدير كشف الحساب" className={styles.exportPanel}>
     <div className={styles.exportActions}>
       <button className={[styles.exportButton, styles.exportButtonPrimary].join(" ")} disabled={busy} onClick={shareStatementImage}>مشاركة صورة الكشف مباشرة</button>
       <button className={styles.exportButton} disabled={busy} onClick={() => exportStatement("print")}>طباعة / حفظ PDF</button>
@@ -148,5 +151,5 @@ export function StatementExportActions({ statement, name }: {
     </div>
     <p className={styles.exportDescription}>الملخص والتفاصيل لنفس المقاول والفترة المعروضين. صورة PNG للكشوف متوسطة الحجم. تنزيل PDF المباشر يصل إلى ٦٠ صفحة، بصور Cairo واضحة مرقّمة (نصه غير قابل للتحديد/البحث). لو عايز PDF بنص قابل للتحديد والبحث استخدم طباعة / حفظ PDF. ملف Excel فيه ملخص وتفاصيل RTL؛ المبالغ والمراجع كنص للحفاظ على الدقة والأصفار البادئة. لا تُحذف حركات بصمت.</p>
     {error && <p role="alert">{error}</p>}
-  </section>;
+  </section></>;
 }

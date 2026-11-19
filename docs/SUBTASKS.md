@@ -2,6 +2,11 @@
 
 Verify both opening types and a same-key retry, supersede delayed initial and next-page report requests after revision, and reject concurrent drift during portable export. The [second audit](audits/INDEPENDENT_PRE_HANDOFF_SECOND_REVIEW.md) records the isolated database and browser evidence.
 
+## REPORT-EXPORT-STYLE — قبول ملفات التقارير
+
+- ١٠٥ نقلات بعناوين عربية وتواريخ وأرقام كاملة، وكل الصفوف موجودة بعد تقسيم PDF. نفس ملفات PDF وPNG عند عرض ٣٩٠ و١٤٤٠ بكسل في المتصفح نفسه.
+- معاينة النقلات تحتفظ بتنسيقها، ومعاينة كشف العربية ما زالت تطابق صورة تنزيله. قالب الطباعة يحتفظ بعرض الورقة وعناوين الأعمدة الـ١٦.
+
 ## REPORT-PREVIEW — قبول المعاينة
 
 - نفس صورة PNG للتقرير الكامل قبل العرض الحالي. عند تجاوز حد الصورة تظهر صفحات قابلة للتنقل بنفس تخطيط PDF. على الموبايل تظهر الورقة كاملة ويمكن تكبيرها.

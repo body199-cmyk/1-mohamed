@@ -7,7 +7,7 @@ import type { LedgerEntities, LedgerWrite } from "./workspace-data";
 import { OperationalRows } from "./operational-rows";
 import { ReportExportActions } from "../reports/report-export-actions";
 import { ReportExportPreview } from "../reports/report-export-preview";
-import { buildRealOperationalDocument, isFullOperationalReport } from "./real-operational-document";
+import { buildRealOperationalDocument, isFullOperationalReport, styleRealOperationalExport } from "./real-operational-document";
 import { assertReportPage, mergeReportPage, type ReportPage } from "./report-snapshot";
 import { RecordActions } from "./record-actions";
 import { ReportHistoryScope } from "../reports/report-period";
@@ -118,6 +118,7 @@ export function RealReports({ contractors, vehicles, accounts, disabled, revisio
       });
     } catch { return null; }
   })();
+  const paperDocument = fullExportDocument && styleRealOperationalExport(fullExportDocument, reportType);
 
   return <fieldset disabled={disabled} style={{border:0,padding:0,minWidth:0}}>
     {notice && <p role="alert">{notice}</p>}
@@ -173,7 +174,7 @@ export function RealReports({ contractors, vehicles, accounts, disabled, revisio
         <p role="status" aria-live="polite">{busy ? "جارٍ تحديث التقرير تلقائيًا…" : "البيانات تتحدث تلقائيًا عند تغيير الفلاتر."}</p>
       </div>
       {report && <>
-        {!busy && !disabled && fullExportDocument && <ReportExportPreview document={fullExportDocument} />}
+        {!busy && !disabled && paperDocument && <ReportExportPreview document={paperDocument} />}
         {allHistory && <p>كل الحساب من البداية: {report.date_from} — {report.date_to}</p>}
         {reportType === "trips.list" && report.totals && <WorkTotals totals={report.totals} />}
 
@@ -199,6 +200,7 @@ export function RealReports({ contractors, vehicles, accounts, disabled, revisio
         {!busy && fullExportDocument && <div style={{ marginTop: 16 }}>
           <h3>تصدير التقرير الكامل بخمس صيغ ومشاركة الصورة</h3>
           <ReportExportActions document={fullExportDocument}
+            visualDocument={paperDocument ?? undefined}
             fileNameBase={`real-${reportType.replace(".", "-")}-${report.date_from ?? reportFrom}-${report.date_to ?? reportTo}`} />
         </div>}
         {isFullOperationalReport(report) && !fullExportDocument &&

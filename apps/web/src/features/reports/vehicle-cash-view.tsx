@@ -8,6 +8,7 @@ import { DEMO_PRIMARY_RESPONSIBLE_ID,cashResponsibleForTrip,cairoBusinessDate } 
 import { buildVehicleCashReport } from "./vehicle-cash-report";
 import styles from "../payments/payments.module.css";
 import { ReportExportActions } from "./report-export-actions";
+import { ReportExportPreview } from "./report-export-preview";
 import { toVehicleCashOperationalReport } from "./report-export-documents";
 
 function egp(piastres: string): string {
@@ -88,6 +89,7 @@ export function VehicleCashView() {
     </section>
 
     {!result.ok ? <p className={styles.error} role="alert">{result.error}</p> : <>
+      {exportDocument && <ReportExportPreview document={exportDocument} />}
       {exportDocument && <ReportExportActions document={exportDocument} fileNameBase={"vehicle-cash-" + vehicleId + "-" + responsibleId + "-" + effectiveFrom + "-" + effectiveTo} />}
       <section className={styles.summary} aria-label="ملخص كشف نقد العربية">
         <div><span>الرصيد السابق للفترة</span><strong>{egp(result.value.openingPiastres)}</strong></div>

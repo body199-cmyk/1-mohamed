@@ -7,6 +7,7 @@ import { buildDailyWorkReport, type DailyWorkTotals } from "./daily-work-report"
 import {ReportHistoryScope} from "./report-period";
 import styles from "./daily-work.module.css";
 import { ReportExportActions } from "./report-export-actions";
+import { ReportExportPreview } from "./report-export-preview";
 import { toDailyWorkOperationalReport } from "./report-export-documents";
 
 function currentCairoDate(): string {
@@ -96,6 +97,7 @@ export function DailyWorkView() {
         : "تم إيقاف عرض المجاميع: بيانات نقلة غير متطابقة مع محرك الحساب" +
           (report.tripId ? " (" + report.tripId + ")." : ".")}
     </p> : <>
+      {exportDocument && <ReportExportPreview document={exportDocument} />}
       {exportDocument && <ReportExportActions document={exportDocument} fileNameBase={"daily-work-" + (allHistory?"all-history":workDate) + "-" + (contractorId || "all-contractors") + "-" + (vehicleId || "all-vehicles")} />}
       <div className={styles.stats}>
         <TotalCard label={allHistory?"إجمالي كل الحساب":"إجمالي اليوم المحدد"} totals={report.totals} />

@@ -2,6 +2,10 @@
 
 Validated PR #99 against main `47742e3` and PR #98 `b0b3bde`. The remediation branch fixes Master Data opening serialization, stale report requests, and portable CSV/JSON consistency. See the [second review](audits/INDEPENDENT_PRE_HANDOFF_SECOND_REVIEW.md) for test evidence and remaining isolated Supabase acceptance. Merge and deployment remain pending.
 
+## REPORT-EXPORT-STYLE — ١٩ نوفمبر ٢٠٢٦
+
+قالب ورقة ثابت لمعاينة وتصدير تقارير النقلات واليومية والمدفوعات وكشفي العربية والمقاول. المعاينة الطويلة تستخدم نفس تقسيم صفحات PDF. نتائج الاختبار في سجل التسليم. تقرير النقلات الكامل يبدأ بالرقم ١ ويعرض الحالة فقط من بيانات الإلغاء.
+
 ## REPORT-PREVIEW — ١٨ نوفمبر ٢٠٢٦
 
 المستخدم وافق على معاينة التصدير فوق العرض الحالي في تقارير النقلات والمدفوعات وكشف العربية، والدمج بعد الاختبار. نفس مستند التصدير يرسم المعاينة. على الموبايل تظهر الورقة كاملة مع تكبير، والتقرير الطويل يتصفح بتخطيط PDF. [PR #96](https://github.com/body199-cmyk/1-mohamed/pull/96) على فرع `codex/in-page-report-preview` ضم تحديث `main` عند `a4840fc51f306f22995cc4b5142ccf0c3e0cf271` مع الحفاظ على توثيق النسخ الاحتياطي. القبول في [SUBTASKS](SUBTASKS.md#report-preview--قبول-المعاينة)، والدليل وحدوده في [HANDOFF_LOG](HANDOFF_LOG.md). الخطوة التالية هي تأكيد نجاح فحوص GitHub على رأس الفرع الجديد ثم الدمج والتحقق من `main`.

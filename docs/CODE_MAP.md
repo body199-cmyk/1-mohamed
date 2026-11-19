@@ -4,6 +4,10 @@
 - The real contractor, cash, and operational report components guard obsolete success, error, and completion callbacks with request generations.
 - `apps/web/src/app/api/backup/export/route.ts` uses `app_portable_backup_snapshot` for both formats. `supabase/migrations/20261119110000_portable_backup_snapshot.sql` reads coherent sets and compares them before download.
 
+## REPORT-EXPORT-STYLE — ملفات النقلات والمدفوعات
+
+`real-operational-document.ts` يضيف تنسيق الورقة إلى لقطة التقرير الكاملة. `report-export-actions.tsx` يستخدمه للملفات المرئية والطباعة ومشاركة الصورة. `compact-report.ts` و`render-report-html.ts` يضبطان خلايا الجداول العريضة. المعاينة والتصدير المرئي يستخدمان نفس المستند، وCSV وExcel يقرآن نفس لقطة البيانات. يستخدم `report-export-preview.tsx` تقسيم PDF للمعاينة الطويلة. `contractor-details.tsx` يعرض معاينة كشف المقاول بالفلاتر المختارة. تستخدم صفحات النسخة التجريبية نفس قالب الورقة.
+
 ## REPORT-PREVIEW — معاينة التصدير في الموقع
 
 - `apps/web/src/features/reports/report-export-preview.tsx` وملف CSS المجاور يعرضان الصورة المتولدة محليًا، والتكبير والتنقل بين الصفحات. `features/ledger/real-reports.tsx` و`real-cash-statement.tsx` يمرران نفس المستند المستخدم للتصدير أمام المحتوى الحالي.
