@@ -25,8 +25,9 @@ function cellLines(value: string, column: OperationalReportDocument['columns'][n
 }
 function tableHeights(table: OperationalReportDetailSection, widths: number[], wide: boolean) {
  const { lineHeight, rowInset, minHeight } = tableTypography(wide);
- if (table.rows.length === 0) return [78];
- return table.rows.map(row => {
+ if (wide && table.rows.length === 0) return [78];
+ const rows = table.rows.length ? table.rows : [[table.emptyMessage]];
+ return rows.map(row => {
   const lines = row.map((value, index) => cellLines(value, table.columns[index]!, widths[index]!, wide).length);
   return Math.max(minHeight, rowInset + Math.max(...lines) * lineHeight);
  });
