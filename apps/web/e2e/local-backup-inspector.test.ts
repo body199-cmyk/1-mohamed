@@ -29,7 +29,7 @@ describe("read-only local JSON backup inspection", () => {
     const tables = emptyTables();
     tables.trips = [{ id: "TR-1", vehicle_total_piastres: "10000" }];
     const backup = createPortableBackup(tables);
-    backup.tables.trips[0].vehicle_total_piastres = "20000";
+    (backup.tables.trips[0] as Record<string, unknown>).vehicle_total_piastres = "20000";
     await expect(inspectLocalPortableBackup(JSON.stringify(backup))).rejects.toThrow(/بصمة/);
   });
 
