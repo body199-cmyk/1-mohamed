@@ -70,6 +70,15 @@ test('export PNG and PDF bytes stay identical across mobile/desktop and light/da
    for(const [label,ext] of [['تنزيل صورة PNG','png'],['تنزيل PDF مباشر','pdf']] as const){
     const event=page.waitForEvent('download');await page.getByRole('button',{name:label,exact:true}).click();const d=await event;expect(await d.failure()).toBeNull();const bytes=await fs.readFile((await d.path())!);const hash=crypto.createHash('sha256').update(bytes).digest('hex');const key=report+'.'+ext;
     if(expected.has(key))expect(hash,key+' must not reflow by viewport/theme').toBe(expected.get(key));else expected.set(key,hash);
+    if(ext==='png'){
+     const image=page.getByRole('region',{name:'معاينة التقرير',exact:true}).getByRole('img');
+     await expect(image).toBeVisible();
+     const previewHash=await image.evaluate(async el=>{
+      const bytes=await (await fetch((el as HTMLImageElement).src)).arrayBuffer();
+      return Array.from(new Uint8Array(await window.crypto.subtle.digest('SHA-256',bytes)),byte=>byte.toString(16).padStart(2,'0')).join('');
+     });
+     expect(previewHash,report+' preview must match PNG export').toBe(hash);
+    }
     evidence.push({device,theme,report,ext,bytes:bytes.length,sha256:hash});
    }
   }

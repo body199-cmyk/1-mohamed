@@ -23,18 +23,20 @@ function downloadBlob(blob: Blob, filename: string): void {
 /** All five outputs consume the same immutable presentation snapshot. */
 export function ReportExportActions(props: {
   readonly document: OperationalReportDocument;
+  readonly visualDocument?: OperationalReportDocument;
   readonly fileNameBase: string;
 }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const lock = useRef(false);
+  const visualDocument = props.visualDocument ?? props.document;
 
   async function shareImage(): Promise<void> {
     if (lock.current) return;
     lock.current = true; setBusy(true); setError(null);
     try {
       const renderer = await import("@ledger/statement-export");
-      const blob = await renderer.renderOperationalReportPng(props.document);
+      const blob = await renderer.renderOperationalReportPng(visualDocument);
       const file = new File([blob], props.fileNameBase + ".png", { type: "image/png" });
       if (typeof navigator.share === "function" && navigator.canShare?.({ files: [file] })) {
         await navigator.share({ files: [file], title: props.document.title });
@@ -63,7 +65,7 @@ export function ReportExportActions(props: {
       const renderer = await import("@ledger/statement-export");
       if (kind === "print" && preview) {
         preview.document.open();
-        preview.document.write(renderer.renderOperationalReportHtml(props.document));
+        preview.document.write(renderer.renderOperationalReportHtml(visualDocument));
         preview.document.close();
         const fontStyles = preview.document.createElement("link");
         fontStyles.rel = "stylesheet";
@@ -84,9 +86,9 @@ export function ReportExportActions(props: {
       } else if (kind === "xlsx") {
         downloadBlob(renderer.renderOperationalReportXlsx(props.document), props.fileNameBase + ".xlsx");
       } else if (kind === "png") {
-        downloadBlob(await renderer.renderOperationalReportPng(props.document), props.fileNameBase + ".png");
+        downloadBlob(await renderer.renderOperationalReportPng(visualDocument), props.fileNameBase + ".png");
       } else if (kind === "pdf") {
-        downloadBlob(await renderer.renderOperationalReportPdf(props.document), props.fileNameBase + ".pdf");
+        downloadBlob(await renderer.renderOperationalReportPdf(visualDocument), props.fileNameBase + ".pdf");
       }
     } catch (cause) {
       preview?.close();

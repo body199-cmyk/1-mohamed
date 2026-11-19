@@ -5,6 +5,7 @@ import {scaledIntegerToDecimal,formatPoundsForDisplay} from '../../lib/ledger/am
 import {useState} from 'react';
 import {ContractorMoney} from '../contractor-statements/contractor-money';
 import {ReportExportActions} from '../reports/report-export-actions';
+import {ReportExportPreview} from '../reports/report-export-preview';
 import {buildDetailedContractorDocument,emptyStatementFilters,filterStatementRows,type StatementFilters} from './contractor-detail-document';
 import type {LiveStatementReport} from './contractor-statement-document';
 export function ContractorDetails({report,name,vehicleNames,disabled}:{report:LiveStatementReport;name:string;vehicleNames:ReadonlyMap<string,string>;disabled:boolean}){
@@ -25,6 +26,7 @@ export function ContractorDetails({report,name,vehicleNames,disabled}:{report:Li
        {key==='vehicle'?vehicleNames.get(value)??value:key==='direction'?(value==='AHMED_SUPPLIES'?'شغل أحمد':'شغل المقاول'):value}</option>)}
      </select></label>)}
   </fieldset></details>
+  {doc&&!disabled&&<ReportExportPreview document={doc}/>}
   {!complete&&<p>حمّل كل النقلات لتفعيل الفلاتر والتصدير؛ الحساب الكامل ظاهر أعلاه.</p>}
   {complete&&<p>المطابق: {rows.length} نقلة — {new Set(rows.map(r=>r.vehicle_id)).size} عربية — {days.length} يوم.
    صافي الشغل المحدد: <ContractorMoney value={rows.reduce((n,r)=>n+BigInt(r.signed_delta_piastres),0n).toString()}/> — ليس رصيد الدين.</p>}

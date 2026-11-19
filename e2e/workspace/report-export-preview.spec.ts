@@ -30,7 +30,13 @@ async function expectMatchingPng(page: Page, preview: Locator, existing: Locator
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 }
 
-test("primary and vehicle reports show the exact PNG above the original details", async ({ page }, info) => {
+async function downloadReport(page: Page, name: string) {
+  const event = page.waitForEvent("download");
+  await page.getByRole("button", { name, exact: true }).click();
+  return readFile(await (await event).path());
+}
+
+test("trip and vehicle previews use the same fixed paper as their exported reports", async ({ page }, info) => {
   const master: Record<string, unknown[]> = {
     contractors: [{ id: "K_AHMED", name: "أحمد أبو علي", is_primary: true }, { id: "C1", name: "شركة النور" }],
     vehicles: [{ id: "V1", plate_number: "عربية ١" }],
@@ -48,15 +54,20 @@ test("primary and vehicle reports show the exact PNG above the original details"
   await page.route("**/api/ledger/read", route => {
     const { operation } = route.request().postDataJSON();
     const cash = operation === "cash.statement";
+    const payments = operation === "payments.list";
+    const payment = { id: "PREVIEW-PAYMENT", payment_date: "2026-11-12",
+      vehicle_id: "V1", responsible_contractor_id: "K_AHMED", amount_piastres: "315000", is_cancelled: false };
     return route.fulfill({ json: { ok: true, data: {
       status: "OK", snapshot: "1:1", total_count: cash ? "2" : "1", next_cursor: null,
       date_from: "2026-11-01", date_to: "2026-11-16", vehicle_id: "V1", responsible_contractor_id: "K_AHMED",
       period_opening_piastres: "100000", work_piastres: "205000", paid_piastres: "315000",
       period_closing_piastres: "-10000", current_cash_balance_piastres: "-10000",
+      ...(!cash ? { totals: { contractor_total_piastres: "255000", vehicle_total_piastres: "205000",
+        ahmed_work_piastres: "255000", counterparty_work_piastres: "0", active_count: "1" } } : {}),
       rows: cash ? [
         { id: trip.id, date: trip.trip_date, movement_type: "WORK", signed_delta_piastres: "205000", running_balance_piastres: "305000" },
         { id: "PREVIEW-PAYMENT", date: "2026-11-12", movement_type: "PAYMENT", signed_delta_piastres: "-315000", running_balance_piastres: "-10000" },
-      ] : [trip],
+      ] : payments ? [payment] : [trip],
     } } });
   });
   await page.clock.setFixedTime(new Date("2026-11-16T12:00:00Z"));
@@ -65,12 +76,58 @@ test("primary and vehicle reports show the exact PNG above the original details"
   await expect(page.locator('#shared-contractor option[value="C1"]')).toHaveCount(1);
   await openTripReport(page);
   const preview = page.getByRole("region", { name: previewName, exact: true });
-  await expectMatchingPng(page, preview, page.getByRole("list", { name: "ملخص سجلات التقرير" }));
+  const tripImage = preview.getByRole("img");
+  await expect(tripImage).toBeVisible();
+  await expect(page.getByRole("list", { name: "ملخص سجلات التقرير" })).toBeVisible();
+  const previewHash = await tripImage.evaluate(async element => {
+    const image = await (await fetch((element as HTMLImageElement).src)).arrayBuffer();
+    return Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", image)));
+  });
+  const png = await downloadReport(page, "تنزيل صورة PNG");
+  const pdf = await downloadReport(page, "تنزيل PDF مباشر");
+  expect(png.readUInt32BE(16)).toBe(1440);
+  expect(createHash("sha256").update(png).digest()).toEqual(Buffer.from(previewHash));
   await preview.screenshot({ path: info.outputPath("desktop-trip-preview.png") });
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(await downloadReport(page, "تنزيل صورة PNG")).toEqual(png);
+  expect(await downloadReport(page, "تنزيل PDF مباشر")).toEqual(pdf);
+  await expectMatchingPng(page, preview, page.getByRole("list", { name: "ملخص سجلات التقرير" }));
+
+  const popupEvent = page.waitForEvent("popup");
+  await page.getByRole("button", { name: "طباعة / حفظ PDF", exact: true }).click();
+  const print = await popupEvent;
+  const paper = print.locator(".statement-page");
+  await expect(print.locator('link[rel="stylesheet"][href$="/fonts/cairo.css"]')).toHaveCount(1);
+  await expect(paper.locator(".statement-header")).toHaveCSS("text-align", "center");
+  await expect(paper.locator(".wide-table thead th")).toHaveCount(14);
+  await expect(paper.locator(".wide-table thead th").first()).toHaveText("م");
+  await expect(paper.getByRole("columnheader", { name: "سبب الإلغاء" })).toHaveCount(0);
+  await expect(paper.getByRole("columnheader", { name: /سعر/ })).toHaveText("السعر");
+  const date = paper.getByText("2026-11-10", { exact: true });
+  await expect(date).toHaveClass("ltr-token");
+  expect(await date.evaluate(async element => {
+    await document.fonts.ready;
+    const range = document.createRange();
+    range.selectNodeContents(element);
+    return range.getClientRects().length;
+  })).toBe(1);
+  await expect(paper.locator(".wide-table tbody td .ltr-token").first()).toHaveText("١");
+  const mobileWidth = await paper.evaluate(node => node.getBoundingClientRect().width);
+  await print.setViewportSize({ width: 1440, height: 1000 });
+  expect(await paper.evaluate(node => node.getBoundingClientRect().width)).toBe(mobileWidth);
+  await print.close();
+
   await page.locator("#report-to").fill("2026-11-17");
   await expect(preview).toHaveCount(0);
 
+  await page.locator("#report-type").selectOption("payments.list");
+  await page.locator("#report-account").selectOption("V1|K_AHMED");
+  await expectMatchingPng(page, preview, page.getByRole("list", { name: "ملخص سجلات التقرير" }));
+  const paymentsPdf = await downloadReport(page, "تنزيل PDF مباشر");
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  expect(await downloadReport(page, "تنزيل PDF مباشر")).toEqual(paymentsPdf);
   await page.setViewportSize({ width: 390, height: 844 });
+
   await page.evaluate(() => document.documentElement.setAttribute("data-theme", "dark"));
   await page.getByRole("navigation").getByRole("button", { name: "حسابات العربيات والدفعات", exact: true }).click();
   await page.locator("#cash-account").selectOption("V1|K_AHMED");
@@ -104,18 +161,27 @@ test("partial reports hide the preview and long reports show complete numbered P
       status: "OK", snapshot: "1:1", rows, total_count: "150", next_cursor: more ? null : { date: "2026-11-10", id: "PREVIEW-99" },
     } } });
   });
+  await page.clock.setFixedTime(new Date("2026-11-16T12:00:00Z"));
   await page.goto("/");
   await openTripReport(page);
   const preview = page.getByRole("region", { name: previewName, exact: true });
   await expect(page.getByRole("list", { name: "ملخص سجلات التقرير" }).locator("li")).toHaveCount(100);
   await expect(preview).toHaveCount(0);
   await page.getByRole("button", { name: "تحميل 200 سجل إضافي", exact: true }).click();
-  await expect(preview.getByText("صفحة 1 من 11", { exact: true })).toBeVisible();
+  await expect(preview.getByText(/^صفحة 1 من \d+$/)).toBeVisible();
+  const pdf = await downloadReport(page, "تنزيل PDF مباشر");
+  const pageCount = Number(pdf.toString("latin1").match(/\/Count (\d+)/)?.[1]);
+  expect(pageCount).toBeGreaterThan(1);
+  await expect(preview.getByText(`صفحة 1 من ${pageCount}`, { exact: true })).toBeVisible();
   const image = preview.getByRole("img");
   await expect.poll(() => image.evaluate(element => (element as HTMLImageElement).naturalHeight)).toBe(2036);
   const first = await image.getAttribute("src");
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(image).toHaveAttribute("src", first!);
+  expect(await downloadReport(page, "تنزيل PDF مباشر")).toEqual(pdf);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await preview.getByRole("button", { name: "الصفحة التالية" }).click();
-  await expect(preview.getByText("صفحة 2 من 11", { exact: true })).toBeVisible();
+  await expect(preview.getByText(`صفحة 2 من ${pageCount}`, { exact: true })).toBeVisible();
   await expect(image).toHaveAttribute("src", /^blob:/);
   await expect(image).not.toHaveAttribute("src", first!);
   await expect(page.getByRole("list", { name: "ملخص سجلات التقرير" }).locator("li")).toHaveCount(150);
