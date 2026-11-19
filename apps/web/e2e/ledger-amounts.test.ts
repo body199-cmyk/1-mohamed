@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { poundsToPiastres, piastresToPounds, assertDecimal } from "../src/lib/ledger/amounts";
+import { exactOpeningPiastres, poundsToPiastres, piastresToPounds, assertDecimal } from "../src/lib/ledger/amounts";
 
 describe("real-data exact money entry", () => {
   it("converts pounds without floating point", () => {
@@ -28,5 +28,16 @@ describe("trip and payment SQL decimal inputs", () => {
     }
     expect(() => assertDecimal("1.234", 2, true)).toThrow();
     expect(() => assertDecimal("92233720368547758.08", 2, true)).toThrow();
+  });
+});
+
+describe("opening amount JSON boundary", () => {
+  it("preserves exact integers of both signs up to the JSON wire limit", () => {
+    for (const exact of ["-9007199254740991", "-100", "0", "100", "9007199254740991"]) {
+      expect(JSON.stringify(exactOpeningPiastres(exact))).toBe(exact);
+    }
+    for (const unsafe of ["-9007199254740992", "9007199254740992", "9223372036854775807"]) {
+      expect(() => exactOpeningPiastres(unsafe)).toThrow(/حد النقل/);
+    }
   });
 });

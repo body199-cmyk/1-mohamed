@@ -28,7 +28,7 @@ export async function createSqlLedger(){
  }
  async function rows(sql:string,params:unknown[]=[]){return (await db.query<Record<string,unknown>>(sql,params)).rows;}
  async function connect(page:Page){
-  const state={user:OWNER,attempts:[] as Record<string,unknown>[],loseNextTripResponse:false};
+  const state={user:OWNER,attempts:[] as Record<string,unknown>[],loseNextTripResponse:false,loseNextOpeningResponse:false};
   await page.route('**/api/ledger/master?**',async route=>{
    try{
     const url=new URL(route.request().url()),kind=url.searchParams.get('type');
@@ -43,6 +43,7 @@ export async function createSqlLedger(){
    try{
     const data=await write(body.operation,body.payload,body.requestKey,state.user);
     if(body.operation==='trip.create'&&state.loseNextTripResponse){state.loseNextTripResponse=false;return route.abort('failed');}
+    if(body.operation==='opening.create'&&state.loseNextOpeningResponse){state.loseNextOpeningResponse=false;return route.abort('failed');}
     await route.fulfill({json:{ok:true,data}});
    }catch(error){await route.fulfill({status:422,json:{error:'تعذر حفظ العملية. راجع المدخلات ثم حاول مرة أخرى بنفس مفتاح الطلب.'}});}
   });
