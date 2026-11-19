@@ -8,6 +8,7 @@ import { join } from 'node:path';
 import { PGlite } from '@electric-sql/pglite';
 import { BUSINESS_TABLES, writeBusinessSnapshot } from './business-snapshot.mjs';
 import { verifySelectedLocalArchive } from './cloud-rehearsal-local.mjs';
+import { verifyLocalRecoveryFile } from './verify-local-recovery.mjs';
 
 async function isolatedDb() {
   const db = new PGlite();
@@ -35,17 +36,22 @@ test('a real nine-table recovery archive is verified and replayed to ephemeral i
       insert into public.payments(id,vehicle_id,responsible_contractor_id,payment_date,amount_piastres,linked_trip_id)
        values('p1','v1','k1','2026-11-18',9007199254741000,'t1');`);
     await writeBusinessSnapshot(source,folder,{date:'2026-11-18',commit:'a'.repeat(40)});
-    const archive=join(dir,'selected.tar.gz');
+    const archive=join(dir,'1-mohamed-2026-11-18-restore.tar.gz');
     const tar=spawnSync('tar',['-czf',archive,'-C',folder,'manifest.json',...BUSINESS_TABLES.map(t=>t+'.json')],{
       encoding:'utf8',timeout:120_000,
     });
     assert.equal(tar.status,0,tar.stderr||tar.error?.message);
     const bytes=readFileSync(archive);
     const selection={size:bytes.length,sha256:createHash('sha256').update(bytes).digest('hex')};
+    assert.deepEqual(await verifyLocalRecoveryFile(archive,selection.sha256),{
+      backup_date:'2026-11-18', selected_file_verified:true,isolated_restore_verified:true,
+      restored_tables:9,production_writes:false,network_used:false,
+    });
     assert.deepEqual(await verifySelectedLocalArchive(archive,selection),{
       selected_file_verified:true,isolated_restore_verified:true,
       restored_tables:9,production_writes:false,
     });
+    await assert.rejects(verifyLocalRecoveryFile(archive,'invalid'),/trusted SHA-256/);
     const symlink=join(dir,'alias.tar.gz');symlinkSync(archive,symlink);
     await assert.rejects(verifySelectedLocalArchive(symlink,selection),/metadata mismatch/);
     appendFileSync(archive,'tampered');
