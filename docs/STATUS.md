@@ -1,3 +1,7 @@
+## INDEPENDENT-AUDIT — 19 November 2026
+
+Validated PR #99 against main `47742e3` and PR #98 `b0b3bde`. The remediation branch fixes Master Data opening serialization, stale report requests, and portable CSV/JSON consistency. See the [second review](audits/INDEPENDENT_PRE_HANDOFF_SECOND_REVIEW.md) for test evidence and remaining isolated Supabase acceptance. Merge and deployment remain pending.
+
 ## REPORT-EXPORT-STYLE — ١٩ نوفمبر ٢٠٢٦
 
 قالب ورقة ثابت لمعاينة وتصدير تقارير النقلات واليومية والمدفوعات وكشفي العربية والمقاول. المعاينة الطويلة تستخدم نفس تقسيم صفحات PDF. نتائج الاختبار في سجل التسليم. تقرير النقلات الكامل يبدأ بالرقم ١ ويعرض الحالة فقط من بيانات الإلغاء.

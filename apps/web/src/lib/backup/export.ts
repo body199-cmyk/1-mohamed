@@ -5,11 +5,6 @@ export const PORTABLE_BACKUP_TABLES = [
   "idempotency_keys","opening_balances","payments","trips","vehicle_accounts","vehicles","backup_history",
 ] as const;
 export type PortableBackupTable = typeof PORTABLE_BACKUP_TABLES[number];
-export const BACKUP_ORDER: Record<PortableBackupTable, readonly string[]> = {
-  app_members:["user_id"], app_owner:["id"], audit_log:["id"], business_settings:["id"],
-  contractors:["id"], idempotency_keys:["key"], opening_balances:["id"], payments:["id"],
-  trips:["id"], vehicle_accounts:["vehicle_id","contractor_id"], vehicles:["id"], backup_history:["id"],
-};
 export const BACKUP_COLUMNS: Record<PortableBackupTable, readonly string[]> = {
   app_members:["user_id","email","is_active","invited_by","created_at","updated_at"],
   app_owner:["id","owner_user_id","initialized_at","created_at"],
@@ -52,7 +47,8 @@ function csvCell(value:unknown):string {
 }
 export function serializeTableCsv(table:PortableBackupTable,rows:Record<string,unknown>[]):string {
   const columns=BACKUP_COLUMNS[table];
-  assert(rows.every(row=>row&&typeof row==="object"&&!Array.isArray(row)),"Invalid CSV row.");
+  assert(Array.isArray(rows) && rows.every(row=>row&&typeof row==="object"&&!Array.isArray(row)),"Invalid CSV row.");
+  checkSafeNumbers(rows, table);
   const body=[columns.join(","),...rows.map(row=>columns.map(column=>csvCell(row[column])).join(","))].join("\r\n");
   return "\uFEFF"+body+"\r\n";
 }

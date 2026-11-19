@@ -2,7 +2,7 @@
 import ui from "./workspace-ui.module.css";
 import { useRef, useState, type FormEvent } from "react";
 import type { LedgerEntities, LedgerWrite } from "./workspace-data";
-import { poundsToPiastres } from "../../lib/ledger/amounts";
+import { exactOpeningPiastres, poundsToPiastres } from "../../lib/ledger/amounts";
 
 
 const short = (value: string) => value.length > 80 ? value.slice(0, 80) + "…" : value;
@@ -60,7 +60,7 @@ export function MasterDataEntry({ contractors, vehicles, accounts, busy, write }
   async function createOpening(event: FormEvent) {
     event.preventDefault();
     try {
-      const piastres = poundsToPiastres(openingAmount);
+      const piastres = exactOpeningPiastres(poundsToPiastres(openingAmount));
       if (!openingContractor || !openingDate ||
           (openingType === "VEHICLE_CASH" && !openingVehicle)) {
         setNotice("حدد المقاول والتاريخ والحساب المطلوب."); return;

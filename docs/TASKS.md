@@ -1,3 +1,7 @@
+## INDEPENDENT-AUDIT — three verified findings
+
+Review the [second audit](audits/INDEPENDENT_PRE_HANDOFF_SECOND_REVIEW.md) and the remediation PR. Verify the new portable export RPC through isolated Supabase Auth/PostgREST before release.
+
 ## REPORT-EXPORT-STYLE — تنسيق ملفات التقارير
 
 تطبيق نفس شكل الورقة على معاينة الموقع وPDF وPNG والطباعة ومشاركة الصورة في تقارير النقلات واليومية والمدفوعات وكشفي العربية والمقاول. يثبت التنسيق على الهاتف والكمبيوتر وتظهر كل السجلات. في تقرير النقلات الكامل يحل التسلسل التصاعدي «م» محل معرّف النقلة ويُحذف عمود سبب الإلغاء ويظهر السعر في عمود واحد. تحفظ المعاينة والمخرجات نفس القيم والفلاتر.

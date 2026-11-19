@@ -1,3 +1,7 @@
+## 19 November 2026 — independent audit remediation
+
+Reviewed both PR #99 files and PR #98, reproduced the defects, and prepared a separate remediation branch from main. The [second audit](audits/INDEPENDENT_PRE_HANDOFF_SECOND_REVIEW.md) gives the baseline, files, evidence and outstanding release checks.
+
 ## REPORT-EXPORT-STYLE — ١٩ نوفمبر ٢٠٢٦
 
 طلب المستخدم توحيد شكل المعاينة والتصدير لجميع التقارير. تشترك التقارير في تخطيط الورقة، وتستخدم المعاينة الطويلة تقسيم PDF بدل ضغط الأعمدة حسب الشاشة. في Chromium نجحت ١١ حالة للتقارير المحفوظة و٩ للنسخة التجريبية. في تقرير ١٥٠ نقلة تطابق عدد الصفحات مع PDF على عرض الهاتف والكمبيوتر. اختبارات الحزم ٢٣٣، والويب ١٩٤، وفحص الأنواع والبناء نجحت. الاختبار على مقاسات متصفح وبيانات معزولة.

@@ -1,3 +1,7 @@
+## 19 November 2026 — independent audit findings
+
+F-001: Master Data sent a string for opening piastres. F-002: revision could leave a report waiting for a stale request or let obsolete cleanup affect the next report. F-003: portable CSV/JSON used independent offset pages. The [second audit](audits/INDEPENDENT_PRE_HANDOFF_SECOND_REVIEW.md) links each fix to its regression test and records the acceptance that remains.
+
 ## REPORT-EXPORT-STYLE — تكسر أعمدة تقرير النقلات
 
 قالب الطباعة العام يضغط ١٦ عمودًا في عرض سائل ويسمح بتكسير الكلمات والأرقام. مسار تصدير النقلات والمدفوعات يستخدم الآن قالب ورقة ثابتًا مع توزيع أعمدة مستقل. اختبار من ١٠٥ نقلات يغطي حفظ الصفوف، واختبار المتصفح يغطي ثبات المقاس ومسارات التنزيل والطباعة.

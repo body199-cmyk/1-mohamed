@@ -1,3 +1,9 @@
+## Independent audit corrections
+
+- `lib/ledger/amounts.ts` supplies the exact opening JSON boundary for Master Data and Daily quick opening. SQL still owns opening rules and idempotency.
+- The real contractor, cash, and operational report components guard obsolete success, error, and completion callbacks with request generations.
+- `apps/web/src/app/api/backup/export/route.ts` uses `app_portable_backup_snapshot` for both formats. `supabase/migrations/20261119110000_portable_backup_snapshot.sql` reads coherent sets and compares them before download.
+
 ## REPORT-EXPORT-STYLE — ملفات النقلات والمدفوعات
 
 `real-operational-document.ts` يضيف تنسيق الورقة إلى لقطة التقرير الكاملة. `report-export-actions.tsx` يستخدمه للملفات المرئية والطباعة ومشاركة الصورة. `compact-report.ts` و`render-report-html.ts` يضبطان خلايا الجداول العريضة. المعاينة والتصدير المرئي يستخدمان نفس المستند، وCSV وExcel يقرآن نفس لقطة البيانات. يستخدم `report-export-preview.tsx` تقسيم PDF للمعاينة الطويلة. `contractor-details.tsx` يعرض معاينة كشف المقاول بالفلاتر المختارة. تستخدم صفحات النسخة التجريبية نفس قالب الورقة.

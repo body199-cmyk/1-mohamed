@@ -12,7 +12,9 @@ import {RealWorkspace} from './apps/web/src/features/ledger/real-workspace';
 import {SiteShell} from './apps/web/src/components/site-shell';
 import './apps/web/src/styles/variables.css';
 import './apps/web/src/styles/globals.css';
-createRoot(document.getElementById('root')).render(<SiteShell><RealWorkspace/></SiteShell>);`,
+const rootElement=createRoot(document.getElementById('root'));
+rootElement.render(<SiteShell><RealWorkspace/></SiteShell>);
+window.addEventListener('workspace-fixture-unmount',()=>rootElement.render(null));`,
   resolveDir:root,loader:'tsx'},bundle:true,write:false,outdir:'fixture',jsx:'automatic',
   define:{'process.env.NODE_ENV':'"test"','process.env.APP_ENABLE_REAL_DATA':'"false"','process.env.NEXT_PUBLIC_SUPABASE_URL':'"https://fixture.invalid"',
     'process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY':'"fixture-only"',
