@@ -78,13 +78,16 @@ jobs:
       - name: Test versioned backup, tampering, isolated atomic restore and stale replay
         run: node --test tools/backup-core.test.mjs
       - name: Test daily Google Drive backup contract and 30-day retention
-        run: node --test tools/offsite-backup.test.mjs tools/backup-reader/contract.test.mjs tools/backup-reader/restore-contract.test.mjs
+        run: node --test tools/offsite-backup.test.mjs tools/backup-reader/contract.test.mjs tools/backup-reader/restore-contract.test.mjs tools/backup-reader/cloud-rehearsal-contract.test.mjs
       - name: Validate offsite backup workflow script syntax
         run: |
           npm ci --prefix tools/backup-reader --ignore-scripts --no-audit --no-fund
           node --test tools/backup-reader/recurring.test.mjs
           node --max-old-space-size=256 --max-semi-space-size=2 --test tools/backup-reader/business-backup.test.mjs
+          node --max-old-space-size=256 --max-semi-space-size=2 --test tools/backup-reader/cloud-rehearsal-local.test.mjs
           node --check tools/offsite-backup.mjs
+          node --check tools/backup-reader/cloud-rehearsal.mjs
+          node --check tools/backup-reader/verify-local-recovery.mjs
           node --check tools/google-drive-rclone.mjs
       - name: Build preview web app
         run: npm run build
