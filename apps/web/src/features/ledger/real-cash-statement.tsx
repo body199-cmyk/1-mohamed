@@ -20,7 +20,7 @@ export function RealCashStatement({contractors,vehicles,accounts,disabled,revisi
   const [trips,setTrips]=useState<Map<string,VehicleTrip>>(new Map());const [filtersOpen,setFiltersOpen]=useState(true);
   useEffect(()=>{if(report)(document.getElementById('vehicle-statement-preview')??document.getElementById('vehicle-statement-heading'))?.focus();},[report]);
   const active=useRef(0);const query=useRef<Record<string,unknown>|null>(null);
-  function reset(){active.current++;setReport(null);query.current=null;setError('');}
+  function reset(){active.current++;setReport(null);query.current=null;setError('');setBusy(false);}
   useEffect(()=>{reset();},[revision]);
   async function load(e?:FormEvent){
     e?.preventDefault();if(busy||disabled)return;
@@ -37,7 +37,7 @@ export function RealCashStatement({contractors,vehicles,accounts,disabled,revisi
       const combined=prior?mergeReportPage(prior,result.data):result.data;
       verifyCashReport(combined);const details=await loadVehicleTrips(combined);if(token!==active.current)return;setTrips(details);setReport(combined);setFiltersOpen(false);query.current=payload;
     }catch(cause){if(token===active.current){setReport(null);setError(cause instanceof Error?cause.message:'تعذر تحميل الكشف.');}}
-    finally{setBusy(false);}
+    finally{if(token===active.current)setBusy(false);}
   }
   const vehicle=vehicles.find(v=>v.id===report?.vehicle_id)?.plate_number??report?.vehicle_id??'';
   const contractor=contractors.find(c=>c.id===report?.responsible_contractor_id)?.name??report?.responsible_contractor_id??'';
