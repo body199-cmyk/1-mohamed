@@ -87,6 +87,7 @@ jobs:
           node --max-old-space-size=256 --max-semi-space-size=2 --test tools/backup-reader/cloud-rehearsal-local.test.mjs
           node --check tools/offsite-backup.mjs
           node --check tools/backup-reader/cloud-rehearsal.mjs
+          node --check tools/backup-reader/verify-local-recovery.mjs
           node --check tools/google-drive-rclone.mjs
       - name: Build preview web app
         run: npm run build
