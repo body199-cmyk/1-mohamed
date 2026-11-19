@@ -83,7 +83,7 @@ export async function inspectLocalPortableBackup(raw: string): Promise<LocalBack
     const rows = (data.tables as Record<string, unknown>)[table];
     const count = (data.row_counts as Record<string, unknown>)[table];
     assertValid(Array.isArray(rows) && rows.every(isRecord), "صفوف جدول " + table + " غير صالحة.");
-    assertValid(Number.isSafeInteger(count) && (count as number) >= 0 && count === rows.length,
+    assertValid(typeof count === "number" && Number.isSafeInteger(count) && count >= 0 && count === rows.length,
       "عدد سجلات جدول " + table + " لا يطابق محتواه.");
     counts[table] = count as number;
     totalRows += counts[table];
