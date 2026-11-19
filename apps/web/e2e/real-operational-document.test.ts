@@ -70,7 +70,7 @@ describe("real operational five-format document", () => {
     expect(doc.businessName).not.toContain("تجريبية");
     expect(doc.metadata).toContainEqual({ label: "العربية المحددة", value: "عربية ١" });
     expect(doc.metadata).toContainEqual({ label: "المقاول المحدد", value: "المقاول الأول" });
-    expect(doc.columns).toHaveLength(15);
+    expect(doc.columns).toHaveLength(14);
     expect(doc.columns[0]?.label).toBe("م");
     expect(doc.columns.map(column => column.label)).not.toContain("سبب الإلغاء");
     expect(doc.rows[0]?.[0]).toBe("١");
@@ -80,6 +80,10 @@ describe("real operational five-format document", () => {
     expect(doc.rows[0]).toContain("عربية ١");
     expect(doc.rows[0]).toContain("المقاول الأول");
     expect(doc.rows[0]).toContain("12.500");
+    const labels = doc.columns.map(column => column.label);
+    expect(labels.filter(label => label.includes("سعر"))).toEqual(["السعر"]);
+    expect(doc.rows[0]?.[labels.indexOf("السعر")]).toBe("121");
+    expect(doc.rows[0]).toContain("90,071,992,547,409,930");
     expect(doc.rows[0]).toContain("90,071,992,547,409,931");
     expect(doc.rows[0]).toContain("السويس");
   });

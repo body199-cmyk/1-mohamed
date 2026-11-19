@@ -96,9 +96,10 @@ test("trip exports use fixed paper styling while both existing previews keep the
   const paper = print.locator(".statement-page");
   await expect(print.locator('link[rel="stylesheet"][href$="/fonts/cairo.css"]')).toHaveCount(1);
   await expect(paper.locator(".statement-header")).toHaveCSS("text-align", "center");
-  await expect(paper.locator(".wide-table thead th")).toHaveCount(15);
+  await expect(paper.locator(".wide-table thead th")).toHaveCount(14);
   await expect(paper.locator(".wide-table thead th").first()).toHaveText("م");
   await expect(paper.getByRole("columnheader", { name: "سبب الإلغاء" })).toHaveCount(0);
+  await expect(paper.getByRole("columnheader", { name: /سعر/ })).toHaveText("السعر");
   const date = paper.getByText("2026-11-10", { exact: true });
   await expect(date).toHaveClass("ltr-token");
   expect(await date.evaluate(async element => {

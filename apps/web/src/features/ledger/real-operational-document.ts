@@ -22,7 +22,7 @@ const tripRowNumber = new Intl.NumberFormat("ar-EG", { useGrouping: false });
 const tripColumns = [
   "row_number", "trip_date", "vehicle_id", "counterparty_contractor_id", "direction",
   "origin", "destination", "weight_milli_tonnes",
-  "contractor_rate_piastres", "vehicle_rate_piastres", "expense_piastres",
+  "contractor_rate_piastres", "expense_piastres",
   "contractor_total_piastres", "vehicle_total_piastres", "notes", "is_cancelled"
 ] as const;
 const paymentColumns = [
@@ -87,6 +87,7 @@ export function buildRealOperationalDocument(
   const keys: readonly string[] = type === "trips.list" ? tripColumns : paymentColumns;
   const columns = keys.map(key => {
     if (key === "row_number") return { label: "م", widthWeight: visualWidthWeights.row_number };
+    if (key === "contractor_rate_piastres") return { label: "السعر", widthWeight: 1 };
     const field = fields.find(f => f.key === key);
     if (!field) throw new Error("تعريف عمود التقرير غير صالح.");
     return { label: field.title, widthWeight: ["notes", "origin", "destination"].includes(key) ? 1.4 : 1 };
