@@ -14,7 +14,7 @@ import { basename, join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { caCertificate } from './export.mjs';
 import { sourceConnection } from './contract.mjs';
-import { selectedCloudArchive } from './cloud-rehearsal-contract.mjs';
+import { selectedCloudArchive, onlyReadFromDrive } from './cloud-rehearsal-contract.mjs';
 import { proveBusinessRecovery } from './business-replay-check.mjs';
 import { ROOT_FOLDER } from '../google-drive-rclone.mjs';
 
@@ -27,7 +27,8 @@ function requireEnvironment(env) {
     throw Error('Select exactly one YYYY-MM-DD backup date');
   }
 }
-function command(env, args) {
+function command(env, args, selectedRemote, localDownload) {
+  onlyReadFromDrive(args, selectedRemote, localDownload);
   const config = {
     ...env,
     RCLONE_CONFIG: '/dev/null',
@@ -60,6 +61,11 @@ export async function rehearseSelectedCloudBackup(env = process.env) {
   const work = mkdtempSync(join(env.RUNNER_TEMP || tmpdir(), 'selected-backup-rehearsal-'));
   try {
     await client.connect(); connected = true;
+    // The backup role can write limited history for the normal daily job.
+    // The recovery rehearsal itself MUST stay in a server-enforced read-only transaction.
+    await client.query('begin isolation level repeatable read read only');
+    const readOnly = (await client.query("select current_setting('transaction_read_only') as active")).rows[0]?.active;
+    if (readOnly !== 'on') throw Error('Cloud restore rehearsal: read-only transaction unavailable');
     const role = (await client.query(`select current_user as name,
       pg_has_role(current_user,'postgres','MEMBER') as admin_member,
       has_table_privilege(current_user,'public.backup_history','SELECT') as history_read,
@@ -81,7 +87,7 @@ export async function rehearseSelectedCloudBackup(env = process.env) {
     const selection = selectedCloudArchive(env.BACKUP_REHEARSAL_DATE, rows[0], candidate[0]);
     const archive = join(work, basename(selection.filename));
     // This is strictly REMOTE -> LOCAL, no remote write or SQL modification.
-    command(env, ['copyto', selection.remote, archive, '--immutable']);
+    command(env, ['copyto', selection.remote, archive, '--immutable'], selection.remote, archive);
     if (statSync(archive).size !== selection.size
       || await sha256(archive) !== selection.sha256) {
       throw Error('Cloud restore rehearsal: downloaded archive does not match trusted history');
@@ -95,7 +101,7 @@ export async function rehearseSelectedCloudBackup(env = process.env) {
       isolated_restore_verified: true, restored_tables: verified.restoredTables,
       production_reads_only: true, production_writes: false };
   } finally {
-    if (connected) await client.end().catch(() => undefined);
+    if (connected) { await client.query('rollback').catch(() => undefined); await client.end().catch(() => undefined); }
     rmSync(work, { recursive: true, force: true });
   }
 }
