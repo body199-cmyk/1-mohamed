@@ -2,6 +2,7 @@
 import {useEffect,useState} from "react";
 import ui from "./workspace-ui.module.css";
 import { LocalBackupInspector } from "./local-backup-inspector";
+import { ScopeImpactPreview } from "./scope-impact-preview";
 const TABLES=[
  ["app_members","المستخدمون المدعوون"],["app_owner","صاحب الحساب"],["audit_log","سجل العمليات"],
  ["business_settings","بيانات النشاط"],["contractors","المقاولون"],["idempotency_keys","منع تكرار العمليات"],
@@ -39,6 +40,7 @@ export function BackupSettings(){
    <a className={ui.control} href={"/api/backup/export?format=csv&table="+encodeURIComponent(table)} download>تنزيل ملف CSV للجدول المحدد</a>
   </div>
   <LocalBackupInspector/>
+  <ScopeImpactPreview/>
   <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,marginTop:18}}>
    <h4>سجل النسخ السحابية</h4><button type="button" disabled={loading} onClick={()=>void refresh()}>{loading?"جارٍ التحديث...":"تحديث السجل"}</button>
   </div>
