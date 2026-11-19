@@ -35,6 +35,10 @@ test('plain snapshot restores business data, never Auth, and fails closed on tam
       values ('t1','v1','k1','k1','AHMED_SUPPLIES','2026-11-18',1000,50000,50000,0,50000,50000);
     insert into public.payments(id,vehicle_id,responsible_contractor_id,payment_date,amount_piastres,linked_trip_id,receipt_number)
       values ('p1','v1','k1','2026-11-18',9007199254741000,'t1','=1+1');
+    insert into public.contractors(id,name) values ('k2','المقاول المصحح');
+    insert into public.vehicle_accounts(vehicle_id,contractor_id) values ('v1','k2');
+    update public.trips set counterparty_contractor_id='k2', responsible_contractor_id='k2',
+      direction='OTHER_SUPPLIES' where id='t1';
     update public.business_settings set business_name='Recovered' where id='default';
     insert into public.audit_log(id,entity_type,entity_id,action,performed_by) overriding system value
       values (42,'TRIP','t1','INSERT','00000000-0000-0000-0000-000000000001');
@@ -63,9 +67,22 @@ with zipfile.ZipFile(sys.argv[1]) as z:
 `,xlsx],{encoding:'utf8'});
   assert.equal(verify.status,0,verify.stderr);
   target=await database();
+  const brokenLoad={query:(sql,args)=>sql.startsWith('insert into public.payments ')
+    ? target.query(sql,[args[0].replace('"linked_trip_id": "t1"','"linked_trip_id": "missing"')])
+    : target.query(sql,args)};
+  await assert.rejects(restoreEmptyLedger(brokenLoad,dir),{code:'23503'});
+  const rolledBack=await target.query(`select tgenabled, (select count(*)::int from public.trips) as trips
+    from pg_trigger where tgrelid='public.payments'::regclass and tgname='trg_payments_trip_link_guard'`);
+  assert.deepEqual(rolledBack.rows,[{tgenabled:'O',trips:0}]);
+
   assert.deepEqual(await restoreEmptyLedger(target,dir),{restoredTables:9,exactMatch:true});
   const result=(await target.query("select amount_piastres::text as amount from public.payments where id='p1'")).rows[0];
   assert.equal(result.amount,'9007199254741000');
+  const link=await target.query(`select p.responsible_contractor_id as paid_by, t.responsible_contractor_id as work_by
+    from public.payments p join public.trips t on t.id=p.linked_trip_id where p.id='p1'`);
+  assert.deepEqual(link.rows,[{paid_by:'k1', work_by:'k2'}]);
+  await assert.rejects(target.query(`insert into public.payments(id,vehicle_id,responsible_contractor_id,payment_date,amount_piastres,linked_trip_id)
+    values ('mislinked','v1','k1','2026-11-18',100,'t1')`),{code:'23514'});
   assert.equal((await target.query('select count(*)::int as n from auth.users')).rows[0].n,2);
   assert.equal((await target.query("select nextval(pg_get_serial_sequence('public.audit_log','id'))::int as id")).rows[0].id,43);
   await target.query(`insert into public.backup_history (backup_date,format,file_name,drive_file_id,size_bytes,sha256,table_counts)

@@ -1493,3 +1493,7 @@ Production preparation: the existing Supabase owner identity was retained; serve
 Code scope: a server Route Handler resolves only the configured alias or the exact existing email, uses Supabase Auth `signInWithPassword`, and requires `app_is_owner()` before returning session cookies. The proxy narrowly permits POST to that endpoint; recovery remains email-based. Daily quick access targets shared work, trip registration, cash payment and saved trips. Four relevant sections receive warm neutral cards and theme-aware shadows.
 
 Added Auth route unit cases for owner mapping, invalid identifier, non-owner rejection, cross-origin rejection and disabled auth; browser fixture coverage for username alias and remember-session; workspace layout assertions for quick links, sticky behavior, section surfaces and light/dark difference. Exact final-head CI, Vercel Preview review and release verification are still pending at this log entry. No claim of live browser login or deployment until evidence is recorded below.
+
+## 19 November 2026 — historical payment reference review
+
+PR #101 reproduced the approved D02/D13 split between corrected work and recorded cash. Follow-up tests identified defects in payment editing and business recovery when the old reference was revalidated. See the [follow-up](audits/INDEPENDENT_PATH_A_B_REVIEW_FOLLOWUP.md) for regression evidence and remaining hosted checks.

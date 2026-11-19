@@ -100,6 +100,8 @@ const steps = [
   ['backup history migration', 'supabase/migrations/20261117160000_backup_history.sql', 'T10: owner-only daily backup history'],
   ['backup history format migration', 'supabase/migrations/20261119100000_allow_business_recovery_history.sql', 'T10: supports legacy and business-only recovery'],
   ['backup history tests', 'supabase/tests/19_backup_history_verification.sql', 'T10: owner-only read and no direct mutation'],
+  ['historical payment reference migration', 'supabase/migrations/20261119120000_preserve_historical_payment_reference.sql', 'D02/D13: preserve an existing descriptive link on payment edit'],
+  ['historical payment reference tests', 'supabase/tests/21_historical_payment_reference_verification.sql', 'D02/D13: historical payment references remain editable after trip correction'],
 ];
 
 function describe(error) {

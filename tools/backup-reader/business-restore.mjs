@@ -37,8 +37,19 @@ export async function restoreEmptyLedger(client,dir){
    const updates=columns.filter(c=>c!=='"id"').map(c=>c+'=excluded.'+c);
    const settings=table==='business_settings'?' on conflict (id) do update set '+updates.join(','):'';
    const list=columns.join(',');
+   if(table==='payments'){
+    // Archive rows are historical. A trip may have been corrected after
+    // payment. Keep the account and trip FKs active while loading those rows.
+    const {rows} = await client.query(`select tgenabled from pg_trigger
+      where tgrelid='public.payments'::regclass and tgname='trg_payments_trip_link_guard'`);
+    if(rows[0]?.tgenabled!=='O')throw Error('Unexpected payment-link validation state on recovery target');
+    await client.query('alter table public.payments disable trigger trg_payments_trip_link_guard');
+   }
    await client.query(`insert into public.${table} (${list}) overriding system value
     select ${list} from jsonb_populate_recordset(null::public.${table},$1::jsonb) where true${settings}`,[payloads.get(table)]);
+   if(table==='payments'){
+    await client.query('alter table public.payments enable trigger trg_payments_trip_link_guard');
+   }
   }
   for(const table of BUSINESS_TABLES){
    const data=(await client.query(readRowsSql(table))).rows[0].rows;
