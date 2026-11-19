@@ -1,3 +1,9 @@
+## DAILY-RECORDED-PAPER — تقرير اليوم داخل اليومية
+
+- `apps/web/src/features/ledger/daily-trip-list.tsx`: العرض التقليدي يبقى كما هو؛ يحتفظ بصفحة التقرير الأولية المستقلة للمعاينة بعد اختيار اليوم.
+- `apps/web/src/features/ledger/daily-trip-paper-preview.tsx`: يجمع الصفحات عبر `mergeReportPage` وsnapshot SQL ويستدعي `buildRealOperationalDocument` و`styleRealOperationalExport` ثم `ReportExportPreview` الثابت نفسه المستخدم بقسم التقارير. فشل التحقق لا يخفي القائمة القديمة.
+- `e2e/workspace/daily-recorded-paper.spec.ts`: اختبار ترتيب العرض، عدم تغير صورة ورقة التقرير بين الهاتف والكمبيوتر، استمرار القائمة التقليدية، ومنع معاينة تاريخية ناقصة عند drift.
+
 ## REPORT-EXPORT-STYLE — ملفات النقلات والمدفوعات
 
 `real-operational-document.ts` يضيف تنسيق الورقة إلى لقطة التقرير الكاملة. `report-export-actions.tsx` يستخدمه للملفات المرئية والطباعة ومشاركة الصورة. `compact-report.ts` و`render-report-html.ts` يضبطان خلايا الجداول العريضة. المعاينة والتصدير المرئي يستخدمان نفس المستند، وCSV وExcel يقرآن نفس لقطة البيانات. يستخدم `report-export-preview.tsx` تقسيم PDF للمعاينة الطويلة. `contractor-details.tsx` يعرض معاينة كشف المقاول بالفلاتر المختارة. تستخدم صفحات النسخة التجريبية نفس قالب الورقة.

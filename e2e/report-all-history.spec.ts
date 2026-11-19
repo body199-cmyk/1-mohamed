@@ -14,7 +14,7 @@ test('demo report history preserves selected filters and restores the existing d
  const fs=await import('node:fs/promises');const csv=await fs.readFile((await(await download).path())!,'utf8');
  expect(csv).toContain('كل الحساب من البداية');expect(csv).toContain('2026-11-02');expect(csv).toContain('التاريخ');
  await scope.uncheck();await expect(page.getByLabel('تاريخ التقرير',{exact:true})).toHaveValue('2026-11-05');
- await expect(page.getByRole('main').getByRole('status')).toContainText('لا توجد نقلات');
+ await expect(page.getByRole('main').getByRole('status').filter({hasText:'لا توجد نقلات'})).toContainText('لا توجد نقلات');
  await page.goto('/demo/reports/vehicle-cash');
  await page.getByLabel('من تاريخ كشف العربية',{exact:true}).fill('2026-11-03');
  await page.getByRole('checkbox',{name:'كل الحساب من البداية',exact:true}).check();

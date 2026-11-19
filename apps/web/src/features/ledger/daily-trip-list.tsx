@@ -6,21 +6,23 @@ import {displayLedgerField,type LedgerLookups} from './report-presentation';
 import {scaledIntegerToDecimal} from '../../lib/ledger/amounts';
 import ui from './workspace-ui.module.css';
 import styles from './daily-work.module.css';
+import {DailyTripPaperPreview} from './daily-trip-paper-preview';
 
 export function DailyTripList({date,revision,disabled,vehicles,contractors,onReviewDay,onCountChange}:{date:string;revision:number;
  disabled:boolean;vehicles:{id:string;plate_number:string}[];contractors:{id:string;name:string}[];onReviewDay:(date:string)=>void;onCountChange:(count:string|null)=>void}){
  const [day,setDay]=useState(()=>new Intl.DateTimeFormat('en-CA',{timeZone:'Africa/Cairo',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date()));
  const [enabled,setEnabled]=useState(false);
  const [report,setReport]=useState<ReportPage|null>(null);
+ const [firstPage,setFirstPage]=useState<{day:string;revision:number;reload:number;page:ReportPage}|null>(null);
  const [busy,setBusy]=useState(false);const [error,setError]=useState('');const [reload,setReload]=useState(0);
  const token=useRef(0);
  useEffect(()=>{if(date){setDay(date);setEnabled(true);}},[date]);
  useEffect(()=>{
-  const current=++token.current;setReport(null);setError('');
+  const current=++token.current;setReport(null);setFirstPage(null);setError('');
   if(!enabled||!day||disabled){setBusy(false);return;}
   const controller=new AbortController();setBusy(true);
   void postLedgerRead<ReportPage>('trips.list',{date_from:day,date_to:day,include_cancelled:false,limit:50},controller.signal)
-   .then(result=>{if(current!==token.current)return;if(!result.ok)throw new Error(result.error);assertReportPage(result.data);setReport(result.data);})
+   .then(result=>{if(current!==token.current)return;if(!result.ok)throw new Error(result.error);assertReportPage(result.data);setReport(result.data);setFirstPage({day,revision,reload,page:result.data});})
    .catch(cause=>{if(current===token.current&&!controller.signal.aborted)setError(cause instanceof Error?cause.message:'تعذر تحميل نقلات اليوم.');})
    .finally(()=>{if(current===token.current)setBusy(false);});
   return ()=>controller.abort();
@@ -52,6 +54,8 @@ export function DailyTripList({date,revision,disabled,vehicles,contractors,onRev
    <div className={ui.actions}><button type="button" disabled={disabled||busy||!day} onClick={()=>{setEnabled(true);setReload(x=>x+1);}}>{busy?'جارٍ تحميل النقلات…':'عرض المسجّل لهذا اليوم'}</button></div>
   </div>
   {error&&<p role="alert">{error}</p>}
+  {report&&firstPage&&firstPage.day===day&&firstPage.revision===revision&&firstPage.reload===reload&&!disabled&&
+   <DailyTripPaperPreview day={day} firstPage={firstPage.page} vehicles={vehicles} contractors={contractors}/>}
   {report&&report.rows.length===0&&<p className={styles.empty}>لا توجد نقلات محفوظة في اليوم المختار.</p>}
   {report&&report.rows.length>0&&<>
    <p>{visibleWeight!==null&&<>{fullWeight?'إجمالي الوزن':'الوزن الظاهر'}: <strong>{visibleWeight} طن</strong> — </>}تم تحميل {report.rows.length} من {String(report.total_count)} نقلة؛ تكرار نفس العربية يُحسب نقلات مستقلة.</p>
