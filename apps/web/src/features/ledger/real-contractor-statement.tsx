@@ -2,7 +2,7 @@
 import ui from "./workspace-ui.module.css";
 import styles from "./statement-design.module.css";
 
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import { postLedgerRead } from "../../lib/ledger/transport";
 import { ReportHistoryScope } from "../reports/report-period";
 import { ContractorDetails } from "./contractor-details";
@@ -34,29 +34,30 @@ export function RealContractorStatement({ contractors, vehicles, revision, disab
   const active = useRef(0);
   const query = useRef<Record<string, unknown> | null>(null);
 
-  useEffect(() => {
-    active.current += 1;
-    query.current = null;
-    setReport(null);
-  }, [revision]);
-
   const name = contractors.find(c => c.id === contractorId)?.name ?? contractorId;
   const complete = !!report && !report.next_cursor &&
     BigInt(report.total_count) === BigInt(report.rows.length);
   const vehicleNames = new Map(vehicles.map(v => [v.id, v.plate_number]));
 
-  function reset() {
+  const reset = useCallback(() => {
     active.current += 1;
     query.current = null;
-    setReport(null); setError("");
-  }
+    setReport(null);
+    setError("");
+    setBusy(false);
+  }, []);
+
+  useEffect(() => {
+    reset();
+    return () => { active.current += 1; };
+  }, [revision, reset]);
 
   async function load(event: FormEvent) {
     event.preventDefault();
     if (disabled || busy || !contractorId || (!allHistory && (!from || !to))) return;
     reset();
     if (!allHistory && from > to) { setError("تاريخ البداية بعد تاريخ النهاية."); return; }
-    const token = active.current;
+    const token = ++active.current;
     const payload = { counterparty_contractor_id: contractorId,
       ...(allHistory?{all_history:true}:{date_from:from,date_to:to}), limit: 200 };
     setBusy(true);
@@ -69,12 +70,12 @@ export function RealContractorStatement({ contractors, vehicles, revision, disab
       setReport(result.data);setFiltersOpen(false);
     } catch (cause) {
       if (token === active.current) setError(cause instanceof Error ? cause.message : "تعذّر تحميل الكشف.");
-    } finally { setBusy(false); }
+    } finally { if (token === active.current) setBusy(false); }
   }
 
   async function more() {
     if (disabled || busy || !report?.next_cursor || !query.current) return;
-    const token = active.current;
+    const token = ++active.current;
     setBusy(true); setError("");
     try {
       const result = await postLedgerRead<LiveStatementReport>("contractor.statement", {
@@ -99,7 +100,7 @@ export function RealContractorStatement({ contractors, vehicles, revision, disab
       setReport(combined);
     } catch (cause) {
       if (token === active.current) { setReport(null); setError(cause instanceof Error ? cause.message : "تعذّر تحميل المزيد."); }
-    } finally { setBusy(false); }
+    } finally { if (token === active.current) setBusy(false); }
   }
 
   return <section className={ui.surface+" "+styles.report} aria-label="كشف حساب المقاول الحقيقي">
