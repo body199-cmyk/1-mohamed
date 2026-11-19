@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { createOperationalReportImageLayout, paginateOperationalReportForPdf, renderOperationalReportHtml } from "@ledger/statement-export";
 import {
-  buildRealOperationalDocument, isFullOperationalReport
+  buildRealOperationalDocument, isFullOperationalReport, styleRealOperationalExport
 } from "../src/features/ledger/real-operational-document";
 
 const lookups = {
@@ -18,6 +19,35 @@ describe("real operational five-format document", () => {
     expect(isFullOperationalReport({ ...partial, total_count: "1", next_cursor: null })).toBe(true);
     expect(isFullOperationalReport({ rows: [], total_count: "NaN", next_cursor: null })).toBe(false);
     expect(isFullOperationalReport({ rows: [], total_count: 9007199254740992, next_cursor: null })).toBe(false);
+  });
+  it("lays out 105 full-width trip rows for PNG, paged PDF and fixed paper printing", () => {
+    const rows = Array.from({ length: 105 }, (_, index) => ({
+      id: `TR-261115-${String(index).padStart(3, "0")}-05`, trip_date: "2026-11-10", vehicle_id: "V1",
+      counterparty_contractor_id: "K1", direction: "AHMED_SUPPLIES", origin: "حلوان", destination: "الإسماعيلية",
+      weight_milli_tonnes: "33375", contractor_rate_piastres: "50000", vehicle_rate_piastres: "50000",
+      expense_piastres: "50000", contractor_total_piastres: "1718800", vehicle_total_piastres: "1718800",
+      notes: "توريد سن للمشروع", is_cancelled: false,
+    }));
+    const source = buildRealOperationalDocument("trips.list", {
+      rows, total_count: "105", next_cursor: null,
+      totals: { contractor_total_piastres: "255337500", vehicle_total_piastres: "251372400",
+        ahmed_work_piastres: "165108300", counterparty_work_piastres: "90229200", active_count: "105" },
+    }, { ...lookups, contractors: new Map([["K1", "مؤسسة البناء للمقاولات"]]) },
+    "2026-07-16", "2026-11-17", "2026-11-19", { vehicle: "عربية ١" });
+    const paper = styleRealOperationalExport(source, "trips.list");
+    expect(source.presentation).toBeUndefined();
+    expect(paper.rows).toBe(source.rows);
+    expect(paper.columns.map(column => column.label)).toEqual(source.columns.map(column => column.label));
+    expect(paper.summarySections.flatMap(section => section.metrics.map(metric => metric.value)).sort())
+      .toEqual(source.summarySections[0]!.metrics.map(metric => metric.value).sort());
+    expect(createOperationalReportImageLayout(paper)).toMatchObject({ width: 1440 });
+    const pages = paginateOperationalReportForPdf(paper);
+    expect(pages.length).toBeGreaterThan(1);
+    expect(pages.flatMap(page => page.rows)).toEqual(paper.rows);
+    const html = renderOperationalReportHtml(paper);
+    expect(html).toContain('class="details-table wide-table"');
+    expect(html).toContain('<span class="ltr-token">2026-11-10</span>');
+    expect(html).toContain('TR-261115-104-05');
   });
   it("formats persisted trip records without demo data or omitted commercial columns", () => {
     const report = { rows: [{

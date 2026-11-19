@@ -2,20 +2,35 @@ import type {OperationalReportDocument,OperationalReportDetailSection} from './d
 import type {OperationalReportImageLayout} from './render-report-image';
 const LEFT=80,RIGHT=1360,SPAN=1280,BLUE='#2446ad',INK='#172b45',MUTED='#526171';
 const COLORS={credit:'#147344',debit:'#b3343c',neutral:BLUE};
-type Table=OperationalReportDetailSection&{top:number;heights:number[];widths:number[];total?:string};
+type Table=OperationalReportDetailSection&{top:number;heights:number[];widths:number[];wide:boolean;total?:string};
 export interface CompactReportLayout extends OperationalReportImageLayout {readonly compactTables:readonly Table[];readonly compactFooter:number;readonly metadataColumns:number;readonly metadataStart:number;readonly metadataRowGap:number;}
 /** Deterministic wrapping means export layout never depends on viewport or theme. */
-export function reportLines(text:string,width:number,size=26):string[]{
+export function reportLines(text:string,width:number,size=26,keepWords=false):string[]{
  const max=Math.max(2,Math.floor(width/(size*.64)));const lines:string[]=[];
  for(const paragraph of text.split('\n')){let line='';for(const word of paragraph.split(/\s+/)){
   if(!word)continue;if(line&&line.length+word.length+1>max){lines.push(line);line='';}
-  if(word.length>max){if(line){lines.push(line);line='';}for(let i=0;i<word.length;i+=max){const part=word.slice(i,i+max);if(part.length===max)lines.push(part);else line=part;}}
+  if(word.length>max&&!keepWords){if(line){lines.push(line);line='';}for(let i=0;i<word.length;i+=max){const part=word.slice(i,i+max);if(part.length===max)lines.push(part);else line=part;}}
   else line+=(line?' ':'')+word;
  }if(line||!lines.length)lines.push(line);}
  return lines;
 }
 function widths(table:OperationalReportDetailSection){const sum=table.columns.reduce((n,c)=>n+c.widthWeight,0);return table.columns.map(c=>SPAN*c.widthWeight/sum);}
-function tableHeight(table:OperationalReportDetailSection){const w=widths(table);return (table.rows.length?table.rows:[[table.emptyMessage]]).map(row=>Math.max(78,24+Math.max(...row.map((v,i)=>table.columns[i]?.direction==='ltr'?1:reportLines(v,(w[i]??SPAN)-24).length))*37));}
+function tableTypography(wide: boolean) {
+ return wide ? { size: 17, padding: 6, lineHeight: 18, rowInset: 12, minHeight: 42, baseline: 22 }
+  : { size: 26, padding: 12, lineHeight: 37, rowInset: 24, minHeight: 78, baseline: 42 };
+}
+function cellLines(value: string, column: OperationalReportDocument['columns'][number], width: number, wide: boolean) {
+ const { size, padding } = tableTypography(wide);
+ return column.direction === 'ltr' ? [value] : reportLines(value, width - 2 * padding, size, wide);
+}
+function tableHeights(table: OperationalReportDetailSection, widths: number[], wide: boolean) {
+ const { lineHeight, rowInset, minHeight } = tableTypography(wide);
+ if (table.rows.length === 0) return [78];
+ return table.rows.map(row => {
+  const lines = row.map((value, index) => cellLines(value, table.columns[index]!, widths[index]!, wide).length);
+  return Math.max(minHeight, rowInset + Math.max(...lines) * lineHeight);
+ });
+}
 export function createCompactReportLayout(doc:OperationalReportDocument,options:{fixedHeight?:number;pageLabel?:string}):CompactReportLayout {
  const metadataColumns=doc.metadata.length<=4?2:3;
  const metadataRows=Math.ceil(doc.metadata.length/metadataColumns);
@@ -24,7 +39,14 @@ export function createCompactReportLayout(doc:OperationalReportDocument,options:
  doc.summarySections.forEach((section,i)=>{y+=i===0?Math.ceil(section.metrics.length/4)*132+20:44+Math.ceil(section.metrics.length/4)*70+18;});
  const tables:Table[]=[];
  const all=[{title:doc.detailsTitle??'تفاصيل التقرير',columns:doc.columns,rows:doc.rows,emptyMessage:doc.emptyMessage,rowTones:doc.rowTones},...(doc.detailSections??[])];
- for(const [i,t] of all.entries()){const heights=tableHeight(t);const total=i===0?doc.detailsTotal:undefined;tables.push({...t,top:y,heights,widths:widths(t),total});y+=62+62+heights.reduce((a,b)=>a+b,0)+36+(total?64:0);}
+ for(const [i,t] of all.entries()){
+  const wide=t.columns.length>=12;
+  const columnWidths=widths(t);
+  const heights=tableHeights(t,columnWidths,wide);
+  const total=i===0?doc.detailsTotal:undefined;
+  tables.push({...t,top:y,heights,widths:columnWidths,wide,total});
+  y+=62+62+heights.reduce((a,b)=>a+b,0)+36+(total?64:0);
+ }
  const compactFooter=y+10;
  const contentBottom=compactFooter+doc.footerNotes.reduce((n,t)=>n+reportLines(t,SPAN,23).length*34+10,0)+80;
  const height=options.fixedHeight??Math.max(1000,contentBottom);
@@ -56,11 +78,27 @@ export function paintCompactReport(ctx:CanvasRenderingContext2D,layout:CompactRe
   });y+=s===0?Math.ceil(section.metrics.length/4)*132+20:Math.ceil(section.metrics.length/4)*70+18;
  });
  for(const t of layout.compactTables){text(ctx,t.title,RIGHT-16,t.top+37,29,INK,true);ctx.fillStyle=BLUE;ctx.fillRect(RIGHT-5,t.top+8,5,35);ctx.fillRect(LEFT,t.top+62,SPAN,62);
-  let x=RIGHT;t.columns.forEach((c,i)=>{text(ctx,c.label,x-12,t.top+102,23,'#fff',true,t.widths[i]!-24);x-=t.widths[i]!;});
+  const {size,padding,baseline,lineHeight}=tableTypography(t.wide);
+  let x=RIGHT;
+  t.columns.forEach((column,index)=>{
+   const width=t.widths[index]!-2*padding;
+   const lines=t.wide?reportLines(column.label,width,16,true):[column.label];
+   const header=lines.length<=3?lines:[column.label];
+   header.forEach((line,i)=>text(ctx,line,x-padding,t.top+102+(i-(header.length-1)/2)*18,t.wide?16:23,'#fff',true,width));
+   x-=t.widths[index]!;
+  });
   let rowY=t.top+124;const rows=t.rows.length?t.rows:[[t.emptyMessage]];
   rows.forEach((row,i)=>{const h=t.heights[i]!;ctx.fillStyle=i%2?'#f5f7fa':'#fff';ctx.fillRect(LEFT,rowY,SPAN,h);let right=RIGHT;
    if(!t.rows.length)text(ctx,t.emptyMessage,RIGHT-18,rowY+48,26,MUTED,false,SPAN-36);
-   else row.forEach((v,j)=>{const col=t.columns[j]!;const color=t.rowTones?.[i]?COLORS[t.rowTones[i]!]:(j===row.length-1?BLUE:INK);const lines=col.direction==='ltr'?[v]:reportLines(v,t.widths[j]!-24);lines.forEach((line,k)=>text(ctx,line,right-12,rowY+42+k*37,26,color,j===row.length-1,t.widths[j]!-24,col.direction==='ltr'));right-=t.widths[j]!;});
+   else row.forEach((value,index)=>{
+    const column=t.columns[index]!;
+    const width=t.widths[index]!;
+    const emphasized=!t.wide&&index===row.length-1;
+    const color=t.rowTones?.[i]?COLORS[t.rowTones[i]!]:(emphasized?BLUE:INK);
+    cellLines(value,column,width,t.wide).forEach((line,k)=>
+     text(ctx,line,right-padding,rowY+baseline+k*lineHeight,size,color,emphasized,width-2*padding,column.direction==='ltr'));
+    right-=width;
+   });
    rule(ctx,rowY+h-1);rowY+=h;
   });
   if(t.total){ctx.fillStyle='#eef3fb';ctx.fillRect(LEFT,rowY,SPAN,64);text(ctx,t.total,RIGHT-18,rowY+42,25,BLUE,true,SPAN-36);}

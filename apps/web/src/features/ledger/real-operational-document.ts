@@ -28,6 +28,40 @@ const paymentColumns = [
   "amount_piastres", "notes", "is_cancelled", "cancel_reason"
 ] as const;
 
+const visualWidthWeights: Readonly<Record<string, number>> = {
+  id: 1.8, trip_date: 1.2, payment_date: 1.2, vehicle_id: 1.15,
+  counterparty_contractor_id: 1.55, responsible_contractor_id: 1.55,
+  direction: 1.15, notes: 1.45, origin: 1.25, destination: 1.25,
+  is_cancelled: 0.7, cancel_reason: 1.15,
+};
+
+/** Give visual exports their own paper styling while reusing the complete report snapshot. */
+export function styleRealOperationalExport(
+  document: OperationalReportDocument, type: LedgerReportType,
+): OperationalReportDocument {
+  const keys = type === "trips.list" ? tripColumns : paymentColumns;
+  const columns = keys.map((key, index) => ({
+    ...document.columns[index]!,
+    widthWeight: visualWidthWeights[key] ?? 1,
+    direction: key === "id" || key.endsWith("_date") || key.endsWith("_piastres") ||
+      key === "weight_milli_tonnes" ? "ltr" as const : "rtl" as const,
+  }));
+  const summary = document.summarySections[0]!;
+  const financial = summary.metrics.filter(metric => metric.value.endsWith(" ج.م"));
+  const primary = financial.slice(0, 3);
+  const remaining = summary.metrics.filter(metric => !primary.includes(metric));
+  return {
+    ...document, presentation: "compact-statement", columns,
+    summarySections: primary.length ? [
+      { ...summary, metrics: primary.map((metric, index) => ({
+        ...metric, direction: "ltr",
+        tone: type === "trips.list" ? (["credit", "debit", "neutral"] as const)[index] : "neutral",
+      })) },
+      ...(remaining.length ? [{ title: "باقي مؤشرات الفترة", metrics: remaining }] : []),
+    ] : document.summarySections,
+  };
+}
+
 /** Full report exports are never produced from a truncated history page. */
 export function isFullOperationalReport(report: SourceReport): boolean {
   const total = typeof report.total_count === "number" ?
