@@ -28,19 +28,21 @@ export function ReportExportPreview({ document, id }: {
     async function prepare() {
       const renderer = await import("@ledger/statement-export");
       if (cancelled) return;
-      let pageCount = 1;
-      let renderPage: Preview["renderPage"];
+      let layout: ReturnType<typeof renderer.createOperationalReportImageLayout> | undefined;
       try {
-        const layout = renderer.createOperationalReportImageLayout(document);
-        renderPage = () => renderer.renderOperationalReportLayoutPng(layout);
+        layout = renderer.createOperationalReportImageLayout(document);
       } catch {
-        const pages = renderer.paginateOperationalReportForPdf(document, { maxPages: Infinity });
-        pageCount = pages.length;
-        renderPage = async index => renderer.renderOperationalReportLayoutPng(renderer.createOperationalReportImageLayout(pages[index]!, {
-          fixedHeight: renderer.OPERATIONAL_REPORT_PAGE_HEIGHT,
-          pageLabel: `صفحة ${index + 1} من ${pages.length}`,
-        }));
+        // A full report can exceed the single-image height while its individual pages fit.
       }
+      const singleImage = layout && layout.height <= renderer.OPERATIONAL_REPORT_PAGE_HEIGHT ? layout : undefined;
+      const pages = singleImage ? [] : renderer.paginateOperationalReportForPdf(document, { maxPages: Infinity });
+      const pageCount = singleImage ? 1 : pages.length;
+      const renderPage: Preview["renderPage"] = index => renderer.renderOperationalReportLayoutPng(
+        singleImage ?? renderer.createOperationalReportImageLayout(pages[index]!, {
+          fixedHeight: renderer.OPERATIONAL_REPORT_PAGE_HEIGHT,
+          pageLabel: `صفحة ${index + 1} من ${pageCount}`,
+        }),
+      );
       setPage(0);
       setPreview({ document, pageCount, renderPage });
     }
