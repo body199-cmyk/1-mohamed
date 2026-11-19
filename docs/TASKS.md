@@ -1,3 +1,7 @@
+## INDEPENDENT-AUDIT — three verified findings
+
+Review the [second audit](audits/INDEPENDENT_PRE_HANDOFF_SECOND_REVIEW.md) and the remediation PR. Verify the new portable export RPC through isolated Supabase Auth/PostgREST before release.
+
 ## REPORT-PREVIEW — معاينة التصدير داخل التقارير
 
 المستخدم وافق على التنفيذ والدمج بعد الاختبار. نطاق المهمة تقرير النقلات ومدفوعات العربية في «التقارير والكشوف»، وكشف حساب العربية في «العربيات». المعاينة فوق الملخص والتفاصيل الموجودة. القبول في [SUBTASKS](SUBTASKS.md#report-preview--قبول-المعاينة) وحالة التحقق في [STATUS](STATUS.md).

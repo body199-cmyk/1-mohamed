@@ -1,3 +1,7 @@
+## INDEPENDENT-AUDIT — remediation acceptance
+
+Verify both opening types and a same-key retry, supersede delayed initial and next-page report requests after revision, and reject concurrent drift during portable export. The [second audit](audits/INDEPENDENT_PRE_HANDOFF_SECOND_REVIEW.md) records the isolated database and browser evidence.
+
 ## REPORT-PREVIEW — قبول المعاينة
 
 - نفس صورة PNG للتقرير الكامل قبل العرض الحالي. عند تجاوز حد الصورة تظهر صفحات قابلة للتنقل بنفس تخطيط PDF. على الموبايل تظهر الورقة كاملة ويمكن تكبيرها.

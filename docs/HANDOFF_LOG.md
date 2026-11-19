@@ -1,3 +1,7 @@
+## 19 November 2026 — independent audit remediation
+
+Reviewed both PR #99 files and PR #98, reproduced the defects, and prepared a separate remediation branch from main. The [second audit](audits/INDEPENDENT_PRE_HANDOFF_SECOND_REVIEW.md) gives the baseline, files, evidence and outstanding release checks.
+
 ## REPORT-PREVIEW — ١٨ نوفمبر ٢٠٢٦
 
 معاينة فوق النتائج القديمة في «التقارير والكشوف» و«العربيات» من نفس مستند التصدير. المراجعة الثانية بواسطة نفس المساعد شملت ترتيب القسمين، منع عرض نتائج جزئية أو قديمة، رفض القراءة، الرصيد السالب، تحرير رابط الصورة في المتصفح، واستمرار حد PDF مع إتاحة تصفح التقارير الأطول. لا تغيير في الحساب أو الصلاحيات أو بيانات الإنتاج.

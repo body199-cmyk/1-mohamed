@@ -34,12 +34,11 @@ export function RealReports({ contractors, vehicles, accounts, disabled, revisio
   const [report, setReport] = useState<Report | null>(null);
 
   const active = useRef(0);
-  useEffect(() => { active.current++; setReport(null); reportQuery.current = null; },[revision]);
   useEffect(()=>{
     if(!periodRequest)return;
-    active.current++;setReport(null);reportQuery.current=null;setReportType('trips.list');
+    setReportType('trips.list');
     setAllHistory(false);setReportFrom(periodRequest.date);setReportTo(periodRequest.date);
-    setReportVehicle('');setReportCounterparty('');setIncludeCancelled(false);setNotice('');
+    setReportVehicle('');setReportCounterparty('');setIncludeCancelled(false);
   },[periodRequest?.id]);
   useEffect(() => {
     const token = ++active.current;
@@ -78,12 +77,12 @@ export function RealReports({ contractors, vehicles, accounts, disabled, revisio
       }
     },180);
     return () => { clearTimeout(timer); active.current++; };
-  },[disabled,revision,reportType,allHistory,reportFrom,reportTo,reportAccount,reportVehicle,reportCounterparty,includeCancelled]);
+  },[disabled,revision,periodRequest?.id,reportType,allHistory,reportFrom,reportTo,reportAccount,reportVehicle,reportCounterparty,includeCancelled]);
 
   async function loadMoreRows() {
     const query = reportQuery.current;
     if (disabled || busy || !report || !report.next_cursor || !query) return;
-    const token = active.current;
+    const token = ++active.current;
     setBusy(true); setNotice("");
     try {
       const response = await postLedgerRead<Report>(query.type, {
@@ -95,8 +94,12 @@ export function RealReports({ contractors, vehicles, accounts, disabled, revisio
         setNotice("صفحة التقرير غير صالحة من الخادم."); return;
       }
       setReport(mergeReportPage(report, response.data));
-    } catch (error) { setReport(null); setNotice(error instanceof Error ? error.message : "تعذر تحميل الصفحة التالية. أعد تحميل التقرير."); }
-    finally { setBusy(false); }
+    } catch (error) {
+      if (token === active.current) {
+        setReport(null);
+        setNotice(error instanceof Error ? error.message : "تعذر تحميل الصفحة التالية. أعد تحميل التقرير.");
+      }
+    } finally { if (token === active.current) setBusy(false); }
   }
 
   const fullExportDocument = (() => {
@@ -156,7 +159,7 @@ export function RealReports({ contractors, vehicles, accounts, disabled, revisio
             </option>)}
           </select></div>
         </>}
-        <ReportHistoryScope checked={allHistory} onChange={value=>{setAllHistory(value);active.current++;setReport(null);reportQuery.current=null;}}/>
+        <ReportHistoryScope checked={allHistory} onChange={setAllHistory}/>
         <div className={ui.fieldGroup}><label htmlFor="report-from">من تاريخ</label>
         <input id="report-from" className={ui.control} type="date" required={!allHistory} value={reportFrom}
           onChange={e => { setReportFrom(e.target.value); setReport(null); }} disabled={allHistory} /></div>
