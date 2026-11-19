@@ -1,3 +1,19 @@
+# Stage 2 implemented on the same draft PR — NOT MERGED
+
+- Browser-only read/compare: `src/lib/backup/compare-local.ts`, `read-bounded.ts` and `local-backup-inspector.tsx` now compare a chosen verified local portable JSON file against a **fresh, owner-only** current snapshot obtained through existing `GET /api/backup/export?format=json`. The downloaded current dataset remains in memory in the owner's browser; no upload, write or persistence. Handles 12 tables, stable primary/composite keys, duplicate rejection, canonical nested row equality, counts of old-only/new-only/modified/unchanged rows, owner/member identity mismatch warning, and *counts* of potentially affected cash accounts and contractors. **It does not compute financial balances or prove that replace/merge would work.** Snapshot may become stale; any eventual restore must recompare under maintenance fencing.
+
+- Cloud-date selection: existing `GET /api/backup/history` now additionally selects the existing `format` field. Settings allow users to choose a saved date, show metadata and open its Drive link. **Metadata display does not fetch or restore the archive.**
+
+- Selected cloud archive rehearsal: `tools/backup-reader/cloud-rehearsal-contract.mjs` and `cloud-rehearsal.mjs` offer a separate manual **read-only** route: validate one explicitly selected Cairo date against trusted `backup_history` and the actual Drive file ID/path/size, download via rclone from Drive to a temporary folder, verify SHA-256, then run the existing `proveBusinessRecovery` PGlite isolated restore with fingerprint checking. Does not connect to a writable production database, does not change backup retention, and is **NOT exposed as a website endpoint**. Only supports `plain-business` archives. Encrypted historical archives need a separate authorized reader/rehearsal engine. Manual live Drive drill is not considered verified until actually executed with authorized credentials.
+
+- Scoped deletion impact preview: `scope-impact.ts` and `scope-impact-preview.tsx` use the existing owner export read-only to count trips for a day, vehicle, contractor or all business data, separately flag paid-linked and cross-day payments, and warn that cancelling trips never automatically cancels actual payments. No mass cancellation, deletion, reset or reactivation API is added. All finance totals remain under existing audited operations.
+
+- Regression tests: browser mobile/desktop local file comparison, live export 403, no writes/unauthorized or accidental upload, 12-table row categorization & duplicate IDs, cloud-date selection, scope preview with historical linked cash entries, bounded browser response, manually selected Drive identity/path/format and CLI syntax, plus all prior accounting/backup/report tests.
+
+**No production data or code modified, no schema migrations added, no cloud credentials handled, PR remains DRAFT.** The stage above completes the inspect/compare/impact-preview layer, **not production restoration**. Any clickable actual merge, whole restore, bulk delete or revert requires new vetted database transactions, sealed candidate/recovery environment, rollback drill, re-auth, and explicit separate review/approval. Never auto-merge this PR.
+
+---
+
 # Settings: Safe backup recovery and scoped data management — 19 Nov 2026
 
 Status: **PROPOSAL / STAGE 1 ONLY**, branch `feat/settings-safe-restore-planning-20261119`. Explicit user constraints: `main`, production data, existing finances, exports, visual design, daily Google Drive backups, and existing auth MUST remain unchanged. No restore or bulk delete to production is authorized by this plan.
