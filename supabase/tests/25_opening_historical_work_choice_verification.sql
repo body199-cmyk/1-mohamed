@@ -14,7 +14,7 @@ insert into public.trips(
  direction,trip_date,weight_milli_tonnes,contractor_rate_piastres,
  vehicle_rate_piastres,same_rate,expense_piastres,
  contractor_total_piastres,vehicle_total_piastres)
-select x.id,x.vehicle,x.con,x.responsible,x.direction,x.day::date,
+select x.id,x.vehicle,x.con,m.responsible,x.direction,x.day::date,
  1000,x.rate,x.rate,true,0,x.rate,x.rate
 from (
  values
