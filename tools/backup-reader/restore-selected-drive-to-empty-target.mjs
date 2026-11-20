@@ -44,7 +44,11 @@ export function restoreVerifiedArchiveToEmptyTarget(env,archive,sha256) {
     const command=fileURLToPath(new URL('./business-restore-cli.mjs',import.meta.url));
     const result=spawnSync(process.execPath,[command,archive],{
       env:{
-        ...env,
+        PATH:env.PATH,
+        HOME:env.HOME,
+        NODE_ENV:env.NODE_ENV,
+        RESTORE_DB_URL:env.RESTORE_DB_URL,
+        RESTORE_TARGET_REF:env.RESTORE_TARGET_REF,
         BACKUP_EXPECTED_SHA256:sha256,
         BACKUP_RESTORE_TARGET_ONLY:'true',
       },
