@@ -26,7 +26,7 @@ function requireEnvironment(env) {
     throw Error('Select exactly one YYYY-MM-DD backup date');
   }
 }
-function command(env, args, selectedRemote, localDownload) {
+export function readOnlyDriveCommand(env, args, selectedRemote, localDownload) {
   onlyReadFromDrive(args, selectedRemote, localDownload);
   const config = {
     ...env,
@@ -73,7 +73,7 @@ export async function withVerifiedSelectedCloudArchive(env = process.env, onVeri
         size_bytes::text from public.backup_history where backup_date=$1`,
       [env.BACKUP_REHEARSAL_DATE]);
     if (rows.length !== 1) throw Error('Selected backup date not found in trusted history');
-    const items = JSON.parse(command(env, [
+    const items = JSON.parse(readOnlyDriveCommand(env, [
       'lsjson', 'drive:' + ROOT_FOLDER, '--recursive', '--files-only', '--hash',
     ]));
     if (!Array.isArray(items)) throw Error('Unexpected Drive listing');
@@ -82,7 +82,7 @@ export async function withVerifiedSelectedCloudArchive(env = process.env, onVeri
     const selection = selectedCloudArchive(env.BACKUP_REHEARSAL_DATE, rows[0], candidate[0]);
     const archive = join(work, basename(selection.filename));
     // This is strictly REMOTE -> LOCAL, no remote write or SQL modification.
-    command(env, ['copyto', selection.remote, archive, '--immutable'], selection.remote, archive);
+    readOnlyDriveCommand(env, ['copyto', selection.remote, archive, '--immutable'], selection.remote, archive);
     // Always prove exact nine-table reconstruction in disposable PGlite
     // BEFORE supplying the archive to any separately authorized target.
     const verified = await verifySelectedLocalArchive(archive, selection);
