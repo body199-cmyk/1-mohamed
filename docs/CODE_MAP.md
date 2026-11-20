@@ -1,3 +1,8 @@
+## AUD-FIN-001 / AUD-QA-001 — استعادة النقلة الملغاة
+
+- `supabase/migrations/20261120170000_trip_recovery_work_opening.sql` يحمي حد افتتاحي الشغل في انتقال النقلة من ملغاة إلى نشطة ويشارك القفل مع كتابة الافتتاحي. `supabase/tests/23_trip_recovery_work_opening_verification.sql` يتحقق من أثر الكشوف والتراجع.
+- `apps/web/src/app/api/ledger/operations/route.ts` يحوّل رمز الرفض إلى رسالة عربية. `e2e/demo-flow.spec.ts` يغطي التدفقات القديمة في CI.
+
 ## DAILY-RECORDED-PAPER — تقرير اليوم داخل اليومية
 
 - `apps/web/src/features/ledger/daily-trip-list.tsx`: العرض التقليدي يبقى كما هو؛ يحتفظ بصفحة التقرير الأولية المستقلة للمعاينة بعد اختيار اليوم.

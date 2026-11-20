@@ -1,8 +1,25 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 import * as path from "path";
 import * as fs from "fs";
 
 const SCREENSHOT_DIR = path.join(__dirname, "..", "apps", "web", "e2e", "screenshots");
+
+async function setDemoTheme(page: Page, theme: "light" | "dark") {
+  const originalPath = new URL(page.url()).pathname;
+  await page.goto("/demo/settings");
+  const html = page.locator("html");
+  await expect(html).toHaveAttribute("data-theme", /^(light|dark)$/);
+  if (await html.getAttribute("data-theme") !== theme) {
+    await page.getByRole("button", { name: "تغيير المظهر" }).click();
+  }
+  await expect(html).toHaveAttribute("data-theme", theme);
+  await page.goto(originalPath);
+  await expect(html).toHaveAttribute("data-theme", theme);
+}
+
+async function openOptionalTripDetails(page: Page) {
+  await page.getByText("٣. المسار والمصاريف والملاحظات (اختياري)", { exact: true }).click();
+}
 
 test.beforeAll(() => {
   if (!fs.existsSync(SCREENSHOT_DIR)) {
@@ -40,15 +57,14 @@ test.describe("أحمد أبو علي — حسابات النقل — سينار
       });
 
       // Switch to dark mode
-      await page.click('button[aria-label="تفعيل الوضع الداكن"]');
-      await page.waitForTimeout(100);
+      await setDemoTheme(page, "dark");
       await page.screenshot({
         path: path.join(SCREENSHOT_DIR, `trips-${vp.name}-dark.png`),
         fullPage: false,
       });
 
       // Switch back to light mode
-      await page.click('button[aria-label="تفعيل الوضع الفاتح"]');
+      await setDemoTheme(page, "light");
     }
 
     // Reset viewport to desktop
@@ -59,7 +75,7 @@ test.describe("أحمد أبو علي — حسابات النقل — سينار
     await page.selectOption('select:has-text("اختر المقاول")', "K1");
 
     // Select direction: AHMED_SUPPLIES
-    await page.click('text="شغل أحمد (المقاول مدين لأحمد)"');
+    await page.getByRole("radio", { name: "أحمد جاب العربيات", exact: true }).check();
 
     // Select vehicle V1
     await page.selectOption('select:has-text("اختر السيارة")', "V1");
@@ -76,18 +92,19 @@ test.describe("أحمد أبو علي — حسابات النقل — سينار
     // Rates: contractor 150, vehicle 130, expense 50
     await page.fill('input[placeholder="مثال: 120"]', "150");
     await page.fill('input[placeholder="مثال: 110"]', "130");
-    await page.fill('input[placeholder="0"]', "50");
+    await openOptionalTripDetails(page);
+    await page.getByRole("textbox", { name: "مصاريف النقلة" }).fill("50");
 
     // Verify preview card: contractor total = 25.500 * 150 = 3,825 + 50 = 3,875
-    await expect(page.getByText("3,875 ج.م", { exact: true })).toBeVisible();
+    await expect(page.getByText("المقاول مدين لأحمد بهذا المبلغ (+3,875 ج.م)")).toBeVisible();
     // vehicle total = 25.500 * 130 = 3,315 + 50 = 3,365
     await expect(page.getByText("3,365 ج.م", { exact: true })).toBeVisible();
 
     // Submit trip
-    await page.click('button:has-text("إضافة للتجربة")');
+    await page.getByRole("button", { name: "حفظ وإضافة نقلة جديدة" }).click();
 
     // Verify success notification
-    await expect(page.getByRole("main").getByRole("status")).toContainText("تم تسجيل النقلة بنجاح");
+    await expect(page.getByRole("status").filter({ hasText: "تم تسجيل النقلة بنجاح" })).toBeVisible();
   });
 
   test("السيناريو 2 و 3: المشترك واعتماده وتعديله مع الحفاظ على المسودة", async ({
@@ -132,7 +149,7 @@ test.describe("أحمد أبو علي — حسابات النقل — سينار
 
     // Select contractor and direction
     await page.selectOption('select:has-text("اختر المقاول")', "K1");
-    await page.click('text="شغل أحمد (المقاول مدين لأحمد)"');
+    await page.getByRole("radio", { name: "أحمد جاب العربيات", exact: true }).check();
 
     // Rate linking test:
     // Check same rate
@@ -177,10 +194,8 @@ test.describe("أحمد أبو علي — حسابات النقل — سينار
 
     // Enter draft weight & notes
     await page.fill('input[placeholder="مثال: 25.450"]', "30.500");
-    await page.fill(
-      'textarea[placeholder="أية ملاحظات خاصة بالنقلة أو السائق أو الموقع..."]',
-      "ملاحظة اختبار المسودة"
-    );
+    await openOptionalTripDetails(page);
+    await page.getByRole("textbox", { name: "ملاحظات النقلة" }).fill("ملاحظة اختبار المسودة");
 
     // Open quick vehicle modal
     await page.click('button:has-text("+ سيارة جديدة")');
@@ -189,26 +204,22 @@ test.describe("أحمد أبو علي — حسابات النقل — سينار
     // Fill new vehicle
     await page.fill('input[placeholder="مثال: د هـ و 5678"]', "ق ر ش 4444");
     await page.fill('input[placeholder="مثال: محمود حسن"]', "سعيد أحمد");
-    await page.click('button:has-text("حفظ وإضافة")');
+    await page.getByRole("dialog", { name: "إضافة سجل جديد" }).getByRole("button", { name: "حفظ وإضافة", exact: true }).click();
 
     // Verify vehicle modal closed and newly added vehicle is selected
     await expect(page.locator("text=إضافة سيارة سريعة")).not.toBeVisible();
-    const vehicleSelectText = await page.locator('select:has-text("ق ر ش 4444")').textContent();
-    expect(vehicleSelectText).toContain("ق ر ش 4444");
+    await expect(page.getByRole("combobox", { name: "السيارة المنفذة" }).locator("option:checked"))
+      .toContainText("ق ر ش 4444");
 
     // Verify draft weight and notes are preserved!
     expect(await page.inputValue('input[placeholder="مثال: 25.450"]')).toBe("30.500");
-    expect(
-      await page.inputValue(
-        'textarea[placeholder="أية ملاحظات خاصة بالنقلة أو السائق أو الموقع..."]'
-      )
-    ).toBe("ملاحظة اختبار المسودة");
+    await expect(page.getByRole("textbox", { name: "ملاحظات النقلة" })).toHaveValue("ملاحظة اختبار المسودة");
 
     // Open quick contractor modal
     await page.click('button:has-text("+ مقاول جديد")');
     await expect(page.locator("text=إضافة مقاول سريع")).toBeVisible();
     await page.fill('input[placeholder="مثال: مقاولات الأمل"]', "شركة الفرسان للمقاولات");
-    await page.click('button:has-text("حفظ وإضافة")');
+    await page.getByRole("dialog", { name: "إضافة سجل جديد" }).getByRole("button", { name: "حفظ وإضافة", exact: true }).click();
 
     // Verify contractor modal closed and draft preserved
     await expect(page.locator("text=إضافة مقاول سريع")).not.toBeVisible();
@@ -231,9 +242,9 @@ test.describe("أحمد أبو علي — حسابات النقل — سينار
     // Trip 3 (2026-11-06): -600
     // Ahmed work: 1,300, Counterparty work: 600, Net closing: +300 EGP (لصالح أحمد)
     await expect(page.locator("text=ملخص كشف حساب: المقاول أحمد علام")).toBeVisible();
-    await expect(page.locator("text=+1,300 ج.م").first()).toBeVisible();
-    await expect(page.locator("text=-600 ج.م").first()).toBeVisible();
-    await expect(page.locator("text=300 ج.م").first()).toBeVisible();
+    await expect(page.getByText("+1,300", { exact: true }).filter({ visible: true }).first()).toBeVisible();
+    await expect(page.getByText("-600", { exact: true }).filter({ visible: true }).first()).toBeVisible();
+    await expect(page.getByRole("status").filter({ hasText: "صافي المستحق النهائي" })).toContainText("+300 ج.م");
 
     // Capture screenshots of contractor statements viewports
     const viewports = [
@@ -250,27 +261,26 @@ test.describe("أحمد أبو علي — حسابات النقل — سينار
       });
 
       // Dark mode
-      await page.click('button[aria-label="تفعيل الوضع الداكن"]');
-      await page.waitForTimeout(100);
+      await setDemoTheme(page, "dark");
       await page.screenshot({
         path: path.join(SCREENSHOT_DIR, `contractors-${vp.name}-dark.png`),
         fullPage: false,
       });
 
       // Light mode
-      await page.click('button[aria-label="تفعيل الوضع الفاتح"]');
+      await setDemoTheme(page, "light");
     }
 
     await page.setViewportSize({ width: 1440, height: 900 });
 
     // Now navigate to trips and add a new trip for K1 with OTHER_SUPPLIES (reverse direction)
-    await page.click('a[href="/demo/trips"]');
+    await page.getByRole("link", { name: "تسجيل النقلات", exact: true }).click();
 
     // Select K1
     await page.selectOption('select:has-text("اختر المقاول")', "K1");
 
     // Select OTHER_SUPPLIES (شغل المقاول)
-    await page.click('text="شغل المقاول (أحمد مدين للمقاول)"');
+    await page.getByRole("radio", { name: "المقاول جاب العربيات", exact: true }).check();
 
     // Select vehicle V1
     await page.selectOption('select:has-text("اختر السيارة")', "V1");
@@ -285,27 +295,25 @@ test.describe("أحمد أبو علي — حسابات النقل — سينار
 
     await page.fill('input[placeholder="مثال: 120"]', "100");
     await page.fill('input[placeholder="مثال: 110"]', "90");
-    await page.fill('input[placeholder="0"]', "0");
+    await openOptionalTripDetails(page);
+    await page.getByRole("textbox", { name: "مصاريف النقلة" }).fill("0");
 
-    // Preview shows: أحمد مدين للمقاول بهذا المبلغ (1,000 ج.م)
-    await expect(
-      page.locator("text=أحمد مدين للمقاول بهذا المبلغ (1,000 ج.م)")
-    ).toBeVisible();
+    await expect(page.getByText("أحمد مدين للمقاول بهذا المبلغ (-1,000 ج.م)")).toBeVisible();
 
     // Submit trip
-    await page.click('button:has-text("إضافة للتجربة")');
-    await expect(page.getByRole("main").getByRole("status")).toContainText("تم تسجيل النقلة بنجاح");
+    await page.getByRole("button", { name: "حفظ وإضافة نقلة جديدة" }).click();
+    await expect(page.getByRole("status").filter({ hasText: "تم تسجيل النقلة بنجاح" })).toBeVisible();
 
     // Navigate to contractor statement and verify immediate reflection!
-    await page.click('a[href="/demo/contractors"]');
+    await page.getByRole("link", { name: "كشف المقاول", exact: true }).click();
 
     // Counterparty work was 600, now + 1,000 = 1,600 EGP
-    await expect(page.locator("text=-1,600 ج.م").first()).toBeVisible();
+    await expect(page.getByText("-1,600", { exact: true }).filter({ visible: true }).first()).toBeVisible();
 
     // Closing was +300, now - 1,000 = -700 EGP (لصالح المقاول!)
-    await expect(
-      page.locator("text=صافي الرصيد لصالح المقاول (المقاول أحمد علام: -700 ج.م)")
-    ).toBeVisible();
+    const closing = page.getByRole("status").filter({ hasText: "صافي المستحق النهائي" });
+    await expect(closing).toContainText("-700 ج.م");
+    await expect(closing).toContainText("المقاول أحمد علام له عند أحمد أبو علي");
   });
 
   test("السيناريو 9 و 10: بدء يوم جديد وتأكيد استبدال المسودة المعدلة وإلغاؤه", async ({
@@ -318,27 +326,21 @@ test.describe("أحمد أبو علي — حسابات النقل — سينار
     await page.fill('input[placeholder="مثال: 25.450"]', "22.000");
 
     // Click "+ نقلة جديدة"
-    await page.click('button:has-text("+ نقلة جديدة")');
+    await page.getByRole("button", { name: "+ نقلة جديدة", exact: true }).click();
 
     // Confirm modal should appear
-    await expect(
-      page.locator("text=تأكيد إلغاء المسودة الحالية")
-    ).toBeVisible();
+    await expect(page.getByRole("dialog", { name: "تأكيد استبدال المسودة" })).toBeVisible();
 
     // Click "إلغاء والعودة للمسودة"
     await page.click('button:has-text("إلغاء والعودة للمسودة")');
-    await expect(
-      page.locator("text=تأكيد إلغاء المسودة الحالية")
-    ).not.toBeVisible();
+    await expect(page.getByRole("dialog", { name: "تأكيد استبدال المسودة" })).not.toBeVisible();
     // Weight is still intact!
     expect(await page.inputValue('input[placeholder="مثال: 25.450"]')).toBe("22.000");
 
     // Click "+ نقلة جديدة" again and confirm replacement
-    await page.click('button:has-text("+ نقلة جديدة")');
+    await page.getByRole("button", { name: "+ نقلة جديدة", exact: true }).click();
     await page.click('button:has-text("نعم، ابدأ نقلة جديدة")');
-    await expect(
-      page.locator("text=تأكيد إلغاء المسودة الحالية")
-    ).not.toBeVisible();
+    await expect(page.getByRole("dialog", { name: "تأكيد استبدال المسودة" })).not.toBeVisible();
     // Weight should be reset
     expect(await page.inputValue('input[placeholder="مثال: 25.450"]')).toBe("");
 
