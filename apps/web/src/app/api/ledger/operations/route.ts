@@ -57,6 +57,11 @@ export async function POST(request: NextRequest) {
       return result({ error: "تعذّرت استعادة النقلة لأن تاريخها يسبق بداية افتتاحي شغل المقاول." },
         409, sessionResponse);
     }
+    if ((input.operation === "trip.create" || input.operation === "trip.update")
+        && error.code === "P2021") {
+      return result({ error: "تاريخ النقلة يسبق بداية افتتاحي شغل المقاول؛ راجع تاريخ النقلة أو الافتتاحي." },
+        409, sessionResponse);
+    }
     const conflict = error.code === "P2003" || error.code === "23505";
     return result({ error: conflict ? "تم تعديل البيانات من جلسة أخرى؛ حدّث الصفحة وأعد المحاولة." :
       "تعذر حفظ العملية. راجع المدخلات ثم حاول مرة أخرى بنفس مفتاح الطلب." },
