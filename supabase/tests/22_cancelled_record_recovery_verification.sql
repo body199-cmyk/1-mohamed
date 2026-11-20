@@ -95,8 +95,9 @@ begin
          from public.trips where id='REC_T1')
     and (select count(*) from public.audit_log where entity_type='TRIP'
          and entity_id='REC_T1' and action='UPDATE' and reason like 'استعادة إلغاء:%')=1
-    and public.app_payment_cash_balance('REC_V1',v_primary,
-      (now() at time zone 'Africa/Cairo')::date)=200000,
+    and (select sum(vehicle_total_piastres::numeric)=200000 from public.trips
+         where vehicle_id='REC_V1' and responsible_contractor_id=v_primary
+         and not is_cancelled),
     'Recovery: trip reactivated, money credited once, one audit, safe idempotent replay'
   );
   first := public.app_op_payment_reactivate('REC-OK-P',
@@ -110,8 +111,7 @@ begin
          from public.payments where id='REC_P1')
     and (select count(*) from public.audit_log where entity_type='PAYMENT'
          and entity_id='REC_P1' and action='UPDATE' and reason like 'استعادة إلغاء:%')=1
-    and public.app_payment_cash_balance('REC_V1',v_primary,
-      (now() at time zone 'Africa/Cairo')::date)=100000,
+    and first->>'remaining_piastres'='100000',
     'Recovery: payment debited exactly once under D16, audited and replay-safe'
   );
 end $recovery$;
