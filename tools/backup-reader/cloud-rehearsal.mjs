@@ -47,7 +47,8 @@ function command(env, args, selectedRemote, localDownload) {
   }
   return (result.stdout ?? '').trim();
 }
-export async function rehearseSelectedCloudBackup(env = process.env) {
+export async function withVerifiedSelectedCloudArchive(env = process.env, onVerified = async () => ({})) {
+  if (typeof onVerified !== 'function') throw Error('An explicit verified archive handler is required');
   requireEnvironment(env);
   const ca = await caCertificate();
   const client = new pg.Client(sourceConnection(env.SUPABASE_DB_URL, ca));
@@ -82,13 +83,20 @@ export async function rehearseSelectedCloudBackup(env = process.env) {
     const archive = join(work, basename(selection.filename));
     // This is strictly REMOTE -> LOCAL, no remote write or SQL modification.
     command(env, ['copyto', selection.remote, archive, '--immutable'], selection.remote, archive);
+    // Always prove exact nine-table reconstruction in disposable PGlite
+    // BEFORE supplying the archive to any separately authorized target.
     const verified = await verifySelectedLocalArchive(archive, selection);
-    return { date: selection.date, ...verified,
+    const further = await onVerified(archive, selection);
+    return { date: selection.date, ...verified, ...further,
       production_reads_only: true };
   } finally {
     if (connected) { await client.query('rollback').catch(() => undefined); await client.end().catch(() => undefined); }
     rmSync(work, { recursive: true, force: true });
   }
+}
+
+export async function rehearseSelectedCloudBackup(env = process.env) {
+  return withVerifiedSelectedCloudArchive(env);
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
