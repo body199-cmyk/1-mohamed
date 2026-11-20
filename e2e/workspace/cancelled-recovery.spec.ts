@@ -58,7 +58,7 @@ test("reactivate selected canceled trip only after explicit confirmation, stable
     id:"T-accidental",expected_version:2,reason:"Restored accidental cancellation",
   });
   expect(actions[0].requestKey).toMatch(/^recovery:[0-9a-f-]+$/);
-  await expect(section.getByText("لا توجد سجلات ملغاة")).toBeVisible();
+  await expect(section.locator("#recovery-record-id")).toContainText("لا توجد سجلات ملغاة");
 });
 
 test("payment D16 rejection is shown with no success state, and reused request ID on retry",async({page})=>{
