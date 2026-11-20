@@ -104,6 +104,8 @@ const steps = [
   ['portable backup tests', 'supabase/tests/20_portable_backup_snapshot_verification.sql', 'Portable owner-only snapshot, row limits and coverage'],
   ['historical payment reference migration', 'supabase/migrations/20261119120000_preserve_historical_payment_reference.sql', 'D02/D13: preserve an existing descriptive link on payment edit'],
   ['historical payment reference tests', 'supabase/tests/21_historical_payment_reference_verification.sql', 'D02/D13: historical payment references remain editable after trip correction'],
+  ['cancelled record recovery migration', 'supabase/migrations/20261120010000_audited_cancelled_record_recovery.sql', 'Owner-only audited uncancellation with D16 cash validation'],
+  ['cancelled record recovery tests', 'supabase/tests/22_cancelled_record_recovery_verification.sql', 'Reactivation, retry/idempotency, owner checks, stale versions and D16 rollback'],
 ];
 
 function describe(error) {

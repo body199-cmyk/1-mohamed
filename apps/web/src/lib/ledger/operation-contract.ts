@@ -15,9 +15,11 @@ export const WRITE_OPERATIONS = {
   "trip.create": "app_op_trip_create",
   "trip.update": "app_op_trip_update",
   "trip.cancel": "app_op_trip_cancel",
+  "trip.reactivate": "app_op_trip_reactivate",
   "payment.create": "app_op_payment_create",
   "payment.update": "app_op_payment_update",
   "payment.cancel": "app_op_payment_cancel",
+  "payment.reactivate": "app_op_payment_reactivate",
 } as const;
 
 export const READ_OPERATIONS = {
