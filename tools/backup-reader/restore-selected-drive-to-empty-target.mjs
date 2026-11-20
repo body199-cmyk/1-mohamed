@@ -30,14 +30,22 @@ export function requireIsolatedTarget(env) {
 
 export async function restoreSelectedDriveToEmptyTarget(env=process.env) {
   requireIsolatedTarget(env);
-  return withVerifiedSelectedCloudArchive(env,async(archive,selection)=>{
+  return withVerifiedSelectedCloudArchive(env,async(archive,selection)=>
+    restoreVerifiedArchiveToEmptyTarget(env,archive,selection.sha256));
+}
+
+export function restoreVerifiedArchiveToEmptyTarget(env,archive,sha256) {
+    requireIsolatedTarget(env);
+    if (typeof sha256 !== 'string' || !/^[a-f0-9]{64}$/.test(sha256)) {
+      throw Error('Missing a verified archive SHA-256');
+    }
     // Existing CLI validates SHA-256 and the distinct source/target
     // connection once more, then refuses any occupied nine-table target.
     const command=fileURLToPath(new URL('./business-restore-cli.mjs',import.meta.url));
     const result=spawnSync(process.execPath,[command,archive],{
       env:{
         ...env,
-        BACKUP_EXPECTED_SHA256:selection.sha256,
+        BACKUP_EXPECTED_SHA256:sha256,
         BACKUP_RESTORE_TARGET_ONLY:'true',
       },
       encoding:'utf8',maxBuffer:8192,stdio:['ignore','pipe','pipe'],
@@ -57,7 +65,6 @@ export async function restoreSelectedDriveToEmptyTarget(env=process.env) {
       restored_tables:9,
       auth_users_restored:false,
       production_target_modified:false};
-  });
 }
 
 if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href){
