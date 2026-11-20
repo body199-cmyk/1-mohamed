@@ -37,6 +37,15 @@ export async function restoreEmptyLedger(client,dir){
    const updates=columns.filter(c=>c!=='"id"').map(c=>c+'=excluded.'+c);
    const settings=table==='business_settings'?' on conflict (id) do update set '+updates.join(','):'';
    const list=columns.join(',');
+   if(table==='trips'){
+    // A verified archive may contain legitimately pre-cutover work which was
+    // recorded BEFORE its TOTAL opening. Bypass only the new write-time guard
+    // inside this target-only transaction; restore the trigger before commit.
+    const {rows}=await client.query(`select tgenabled from pg_trigger
+      where tgrelid='public.trips'::regclass and tgname='trg_trip_new_work_opening'`);
+    if(rows[0]?.tgenabled!=='O')throw Error('Unexpected trip opening validation state on recovery target');
+    await client.query('alter table public.trips disable trigger trg_trip_new_work_opening');
+   }
    if(table==='payments'){
     // Archive rows are historical. A trip may have been corrected after
     // payment. Keep the account and trip FKs active while loading those rows.
@@ -47,6 +56,9 @@ export async function restoreEmptyLedger(client,dir){
    }
    await client.query(`insert into public.${table} (${list}) overriding system value
     select ${list} from jsonb_populate_recordset(null::public.${table},$1::jsonb) where true${settings}`,[payloads.get(table)]);
+   if(table==='trips'){
+    await client.query('alter table public.trips enable trigger trg_trip_new_work_opening');
+   }
    if(table==='payments'){
     await client.query('alter table public.payments enable trigger trg_payments_trip_link_guard');
    }
