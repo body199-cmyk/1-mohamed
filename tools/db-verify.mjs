@@ -110,6 +110,8 @@ const steps = [
   ['trip recovery work opening tests', 'supabase/tests/23_trip_recovery_work_opening_verification.sql', 'Both work directions, same-day recovery, cash guard and atomic rejection'],
   ['new trip work opening migration', 'supabase/migrations/20261120180000_trip_new_work_opening.sql', 'D04: prevent newly entered active trips before contractor-work opening'],
   ['new trip work opening tests', 'supabase/tests/24_trip_new_work_opening_verification.sql', 'Both directions, opening-day work, backdating and atomic rejection'],
+  ['opening history choice migration', 'supabase/migrations/20261120210000_opening_historical_work_choice.sql', 'Explicit included/excluded historical contractor work, cash guards preserved'],
+  ['opening history choice tests', 'supabase/tests/25_opening_historical_work_choice_verification.sql', '150 EGP seed includes or adds 70 EGP signed recorded history, no overlap'],
 ];
 
 function describe(error) {
