@@ -43,6 +43,22 @@ export function BackupSettings(){
   <LocalBackupInspector/>
   <ScopeImpactPreview/>
   <RestoreCancelledRecords/>
+  <div style={{padding:16,marginTop:20,border:"1px solid var(--border-color)",borderRadius:14}}>
+   <h4>استعادة طوارئ من Google Drive إذا تلفت قاعدة البيانات</h4>
+   <p>يمكن للمالك اختيار تاريخ النسخة المسجل أدناه ثم تشغيل استعادة محمية في GitHub
+    إلى <strong>مشروع Supabase جديد ومنفصل وفارغ فقط</strong>. لا تتم الكتابة فوق قاعدة المشروع الحالية،
+    ولا تتغير بيانات الدخول أو إعدادات Vercel تلقائيًا.</p>
+   <p>قبل أول استخدام يلزم تجهيز مشروع استرجاع مستقل وإعداد سر اتصال خاص به
+    في GitHub. النظام يرفض التنفيذ إذا لم تتوفر الحماية المطلوبة.</p>
+   <div className={ui.actions}>
+    <a className={ui.control} target="_blank" rel="noopener noreferrer"
+      href="https://github.com/body199-cmyk/1-mohamed/actions/workflows/recover-to-empty-project.yml">
+      فتح وحدة استعادة الطوارئ المحمية
+    </a>
+   </div>
+   <p>لإرجاع نقلة أو دفعة أُلغيت بالغلط دون فقد بيانات أحدث، استخدم القسم السابق.
+    استعادة ملفات Drive لا تقوم بدمج بيانات قديمة مع الجديدة تلقائيًا.</p>
+  </div>
   <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,marginTop:18}}>
    <h4>سجل النسخ السحابية</h4><button type="button" disabled={loading} onClick={()=>void refresh()}>{loading?"جارٍ التحديث...":"تحديث السجل"}</button>
   </div>
