@@ -108,6 +108,8 @@ const steps = [
   ['cancelled record recovery tests', 'supabase/tests/22_cancelled_record_recovery_verification.sql', 'Reactivation, retry/idempotency, owner checks, stale versions and D16 rollback'],
   ['trip recovery work opening migration', 'supabase/migrations/20261120170000_trip_recovery_work_opening.sql', 'D04: enforce contractor-work opening on cancelled trip reactivation'],
   ['trip recovery work opening tests', 'supabase/tests/23_trip_recovery_work_opening_verification.sql', 'Both work directions, same-day recovery, cash guard and atomic rejection'],
+  ['new trip work opening migration', 'supabase/migrations/20261120180000_trip_new_work_opening.sql', 'D04: prevent newly entered active trips before contractor-work opening'],
+  ['new trip work opening tests', 'supabase/tests/24_trip_new_work_opening_verification.sql', 'Both directions, opening-day work, backdating and atomic rejection'],
 ];
 
 function describe(error) {
