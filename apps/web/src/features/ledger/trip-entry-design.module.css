@@ -59,15 +59,24 @@
 .dialog [role=alert] { color:var(--color-danger); background:var(--color-danger-bg); padding:12px; margin-bottom:16px; border-radius:8px; }
 @media(max-width:1100px) { .tripForm { grid-template-columns:minmax(0,1fr); } .summaryColumn { position:static; padding:0 0 24px; } }
 @media(max-width:600px) {
-  .tripSurface { border-radius:14px; margin-top:12px; }
-  .heading { padding:20px; gap:12px; align-items:flex-start; }
-  .heading h2 { font-size:1.3rem; }
-  .headingIcon { width:44px; height:44px; border-radius:12px; }
-  .headingIcon svg { width:26px; height:26px; }
-  .tripForm { padding:0 18px; }
-  .fieldGrid { grid-template-columns:minmax(0,1fr); gap:18px; }
-  .actions { align-items:stretch; }
-  .actionButtons { width:100%; flex-direction:column; }
+  /* Mobile-only spacing: preserve every field, its order, and 48px input/button targets. */
+  .tripSurface { border-radius:14px; margin-top:10px; }
+  .heading { padding:14px 14px 12px; gap:10px; align-items:flex-start; }
+  .heading h2 { font-size:1.25rem; margin-bottom:4px; }
+  .heading p { margin:0; line-height:1.65; }
+  .headingIcon { width:40px; height:40px; border-radius:11px; }
+  .headingIcon svg { width:24px; height:24px; }
+  .tripForm { padding:0 14px; }
+  .tripSurface .entryFields details { padding-bottom:12px; }
+  .tripSurface .entryFields summary { padding:12px 0 8px; }
+  .fieldGrid { grid-template-columns:minmax(0,1fr); gap:12px; }
+  .formField label,.choice label { margin-bottom:5px; }
+  .checkboxRow { padding:10px 12px; line-height:1.65; }
+  .entryFields > .checkboxRow { margin:12px 0 14px; }
+  .summaryColumn { padding:12px 0 14px; }
+  .actions { align-items:stretch; gap:10px; padding:14px 0; }
+  .actions p { margin:0; line-height:1.65; }
+  .actionButtons { width:100%; flex-direction:column; gap:8px; }
   .actionButtons button { width:100%; }
   .overlay { padding:16px; }
   .dialog { padding:22px; border-radius:16px; max-height:calc(100dvh - 32px); }
