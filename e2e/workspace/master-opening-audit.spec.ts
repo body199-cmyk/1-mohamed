@@ -21,6 +21,12 @@ test('Master Data sends exact opening numbers to SQL and replays a lost response
     ] as const;
     for (const [type, contractor, vehicle, value, expected] of cases) {
       await page.locator('#opening-type').selectOption(type);
+      const policy = type === 'CONTRACTOR_WORK' && contractor === 'C2' ? 'EXCLUDED' : 'INCLUDED';
+      if (type === 'CONTRACTOR_WORK') {
+        await page.locator('#opening-prior-work').selectOption(policy);
+      } else {
+        await expect(page.locator('#opening-prior-work')).toHaveCount(0);
+      }
       await page.locator('#opening-contractor').selectOption(contractor);
       if (vehicle) await page.locator('#opening-vehicle').selectOption(vehicle);
       await page.locator('#opening-date').fill('2026-11-02');
@@ -34,11 +40,12 @@ test('Master Data sends exact opening numbers to SQL and replays a lost response
       await form.click();
       await expect(amount).toHaveValue('');
       const payload = state.attempts.at(-1)?.payload;
-      expect(payload).toMatchObject({ balance_type: type, signed_piastres: expected });
+      expect(payload).toMatchObject({ balance_type: type, signed_piastres: expected,
+        prior_work_handling: policy });
       expect(await sql.rows(
-        'select signed_piastres::text as amount from opening_balances where id=$1',
+        'select signed_piastres::text as amount, prior_work_handling as policy from opening_balances where id=$1',
         [(payload as { id: string }).id],
-      )).toEqual([{ amount: String(expected) }]);
+      )).toEqual([{ amount: String(expected), policy }]);
     }
     for (const invalid of ['1.234', '90071992547409.50', '-90071992547409.50']) {
       await amount.fill(invalid);
