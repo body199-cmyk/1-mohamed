@@ -21,6 +21,11 @@ const safeColumn=name=>{
 // Callers never hand this function a production client.
 export async function restoreEmptyLedger(client,dir){
  const {manifest,payloads}=loadBusinessSnapshot(dir);
+ const openingRows=JSON.parse(payloads.get('opening_balances'));
+ const missingOpeningPolicy=openingRows.filter(r=>!Object.hasOwn(r,'prior_work_handling')).length;
+ if(missingOpeningPolicy&&missingOpeningPolicy!==openingRows.length)
+  throw Error('Mixed historical opening policy schema in one archive');
+ const legacyOpening=missingOpeningPolicy>0;
  await client.query('begin');
  try{
   await client.query("set local timezone='UTC'");
@@ -37,6 +42,10 @@ export async function restoreEmptyLedger(client,dir){
    const updates=columns.filter(c=>c!=='"id"').map(c=>c+'=excluded.'+c);
    const settings=table==='business_settings'?' on conflict (id) do update set '+updates.join(','):'';
    const list=columns.join(',');
+   const selectList=table==='opening_balances'
+    ? columns.map(c=>c==='"prior_work_handling"'
+      ? `coalesce(${c},'INCLUDED') as ${c}` : c).join(',')
+    : list;
    if(table==='trips'){
     // A verified archive may contain legitimately pre-cutover work which was
     // recorded BEFORE its TOTAL opening. Bypass only the new write-time guard
@@ -55,7 +64,7 @@ export async function restoreEmptyLedger(client,dir){
     await client.query('alter table public.payments disable trigger trg_payments_trip_link_guard');
    }
    await client.query(`insert into public.${table} (${list}) overriding system value
-    select ${list} from jsonb_populate_recordset(null::public.${table},$1::jsonb) where true${settings}`,[payloads.get(table)]);
+    select ${selectList} from jsonb_populate_recordset(null::public.${table},$1::jsonb) where true${settings}`,[payloads.get(table)]);
    if(table==='trips'){
     await client.query('alter table public.trips enable trigger trg_trip_new_work_opening');
    }
@@ -64,7 +73,7 @@ export async function restoreEmptyLedger(client,dir){
    }
   }
   for(const table of BUSINESS_TABLES){
-   const data=(await client.query(readRowsSql(table))).rows[0].rows;
+   const data=(await client.query(readRowsSql(table,{legacyOpening:table==='opening_balances'&&legacyOpening}))).rows[0].rows;
    if(digest(data)!==manifest.tables[table].sha256)throw Error('Restored data differs for '+table);
   }
   await client.query(`select setval(pg_get_serial_sequence('public.audit_log','id'),coalesce(max(id),1),count(*)>0) from public.audit_log`);

@@ -1,12 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, readdir, readFile, rm, appendFile } from 'node:fs/promises';
+import { mkdtemp, readdir, readFile, writeFile, rm, appendFile } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { PGlite } from '@electric-sql/pglite';
-import { BUSINESS_TABLES, loadBusinessSnapshot, writeBusinessSnapshot } from './business-snapshot.mjs';
+import { BUSINESS_TABLES, loadBusinessSnapshot, writeBusinessSnapshot, readRowsSql, digest } from './business-snapshot.mjs';
 import { recoveryTarget, restoreEmptyLedger } from './business-restore.mjs';
 import { SOURCE_REF } from './contract.mjs';
 import { filesToPrune } from '../offsite-backup.mjs';
@@ -135,4 +135,30 @@ test('30 Cairo days include today and restrict deletion to exact managed folders
   {name:'personal.xlsx',path:'2026/10 - October/personal.xlsx'},
  ];
  assert.deepEqual(filesToPrune(files.filter(f=>isManagedBackupPath(f.path,f.name)),'2026-11-18'),files.slice(0,3));
+});
+
+test('pre-policy nine-table archive restores without reinterpreting its opening amount',async()=>{
+ const dir=await mkdtemp(join(tmpdir(),'legacy-opening-'));
+ let source, target;
+ try{
+  source=await database();
+  await source.exec(`insert into public.contractors(id,name) values ('legacy-k','Legacy');
+    insert into public.opening_balances(id,balance_type,contractor_id,start_date,signed_piastres)
+    values ('legacy-opening','CONTRACTOR_WORK','legacy-k','2026-11-01',15000);`);
+  const oldProjection=(await source.query(readRowsSql('opening_balances',{legacyOpening:true}))).rows[0].rows;
+  const manifest=await writeBusinessSnapshot(source,dir,{date:'2026-11-18',commit:'a'.repeat(40)});
+  // Simulate the exact legacy field set and recalculate its trusted manifest hash.
+  await writeFile(join(dir,'opening_balances.json'),oldProjection);
+  manifest.tables.opening_balances.sha256=digest(oldProjection);
+  await writeFile(join(dir,'manifest.json'),JSON.stringify(manifest,null,2)+'\n');
+  target=await database();
+  assert.deepEqual(await restoreEmptyLedger(target,dir),{restoredTables:9,exactMatch:true});
+  const opening=await target.query(`select signed_piastres::text as amount, prior_work_handling as policy
+    from public.opening_balances where id='legacy-opening'`);
+  assert.deepEqual(opening.rows,[{amount:'15000',policy:'INCLUDED'}]);
+ }finally{
+  await target?.close().catch(()=>{});
+  await source?.close().catch(()=>{});
+  await rm(dir,{recursive:true,force:true});
+ }
 });

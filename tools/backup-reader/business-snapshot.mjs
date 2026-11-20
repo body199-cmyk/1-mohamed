@@ -9,10 +9,14 @@ export const BUSINESS_TABLES=Object.freeze([
  'opening_balances','trips','payments','audit_log','idempotency_keys'
 ]);
 export const digest=bytes=>createHash('sha256').update(bytes).digest('hex');
-export const readRowsSql=table=>{
+export const readRowsSql=(table,{legacyOpening=false}={})=>{
  if(!BUSINESS_TABLES.includes(table))throw Error('Unexpected backup table');
+ // A pre-policy archive has no prior_work_handling key. For its exact-match
+ // check, compare only the original projected columns, never weaken SHA-256.
+ const projection=table==='opening_balances'&&legacyOpening
+  ? "to_jsonb(t)-'prior_work_handling'" : 'to_jsonb(t)';
  return `select coalesce(jsonb_agg(j order by convert_to(j::text,'UTF8')),'[]'::jsonb)::text as rows
- from (select to_jsonb(t) as j from public.${table} t) s`;
+ from (select ${projection} as j from public.${table} t) s`;
 };
 
 export async function writeBusinessSnapshot(client,dir,{date,commit}){

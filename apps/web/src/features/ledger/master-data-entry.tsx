@@ -19,6 +19,7 @@ export function MasterDataEntry({ contractors, vehicles, accounts, busy, write }
   const [openingVehicle, setOpeningVehicle] = useState("");
   const [openingDate, setOpeningDate] = useState("");
   const [openingAmount, setOpeningAmount] = useState("");
+  const [priorWorkHandling, setPriorWorkHandling] = useState<"" | "INCLUDED" | "EXCLUDED">("");
   async function createContractor(event: FormEvent) {
     event.preventDefault();
     const name = contractorName.trim();
@@ -65,12 +66,17 @@ export function MasterDataEntry({ contractors, vehicles, accounts, busy, write }
           (openingType === "VEHICLE_CASH" && !openingVehicle)) {
         setNotice("حدد المقاول والتاريخ والحساب المطلوب."); return;
       }
-      const signature = [openingType, openingContractor, openingVehicle, openingDate, piastres].join(":");
+      if (openingType === "CONTRACTOR_WORK" && !priorWorkHandling) {
+        setNotice("اختر هل الرصيد الافتتاحي يشمل الشغل المسجل قبل تاريخ البداية أم لا."); return;
+      }
+      const policy = openingType === "CONTRACTOR_WORK" ? priorWorkHandling : "INCLUDED";
+      const signature = [openingType, openingContractor, openingVehicle, openingDate, piastres, policy].join(":");
       const cached = drafts.current.get(signature) ?? {
         id: "OPEN-" + crypto.randomUUID(), balance_type: openingType,
         contractor_id: openingContractor,
         ...(openingType === "VEHICLE_CASH" ? { vehicle_id: openingVehicle } : {}),
-        start_date: openingDate, signed_piastres: piastres, start_mode: "TOTAL"
+        start_date: openingDate, signed_piastres: piastres, start_mode: "TOTAL",
+        prior_work_handling: policy
       };
       drafts.current.set(signature, cached);
       if (await write("opening.create", cached)) {
@@ -135,7 +141,7 @@ export function MasterDataEntry({ contractors, vehicles, accounts, busy, write }
       <form className={ui.form} onSubmit={createOpening}>
         <div className={ui.fieldGroup}><label htmlFor="opening-type">نوع الرصيد</label>
         <select id="opening-type" className={ui.control} value={openingType}
-          onChange={e => { setOpeningType(e.target.value as typeof openingType); setOpeningContractor(""); setOpeningVehicle(""); }} disabled={busy}>
+          onChange={e => { setOpeningType(e.target.value as typeof openingType); setOpeningContractor(""); setOpeningVehicle(""); setPriorWorkHandling(""); }} disabled={busy}>
           <option value="CONTRACTOR_WORK">فرق شغل المقاول</option>
           <option value="VEHICLE_CASH">نقدية عربية مع مقاول</option>
         </select></div>
@@ -163,6 +169,19 @@ export function MasterDataEntry({ contractors, vehicles, accounts, busy, write }
         <input id="opening-amount" className={ui.control} required inputMode="decimal"
           placeholder="1250" value={openingAmount}
           onChange={e => setOpeningAmount(e.target.value)} disabled={busy} /></div>
+        {openingType === "CONTRACTOR_WORK" && <>
+          <div className={ui.fieldGroup}>
+            <label htmlFor="opening-prior-work">هل المبلغ يشمل شغل المقاول المسجل قبل تاريخ البداية؟</label>
+            <select id="opening-prior-work" className={ui.control} required disabled={busy}
+              value={priorWorkHandling}
+              onChange={e => setPriorWorkHandling(e.target.value as typeof priorWorkHandling)}>
+              <option value="">اختر طريقة الحساب أولًا</option>
+              <option value="INCLUDED">نعم، المبلغ يشمل الشغل القديم — لا تضفه مرة ثانية</option>
+              <option value="EXCLUDED">لا، المبلغ مستقل عن الشغل القديم — أضف صافي الشغل المسجل إليه</option>
+            </select>
+          </div>
+          <p role="note">تنبيه: الاختيار يغيّر الرصيد المحسوب. المقصود بالشغل القديم النقلات المسجلة قبل تاريخ بداية الافتتاحي، وليس كل النقلات. راجع الرصيد والتاريخ قبل الحفظ.</p>
+        </>}
         <div className={ui.actions}><button disabled={busy} type="submit">حفظ الرصيد الافتتاحي</button></div>
       </form>
     </section>
