@@ -1,3 +1,11 @@
+## 2026-11-20 — recovery opening boundary audit
+
+Reviewed the audit against `main@c080dbe`. Vercel's production alias resolved to that SHA, and the deployed trip/payment recovery and cash-opening function bodies matched the source migration. The branch adds a work-opening guard only on uncancellation and serializes it with a work-opening write for the same contractor. An opening committed first blocks earlier recovery. Recovery committed first follows the existing TOTAL opening policy. The decision on changing TOTAL entry after existing detail is still open.
+
+The new regression caught successful pre-opening recovery on the baseline. All 53 SQL stages passed in PGlite and PostgreSQL 18.7. Two native connections confirmed both lock orders. Typecheck, production build, 233 package tests, 220 web tests, 48 backup tests, 112 workspace browser tests, 14 Auth fixture browser tests and the six repaired demo cases passed locally. The browser cases use synthetic accounts and data.
+
+The public deployment was inspected read-only. The current Drive credential could not access the selected archive, and the existing recovery project had retained drill data. Recovery of that archive into a fresh empty project, hosted identity checks and cutover were not verified.
+
 ## 2026-11-19 — DAILY-RECORDED-PAPER (branch checkpoint)
 
 طلب المستخدم إضافة نفس التقرير الجمالي المثبت على A4 أعلى «المسجّل بالفعل» في اليومية، مع الإبقاء على القائمة القديمة والوظائف والحسابات. الفرع `feat/daily-recorded-paper-preview-20261119` من `main@65b0d23` يتضمن ملف معاينة محلي يعيد استعمال محرّك التقارير، وتحميل بقية الصفحات عبر نفس SQL snapshot، وحماية من البيانات غير المكتملة/تغيّر التاريخ، واختبار متصفح لعرض 1440/390 وsnapshot drift. لم يُغيّر SQL أو migrations أو إعدادات الإنتاج أو الكود المالي. لا تدّعي هذه النقطة نجاح اختبارات/دمج قبل فحص Actions على رأس PR؛ مراجعة مستقلة وما لم يتم اختباره يسجلان في PR.

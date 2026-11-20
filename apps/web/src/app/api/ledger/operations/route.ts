@@ -53,6 +53,10 @@ export async function POST(request: NextRequest) {
   });
   if (error) {
     // SQL error details may contain internal financial data; do not echo them.
+    if (input.operation === "trip.reactivate" && error.code === "P2020") {
+      return result({ error: "تعذّرت استعادة النقلة لأن تاريخها يسبق بداية افتتاحي شغل المقاول." },
+        409, sessionResponse);
+    }
     const conflict = error.code === "P2003" || error.code === "23505";
     return result({ error: conflict ? "تم تعديل البيانات من جلسة أخرى؛ حدّث الصفحة وأعد المحاولة." :
       "تعذر حفظ العملية. راجع المدخلات ثم حاول مرة أخرى بنفس مفتاح الطلب." },
