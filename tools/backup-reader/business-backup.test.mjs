@@ -39,6 +39,9 @@ test('plain snapshot restores business data, never Auth, and fails closed on tam
     insert into public.vehicle_accounts(vehicle_id,contractor_id) values ('v1','k2');
     update public.trips set counterparty_contractor_id='k2', responsible_contractor_id='k2',
       direction='OTHER_SUPPLIES' where id='t1';
+    -- A valid historical trip predates a later TOTAL contractor-work cutover.
+    insert into public.opening_balances(id,balance_type,contractor_id,start_date,signed_piastres)
+      values ('k2_open','CONTRACTOR_WORK','k2','2026-11-19',1500);
     update public.business_settings set business_name='Recovered' where id='default';
     insert into public.audit_log(id,entity_type,entity_id,action,performed_by) overriding system value
       values (42,'TRIP','t1','INSERT','00000000-0000-0000-0000-000000000001');
@@ -74,8 +77,24 @@ with zipfile.ZipFile(sys.argv[1]) as z:
   const rolledBack=await target.query(`select tgenabled, (select count(*)::int from public.trips) as trips
     from pg_trigger where tgrelid='public.payments'::regclass and tgname='trg_payments_trip_link_guard'`);
   assert.deepEqual(rolledBack.rows,[{tgenabled:'O',trips:0}]);
+  assert.equal((await target.query(`select tgenabled from pg_trigger
+    where tgrelid='public.trips'::regclass and tgname='trg_trip_new_work_opening'`)).rows[0].tgenabled,'O');
 
   assert.deepEqual(await restoreEmptyLedger(target,dir),{restoredTables:9,exactMatch:true});
+  assert.equal((await target.query(`select tgenabled from pg_trigger
+    where tgrelid='public.trips'::regclass and tgname='trg_trip_new_work_opening'`)).rows[0].tgenabled,'O');
+  assert.deepEqual((await target.query(`select t.trip_date::text as historical_date,o.start_date::text as opening_date
+    from public.trips t join public.opening_balances o
+      on o.contractor_id=t.counterparty_contractor_id
+    where t.id='t1' and o.id='k2_open'`)).rows,
+    [{historical_date:'2026-11-18',opening_date:'2026-11-19'}]);
+  await assert.rejects(target.query(`insert into public.trips(
+    id,vehicle_id,counterparty_contractor_id,responsible_contractor_id,
+    direction,trip_date,weight_milli_tonnes,contractor_rate_piastres,
+    vehicle_rate_piastres,same_rate,expense_piastres,
+    contractor_total_piastres,vehicle_total_piastres
+  ) values ('t1_backdated','v1','k2','k2','OTHER_SUPPLIES','2026-11-18',
+    1000,10000,8000,false,0,10000,8000)`),{code:'P2021'});
   const result=(await target.query("select amount_piastres::text as amount from public.payments where id='p1'")).rows[0];
   assert.equal(result.amount,'9007199254741000');
   const link=await target.query(`select p.responsible_contractor_id as paid_by, t.responsible_contractor_id as work_by
